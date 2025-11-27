@@ -27,12 +27,13 @@ The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity
 **SuperCollider Server** (`sc/monokit_server.scd`)
 - Runs headless scsynth with persistent HD2-style voice
 - `\monokit` SynthDef: complex oscillator with dual waveform engines, FM, discontinuity, and modulation
-- Full parameter set (17 parameters):
+- Full parameter set (20 parameters):
   - **Oscillators:** pf (primary freq), pw (primary waveform 0-2), mf (mod freq), mw (mod waveform 0-2)
-  - **Discontinuity:** dc (amount 0-16383), dm (mode 0-2: fold/tanh/softclip)
+  - **Discontinuity:** dc (amount 0-16383), dm (mode 0-2: fold/tanh/softclip), dd (discontinuity decay 0.001-10s)
   - **Tracking/Modulation:** tk (tracking 0-16383), mb (mod bus 0-16383), mp/md/mt/ma (switches 0-1)
   - **FM:** fm (index 0-16383)
-  - **Envelopes:** ad (amp decay 0.001-10s), pd (pitch decay 0.001-10s), fd (FM decay 0.001-10s), pa (pitch env amount 0-16)
+  - **Envelopes:** ad (amp decay ms), pd (pitch decay ms), fd (FM decay ms), dd (disc decay ms), pa (pitch env amount 0-16)
+  - **Mix Controls:** mx (mix to disc input 0-16383), mm (mix modulation amount 0-16383), me (mix modulation enable 0-1)
   - **Volume:** volume (0.0-1.0)
 - OSC responders:
   - `/monokit/trigger` - triggers gate for note playback
@@ -46,8 +47,9 @@ The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity
 - Commands (Teletype-inspired terse style):
   - **Trigger/Volume:** TR, VOL <0.0-1.0>
   - **Metro:** M, M <ms>, M.BPM <bpm>, M.ACT <0|1>, M: <script>
-  - **HD2 Parameters:** PF/MF, PW/MW, DC/DM, TK/MB, MP/MD/MT/MA, FM, AD/PD/FD, PA
-  - **System:** help, exit, quit
+  - **HD2 Parameters:** PF/MF, PW/MW, DC/DM, DD, TK/MB, MP/MD/MT/MA, FM, AD/PD/FD/DD, PA
+  - **Mix Controls:** MX, MM, ME
+  - **System:** RST (reset to defaults), help, exit, quit
 - M script validation prevents invalid command sequences
 - All parameters sent via OSC `/monokit/param` protocol
 

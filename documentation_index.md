@@ -65,7 +65,7 @@ Audio output
 - `M.ACT <0|1>` - Activate (1) or deactivate (0) metro
 - `M: <script>` - Set M script (semicolon-separated commands, validated before setting)
 
-#### HD2 Voice Parameters (17 total)
+#### HD2 Voice Parameters (20 total)
 
 **Primary Oscillator**
 - `PF <hz>` - Primary frequency (20-20000)
@@ -78,25 +78,33 @@ Audio output
 **Discontinuity (Waveshaping)**
 - `DC <0-16383>` - Discontinuity amount (mix of modulator into shaper)
 - `DM <0-2>` - Discontinuity mode (0=fold, 1=tanh, 2=softclip)
+- `DD <ms>` - Discontinuity envelope decay time (milliseconds, 1-10000)
 
 **Tracking & Modulation Bus**
 - `TK <0-16383>` - Tracking amount (modulator frequency follows pitch envelope)
 - `MB <0-16383>` - Modulation bus amount (general modulation depth)
-- `MP <0|1>` - Enable modulation -> primary frequency
+- `MP <0|1>` - Enable modulation -> primary frequency (FM-independent)
 - `MD <0|1>` - Enable modulation -> discontinuity amount
 - `MT <0|1>` - Enable modulation -> tracking
 - `MA <0|1>` - Enable modulation -> amplitude
 
 **FM Synthesis**
-- `FM <0-16383>` - FM index (modulator phase modulates primary frequency)
+- `FM <0-16383>` - FM index (modulator phase modulates primary frequency, additive with mod bus routing)
 
-**Envelopes (all in seconds, 0.001-10 range)**
-- `AD <seconds>` - Amplitude decay time
-- `PD <seconds>` - Pitch decay time
-- `FD <seconds>` - FM decay time
+**Mix Controls (Additive Routing)**
+- `MX <0-16383>` - Mix amount (modulator output to discontinuity input)
+- `MM <0-16383>` - Mix modulation amount (depth of mod bus modulation on mix)
+- `ME <0|1>` - Mix modulation enable (route mod bus to mix amount)
+
+**Envelopes (all in milliseconds, 1-10000 range)**
+- `AD <ms>` - Amplitude decay time
+- `PD <ms>` - Pitch decay time
+- `FD <ms>` - FM decay time
+- `DD <ms>` - Discontinuity decay time
 - `PA <0-16>` - Pitch envelope amount (pitch contour depth)
 
 #### System
+- `RST` - Reset all parameters to defaults
 - `help` - Show command help
 - `exit`, `quit` - Exit REPL
 
@@ -108,8 +116,9 @@ All communication from Rust CLI to SuperCollider server uses UDP over localhost 
 - **Trigger:** `/monokit/trigger` (no arguments)
 - **Master Volume:** `/monokit/volume` with float value (0.0-1.0)
 - **Parameter Control:** `/monokit/param <name> <value>` where:
-  - `<name>` = parameter name (string): pf, pw, mf, mw, dc, dm, tk, mb, mp, md, mt, ma, fm, ad, pd, fd, pa
+  - `<name>` = parameter name (string): pf, pw, mf, mw, dc, dm, dd, tk, mb, mp, md, mt, ma, fm, mx, mm, me, ad, pd, fd, dd, pa
   - `<value>` = float or int depending on parameter type
+- **Reset:** `/monokit/reset` (no arguments, resets all parameters to defaults)
 
 All parameter updates are validated in Rust CLI before sending and applied immediately on SuperCollider voice.
 

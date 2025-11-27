@@ -10,18 +10,19 @@
 
 ### Configuration
 
-- **Cargo.toml** - Rust project manifest with dependencies (rosc, rustyline, nom, anyhow, thiserror, serde)
+- **Cargo.toml** - Rust project manifest with dependencies (rosc, ratatui, crossterm, nom, anyhow, thiserror, serde)
 - **Cargo.lock** - Dependency lock file
 
 ### Source Code
 
-- **src/main.rs** - Rust CLI application
-  - REPL interface with rustyline (synchronous)
+- **src/main.rs** - Rust TUI application
+  - Page-based interface with ratatui/crossterm
+  - 12 navigable pages: Live, Script 1-8, Metro (M), Init (I), Pattern (P)
+  - Help page accessible via Alt+H (scrollable, no input region)
   - Dedicated metro thread with absolute timing (no drift)
   - All OSC routed through metro thread (serialized)
   - OSC client sending to SuperCollider (127.0.0.1:57120)
-  - Command processor (TR, VOL, M, M.BPM, M.ACT, M:, help, exit/quit)
-  - M commands execute locally; parameter updates sent via OSC
+  - Command processor (TR, VOL, M, M.BPM, M.ACT, M:, RST, etc.)
   - M script validation before execution
   - UDP socket communication
 
@@ -118,8 +119,26 @@ Audio output
 
 #### System
 - `RST` - Reset all parameters to defaults
-- `help` - Show command help
-- `exit`, `quit` - Exit REPL
+- `q` - Quit application
+
+### Navigation (Keybindings)
+
+#### Page Cycling
+- `[` / `]` - Cycle through pages (Live → 1-8 → M → I → P → wrap)
+
+#### Direct Page Access (Alt+key)
+- `Alt+L` - Live page
+- `Alt+1` through `Alt+8` - Script pages 1-8
+- `Alt+M` - Metro page
+- `Alt+I` - Init page
+- `Alt+P` - Pattern page
+- `Alt+H` - Toggle Help (overlay, scrollable with arrow keys)
+
+#### Input
+- `Enter` - Execute command
+- `Up/Down` - Command history (on non-Help pages)
+- `Left/Right` - Cursor movement
+- `Ctrl+C` - Quit
 
 ## OSC Protocol
 
@@ -139,7 +158,8 @@ All parameter updates are validated in Rust CLI before sending and applied immed
 
 ### Rust
 - rosc 0.10 - OSC protocol
-- rustyline 13 - REPL/readline
+- ratatui 0.29 - Terminal UI framework
+- crossterm 0.28 - Terminal backend
 - nom 7 - Parser (future use)
 - anyhow 1 - Error handling
 - thiserror 1 - Error types

@@ -57,40 +57,81 @@ impl Default for MetroState {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Page {
+    Live,
+    Script1,
+    Script2,
+    Script3,
+    Script4,
+    Script5,
+    Script6,
+    Script7,
+    Script8,
     Metro,
-    Repl,
+    Init,
+    Pattern,
+    Help,
 }
+
+const NAVIGABLE_PAGES: [Page; 12] = [
+    Page::Live,
+    Page::Script1,
+    Page::Script2,
+    Page::Script3,
+    Page::Script4,
+    Page::Script5,
+    Page::Script6,
+    Page::Script7,
+    Page::Script8,
+    Page::Metro,
+    Page::Init,
+    Page::Pattern,
+];
 
 impl Page {
     fn name(&self) -> &str {
         match self {
-            Page::Metro => "METRO",
-            Page::Repl => "REPL",
+            Page::Live => "LIVE",
+            Page::Script1 => "1",
+            Page::Script2 => "2",
+            Page::Script3 => "3",
+            Page::Script4 => "4",
+            Page::Script5 => "5",
+            Page::Script6 => "6",
+            Page::Script7 => "7",
+            Page::Script8 => "8",
+            Page::Metro => "M",
+            Page::Init => "I",
+            Page::Pattern => "P",
+            Page::Help => "HELP",
         }
     }
 
     fn next(&self) -> Self {
-        match self {
-            Page::Metro => Page::Repl,
-            Page::Repl => Page::Metro,
+        if *self == Page::Help {
+            return Page::Help;
         }
+        let idx = NAVIGABLE_PAGES.iter().position(|p| p == self).unwrap_or(0);
+        NAVIGABLE_PAGES[(idx + 1) % NAVIGABLE_PAGES.len()]
     }
 
     fn prev(&self) -> Self {
-        match self {
-            Page::Metro => Page::Repl,
-            Page::Repl => Page::Metro,
+        if *self == Page::Help {
+            return Page::Help;
         }
+        let idx = NAVIGABLE_PAGES.iter().position(|p| p == self).unwrap_or(0);
+        NAVIGABLE_PAGES[(idx + NAVIGABLE_PAGES.len() - 1) % NAVIGABLE_PAGES.len()]
     }
 }
 
 struct App {
     current_page: Page,
+    previous_page: Page,
     input: String,
     cursor_position: usize,
     history: Vec<String>,
     history_index: Option<usize>,
     output: Vec<String>,
+    help_scroll: usize,
     metro_state: Arc<Mutex<MetroState>>,
     metro_tx: Sender<MetroCommand>,
 }
@@ -98,14 +139,32 @@ struct App {
 impl App {
     fn new(metro_tx: Sender<MetroCommand>, metro_state: Arc<Mutex<MetroState>>) -> Self {
         Self {
-            current_page: Page::Metro,
+            current_page: Page::Live,
+            previous_page: Page::Live,
             input: String::new(),
             cursor_position: 0,
             history: Vec::new(),
             history_index: None,
             output: Vec::new(),
+            help_scroll: 0,
             metro_state,
             metro_tx,
+        }
+    }
+
+    fn go_to_page(&mut self, page: Page) {
+        if page != Page::Help {
+            self.previous_page = page;
+        }
+        self.current_page = page;
+    }
+
+    fn toggle_help(&mut self) {
+        if self.current_page == Page::Help {
+            self.current_page = self.previous_page;
+        } else {
+            self.previous_page = self.current_page;
+            self.current_page = Page::Help;
         }
     }
 
@@ -1057,52 +1116,80 @@ fn validate_script_command(cmd: &str) -> Result<()> {
 }
 
 fn ui(f: &mut Frame, app: &App) {
-    let chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Length(3),
-            Constraint::Min(0),
-            Constraint::Length(3),
-        ])
-        .split(f.area());
+    let is_help = app.current_page == Page::Help;
+
+    let chunks = if is_help {
+        Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Length(3),
+                Constraint::Min(0),
+            ])
+            .split(f.area())
+    } else {
+        Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Length(3),
+                Constraint::Min(0),
+                Constraint::Length(3),
+            ])
+            .split(f.area())
+    };
 
     let header = render_header(app);
     f.render_widget(header, chunks[0]);
 
-    match app.current_page {
-        Page::Metro => {
-            let content = render_metro_page(app);
-            f.render_widget(content, chunks[1]);
-        }
-        Page::Repl => {
-            let content = render_repl_page(app, chunks[1].height as usize);
-            f.render_widget(content, chunks[1]);
-        }
-    }
+    let content = match app.current_page {
+        Page::Live => render_live_page(app, chunks[1].height as usize),
+        Page::Script1 => render_script_page(1),
+        Page::Script2 => render_script_page(2),
+        Page::Script3 => render_script_page(3),
+        Page::Script4 => render_script_page(4),
+        Page::Script5 => render_script_page(5),
+        Page::Script6 => render_script_page(6),
+        Page::Script7 => render_script_page(7),
+        Page::Script8 => render_script_page(8),
+        Page::Metro => render_metro_page(app),
+        Page::Init => render_init_page(),
+        Page::Pattern => render_pattern_page(),
+        Page::Help => render_help_page(app.help_scroll, chunks[1].height as usize),
+    };
+    f.render_widget(content, chunks[1]);
 
-    let footer = render_footer(app);
-    f.render_widget(footer, chunks[2]);
+    if !is_help {
+        let footer = render_footer(app);
+        f.render_widget(footer, chunks[2]);
+    }
 }
 
 fn render_header(app: &App) -> Paragraph<'static> {
-    let pages = vec![Page::Metro, Page::Repl];
-    let mut spans = vec![Span::raw("  ")];
+    let mut spans = vec![Span::raw(" ")];
 
-    for page in pages {
-        if page == app.current_page {
-            spans.push(Span::styled(
-                format!("[{}]", page.name()),
-                Style::default()
-                    .fg(Color::Yellow)
-                    .add_modifier(Modifier::BOLD),
-            ));
-        } else {
-            spans.push(Span::styled(
-                format!(" {} ", page.name()),
-                Style::default().fg(Color::DarkGray),
-            ));
+    if app.current_page == Page::Help {
+        spans.push(Span::styled(
+            "[HELP]",
+            Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::BOLD),
+        ));
+    } else {
+        for page in NAVIGABLE_PAGES.iter() {
+            if *page == app.current_page {
+                spans.push(Span::styled(
+                    format!("[{}]", page.name()),
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::BOLD),
+                ));
+            } else {
+                spans.push(Span::styled(
+                    page.name().to_string(),
+                    Style::default().fg(Color::DarkGray),
+                ));
+            }
+            spans.push(Span::raw(" "));
         }
-        spans.push(Span::raw(" "));
     }
 
     Paragraph::new(Line::from(spans))
@@ -1150,8 +1237,7 @@ fn render_metro_page(app: &App) -> Paragraph<'static> {
         .wrap(Wrap { trim: false })
 }
 
-fn render_repl_page(app: &App, height: usize) -> Paragraph<'static> {
-    // Account for borders (2 lines)
+fn render_live_page(app: &App, height: usize) -> Paragraph<'static> {
     let visible_lines = if height > 2 { height - 2 } else { 1 };
 
     let start_idx = if app.output.len() > visible_lines {
@@ -1166,7 +1252,152 @@ fn render_repl_page(app: &App, height: usize) -> Paragraph<'static> {
         .collect();
 
     Paragraph::new(text)
-        .block(Block::default().borders(Borders::ALL).title(" Output "))
+        .block(Block::default().borders(Borders::ALL).title(" Live "))
+}
+
+fn render_script_page(num: u8) -> Paragraph<'static> {
+    let mut lines = vec![
+        Line::from(""),
+        Line::from(Span::styled(
+            "  (script storage not yet implemented)",
+            Style::default().fg(Color::DarkGray),
+        )),
+    ];
+    for i in 1..=8 {
+        lines.push(Line::from(Span::styled(
+            format!("  {}: ", i),
+            Style::default().fg(Color::DarkGray),
+        )));
+    }
+
+    Paragraph::new(lines)
+        .block(Block::default().borders(Borders::ALL).title(format!(" Script {} ", num)))
+}
+
+fn render_init_page() -> Paragraph<'static> {
+    let mut lines = vec![
+        Line::from(""),
+        Line::from(Span::styled(
+            "  (init script not yet implemented)",
+            Style::default().fg(Color::DarkGray),
+        )),
+    ];
+    for i in 1..=8 {
+        lines.push(Line::from(Span::styled(
+            format!("  {}: ", i),
+            Style::default().fg(Color::DarkGray),
+        )));
+    }
+
+    Paragraph::new(lines)
+        .block(Block::default().borders(Borders::ALL).title(" Init "))
+}
+
+fn render_pattern_page() -> Paragraph<'static> {
+    let lines = vec![
+        Line::from(""),
+        Line::from(Span::styled(
+            "  (pattern storage not yet implemented)",
+            Style::default().fg(Color::DarkGray),
+        )),
+        Line::from(""),
+        Line::from(Span::styled(
+            "  4 patterns × 64 steps",
+            Style::default().fg(Color::DarkGray),
+        )),
+    ];
+
+    Paragraph::new(lines)
+        .block(Block::default().borders(Borders::ALL).title(" Pattern "))
+}
+
+const HELP_LINES: &[&str] = &[
+    "",
+    "  NAVIGATION",
+    "  [ ]         Cycle pages",
+    "  Alt+L       Live page",
+    "  Alt+1-8     Script 1-8",
+    "  Alt+M       Metro page",
+    "  Alt+I       Init page",
+    "  Alt+P       Pattern page",
+    "  Alt+H       Toggle help",
+    "  q           Quit",
+    "",
+    "  TRIGGER & VOLUME",
+    "  TR          Trigger voice",
+    "  VOL 0-1     Master volume",
+    "  RST         Reset to defaults",
+    "",
+    "  OSCILLATORS",
+    "  PF <hz>     Primary freq (20-20000)",
+    "  PW <0-2>    Primary wave (sin/tri/saw)",
+    "  MF <hz>     Mod freq (20-20000)",
+    "  MW <0-2>    Mod wave (sin/tri/saw)",
+    "",
+    "  FM SYNTHESIS",
+    "  FM <0-16383>  FM index",
+    "  FA <0-16383>  FM env amount",
+    "  FD <ms>       FM env decay",
+    "",
+    "  DISCONTINUITY",
+    "  DC <0-16383>  Discontinuity amount",
+    "  DA <0-16383>  DC env amount",
+    "  DD <ms>       DC env decay",
+    "  DM <0-2>      Mode (fold/tanh/soft)",
+    "",
+    "  ENVELOPES",
+    "  AD <ms>       Amp decay",
+    "  PD <ms>       Pitch decay",
+    "  PA <0-16>     Pitch env amount",
+    "",
+    "  MOD BUS",
+    "  MB <0-16383>  Mod bus amount",
+    "  TK <0-16383>  Tracking amount",
+    "  MP <0|1>      Mod -> primary freq",
+    "  MD <0|1>      Mod -> discontinuity",
+    "  MT <0|1>      Mod -> tracking",
+    "  MA <0|1>      Mod -> amplitude",
+    "",
+    "  MIX",
+    "  MX <0-16383>  Mix amount",
+    "  MM <0|1>      Mod bus -> mix",
+    "  ME <0|1>      Envelope -> mix",
+    "",
+    "  METRO",
+    "  M             Show interval",
+    "  M <ms>        Set interval",
+    "  M.BPM <bpm>   Set BPM",
+    "  M.ACT <0|1>   Start/stop",
+    "  M: <script>   Set M script (;-separated)",
+    "",
+];
+
+fn render_help_page(scroll: usize, height: usize) -> Paragraph<'static> {
+    let visible = if height > 2 { height - 2 } else { 1 };
+    let total = HELP_LINES.len();
+    let start = scroll.min(total.saturating_sub(visible));
+
+    let lines: Vec<Line> = HELP_LINES
+        .iter()
+        .skip(start)
+        .take(visible)
+        .map(|&s| {
+            if s.starts_with("  ") && s.chars().nth(2).map_or(false, |c| c.is_uppercase()) && !s.contains('<') && !s.contains("0-") {
+                Line::from(Span::styled(s, Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)))
+            } else {
+                Line::from(s)
+            }
+        })
+        .collect();
+
+    let title = if total > visible {
+        format!(" Help ({}/{}) ", start + 1, total.saturating_sub(visible) + 1)
+    } else {
+        " Help ".to_string()
+    };
+
+    Paragraph::new(lines)
+        .block(Block::default().borders(Borders::ALL).title(title))
 }
 
 fn render_footer(app: &App) -> Paragraph<'static> {
@@ -1175,7 +1406,7 @@ fn render_footer(app: &App) -> Paragraph<'static> {
     let footer_text = vec![
         Line::from(input_display),
         Line::from(Span::styled(
-            "[ ] navigate pages | q quit",
+            "[ ] pages  Alt+H help  q quit",
             Style::default().fg(Color::DarkGray),
         )),
     ];
@@ -1192,11 +1423,14 @@ fn run_app<B: ratatui::backend::Backend>(
 
         if event::poll(Duration::from_millis(100))? {
             if let Event::Key(key) = event::read()? {
+                let is_help = app.current_page == Page::Help;
+                let has_alt = key.modifiers.contains(KeyModifiers::ALT);
+
                 match key.code {
                     KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                         return Ok(());
                     }
-                    KeyCode::Char('q') => {
+                    KeyCode::Char('q') if !has_alt => {
                         return Ok(());
                     }
                     KeyCode::Char('[') => {
@@ -1205,25 +1439,73 @@ fn run_app<B: ratatui::backend::Backend>(
                     KeyCode::Char(']') => {
                         app.next_page();
                     }
-                    KeyCode::Enter => {
+                    // Alt+key page hotkeys
+                    KeyCode::Char('h') if has_alt => {
+                        app.toggle_help();
+                    }
+                    KeyCode::Char('l') if has_alt => {
+                        app.go_to_page(Page::Live);
+                    }
+                    KeyCode::Char('m') if has_alt => {
+                        app.go_to_page(Page::Metro);
+                    }
+                    KeyCode::Char('i') if has_alt => {
+                        app.go_to_page(Page::Init);
+                    }
+                    KeyCode::Char('p') if has_alt => {
+                        app.go_to_page(Page::Pattern);
+                    }
+                    KeyCode::Char('1') if has_alt => {
+                        app.go_to_page(Page::Script1);
+                    }
+                    KeyCode::Char('2') if has_alt => {
+                        app.go_to_page(Page::Script2);
+                    }
+                    KeyCode::Char('3') if has_alt => {
+                        app.go_to_page(Page::Script3);
+                    }
+                    KeyCode::Char('4') if has_alt => {
+                        app.go_to_page(Page::Script4);
+                    }
+                    KeyCode::Char('5') if has_alt => {
+                        app.go_to_page(Page::Script5);
+                    }
+                    KeyCode::Char('6') if has_alt => {
+                        app.go_to_page(Page::Script6);
+                    }
+                    KeyCode::Char('7') if has_alt => {
+                        app.go_to_page(Page::Script7);
+                    }
+                    KeyCode::Char('8') if has_alt => {
+                        app.go_to_page(Page::Script8);
+                    }
+                    // Help page scrolling
+                    KeyCode::Up if is_help => {
+                        app.help_scroll = app.help_scroll.saturating_sub(1);
+                    }
+                    KeyCode::Down if is_help => {
+                        app.help_scroll = app.help_scroll.saturating_add(1).min(HELP_LINES.len().saturating_sub(1));
+                    }
+                    // Normal input handling (non-Help pages)
+                    KeyCode::Enter if !is_help => {
                         app.execute_command();
                     }
-                    KeyCode::Char(c) => {
+                    KeyCode::Char(c) if !is_help => {
                         app.insert_char(c);
                     }
-                    KeyCode::Backspace => {
+                    KeyCode::Backspace if !is_help => {
                         app.delete_char();
                     }
-                    KeyCode::Left => {
+                    KeyCode::Left if !is_help => {
                         app.move_cursor_left();
                     }
-                    KeyCode::Right => {
+                    KeyCode::Right if !is_help => {
                         app.move_cursor_right();
                     }
-                    KeyCode::Up => {
+                    KeyCode::Up if !is_help => {
                         app.history_prev();
                     }
-                    KeyCode::Down => {
+                    KeyCode::Down if !is_help => {
                         app.history_next();
                     }
                     _ => {}

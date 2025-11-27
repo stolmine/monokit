@@ -3,6 +3,7 @@
 ## Documentation
 
 - **CONCEPT.md** - Project overview, architecture, MVP implementation, and roadmap
+- **PLAN.md** - UI refactor plan: Teletype-style interface with page system, script storage, patterns, and control flow
 - **documentation_index.md** - This file, listing all documentation and key project files
 
 ## Key Project Files

@@ -1,9 +1,22 @@
 use anyhow::{Context, Result};
+use crossterm::{
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyModifiers},
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
+use ratatui::{
+    backend::CrosstermBackend,
+    layout::{Constraint, Direction, Layout},
+    style::{Color, Modifier, Style},
+    text::{Line, Span},
+    widgets::{Block, Borders, Paragraph, Wrap},
+    Frame, Terminal,
+};
 use rosc::{encoder, OscMessage, OscPacket, OscType};
-use rustyline::error::ReadlineError;
-use rustyline::DefaultEditor;
+use std::io;
 use std::net::UdpSocket;
 use std::sync::mpsc::{self, Sender};
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -25,6 +38,188 @@ struct ScriptCommand {
     value: OscType,
 }
 
+#[derive(Debug, Clone)]
+struct MetroState {
+    interval_ms: u64,
+    active: bool,
+    script: String,
+}
+
+impl Default for MetroState {
+    fn default() -> Self {
+        Self {
+            interval_ms: 500,
+            active: false,
+            script: String::new(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Page {
+    Metro,
+    Repl,
+}
+
+impl Page {
+    fn name(&self) -> &str {
+        match self {
+            Page::Metro => "METRO",
+            Page::Repl => "REPL",
+        }
+    }
+
+    fn next(&self) -> Self {
+        match self {
+            Page::Metro => Page::Repl,
+            Page::Repl => Page::Metro,
+        }
+    }
+
+    fn prev(&self) -> Self {
+        match self {
+            Page::Metro => Page::Repl,
+            Page::Repl => Page::Metro,
+        }
+    }
+}
+
+struct App {
+    current_page: Page,
+    input: String,
+    cursor_position: usize,
+    history: Vec<String>,
+    history_index: Option<usize>,
+    output: Vec<String>,
+    metro_state: Arc<Mutex<MetroState>>,
+    metro_tx: Sender<MetroCommand>,
+}
+
+impl App {
+    fn new(metro_tx: Sender<MetroCommand>, metro_state: Arc<Mutex<MetroState>>) -> Self {
+        Self {
+            current_page: Page::Metro,
+            input: String::new(),
+            cursor_position: 0,
+            history: Vec::new(),
+            history_index: None,
+            output: Vec::new(),
+            metro_state,
+            metro_tx,
+        }
+    }
+
+    fn next_page(&mut self) {
+        self.current_page = self.current_page.next();
+    }
+
+    fn prev_page(&mut self) {
+        self.current_page = self.current_page.prev();
+    }
+
+    fn add_output(&mut self, msg: String) {
+        self.output.push(msg);
+        if self.output.len() > 100 {
+            self.output.remove(0);
+        }
+    }
+
+    fn execute_command(&mut self) {
+        let cmd = self.input.trim().to_string();
+        if cmd.is_empty() {
+            return;
+        }
+
+        self.history.push(cmd.clone());
+        self.history_index = None;
+        self.input.clear();
+        self.cursor_position = 0;
+
+        let mut metro_interval = {
+            let state = self.metro_state.lock().unwrap();
+            state.interval_ms
+        };
+
+        let mut output_messages = Vec::new();
+        if let Err(e) = process_command(&self.metro_tx, &mut metro_interval, &cmd, |msg| {
+            output_messages.push(msg);
+        }) {
+            output_messages.push(format!("Error: {}", e));
+        }
+
+        for msg in output_messages {
+            self.add_output(msg);
+        }
+
+        let mut state = self.metro_state.lock().unwrap();
+        state.interval_ms = metro_interval;
+        if let Some(script_prefix) = cmd.strip_prefix("M: ").or_else(|| cmd.strip_prefix("m: ")) {
+            state.script = script_prefix.trim().to_string();
+        }
+        if cmd.to_uppercase().starts_with("M.ACT") {
+            if let Some(parts) = cmd.split_whitespace().nth(1) {
+                if let Ok(val) = parts.parse::<i32>() {
+                    state.active = val != 0;
+                }
+            }
+        }
+    }
+
+    fn insert_char(&mut self, c: char) {
+        self.input.insert(self.cursor_position, c);
+        self.cursor_position += 1;
+    }
+
+    fn delete_char(&mut self) {
+        if self.cursor_position > 0 {
+            self.input.remove(self.cursor_position - 1);
+            self.cursor_position -= 1;
+        }
+    }
+
+    fn move_cursor_left(&mut self) {
+        if self.cursor_position > 0 {
+            self.cursor_position -= 1;
+        }
+    }
+
+    fn move_cursor_right(&mut self) {
+        if self.cursor_position < self.input.len() {
+            self.cursor_position += 1;
+        }
+    }
+
+    fn history_prev(&mut self) {
+        if self.history.is_empty() {
+            return;
+        }
+        let idx = match self.history_index {
+            None => self.history.len() - 1,
+            Some(i) if i > 0 => i - 1,
+            Some(i) => i,
+        };
+        self.history_index = Some(idx);
+        self.input = self.history[idx].clone();
+        self.cursor_position = self.input.len();
+    }
+
+    fn history_next(&mut self) {
+        match self.history_index {
+            None => {}
+            Some(i) if i < self.history.len() - 1 => {
+                self.history_index = Some(i + 1);
+                self.input = self.history[i + 1].clone();
+                self.cursor_position = self.input.len();
+            }
+            Some(_) => {
+                self.history_index = None;
+                self.input.clear();
+                self.cursor_position = 0;
+            }
+        }
+    }
+}
+
 fn precise_sleep(duration: Duration) {
     let start = Instant::now();
     let spin_threshold = Duration::from_micros(100);
@@ -36,16 +231,9 @@ fn precise_sleep(duration: Duration) {
     while start.elapsed() < duration {
         std::hint::spin_loop();
     }
-
-    let actual = start.elapsed();
-    if (actual.as_micros() as i64 - duration.as_micros() as i64).abs() > 1000 {
-        println!("[SLEEP] target: {}μs | actual: {}μs | error: {}μs",
-            duration.as_micros(), actual.as_micros(),
-            actual.as_micros() as i64 - duration.as_micros() as i64);
-    }
 }
 
-fn metro_thread(rx: mpsc::Receiver<MetroCommand>) {
+fn metro_thread(rx: mpsc::Receiver<MetroCommand>, _state: Arc<Mutex<MetroState>>) {
     let socket = match UdpSocket::bind("0.0.0.0:0") {
         Ok(s) => s,
         Err(e) => {
@@ -62,15 +250,11 @@ fn metro_thread(rx: mpsc::Receiver<MetroCommand>) {
     let mut interval_ms: u64 = 500;
     let mut active = false;
     let mut script: Vec<ScriptCommand> = Vec::new();
-    let mut last_tick: Option<Instant> = None;
     let mut next_tick = Instant::now();
-    let mut tick_count: u64 = 0;
 
     loop {
-        let mut command_count = 0;
         let mut interval_changed = false;
         while let Ok(cmd) = rx.try_recv() {
-            command_count += 1;
             match cmd {
                 MetroCommand::SetInterval(ms) => {
                     interval_ms = ms;
@@ -115,10 +299,6 @@ fn metro_thread(rx: mpsc::Receiver<MetroCommand>) {
             }
         }
 
-        if command_count > 0 {
-            println!("[METRO] processing {} command(s)", command_count);
-        }
-
         if interval_changed {
             next_tick = Instant::now();
         }
@@ -154,82 +334,23 @@ fn metro_thread(rx: mpsc::Receiver<MetroCommand>) {
                 let sleep_duration = next_tick - now;
                 precise_sleep(sleep_duration);
             } else {
-                println!("[METRO] WARNING: running behind by {}ms",
-                    (now - next_tick).as_millis());
                 next_tick = now;
             }
-
-            tick_count += 1;
-            let actual_time = Instant::now();
-            if let Some(last) = last_tick {
-                let actual_interval = actual_time.duration_since(last);
-                let drift_ms = actual_interval.as_millis() as i64 - interval_ms as i64;
-                println!("[METRO] tick {} | target: {}ms | actual: {}ms | drift: {:+}ms",
-                    tick_count, interval_ms, actual_interval.as_millis(), drift_ms);
-            } else {
-                println!("[METRO] tick {} | target: {}ms", tick_count, interval_ms);
-            }
-            last_tick = Some(actual_time);
         } else {
             thread::sleep(Duration::from_millis(10));
         }
     }
 }
 
-fn print_help() {
-    println!("monokit - Teletype-style scripting for complex oscillator drum voice");
-    println!();
-    println!("Commands:");
-    println!("  TR              - Send trigger to /monokit/trigger");
-    println!("  VOL <0.0-1.0>   - Set volume via /monokit/volume");
-    println!("  M               - Show current metro interval");
-    println!("  M <ms>          - Set metro interval in milliseconds");
-    println!("  M.BPM <bpm>     - Set metro interval as BPM");
-    println!("  M.ACT <0|1>     - Activate/deactivate metro (0=off, 1=on)");
-    println!("  M: <script>     - Set M script (commands to run on each tick)");
-    println!();
-    println!("HD2 Parameters:");
-    println!("  PF <hz>         - Primary frequency (20-20000)");
-    println!("  PW <0-2>        - Primary waveform (0=sin, 1=tri, 2=saw)");
-    println!("  MF <hz>         - Mod frequency (20-20000)");
-    println!("  MW <0-2>        - Mod waveform (0=sin, 1=tri, 2=saw)");
-    println!("  DC <0-16383>    - Discontinuity amount (envelope/mod bus)");
-    println!("  DM <0-2>        - Discontinuity mode (0=fold, 1=tanh, 2=softclip)");
-    println!("  DD <ms>         - Discontinuity decay (1-10000ms)");
-    println!("  TK <0-16383>    - Tracking amount (envelope/mod bus)");
-    println!("  MB <0-16383>    - Mod bus amount (separate from FM)");
-    println!("  MP <0|1>        - Mod bus -> primary freq");
-    println!("  MD <0|1>        - Mod bus -> discontinuity");
-    println!("  MT <0|1>        - Mod bus -> tracking");
-    println!("  MA <0|1>        - Mod bus -> amplitude");
-    println!("  FM <0-16383>    - FM synthesis depth (mod->primary PM)");
-    println!("  AD <ms>         - Amp decay (1-10000ms)");
-    println!("  PD <ms>         - Pitch decay (1-10000ms)");
-    println!("  FD <ms>         - FM decay (1-10000ms)");
-    println!("  PA <multiplier> - Pitch env amount (0-16)");
-    println!("  MX <0-16383>    - Mix amount (mod osc in output)");
-    println!("  MM <0|1>        - Mod bus -> mix");
-    println!("  ME <0|1>        - Apply envelope to mix");
-    println!();
-    println!("Envelope Amounts:");
-    println!("  FA <0-16383>    - FM envelope amount");
-    println!("  DA <0-16383>    - DC envelope amount");
-    println!("  Note: Envelopes offset base params: output = base + (env * amount)");
-    println!();
-    println!("  RST             - Reset all parameters to defaults");
-    println!();
-    println!("  help            - Show this help");
-    println!("  exit, quit      - Exit the REPL");
-    println!();
-    println!("Press Ctrl+C or Ctrl+D to exit");
-    println!();
-}
-
-fn process_command(
+fn process_command<F>(
     metro_tx: &Sender<MetroCommand>,
     metro_interval: &mut u64,
     input: &str,
-) -> Result<()> {
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
     let trimmed = input.trim();
 
     if trimmed.is_empty() {
@@ -247,7 +368,7 @@ fn process_command(
                 continue;
             }
             if let Err(e) = validate_script_command(cmd) {
-                println!("Error: Invalid command in script: {}", e);
+                output(format!("Error: Invalid command in script: {}", e));
                 return Ok(());
             }
 
@@ -271,7 +392,7 @@ fn process_command(
                 } else if let Ok(float_val) = value_str.parse::<f32>() {
                     OscType::Float(float_val)
                 } else {
-                    println!("Error: Cannot parse value for {}", command);
+                    output(format!("Error: Cannot parse value for {}", command));
                     return Ok(());
                 };
 
@@ -282,7 +403,7 @@ fn process_command(
         metro_tx
             .send(MetroCommand::SetScript(script_commands))
             .context("Failed to send script to metro thread")?;
-        println!("Set M script: {}", script);
+        output(format!("Set M script: {}", script));
         return Ok(());
     }
 
@@ -294,52 +415,52 @@ fn process_command(
             metro_tx
                 .send(MetroCommand::SendTrigger)
                 .context("Failed to send trigger to metro thread")?;
-            println!("Sent trigger");
+            output("Sent trigger".to_string());
         }
         "VOL" => {
             if parts.len() < 2 {
-                println!("Error: VOL requires a value (0.0-1.0)");
+                output("Error: VOL requires a value (0.0-1.0)".to_string());
                 return Ok(());
             }
             let value: f32 = parts[1]
                 .parse()
                 .context("Failed to parse volume value as float")?;
             if !(0.0..=1.0).contains(&value) {
-                println!("Warning: Volume should be between 0.0 and 1.0");
+                output("Warning: Volume should be between 0.0 and 1.0".to_string());
             }
             metro_tx
                 .send(MetroCommand::SendVolume(value))
                 .context("Failed to send volume to metro thread")?;
-            println!("Set volume to {}", value);
+            output(format!("Set volume to {}", value));
         }
         "M" => {
             if parts.len() == 1 {
-                println!("Metro interval: {}ms", metro_interval);
+                output(format!("Metro interval: {}ms", metro_interval));
             } else {
                 let value: u64 = parts[1]
                     .parse()
                     .context("Failed to parse interval as milliseconds")?;
                 if value == 0 {
-                    println!("Error: Interval must be greater than 0");
+                    output("Error: Interval must be greater than 0".to_string());
                     return Ok(());
                 }
                 metro_tx
                     .send(MetroCommand::SetInterval(value))
                     .context("Failed to send interval to metro thread")?;
                 *metro_interval = value;
-                println!("Set metro interval to {}ms", value);
+                output(format!("Set metro interval to {}ms", value));
             }
         }
         "M.BPM" => {
             if parts.len() < 2 {
-                println!("Error: M.BPM requires a BPM value");
+                output("Error: M.BPM requires a BPM value".to_string());
                 return Ok(());
             }
             let bpm: f32 = parts[1]
                 .parse()
                 .context("Failed to parse BPM value as number")?;
             if bpm <= 0.0 {
-                println!("Error: BPM must be greater than 0");
+                output("Error: BPM must be greater than 0".to_string());
                 return Ok(());
             }
             let interval_ms = (60000.0 / bpm) as u64;
@@ -347,422 +468,422 @@ fn process_command(
                 .send(MetroCommand::SetInterval(interval_ms))
                 .context("Failed to send interval to metro thread")?;
             *metro_interval = interval_ms;
-            println!("Set metro to {} BPM ({}ms)", bpm, interval_ms);
+            output(format!("Set metro to {} BPM ({}ms)", bpm, interval_ms));
         }
         "M.ACT" => {
             if parts.len() < 2 {
-                println!("Error: M.ACT requires 0 or 1");
+                output("Error: M.ACT requires 0 or 1".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse M.ACT value")?;
             if !(0..=1).contains(&value) {
-                println!("Error: M.ACT value must be 0 or 1");
+                output("Error: M.ACT value must be 0 or 1".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SetActive(value != 0))
                 .context("Failed to send active state to metro thread")?;
-            println!(
+            output(format!(
                 "Metro {}",
                 if value != 0 {
                     "activated"
                 } else {
                     "deactivated"
                 }
-            );
+            ));
         }
         "PF" => {
             if parts.len() < 2 {
-                println!("Error: PF requires a frequency value (20-20000)");
+                output("Error: PF requires a frequency value (20-20000)".to_string());
                 return Ok(());
             }
             let value: f32 = parts[1]
                 .parse()
                 .context("Failed to parse frequency value")?;
             if !(20.0..=20000.0).contains(&value) {
-                println!("Error: Frequency must be between 20 and 20000 Hz");
+                output("Error: Frequency must be between 20 and 20000 Hz".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("pf".to_string(), OscType::Float(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set primary frequency to {} Hz", value);
+            output(format!("Set primary frequency to {} Hz", value));
         }
         "PW" => {
             if parts.len() < 2 {
-                println!("Error: PW requires a waveform value (0-2)");
+                output("Error: PW requires a waveform value (0-2)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse waveform value")?;
             if !(0..=2).contains(&value) {
-                println!("Error: Waveform must be 0 (sin), 1 (tri), or 2 (saw)");
+                output("Error: Waveform must be 0 (sin), 1 (tri), or 2 (saw)".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("pw".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set primary waveform to {}", value);
+            output(format!("Set primary waveform to {}", value));
         }
         "MF" => {
             if parts.len() < 2 {
-                println!("Error: MF requires a frequency value (20-20000)");
+                output("Error: MF requires a frequency value (20-20000)".to_string());
                 return Ok(());
             }
             let value: f32 = parts[1]
                 .parse()
                 .context("Failed to parse frequency value")?;
             if !(20.0..=20000.0).contains(&value) {
-                println!("Error: Frequency must be between 20 and 20000 Hz");
+                output("Error: Frequency must be between 20 and 20000 Hz".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("mf".to_string(), OscType::Float(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set mod frequency to {} Hz", value);
+            output(format!("Set mod frequency to {} Hz", value));
         }
         "MW" => {
             if parts.len() < 2 {
-                println!("Error: MW requires a waveform value (0-2)");
+                output("Error: MW requires a waveform value (0-2)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse waveform value")?;
             if !(0..=2).contains(&value) {
-                println!("Error: Waveform must be 0 (sin), 1 (tri), or 2 (saw)");
+                output("Error: Waveform must be 0 (sin), 1 (tri), or 2 (saw)".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("mw".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set mod waveform to {}", value);
+            output(format!("Set mod waveform to {}", value));
         }
         "DC" => {
             if parts.len() < 2 {
-                println!("Error: DC requires a value (0-16383)");
+                output("Error: DC requires a value (0-16383)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse discontinuity amount")?;
             if !(0..=16383).contains(&value) {
-                println!("Error: Discontinuity amount must be between 0 and 16383");
+                output("Error: Discontinuity amount must be between 0 and 16383".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("dc".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set discontinuity amount to {}", value);
+            output(format!("Set discontinuity amount to {}", value));
         }
         "DM" => {
             if parts.len() < 2 {
-                println!("Error: DM requires a mode value (0-2)");
+                output("Error: DM requires a mode value (0-2)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse discontinuity mode")?;
             if !(0..=2).contains(&value) {
-                println!("Error: Mode must be 0 (fold), 1 (tanh), or 2 (softclip)");
+                output("Error: Mode must be 0 (fold), 1 (tanh), or 2 (softclip)".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("dm".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set discontinuity mode to {}", value);
+            output(format!("Set discontinuity mode to {}", value));
         }
         "TK" => {
             if parts.len() < 2 {
-                println!("Error: TK requires a value (0-16383)");
+                output("Error: TK requires a value (0-16383)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse tracking amount")?;
             if !(0..=16383).contains(&value) {
-                println!("Error: Tracking amount must be between 0 and 16383");
+                output("Error: Tracking amount must be between 0 and 16383".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("tk".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set tracking amount to {}", value);
+            output(format!("Set tracking amount to {}", value));
         }
         "MB" => {
             if parts.len() < 2 {
-                println!("Error: MB requires a value (0-16383)");
+                output("Error: MB requires a value (0-16383)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse mod bus amount")?;
             if !(0..=16383).contains(&value) {
-                println!("Error: Mod bus amount must be between 0 and 16383");
+                output("Error: Mod bus amount must be between 0 and 16383".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("mb".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set mod bus amount to {}", value);
+            output(format!("Set mod bus amount to {}", value));
         }
         "MP" => {
             if parts.len() < 2 {
-                println!("Error: MP requires a value (0 or 1)");
+                output("Error: MP requires a value (0 or 1)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse mod -> primary value")?;
             if !(0..=1).contains(&value) {
-                println!("Error: Value must be 0 or 1");
+                output("Error: Value must be 0 or 1".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("mp".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set mod -> primary freq to {}", value);
+            output(format!("Set mod -> primary freq to {}", value));
         }
         "MD" => {
             if parts.len() < 2 {
-                println!("Error: MD requires a value (0 or 1)");
+                output("Error: MD requires a value (0 or 1)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse mod -> discontinuity value")?;
             if !(0..=1).contains(&value) {
-                println!("Error: Value must be 0 or 1");
+                output("Error: Value must be 0 or 1".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("md".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set mod -> discontinuity to {}", value);
+            output(format!("Set mod -> discontinuity to {}", value));
         }
         "MT" => {
             if parts.len() < 2 {
-                println!("Error: MT requires a value (0 or 1)");
+                output("Error: MT requires a value (0 or 1)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse mod -> tracking value")?;
             if !(0..=1).contains(&value) {
-                println!("Error: Value must be 0 or 1");
+                output("Error: Value must be 0 or 1".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("mt".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set mod -> tracking to {}", value);
+            output(format!("Set mod -> tracking to {}", value));
         }
         "MA" => {
             if parts.len() < 2 {
-                println!("Error: MA requires a value (0 or 1)");
+                output("Error: MA requires a value (0 or 1)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse mod -> amplitude value")?;
             if !(0..=1).contains(&value) {
-                println!("Error: Value must be 0 or 1");
+                output("Error: Value must be 0 or 1".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("ma".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set mod -> amplitude to {}", value);
+            output(format!("Set mod -> amplitude to {}", value));
         }
         "FM" => {
             if parts.len() < 2 {
-                println!("Error: FM requires a value (0-16383)");
+                output("Error: FM requires a value (0-16383)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse FM index")?;
             if !(0..=16383).contains(&value) {
-                println!("Error: FM index must be between 0 and 16383");
+                output("Error: FM index must be between 0 and 16383".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("fm".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set FM index to {}", value);
+            output(format!("Set FM index to {}", value));
         }
         "AD" => {
             if parts.len() < 2 {
-                println!("Error: AD requires a time value (1-10000 ms)");
+                output("Error: AD requires a time value (1-10000 ms)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse amp decay time")?;
             if !(1..=10000).contains(&value) {
-                println!("Error: Amp decay must be between 1 and 10000 ms");
+                output("Error: Amp decay must be between 1 and 10000 ms".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("ad".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set amp decay to {} ms", value);
+            output(format!("Set amp decay to {} ms", value));
         }
         "PD" => {
             if parts.len() < 2 {
-                println!("Error: PD requires a time value (1-10000 ms)");
+                output("Error: PD requires a time value (1-10000 ms)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse pitch decay time")?;
             if !(1..=10000).contains(&value) {
-                println!("Error: Pitch decay must be between 1 and 10000 ms");
+                output("Error: Pitch decay must be between 1 and 10000 ms".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("pd".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set pitch decay to {} ms", value);
+            output(format!("Set pitch decay to {} ms", value));
         }
         "FD" => {
             if parts.len() < 2 {
-                println!("Error: FD requires a time value (1-10000 ms)");
+                output("Error: FD requires a time value (1-10000 ms)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse FM decay time")?;
             if !(1..=10000).contains(&value) {
-                println!("Error: FM decay must be between 1 and 10000 ms");
+                output("Error: FM decay must be between 1 and 10000 ms".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("fd".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set FM decay to {} ms", value);
+            output(format!("Set FM decay to {} ms", value));
         }
         "PA" => {
             if parts.len() < 2 {
-                println!("Error: PA requires a multiplier value (0-16)");
+                output("Error: PA requires a multiplier value (0-16)".to_string());
                 return Ok(());
             }
             let value: f32 = parts[1]
                 .parse()
                 .context("Failed to parse pitch env amount")?;
             if !(0.0..=16.0).contains(&value) {
-                println!("Error: Pitch env amount must be between 0 and 16");
+                output("Error: Pitch env amount must be between 0 and 16".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("pa".to_string(), OscType::Float(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set pitch env amount to {}", value);
+            output(format!("Set pitch env amount to {}", value));
         }
         "DD" => {
             if parts.len() < 2 {
-                println!("Error: DD requires a time value (1-10000 ms)");
+                output("Error: DD requires a time value (1-10000 ms)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse discontinuity decay time")?;
             if !(1..=10000).contains(&value) {
-                println!("Error: Discontinuity decay must be between 1 and 10000 ms");
+                output("Error: Discontinuity decay must be between 1 and 10000 ms".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("dd".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set discontinuity decay to {} ms", value);
+            output(format!("Set discontinuity decay to {} ms", value));
         }
         "MX" => {
             if parts.len() < 2 {
-                println!("Error: MX requires a value (0-16383)");
+                output("Error: MX requires a value (0-16383)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse mix amount")?;
             if !(0..=16383).contains(&value) {
-                println!("Error: Mix amount must be between 0 and 16383");
+                output("Error: Mix amount must be between 0 and 16383".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("mx".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set mix amount to {}", value);
+            output(format!("Set mix amount to {}", value));
         }
         "MM" => {
             if parts.len() < 2 {
-                println!("Error: MM requires a value (0 or 1)");
+                output("Error: MM requires a value (0 or 1)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse mod bus -> mix value")?;
             if !(0..=1).contains(&value) {
-                println!("Error: Value must be 0 or 1");
+                output("Error: Value must be 0 or 1".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("mm".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set mod bus -> mix to {}", value);
+            output(format!("Set mod bus -> mix to {}", value));
         }
         "ME" => {
             if parts.len() < 2 {
-                println!("Error: ME requires a value (0 or 1)");
+                output("Error: ME requires a value (0 or 1)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse envelope -> mix value")?;
             if !(0..=1).contains(&value) {
-                println!("Error: Value must be 0 or 1");
+                output("Error: Value must be 0 or 1".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("me".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set envelope -> mix to {}", value);
+            output(format!("Set envelope -> mix to {}", value));
         }
         "FA" => {
             if parts.len() < 2 {
-                println!("Error: FA requires a value (0-16383)");
+                output("Error: FA requires a value (0-16383)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse FM envelope amount")?;
             if !(0..=16383).contains(&value) {
-                println!("Error: FM envelope amount must be between 0 and 16383");
+                output("Error: FM envelope amount must be between 0 and 16383".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("fa".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set FM envelope amount to {}", value);
+            output(format!("Set FM envelope amount to {}", value));
         }
         "DA" => {
             if parts.len() < 2 {
-                println!("Error: DA requires a value (0-16383)");
+                output("Error: DA requires a value (0-16383)".to_string());
                 return Ok(());
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse DC envelope amount")?;
             if !(0..=16383).contains(&value) {
-                println!("Error: DC envelope amount must be between 0 and 16383");
+                output("Error: DC envelope amount must be between 0 and 16383".to_string());
                 return Ok(());
             }
             metro_tx
                 .send(MetroCommand::SendParam("da".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            println!("Set DC envelope amount to {}", value);
+            output(format!("Set DC envelope amount to {}", value));
         }
         "RST" => {
             metro_tx.send(MetroCommand::SendParam("pf".to_string(), OscType::Float(200.0)))?;
@@ -789,17 +910,53 @@ fn process_command(
             metro_tx.send(MetroCommand::SendParam("fa".to_string(), OscType::Int(0)))?;
             metro_tx.send(MetroCommand::SendParam("da".to_string(), OscType::Int(0)))?;
             metro_tx.send(MetroCommand::SendVolume(1.0))?;
-            println!("Reset to defaults");
+            output("Reset to defaults".to_string());
         }
         "HELP" => {
-            print_help();
-        }
-        "EXIT" | "QUIT" => {
-            println!("Goodbye!");
-            std::process::exit(0);
+            output("=== MONOKIT COMMANDS ===".to_string());
+            output("".to_string());
+            output("TRIGGER: TR".to_string());
+            output("VOLUME:  VOL <0.0-1.0>".to_string());
+            output("RESET:   RST".to_string());
+            output("".to_string());
+            output("-- Oscillators --".to_string());
+            output("PF <hz>     Primary freq (20-20000)".to_string());
+            output("PW <0-2>    Primary wave (sin/tri/saw)".to_string());
+            output("MF <hz>     Mod freq".to_string());
+            output("MW <0-2>    Mod wave".to_string());
+            output("".to_string());
+            output("-- FM & Discontinuity --".to_string());
+            output("FM <0-16383>  FM index".to_string());
+            output("FA <0-16383>  FM env amount".to_string());
+            output("FD <ms>       FM env decay".to_string());
+            output("DC <0-16383>  Discontinuity".to_string());
+            output("DA <0-16383>  DC env amount".to_string());
+            output("DD <ms>       DC env decay".to_string());
+            output("DM <0-2>      DC mode (fold/tanh/soft)".to_string());
+            output("".to_string());
+            output("-- Envelopes --".to_string());
+            output("AD <ms>       Amp decay".to_string());
+            output("PD <ms>       Pitch decay".to_string());
+            output("PA <0-16>     Pitch env amount".to_string());
+            output("".to_string());
+            output("-- Mod Bus --".to_string());
+            output("MB <0-16383>  Mod bus amount".to_string());
+            output("MP/MD/MT/MA <0|1>  Routing toggles".to_string());
+            output("TK <0-16383>  Tracking".to_string());
+            output("".to_string());
+            output("-- Mix --".to_string());
+            output("MX <0-16383>  Mix amount".to_string());
+            output("MM/ME <0|1>   Mix routing".to_string());
+            output("".to_string());
+            output("-- Metro --".to_string());
+            output("M             Show interval".to_string());
+            output("M <ms>        Set interval".to_string());
+            output("M.BPM <bpm>   Set BPM".to_string());
+            output("M.ACT <0|1>   Start/stop".to_string());
+            output("M: <script>   Set M script".to_string());
         }
         _ => {
-            println!("Unknown command: {}. Type 'help' for available commands.", cmd);
+            output(format!("Unknown command: {}", cmd));
         }
     }
 
@@ -899,41 +1056,214 @@ fn validate_script_command(cmd: &str) -> Result<()> {
     }
 }
 
-fn main() -> Result<()> {
-    let (metro_tx, metro_rx) = mpsc::channel();
-    thread::spawn(move || {
-        metro_thread(metro_rx);
-    });
+fn ui(f: &mut Frame, app: &App) {
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length(3),
+            Constraint::Min(0),
+            Constraint::Length(3),
+        ])
+        .split(f.area());
 
-    let mut metro_interval: u64 = 500;
+    let header = render_header(app);
+    f.render_widget(header, chunks[0]);
 
-    print_help();
+    match app.current_page {
+        Page::Metro => {
+            let content = render_metro_page(app);
+            f.render_widget(content, chunks[1]);
+        }
+        Page::Repl => {
+            let content = render_repl_page(app, chunks[1].height as usize);
+            f.render_widget(content, chunks[1]);
+        }
+    }
 
-    let mut rl = DefaultEditor::new().context("Failed to create readline editor")?;
+    let footer = render_footer(app);
+    f.render_widget(footer, chunks[2]);
+}
 
+fn render_header(app: &App) -> Paragraph<'static> {
+    let pages = vec![Page::Metro, Page::Repl];
+    let mut spans = vec![Span::raw("  ")];
+
+    for page in pages {
+        if page == app.current_page {
+            spans.push(Span::styled(
+                format!("[{}]", page.name()),
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD),
+            ));
+        } else {
+            spans.push(Span::styled(
+                format!(" {} ", page.name()),
+                Style::default().fg(Color::DarkGray),
+            ));
+        }
+        spans.push(Span::raw(" "));
+    }
+
+    Paragraph::new(Line::from(spans))
+        .block(Block::default().borders(Borders::ALL).title(" MONOKIT "))
+}
+
+fn render_metro_page(app: &App) -> Paragraph<'static> {
+    let state = app.metro_state.lock().unwrap();
+    let bpm = 60000.0 / state.interval_ms as f32;
+    let status = if state.active { "ON" } else { "OFF" };
+    let status_color = if state.active {
+        Color::Green
+    } else {
+        Color::Red
+    };
+
+    let mut text = Vec::new();
+    text.push(Line::from(vec![
+        Span::styled("  BPM: ", Style::default().fg(Color::Cyan)),
+        Span::raw(format!("{:.1}", bpm)),
+        Span::raw("  "),
+        Span::styled("Interval: ", Style::default().fg(Color::Cyan)),
+        Span::raw(format!("{}ms", state.interval_ms)),
+    ]));
+    text.push(Line::from(""));
+    text.push(Line::from(vec![
+        Span::styled("  Status: ", Style::default().fg(Color::Cyan)),
+        Span::styled(status, Style::default().fg(status_color).add_modifier(Modifier::BOLD)),
+    ]));
+    text.push(Line::from(""));
+    text.push(Line::from(vec![
+        Span::styled("  M Script: ", Style::default().fg(Color::Cyan)),
+    ]));
+    if state.script.is_empty() {
+        text.push(Line::from(Span::styled(
+            "    (none)",
+            Style::default().fg(Color::DarkGray),
+        )));
+    } else {
+        text.push(Line::from(format!("    {}", state.script)));
+    }
+
+    Paragraph::new(text)
+        .block(Block::default().borders(Borders::ALL).title(" Metro Status "))
+        .wrap(Wrap { trim: false })
+}
+
+fn render_repl_page(app: &App, height: usize) -> Paragraph<'static> {
+    // Account for borders (2 lines)
+    let visible_lines = if height > 2 { height - 2 } else { 1 };
+
+    let start_idx = if app.output.len() > visible_lines {
+        app.output.len() - visible_lines
+    } else {
+        0
+    };
+
+    let text: Vec<Line> = app.output[start_idx..]
+        .iter()
+        .map(|line| Line::from(format!("  {}", line)))
+        .collect();
+
+    Paragraph::new(text)
+        .block(Block::default().borders(Borders::ALL).title(" Output "))
+}
+
+fn render_footer(app: &App) -> Paragraph<'static> {
+    let input_display = format!("> {}", app.input);
+
+    let footer_text = vec![
+        Line::from(input_display),
+        Line::from(Span::styled(
+            "[ ] navigate pages | q quit",
+            Style::default().fg(Color::DarkGray),
+        )),
+    ];
+
+    Paragraph::new(footer_text).block(Block::default().borders(Borders::ALL))
+}
+
+fn run_app<B: ratatui::backend::Backend>(
+    terminal: &mut Terminal<B>,
+    app: &mut App,
+) -> Result<()> {
     loop {
-        match rl.readline("monokit> ") {
-            Ok(line) => {
-                let _ = rl.add_history_entry(line.as_str());
-                if let Err(e) = process_command(&metro_tx, &mut metro_interval, &line) {
-                    println!("Error: {}", e);
+        terminal.draw(|f| ui(f, app))?;
+
+        if event::poll(Duration::from_millis(100))? {
+            if let Event::Key(key) = event::read()? {
+                match key.code {
+                    KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        return Ok(());
+                    }
+                    KeyCode::Char('q') => {
+                        return Ok(());
+                    }
+                    KeyCode::Char('[') => {
+                        app.prev_page();
+                    }
+                    KeyCode::Char(']') => {
+                        app.next_page();
+                    }
+                    KeyCode::Enter => {
+                        app.execute_command();
+                    }
+                    KeyCode::Char(c) => {
+                        app.insert_char(c);
+                    }
+                    KeyCode::Backspace => {
+                        app.delete_char();
+                    }
+                    KeyCode::Left => {
+                        app.move_cursor_left();
+                    }
+                    KeyCode::Right => {
+                        app.move_cursor_right();
+                    }
+                    KeyCode::Up => {
+                        app.history_prev();
+                    }
+                    KeyCode::Down => {
+                        app.history_next();
+                    }
+                    _ => {}
                 }
             }
-            Err(ReadlineError::Interrupted) => {
-                println!("^C");
-                println!("Goodbye!");
-                break;
-            }
-            Err(ReadlineError::Eof) => {
-                println!("^D");
-                println!("Goodbye!");
-                break;
-            }
-            Err(err) => {
-                println!("Error: {:?}", err);
-                break;
-            }
         }
+    }
+}
+
+fn main() -> Result<()> {
+    let metro_state = Arc::new(Mutex::new(MetroState::default()));
+    let (metro_tx, metro_rx) = mpsc::channel();
+
+    let metro_state_clone = metro_state.clone();
+    thread::spawn(move || {
+        metro_thread(metro_rx, metro_state_clone);
+    });
+
+    enable_raw_mode()?;
+    let mut stdout = io::stdout();
+    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    let backend = CrosstermBackend::new(stdout);
+    let mut terminal = Terminal::new(backend)?;
+
+    let mut app = App::new(metro_tx, metro_state);
+    app.add_output("MONOKIT - Teletype-style scripting for complex oscillator".to_string());
+    app.add_output("Type commands and press Enter. Use [ ] to navigate pages.".to_string());
+
+    let res = run_app(&mut terminal, &mut app);
+
+    disable_raw_mode()?;
+    execute!(
+        terminal.backend_mut(),
+        LeaveAlternateScreen,
+        DisableMouseCapture
+    )?;
+    terminal.show_cursor()?;
+
+    if let Err(err) = res {
+        eprintln!("Error: {:?}", err);
     }
 
     Ok(())

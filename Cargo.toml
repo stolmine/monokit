@@ -8,8 +8,9 @@ description = "Teletype-style scripting for a complex oscillator drum voice"
 # OSC protocol
 rosc = "0.10"
 
-# REPL / readline
-rustyline = "13"
+# TUI
+ratatui = "0.28"
+crossterm = "0.28"
 
 # Parser
 nom = "7"

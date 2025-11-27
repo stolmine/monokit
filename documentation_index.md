@@ -9,27 +9,28 @@
 
 ### Configuration
 
-- **Cargo.toml** - Rust project manifest with dependencies (rosc, rustyline, nom, tokio, anyhow, thiserror, serde)
+- **Cargo.toml** - Rust project manifest with dependencies (rosc, rustyline, nom, anyhow, thiserror, serde)
 - **Cargo.lock** - Dependency lock file
 
 ### Source Code
 
 - **src/main.rs** - Rust CLI application
-  - REPL interface with rustyline
-  - Async tokio runtime with parking_lot::Mutex
-  - OSC client sending to SuperCollider
-  - Background metro task for scheduled script execution
+  - REPL interface with rustyline (synchronous)
+  - OSC client sending to SuperCollider (127.0.0.1:57120)
   - Command processor (TR, VOL, M, M.BPM, M.ACT, M:, help, exit/quit)
-  - M script validation before setting
-  - UDP socket communication on port 57120
+  - M commands send OSC to SC server for execution
+  - M script validation before sending to server
+  - UDP socket communication
 
 - **sc/monokit_server.scd** - SuperCollider server
   - `\monokit` SynthDef: HD2-style dual oscillator with FM, discontinuity, envelopes
+  - Sample-accurate Routine-based metro for scheduled script execution
   - OSC responders:
     - `/monokit/trigger` - Gate trigger (no args)
-    - `/monokit/volume` - Volume control (float arg)
     - `/monokit/param` - Generic parameter setter (string name, float/int value)
-  - Persistent voice architecture with per-trigger gate pulses
+    - `/monokit/metro <tempo_ms>` - Sets metro interval (sample-accurate)
+    - `/monokit/metro/act <0|1>` - Activates/deactivates metro
+    - `/monokit/metro/script <commands>` - Sets script to execute on metro tick
 
 ### Build Artifacts
 
@@ -127,8 +128,6 @@ All parameter updates are validated in Rust CLI before sending and applied immed
 ### Rust
 - rosc 0.10 - OSC protocol
 - rustyline 13 - REPL/readline
-- tokio 1 - Async runtime for metro task
-- parking_lot 0.12 - Mutex for metro state
 - nom 7 - Parser (future use)
 - anyhow 1 - Error handling
 - thiserror 1 - Error types

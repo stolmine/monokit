@@ -35,22 +35,25 @@ The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity
   - **Envelopes:** ad (amp decay ms), pd (pitch decay ms), fd (FM decay ms), dd (disc decay ms), pa (pitch env amount 0-16)
   - **Mix Controls:** mx (mix to disc input 0-16383), mm (mix modulation amount 0-16383), me (mix modulation enable 0-1)
   - **Volume:** volume (0.0-1.0)
+- Sample-accurate Routine-based metro for scheduled script execution
 - OSC responders:
   - `/monokit/trigger` - triggers gate for note playback
   - `/monokit/param <name> <value>` - sets any parameter by name
+  - `/monokit/metro <tempo_ms>` - sets metro interval (sample-accurate)
+  - `/monokit/metro/act <0|1>` - activates/deactivates metro
+  - `/monokit/metro/script <commands>` - sets script to execute on each metro tick
 
 **Rust CLI** (`src/main.rs`)
-- REPL interface with rustyline
-- Async tokio runtime with parking_lot::Mutex for metro state
+- REPL interface with rustyline (synchronous, no async runtime)
 - OSC client sending to 127.0.0.1:57120
-- Background metro task for scheduled script execution
 - Commands (Teletype-inspired terse style):
   - **Trigger/Volume:** TR, VOL <0.0-1.0>
   - **Metro:** M, M <ms>, M.BPM <bpm>, M.ACT <0|1>, M: <script>
   - **HD2 Parameters:** PF/MF, PW/MW, DC/DM, DD, TK/MB, MP/MD/MT/MA, FM, AD/PD/FD/DD, PA
   - **Mix Controls:** MX, MM, ME
   - **System:** RST (reset to defaults), help, exit, quit
-- M script validation prevents invalid command sequences
+- M commands send script/timing to SC server as OSC
+- SC server handles metro execution with sample-accurate Routine-based timing
 - All parameters sent via OSC `/monokit/param` protocol
 
 ### Running the MVP

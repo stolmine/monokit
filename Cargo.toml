@@ -14,15 +14,9 @@ rustyline = "13"
 # Parser
 nom = "7"
 
-# Async runtime for metro
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "sync"] }
-
 # Error handling
 anyhow = "1"
 thiserror = "1"
-
-# Synchronization
-parking_lot = "0.12"
 
 # Serialization for saving state
 serde = { version = "1", features = ["derive"] }

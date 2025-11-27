@@ -18,43 +18,43 @@ Nothing tightly couples a text scripting language with a dedicated complex oscil
 
 ## Current MVP Implementation
 
-**Architecture: SC Backend + Rust CLI Frontend**
+**Architecture: Rust CLI + SC Sound Engine**
 
-The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity, and complex modulation.
+The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity, and complex modulation. Metro and OSC routing managed by CLI; SC server is a stateless sound engine.
 
 ### Components
 
+**Rust CLI** (`src/main.rs`)
+- REPL interface with rustyline (synchronous)
+- OSC client sending to 127.0.0.1:57120
+- Dedicated metro thread with absolute timing (no cumulative drift)
+- All OSC routed through single metro thread (serialized sending)
+- Commands (Teletype-inspired terse style):
+  - **Trigger/Volume:** TR, VOL <0.0-1.0>
+  - **Metro:** M, M <ms>, M.BPM <bpm>, M.ACT <0|1>, M: <script>
+  - **HD2 Parameters:** PF/MF, PW/MW, DC/DM, DD, TK/MB, MP/MD/MT/MA, FM, AD/PD/FD/DD, PA, FA, DA
+  - **Mix Controls:** MX, MM, ME
+  - **System:** RST (reset to defaults), help, exit, quit
+- Envelope amounts: PA (pitch), FA (FM), DA (discontinuity) — added to base parameter via modulation amount
+- M commands execute locally; parameter updates sent via OSC `/monokit/param` protocol
+
 **SuperCollider Server** (`sc/monokit_server.scd`)
 - Runs headless scsynth with persistent HD2-style voice
-- `\monokit` SynthDef: complex oscillator with dual waveform engines, FM, discontinuity, and modulation
-- Full parameter set (20 parameters):
+- `\monokit` SynthDef: complex oscillator with dual waveform engines, FM, discontinuity, modulation
+- Additive envelope model: output = base parameter + env * amount
+- 22 parameters (includes FA, DA envelope amounts):
   - **Oscillators:** pf (primary freq), pw (primary waveform 0-2), mf (mod freq), mw (mod waveform 0-2)
   - **Discontinuity:** dc (amount 0-16383), dm (mode 0-2: fold/tanh/softclip), dd (discontinuity decay 0.001-10s)
   - **Tracking/Modulation:** tk (tracking 0-16383), mb (mod bus 0-16383), mp/md/mt/ma (switches 0-1)
   - **FM:** fm (index 0-16383)
-  - **Envelopes:** ad (amp decay ms), pd (pitch decay ms), fd (FM decay ms), dd (disc decay ms), pa (pitch env amount 0-16)
+  - **Envelopes:** ad (amp decay ms), pd (pitch decay ms), fd (FM decay ms), dd (disc decay ms)
+  - **Envelope Amounts:** pa (pitch 0-16), fa (FM 0-16), da (discontinuity 0-16)
   - **Mix Controls:** mx (mix to disc input 0-16383), mm (mix modulation amount 0-16383), me (mix modulation enable 0-1)
   - **Volume:** volume (0.0-1.0)
-- Sample-accurate Routine-based metro for scheduled script execution
 - OSC responders:
   - `/monokit/trigger` - triggers gate for note playback
   - `/monokit/param <name> <value>` - sets any parameter by name
-  - `/monokit/metro <tempo_ms>` - sets metro interval (sample-accurate)
-  - `/monokit/metro/act <0|1>` - activates/deactivates metro
-  - `/monokit/metro/script <commands>` - sets script to execute on each metro tick
-
-**Rust CLI** (`src/main.rs`)
-- REPL interface with rustyline (synchronous, no async runtime)
-- OSC client sending to 127.0.0.1:57120
-- Commands (Teletype-inspired terse style):
-  - **Trigger/Volume:** TR, VOL <0.0-1.0>
-  - **Metro:** M, M <ms>, M.BPM <bpm>, M.ACT <0|1>, M: <script>
-  - **HD2 Parameters:** PF/MF, PW/MW, DC/DM, DD, TK/MB, MP/MD/MT/MA, FM, AD/PD/FD/DD, PA
-  - **Mix Controls:** MX, MM, ME
-  - **System:** RST (reset to defaults), help, exit, quit
-- M commands send script/timing to SC server as OSC
-- SC server handles metro execution with sample-accurate Routine-based timing
-- All parameters sent via OSC `/monokit/param` protocol
+  - Sound engine only; no metro logic
 
 ### Running the MVP
 
@@ -68,13 +68,13 @@ The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity
    cargo run
    ```
 
-3. Type commands in REPL:
+3. Type commands in REPL (metro runs in dedicated CLI thread):
    ```
-   monokit> TR
-   monokit> VOL 0.5
    monokit> M 500
    monokit> M: TR
    monokit> M.ACT 1
+   monokit> FA 8
+   monokit> DA 4
    ```
 
 ## Reference Tools

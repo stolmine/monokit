@@ -16,21 +16,21 @@
 
 - **src/main.rs** - Rust CLI application
   - REPL interface with rustyline (synchronous)
+  - Dedicated metro thread with absolute timing (no drift)
+  - All OSC routed through metro thread (serialized)
   - OSC client sending to SuperCollider (127.0.0.1:57120)
   - Command processor (TR, VOL, M, M.BPM, M.ACT, M:, help, exit/quit)
-  - M commands send OSC to SC server for execution
-  - M script validation before sending to server
+  - M commands execute locally; parameter updates sent via OSC
+  - M script validation before execution
   - UDP socket communication
 
-- **sc/monokit_server.scd** - SuperCollider server
+- **sc/monokit_server.scd** - SuperCollider sound engine
   - `\monokit` SynthDef: HD2-style dual oscillator with FM, discontinuity, envelopes
-  - Sample-accurate Routine-based metro for scheduled script execution
+  - Additive envelope model: output = base + env * amount
   - OSC responders:
     - `/monokit/trigger` - Gate trigger (no args)
     - `/monokit/param` - Generic parameter setter (string name, float/int value)
-    - `/monokit/metro <tempo_ms>` - Sets metro interval (sample-accurate)
-    - `/monokit/metro/act <0|1>` - Activates/deactivates metro
-    - `/monokit/metro/script <commands>` - Sets script to execute on metro tick
+  - Stateless sound engine (no metro logic)
 
 ### Build Artifacts
 
@@ -41,11 +41,18 @@
 ```
 Rust CLI (src/main.rs)
     |
-    | OSC messages via UDP
-    | 127.0.0.1:57120
+    +-- Metro Thread (absolute timing)
+    |    |
+    |    v OSC messages (serialized)
+    |    127.0.0.1:57120
+    |
+    +-- REPL Thread (user input)
+    |    |
+    |    v OSC messages
+    |    127.0.0.1:57120
     |
     v
-SuperCollider (sc/monokit_server.scd)
+SuperCollider Sound Engine (sc/monokit_server.scd)
     |
     v
 Audio output
@@ -66,7 +73,7 @@ Audio output
 - `M.ACT <0|1>` - Activate (1) or deactivate (0) metro
 - `M: <script>` - Set M script (semicolon-separated commands, validated before setting)
 
-#### HD2 Voice Parameters (20 total)
+#### HD2 Voice Parameters (22 total)
 
 **Primary Oscillator**
 - `PF <hz>` - Primary frequency (20-20000)
@@ -102,7 +109,11 @@ Audio output
 - `PD <ms>` - Pitch decay time
 - `FD <ms>` - FM decay time
 - `DD <ms>` - Discontinuity decay time
-- `PA <0-16>` - Pitch envelope amount (pitch contour depth)
+
+**Envelope Amounts (Additive Model: output = base + env*amount)**
+- `PA <0-16>` - Pitch envelope amount
+- `FA <0-16>` - FM envelope amount
+- `DA <0-16>` - Discontinuity envelope amount
 
 #### System
 - `RST` - Reset all parameters to defaults

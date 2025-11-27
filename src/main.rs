@@ -45,6 +45,26 @@ fn print_help() {
     println!("  M.BPM <bpm>     - Set metro interval as BPM");
     println!("  M.ACT <0|1>     - Activate/deactivate metro (0=off, 1=on)");
     println!("  M: <script>     - Set M script (commands to run on each tick)");
+    println!();
+    println!("HD2 Parameters:");
+    println!("  PF <hz>         - Primary frequency (20-20000)");
+    println!("  PW <0-2>        - Primary waveform (0=sin, 1=tri, 2=saw)");
+    println!("  MF <hz>         - Mod frequency (20-20000)");
+    println!("  MW <0-2>        - Mod waveform (0=sin, 1=tri, 2=saw)");
+    println!("  DC <0-16383>    - Discontinuity amount");
+    println!("  DM <0-2>        - Discontinuity mode (0=fold, 1=tanh, 2=softclip)");
+    println!("  TK <0-16383>    - Tracking amount");
+    println!("  MB <0-16383>    - Mod bus amount");
+    println!("  MP <0|1>        - Mod -> primary freq");
+    println!("  MD <0|1>        - Mod -> discontinuity");
+    println!("  MT <0|1>        - Mod -> tracking");
+    println!("  MA <0|1>        - Mod -> amplitude");
+    println!("  FM <0-16383>    - FM index");
+    println!("  AD <seconds>    - Amp decay (0.001-10)");
+    println!("  PD <seconds>    - Pitch decay (0.001-10)");
+    println!("  FD <seconds>    - FM decay (0.001-10)");
+    println!("  PA <multiplier> - Pitch env amount (0-16)");
+    println!();
     println!("  help            - Show this help");
     println!("  exit, quit      - Exit the REPL");
     println!();
@@ -61,6 +81,14 @@ fn send_osc(socket: &UdpSocket, addr: &str, args: Vec<OscType>) -> Result<()> {
     let buf = encoder::encode(&packet).context("Failed to encode OSC message")?;
     socket.send(&buf).context("Failed to send OSC message")?;
     Ok(())
+}
+
+fn send_param(socket: &UdpSocket, name: &str, value: OscType) -> Result<()> {
+    send_osc(
+        socket,
+        "/monokit/param",
+        vec![OscType::String(name.to_string()), value],
+    )
 }
 
 fn process_command(
@@ -164,6 +192,261 @@ fn process_command(
                 .context("Failed to send metro command")?;
             println!("Metro {}", if active { "activated" } else { "deactivated" });
         }
+        "PF" => {
+            if parts.len() < 2 {
+                println!("Error: PF requires a frequency value (20-20000)");
+                return Ok(());
+            }
+            let value: f32 = parts[1]
+                .parse()
+                .context("Failed to parse frequency value")?;
+            if !(20.0..=20000.0).contains(&value) {
+                println!("Error: Frequency must be between 20 and 20000 Hz");
+                return Ok(());
+            }
+            send_param(socket, "pf", OscType::Float(value))?;
+            println!("Set primary frequency to {} Hz", value);
+        }
+        "PW" => {
+            if parts.len() < 2 {
+                println!("Error: PW requires a waveform value (0-2)");
+                return Ok(());
+            }
+            let value: i32 = parts[1]
+                .parse()
+                .context("Failed to parse waveform value")?;
+            if !(0..=2).contains(&value) {
+                println!("Error: Waveform must be 0 (sin), 1 (tri), or 2 (saw)");
+                return Ok(());
+            }
+            send_param(socket, "pw", OscType::Int(value))?;
+            println!("Set primary waveform to {}", value);
+        }
+        "MF" => {
+            if parts.len() < 2 {
+                println!("Error: MF requires a frequency value (20-20000)");
+                return Ok(());
+            }
+            let value: f32 = parts[1]
+                .parse()
+                .context("Failed to parse frequency value")?;
+            if !(20.0..=20000.0).contains(&value) {
+                println!("Error: Frequency must be between 20 and 20000 Hz");
+                return Ok(());
+            }
+            send_param(socket, "mf", OscType::Float(value))?;
+            println!("Set mod frequency to {} Hz", value);
+        }
+        "MW" => {
+            if parts.len() < 2 {
+                println!("Error: MW requires a waveform value (0-2)");
+                return Ok(());
+            }
+            let value: i32 = parts[1]
+                .parse()
+                .context("Failed to parse waveform value")?;
+            if !(0..=2).contains(&value) {
+                println!("Error: Waveform must be 0 (sin), 1 (tri), or 2 (saw)");
+                return Ok(());
+            }
+            send_param(socket, "mw", OscType::Int(value))?;
+            println!("Set mod waveform to {}", value);
+        }
+        "DC" => {
+            if parts.len() < 2 {
+                println!("Error: DC requires a value (0-16383)");
+                return Ok(());
+            }
+            let value: i32 = parts[1]
+                .parse()
+                .context("Failed to parse discontinuity amount")?;
+            if !(0..=16383).contains(&value) {
+                println!("Error: Discontinuity amount must be between 0 and 16383");
+                return Ok(());
+            }
+            send_param(socket, "dc", OscType::Int(value))?;
+            println!("Set discontinuity amount to {}", value);
+        }
+        "DM" => {
+            if parts.len() < 2 {
+                println!("Error: DM requires a mode value (0-2)");
+                return Ok(());
+            }
+            let value: i32 = parts[1]
+                .parse()
+                .context("Failed to parse discontinuity mode")?;
+            if !(0..=2).contains(&value) {
+                println!("Error: Mode must be 0 (fold), 1 (tanh), or 2 (softclip)");
+                return Ok(());
+            }
+            send_param(socket, "dm", OscType::Int(value))?;
+            println!("Set discontinuity mode to {}", value);
+        }
+        "TK" => {
+            if parts.len() < 2 {
+                println!("Error: TK requires a value (0-16383)");
+                return Ok(());
+            }
+            let value: i32 = parts[1]
+                .parse()
+                .context("Failed to parse tracking amount")?;
+            if !(0..=16383).contains(&value) {
+                println!("Error: Tracking amount must be between 0 and 16383");
+                return Ok(());
+            }
+            send_param(socket, "tk", OscType::Int(value))?;
+            println!("Set tracking amount to {}", value);
+        }
+        "MB" => {
+            if parts.len() < 2 {
+                println!("Error: MB requires a value (0-16383)");
+                return Ok(());
+            }
+            let value: i32 = parts[1]
+                .parse()
+                .context("Failed to parse mod bus amount")?;
+            if !(0..=16383).contains(&value) {
+                println!("Error: Mod bus amount must be between 0 and 16383");
+                return Ok(());
+            }
+            send_param(socket, "mb", OscType::Int(value))?;
+            println!("Set mod bus amount to {}", value);
+        }
+        "MP" => {
+            if parts.len() < 2 {
+                println!("Error: MP requires a value (0 or 1)");
+                return Ok(());
+            }
+            let value: i32 = parts[1]
+                .parse()
+                .context("Failed to parse mod -> primary value")?;
+            if !(0..=1).contains(&value) {
+                println!("Error: Value must be 0 or 1");
+                return Ok(());
+            }
+            send_param(socket, "mp", OscType::Int(value))?;
+            println!("Set mod -> primary freq to {}", value);
+        }
+        "MD" => {
+            if parts.len() < 2 {
+                println!("Error: MD requires a value (0 or 1)");
+                return Ok(());
+            }
+            let value: i32 = parts[1]
+                .parse()
+                .context("Failed to parse mod -> discontinuity value")?;
+            if !(0..=1).contains(&value) {
+                println!("Error: Value must be 0 or 1");
+                return Ok(());
+            }
+            send_param(socket, "md", OscType::Int(value))?;
+            println!("Set mod -> discontinuity to {}", value);
+        }
+        "MT" => {
+            if parts.len() < 2 {
+                println!("Error: MT requires a value (0 or 1)");
+                return Ok(());
+            }
+            let value: i32 = parts[1]
+                .parse()
+                .context("Failed to parse mod -> tracking value")?;
+            if !(0..=1).contains(&value) {
+                println!("Error: Value must be 0 or 1");
+                return Ok(());
+            }
+            send_param(socket, "mt", OscType::Int(value))?;
+            println!("Set mod -> tracking to {}", value);
+        }
+        "MA" => {
+            if parts.len() < 2 {
+                println!("Error: MA requires a value (0 or 1)");
+                return Ok(());
+            }
+            let value: i32 = parts[1]
+                .parse()
+                .context("Failed to parse mod -> amplitude value")?;
+            if !(0..=1).contains(&value) {
+                println!("Error: Value must be 0 or 1");
+                return Ok(());
+            }
+            send_param(socket, "ma", OscType::Int(value))?;
+            println!("Set mod -> amplitude to {}", value);
+        }
+        "FM" => {
+            if parts.len() < 2 {
+                println!("Error: FM requires a value (0-16383)");
+                return Ok(());
+            }
+            let value: i32 = parts[1]
+                .parse()
+                .context("Failed to parse FM index")?;
+            if !(0..=16383).contains(&value) {
+                println!("Error: FM index must be between 0 and 16383");
+                return Ok(());
+            }
+            send_param(socket, "fm", OscType::Int(value))?;
+            println!("Set FM index to {}", value);
+        }
+        "AD" => {
+            if parts.len() < 2 {
+                println!("Error: AD requires a time value (0.001-10 seconds)");
+                return Ok(());
+            }
+            let value: f32 = parts[1]
+                .parse()
+                .context("Failed to parse amp decay time")?;
+            if !(0.001..=10.0).contains(&value) {
+                println!("Error: Amp decay must be between 0.001 and 10 seconds");
+                return Ok(());
+            }
+            send_param(socket, "ad", OscType::Float(value))?;
+            println!("Set amp decay to {} seconds", value);
+        }
+        "PD" => {
+            if parts.len() < 2 {
+                println!("Error: PD requires a time value (0.001-10 seconds)");
+                return Ok(());
+            }
+            let value: f32 = parts[1]
+                .parse()
+                .context("Failed to parse pitch decay time")?;
+            if !(0.001..=10.0).contains(&value) {
+                println!("Error: Pitch decay must be between 0.001 and 10 seconds");
+                return Ok(());
+            }
+            send_param(socket, "pd", OscType::Float(value))?;
+            println!("Set pitch decay to {} seconds", value);
+        }
+        "FD" => {
+            if parts.len() < 2 {
+                println!("Error: FD requires a time value (0.001-10 seconds)");
+                return Ok(());
+            }
+            let value: f32 = parts[1]
+                .parse()
+                .context("Failed to parse FM decay time")?;
+            if !(0.001..=10.0).contains(&value) {
+                println!("Error: FM decay must be between 0.001 and 10 seconds");
+                return Ok(());
+            }
+            send_param(socket, "fd", OscType::Float(value))?;
+            println!("Set FM decay to {} seconds", value);
+        }
+        "PA" => {
+            if parts.len() < 2 {
+                println!("Error: PA requires a multiplier value (0-16)");
+                return Ok(());
+            }
+            let value: f32 = parts[1]
+                .parse()
+                .context("Failed to parse pitch env amount")?;
+            if !(0.0..=16.0).contains(&value) {
+                println!("Error: Pitch env amount must be between 0 and 16");
+                return Ok(());
+            }
+            send_param(socket, "pa", OscType::Float(value))?;
+            println!("Set pitch env amount to {}", value);
+        }
         "HELP" => {
             print_help();
         }
@@ -244,6 +527,76 @@ fn validate_script_command(cmd: &str) -> Result<()> {
             let _value: f32 = parts[1].parse().context("Failed to parse volume value")?;
             Ok(())
         }
+        "PF" | "MF" => {
+            if parts.len() < 2 {
+                return Err(anyhow::anyhow!("{} requires a frequency value", command));
+            }
+            let value: f32 = parts[1].parse().context("Failed to parse frequency")?;
+            if !(20.0..=20000.0).contains(&value) {
+                return Err(anyhow::anyhow!("Frequency must be between 20 and 20000"));
+            }
+            Ok(())
+        }
+        "PW" | "MW" => {
+            if parts.len() < 2 {
+                return Err(anyhow::anyhow!("{} requires a waveform value", command));
+            }
+            let value: i32 = parts[1].parse().context("Failed to parse waveform")?;
+            if !(0..=2).contains(&value) {
+                return Err(anyhow::anyhow!("Waveform must be 0-2"));
+            }
+            Ok(())
+        }
+        "DC" | "TK" | "MB" | "FM" => {
+            if parts.len() < 2 {
+                return Err(anyhow::anyhow!("{} requires a value", command));
+            }
+            let value: i32 = parts[1].parse().context("Failed to parse value")?;
+            if !(0..=16383).contains(&value) {
+                return Err(anyhow::anyhow!("Value must be between 0 and 16383"));
+            }
+            Ok(())
+        }
+        "DM" => {
+            if parts.len() < 2 {
+                return Err(anyhow::anyhow!("DM requires a mode value"));
+            }
+            let value: i32 = parts[1].parse().context("Failed to parse mode")?;
+            if !(0..=2).contains(&value) {
+                return Err(anyhow::anyhow!("Mode must be 0-2"));
+            }
+            Ok(())
+        }
+        "MP" | "MD" | "MT" | "MA" => {
+            if parts.len() < 2 {
+                return Err(anyhow::anyhow!("{} requires a value", command));
+            }
+            let value: i32 = parts[1].parse().context("Failed to parse value")?;
+            if !(0..=1).contains(&value) {
+                return Err(anyhow::anyhow!("Value must be 0 or 1"));
+            }
+            Ok(())
+        }
+        "AD" | "PD" | "FD" => {
+            if parts.len() < 2 {
+                return Err(anyhow::anyhow!("{} requires a time value", command));
+            }
+            let value: f32 = parts[1].parse().context("Failed to parse time")?;
+            if !(0.001..=10.0).contains(&value) {
+                return Err(anyhow::anyhow!("Time must be between 0.001 and 10"));
+            }
+            Ok(())
+        }
+        "PA" => {
+            if parts.len() < 2 {
+                return Err(anyhow::anyhow!("PA requires a multiplier value"));
+            }
+            let value: f32 = parts[1].parse().context("Failed to parse multiplier")?;
+            if !(0.0..=16.0).contains(&value) {
+                return Err(anyhow::anyhow!("Multiplier must be between 0 and 16"));
+            }
+            Ok(())
+        }
         _ => {
             return Err(anyhow::anyhow!("Unknown command in script: {}", command));
         }
@@ -268,6 +621,74 @@ fn execute_script_command(socket: &UdpSocket, cmd: &str) -> Result<()> {
             }
             let value: f32 = parts[1].parse().context("Failed to parse volume value")?;
             send_osc(socket, "/monokit/volume", vec![OscType::Float(value)])?;
+        }
+        "PF" => {
+            let value: f32 = parts[1].parse()?;
+            send_param(socket, "pf", OscType::Float(value))?;
+        }
+        "PW" => {
+            let value: i32 = parts[1].parse()?;
+            send_param(socket, "pw", OscType::Int(value))?;
+        }
+        "MF" => {
+            let value: f32 = parts[1].parse()?;
+            send_param(socket, "mf", OscType::Float(value))?;
+        }
+        "MW" => {
+            let value: i32 = parts[1].parse()?;
+            send_param(socket, "mw", OscType::Int(value))?;
+        }
+        "DC" => {
+            let value: i32 = parts[1].parse()?;
+            send_param(socket, "dc", OscType::Int(value))?;
+        }
+        "DM" => {
+            let value: i32 = parts[1].parse()?;
+            send_param(socket, "dm", OscType::Int(value))?;
+        }
+        "TK" => {
+            let value: i32 = parts[1].parse()?;
+            send_param(socket, "tk", OscType::Int(value))?;
+        }
+        "MB" => {
+            let value: i32 = parts[1].parse()?;
+            send_param(socket, "mb", OscType::Int(value))?;
+        }
+        "MP" => {
+            let value: i32 = parts[1].parse()?;
+            send_param(socket, "mp", OscType::Int(value))?;
+        }
+        "MD" => {
+            let value: i32 = parts[1].parse()?;
+            send_param(socket, "md", OscType::Int(value))?;
+        }
+        "MT" => {
+            let value: i32 = parts[1].parse()?;
+            send_param(socket, "mt", OscType::Int(value))?;
+        }
+        "MA" => {
+            let value: i32 = parts[1].parse()?;
+            send_param(socket, "ma", OscType::Int(value))?;
+        }
+        "FM" => {
+            let value: i32 = parts[1].parse()?;
+            send_param(socket, "fm", OscType::Int(value))?;
+        }
+        "AD" => {
+            let value: f32 = parts[1].parse()?;
+            send_param(socket, "ad", OscType::Float(value))?;
+        }
+        "PD" => {
+            let value: f32 = parts[1].parse()?;
+            send_param(socket, "pd", OscType::Float(value))?;
+        }
+        "FD" => {
+            let value: f32 = parts[1].parse()?;
+            send_param(socket, "fd", OscType::Float(value))?;
+        }
+        "PA" => {
+            let value: f32 = parts[1].parse()?;
+            send_param(socket, "pa", OscType::Float(value))?;
         }
         _ => {
             return Err(anyhow::anyhow!("Unknown command in script: {}", cmd));

@@ -20,34 +20,36 @@ Nothing tightly couples a text scripting language with a dedicated complex oscil
 
 **Architecture: SC Backend + Rust CLI Frontend**
 
-The MVP implements a minimal working system with OSC communication between components.
+The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity, and complex modulation.
 
 ### Components
 
 **SuperCollider Server** (`sc/monokit_server.scd`)
-- Runs headless scsynth with persistent voice
-- `\monokit` SynthDef: simple sine oscillator with pitch/amp envelopes
-- Parameters: freq, pitchDecay, pitchAmt, ampDecay, volume, gate
+- Runs headless scsynth with persistent HD2-style voice
+- `\monokit` SynthDef: complex oscillator with dual waveform engines, FM, discontinuity, and modulation
+- Full parameter set (17 parameters):
+  - **Oscillators:** pf (primary freq), pw (primary waveform 0-2), mf (mod freq), mw (mod waveform 0-2)
+  - **Discontinuity:** dc (amount 0-16383), dm (mode 0-2: fold/tanh/softclip)
+  - **Tracking/Modulation:** tk (tracking 0-16383), mb (mod bus 0-16383), mp/md/mt/ma (switches 0-1)
+  - **FM:** fm (index 0-16383)
+  - **Envelopes:** ad (amp decay 0.001-10s), pd (pitch decay 0.001-10s), fd (FM decay 0.001-10s), pa (pitch env amount 0-16)
+  - **Volume:** volume (0.0-1.0)
 - OSC responders:
   - `/monokit/trigger` - triggers gate for note playback
-  - `/monokit/volume` - sets voice volume (0.0-1.0)
+  - `/monokit/param <name> <value>` - sets any parameter by name
 
 **Rust CLI** (`src/main.rs`)
 - REPL interface with rustyline
 - Async tokio runtime with parking_lot::Mutex for metro state
 - OSC client sending to 127.0.0.1:57120
 - Background metro task for scheduled script execution
-- Commands:
-  - `TR` - send trigger
-  - `VOL <0.0-1.0>` - set volume
-  - `M` - show current metro interval
-  - `M <ms>` - set metro interval in milliseconds
-  - `M.BPM <bpm>` - set metro interval as BPM
-  - `M.ACT <0|1>` - activate/deactivate metro
-  - `M: <script>` - set M script (validated before setting)
-  - `help`, `exit`, `quit`
-- Teletype-inspired terse command style
-- M script validation rejects invalid commands before setting
+- Commands (Teletype-inspired terse style):
+  - **Trigger/Volume:** TR, VOL <0.0-1.0>
+  - **Metro:** M, M <ms>, M.BPM <bpm>, M.ACT <0|1>, M: <script>
+  - **HD2 Parameters:** PF/MF, PW/MW, DC/DM, TK/MB, MP/MD/MT/MA, FM, AD/PD/FD, PA
+  - **System:** help, exit, quit
+- M script validation prevents invalid command sequences
+- All parameters sent via OSC `/monokit/param` protocol
 
 ### Running the MVP
 

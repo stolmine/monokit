@@ -17,14 +17,14 @@
 
 - **src/main.rs** - Rust TUI application
   - Page-based interface with ratatui/crossterm
-  - 12 navigable pages: Live, Script 1-8, Metro (M), Init (I), Pattern (P)
-  - Help page accessible via Alt+H (scrollable, no input region)
-  - Dedicated metro thread with absolute timing (no drift)
-  - All OSC routed through metro thread (serialized)
+  - 13 pages: Live, Script 1-8, Metro (M), Init (I), Pattern (P), Help
+  - Script storage: 10 scripts × 8 lines (Scripts 1-8, M, I)
+  - Pattern storage: 4 patterns × 64 steps (i16 values)
+  - Variables: A-D, X-Y-Z-T (global), J-K (per-script)
+  - Control flow: IF conditions, PROB probabilistic execution
+  - Expression evaluation in arguments (P.NEXT, variables, etc.)
+  - Metro thread sends script execution requests to main thread
   - OSC client sending to SuperCollider (127.0.0.1:57120)
-  - Command processor (TR, VOL, M, M.BPM, M.ACT, M:, RST, etc.)
-  - M script validation before execution
-  - UDP socket communication
 
 - **sc/monokit_server.scd** - SuperCollider sound engine
   - `\monokit` SynthDef: HD2-style dual oscillator with FM, discontinuity, envelopes
@@ -41,19 +41,21 @@
 ## Architecture Overview
 
 ```
-Rust CLI (src/main.rs)
+Rust TUI (src/main.rs)
     |
-    +-- Metro Thread (absolute timing)
-    |    |
-    |    v OSC messages (serialized)
-    |    127.0.0.1:57120
-    |
-    +-- REPL Thread (user input)
+    +-- Main Thread
+    |    - TUI rendering (ratatui)
+    |    - Command processing
+    |    - Script execution (with App context)
+    |    - Pattern/variable access
     |    |
     |    v OSC messages
     |    127.0.0.1:57120
     |
-    v
+    +-- Metro Thread (absolute timing)
+         - Sends ExecuteScript events to main thread
+         - No direct script execution (thread safety)
+
 SuperCollider Sound Engine (sc/monokit_server.scd)
     |
     v
@@ -73,7 +75,41 @@ Audio output
 - `M <ms>` - Set metro interval in milliseconds
 - `M.BPM <bpm>` - Set metro tempo as BPM
 - `M.ACT <0|1>` - Activate (1) or deactivate (0) metro
-- `M: <script>` - Set M script (semicolon-separated commands, validated before setting)
+- `M.SCRIPT <1-8>` - Set which script metro calls on each tick (default: M script)
+
+#### Scripts
+- `SCRIPT <1-8>` - Execute stored script (can be called from other scripts)
+- Scripts 1-8: User scripts
+- M script (index 8): Called on each metro tick
+- I script (index 9): Called on startup
+
+#### Variables
+- `A`, `B`, `C`, `D` - General accumulators (get/set: `A` or `A 100`)
+- `X`, `Y`, `Z`, `T` - General accumulators
+- Variables can be used in expressions: `PF A`, `DC X`
+
+#### Patterns (Working Pattern - P.N)
+- `P.N` / `P.N <0-3>` - Get/set working pattern
+- `P.L` / `P.L <1-64>` - Get/set pattern length
+- `P.I` / `P.I <0-63>` - Get/set playhead index
+- `P.HERE` - Get value at playhead
+- `P.NEXT` - Advance playhead, return value
+- `P.PREV` - Reverse playhead, return value
+- `P <idx>` / `P <idx> <val>` - Get/set value at index
+
+#### Patterns (Explicit Pattern - PN)
+- `PN <pat> <idx>` / `PN <pat> <idx> <val>` - Get/set value
+- `PN.L <pat>` / `PN.L <pat> <len>` - Get/set length
+- `PN.I <pat>` / `PN.I <pat> <idx>` - Get/set playhead
+- `PN.HERE <pat>` - Get value at playhead
+- `PN.NEXT <pat>` - Advance playhead, return value (KNOWN BUG: not working in expressions)
+- `PN.PREV <pat>` - Reverse playhead, return value
+
+#### Control Flow (PRE separator)
+- `IF <cond>: <cmd>` - Execute cmd if condition true
+- `PROB <0-100>: <cmd>` - Execute cmd with probability
+- Comparisons: `>`, `<`, `>=`, `<=`, `==`, `!=`
+- Sub-commands: `cmd1; cmd2; cmd3` - Multiple commands on one line
 
 #### HD2 Voice Parameters (22 total)
 
@@ -160,10 +196,13 @@ All parameter updates are validated in Rust CLI before sending and applied immed
 - rosc 0.10 - OSC protocol
 - ratatui 0.29 - Terminal UI framework
 - crossterm 0.28 - Terminal backend
-- nom 7 - Parser (future use)
+- rand 0.8 - Random number generation (for PROB)
 - anyhow 1 - Error handling
 - thiserror 1 - Error types
-- serde 1, serde_json 1 - Serialization (future use)
 
 ### SuperCollider
 - SuperCollider 3.x with scsynth
+
+## Known Issues
+
+- **PN.NEXT/PN.PREV in expressions**: `DC PN.NEXT 0` fails to parse - PN ops with arguments don't work in expression context yet

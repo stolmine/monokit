@@ -34,12 +34,20 @@ The MVP implements a minimal working system with OSC communication between compo
 
 **Rust CLI** (`src/main.rs`)
 - REPL interface with rustyline
+- Async tokio runtime with parking_lot::Mutex for metro state
 - OSC client sending to 127.0.0.1:57120
+- Background metro task for scheduled script execution
 - Commands:
   - `TR` - send trigger
   - `VOL <0.0-1.0>` - set volume
+  - `M` - show current metro interval
+  - `M <ms>` - set metro interval in milliseconds
+  - `M.BPM <bpm>` - set metro interval as BPM
+  - `M.ACT <0|1>` - activate/deactivate metro
+  - `M: <script>` - set M script (validated before setting)
   - `help`, `exit`, `quit`
 - Teletype-inspired terse command style
+- M script validation rejects invalid commands before setting
 
 ### Running the MVP
 
@@ -57,7 +65,9 @@ The MVP implements a minimal working system with OSC communication between compo
    ```
    monokit> TR
    monokit> VOL 0.5
-   monokit> TR
+   monokit> M 500
+   monokit> M: TR
+   monokit> M.ACT 1
    ```
 
 ## Reference Tools
@@ -77,4 +87,3 @@ The MVP implements a minimal working system with OSC communication between compo
 - Add pattern/sequencing capabilities
 - Enhance oscillator complexity (FM, waveshaping)
 - Implement script file execution
-- Add metronome/clock system

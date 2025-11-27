@@ -21,7 +21,7 @@
   - Script storage: 10 scripts × 8 lines (Scripts 1-8, M, I)
   - Pattern storage: 4 patterns × 64 steps (i16 values)
   - Variables: A-D, X-Y-Z-T (global), J-K (per-script)
-  - Control flow: IF conditions, PROB probabilistic execution
+  - Control flow: IF conditions, PROB probabilistic execution, EV every-N-tick execution
   - Expression evaluation in arguments (P.NEXT, variables, etc.)
   - Metro thread sends script execution requests to main thread
   - OSC client sending to SuperCollider (127.0.0.1:57120)
@@ -102,12 +102,15 @@ Audio output
 - `PN.L <pat>` / `PN.L <pat> <len>` - Get/set length
 - `PN.I <pat>` / `PN.I <pat> <idx>` - Get/set playhead
 - `PN.HERE <pat>` - Get value at playhead
-- `PN.NEXT <pat>` - Advance playhead, return value (KNOWN BUG: not working in expressions)
+- `PN.NEXT <pat>` - Advance playhead, return value
 - `PN.PREV <pat>` - Reverse playhead, return value
+
+Note: All PN operations work in expression context (e.g., `DC PN.NEXT 0`)
 
 #### Control Flow (PRE separator)
 - `IF <cond>: <cmd>` - Execute cmd if condition true
 - `PROB <0-100>: <cmd>` - Execute cmd with probability
+- `EV <n>: <cmd>` - Execute cmd every Nth tick (applies to whole line including semicolons)
 - Comparisons: `>`, `<`, `>=`, `<=`, `==`, `!=`
 - Sub-commands: `cmd1; cmd2; cmd3` - Multiple commands on one line
 
@@ -153,6 +156,10 @@ Audio output
 - `FA <0-16>` - FM envelope amount
 - `DA <0-16>` - Discontinuity envelope amount
 
+#### Random Number Generation
+- `RND <max>` - Random integer from 0 to max-1 (works as command and in expressions)
+- `RRND <min> <max>` - Random integer from min to max inclusive (works as command and in expressions)
+
 #### System
 - `RST` - Reset all parameters to defaults
 - `q` - Quit application
@@ -196,13 +203,9 @@ All parameter updates are validated in Rust CLI before sending and applied immed
 - rosc 0.10 - OSC protocol
 - ratatui 0.29 - Terminal UI framework
 - crossterm 0.28 - Terminal backend
-- rand 0.8 - Random number generation (for PROB)
+- rand 0.8 - Random number generation (for PROB, RND, RRND)
 - anyhow 1 - Error handling
 - thiserror 1 - Error types
 
 ### SuperCollider
 - SuperCollider 3.x with scsynth
-
-## Known Issues
-
-- **PN.NEXT/PN.PREV in expressions**: `DC PN.NEXT 0` fails to parse - PN ops with arguments don't work in expression context yet

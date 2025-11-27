@@ -264,6 +264,7 @@ struct App {
     patterns: PatternStorage,
     pattern_cursor: (usize, usize),
     pattern_input: String,
+    ev_counters: [[u32; 8]; 10],
 }
 
 impl App {
@@ -285,6 +286,7 @@ impl App {
             patterns: PatternStorage::default(),
             pattern_cursor: (0, 0),
             pattern_input: String::new(),
+            ev_counters: [[0; 8]; 10],
         }
     }
 
@@ -397,7 +399,30 @@ impl App {
                 writeln!(f, "Processing line {}: '{}'", line_num + 1, line).ok();
             }
 
-            for sub_cmd in line.split(';') {
+            let line_to_process = if line.to_uppercase().starts_with("EV ") {
+                if let Some(colon_pos) = line.find(':') {
+                    let ev_part = &line[3..colon_pos].trim();
+                    if let Ok(divisor) = ev_part.parse::<u32>() {
+                        if divisor > 0 {
+                            self.ev_counters[script_index][line_num] += 1;
+                            if self.ev_counters[script_index][line_num] % divisor != 0 {
+                                continue;
+                            }
+                            line[colon_pos + 1..].trim()
+                        } else {
+                            line
+                        }
+                    } else {
+                        line
+                    }
+                } else {
+                    line
+                }
+            } else {
+                line
+            };
+
+            for sub_cmd in line_to_process.split(';') {
                 let sub_cmd = sub_cmd.trim();
                 if sub_cmd.is_empty() {
                     continue;
@@ -803,27 +828,32 @@ fn resolve_value(s: &str, variables: &Variables) -> i16 {
     }
 }
 
-fn eval_expression(expr: &str, variables: &Variables, patterns: &mut PatternStorage) -> Option<i16> {
-    let expr = expr.trim().to_uppercase();
-
-    if expr.starts_with("PN.NEXT ") {
-        let parts: Vec<&str> = expr.split_whitespace().collect();
-        if parts.len() >= 2 {
-            if let Ok(pat) = parts[1].parse::<usize>() {
-                if pat <= 3 {
-                    let pattern = &mut patterns.patterns[pat];
-                    pattern.index = (pattern.index + 1) % pattern.length;
-                    return Some(pattern.data[pattern.index]);
-                }
-            }
-        }
+fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, patterns: &mut PatternStorage) -> Option<(i16, usize)> {
+    if start_idx >= parts.len() {
         return None;
     }
 
-    if expr.starts_with("PN.PREV ") {
-        let parts: Vec<&str> = expr.split_whitespace().collect();
-        if parts.len() >= 2 {
-            if let Ok(pat) = parts[1].parse::<usize>() {
+    let expr = parts[start_idx].trim().to_uppercase();
+
+    match expr.as_str() {
+        "PN.NEXT" => {
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Ok(pat) = parts[start_idx + 1].parse::<usize>() {
+                if pat <= 3 {
+                    let pattern = &mut patterns.patterns[pat];
+                    pattern.index = (pattern.index + 1) % pattern.length;
+                    return Some((pattern.data[pattern.index], 2));
+                }
+            }
+            None
+        }
+        "PN.PREV" => {
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Ok(pat) = parts[start_idx + 1].parse::<usize>() {
                 if pat <= 3 {
                     let pattern = &mut patterns.patterns[pat];
                     if pattern.index == 0 {
@@ -831,40 +861,71 @@ fn eval_expression(expr: &str, variables: &Variables, patterns: &mut PatternStor
                     } else {
                         pattern.index -= 1;
                     }
-                    return Some(pattern.data[pattern.index]);
+                    return Some((pattern.data[pattern.index], 2));
                 }
             }
+            None
         }
-        return None;
-    }
-
-    if expr.starts_with("PN.HERE ") {
-        let parts: Vec<&str> = expr.split_whitespace().collect();
-        if parts.len() >= 2 {
-            if let Ok(pat) = parts[1].parse::<usize>() {
+        "PN.HERE" => {
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Ok(pat) = parts[start_idx + 1].parse::<usize>() {
                 if pat <= 3 {
                     let pattern = &patterns.patterns[pat];
-                    return Some(pattern.data[pattern.index]);
+                    return Some((pattern.data[pattern.index], 2));
                 }
             }
+            None
         }
-        return None;
-    }
-
-    match expr.as_str() {
+        "PN" => {
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Ok(pat) = parts[start_idx + 1].parse::<usize>() {
+                if pat <= 3 {
+                    let pattern = &patterns.patterns[pat];
+                    return Some((pattern.data[pattern.index], 2));
+                }
+            }
+            None
+        }
+        "PN.L" => {
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Ok(pat) = parts[start_idx + 1].parse::<usize>() {
+                if pat <= 3 {
+                    let pattern = &patterns.patterns[pat];
+                    return Some((pattern.length as i16, 2));
+                }
+            }
+            None
+        }
+        "PN.I" => {
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Ok(pat) = parts[start_idx + 1].parse::<usize>() {
+                if pat <= 3 {
+                    let pattern = &patterns.patterns[pat];
+                    return Some((pattern.index as i16, 2));
+                }
+            }
+            None
+        }
         "P.NEXT" => {
             let working = patterns.working;
             let pattern = &mut patterns.patterns[working];
             let old_index = pattern.index;
             pattern.index = (pattern.index + 1) % pattern.length;
             let value = pattern.data[pattern.index];
-            // Debug
             use std::io::Write;
             if let Ok(mut f) = std::fs::OpenOptions::new().append(true).create(true).open("/tmp/monokit_debug.txt") {
                 writeln!(f, "P.NEXT: working={} old_idx={} new_idx={} len={} value={}",
                     working, old_index, pattern.index, pattern.length, value).ok();
             }
-            Some(value)
+            Some((value, 1))
         }
         "P.PREV" => {
             let pattern = &mut patterns.patterns[patterns.working];
@@ -874,23 +935,52 @@ fn eval_expression(expr: &str, variables: &Variables, patterns: &mut PatternStor
                 pattern.index -= 1;
             }
             let value = pattern.data[pattern.index];
-            Some(value)
+            Some((value, 1))
         }
         "P.HERE" => {
             let pattern = &patterns.patterns[patterns.working];
-            Some(pattern.data[pattern.index])
+            Some((pattern.data[pattern.index], 1))
         }
-        "A" => Some(variables.a),
-        "B" => Some(variables.b),
-        "C" => Some(variables.c),
-        "D" => Some(variables.d),
-        "X" => Some(variables.x),
-        "Y" => Some(variables.y),
-        "Z" => Some(variables.z),
-        "T" => Some(variables.t),
+        "RND" => {
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Ok(max) = parts[start_idx + 1].parse::<i16>() {
+                if max <= 0 {
+                    return Some((0, 2));
+                }
+                let result = rand::thread_rng().gen_range(0..max);
+                return Some((result, 2));
+            }
+            None
+        }
+        "RRND" => {
+            if start_idx + 2 >= parts.len() {
+                return None;
+            }
+            if let (Ok(mut min), Ok(mut max)) = (
+                parts[start_idx + 1].parse::<i16>(),
+                parts[start_idx + 2].parse::<i16>()
+            ) {
+                if min > max {
+                    std::mem::swap(&mut min, &mut max);
+                }
+                let result = rand::thread_rng().gen_range(min..=max);
+                return Some((result, 3));
+            }
+            None
+        }
+        "A" => Some((variables.a, 1)),
+        "B" => Some((variables.b, 1)),
+        "C" => Some((variables.c, 1)),
+        "D" => Some((variables.d, 1)),
+        "X" => Some((variables.x, 1)),
+        "Y" => Some((variables.y, 1)),
+        "Z" => Some((variables.z, 1)),
+        "T" => Some((variables.t, 1)),
         _ => {
             if let Ok(val) = expr.parse::<i16>() {
-                Some(val)
+                Some((val, 1))
             } else {
                 None
             }
@@ -1393,7 +1483,7 @@ where
                 output("Error: PF requires a frequency value (20-20000)".to_string());
                 return Ok(vec![]);
             }
-            let value: f32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as f32
             } else {
                 parts[1]
@@ -1414,7 +1504,7 @@ where
                 output("Error: PW requires a waveform value (0-2)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1435,7 +1525,7 @@ where
                 output("Error: MF requires a frequency value (20-20000)".to_string());
                 return Ok(vec![]);
             }
-            let value: f32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as f32
             } else {
                 parts[1]
@@ -1456,7 +1546,7 @@ where
                 output("Error: MW requires a waveform value (0-2)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1477,7 +1567,7 @@ where
                 output("Error: DC requires a value (0-16383)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1503,7 +1593,7 @@ where
                 output("Error: DM requires a mode value (0-2)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1524,7 +1614,7 @@ where
                 output("Error: TK requires a value (0-16383)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1545,7 +1635,7 @@ where
                 output("Error: MB requires a value (0-16383)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1566,7 +1656,7 @@ where
                 output("Error: MP requires a value (0 or 1)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1587,7 +1677,7 @@ where
                 output("Error: MD requires a value (0 or 1)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1608,7 +1698,7 @@ where
                 output("Error: MT requires a value (0 or 1)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1629,7 +1719,7 @@ where
                 output("Error: MA requires a value (0 or 1)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1650,7 +1740,7 @@ where
                 output("Error: FM requires a value (0-16383)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1671,7 +1761,7 @@ where
                 output("Error: AD requires a time value (1-10000 ms)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1692,7 +1782,7 @@ where
                 output("Error: PD requires a time value (1-10000 ms)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1713,7 +1803,7 @@ where
                 output("Error: FD requires a time value (1-10000 ms)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1734,7 +1824,7 @@ where
                 output("Error: PA requires a multiplier value (0-16)".to_string());
                 return Ok(vec![]);
             }
-            let value: f32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as f32
             } else {
                 parts[1]
@@ -1755,7 +1845,7 @@ where
                 output("Error: DD requires a time value (1-10000 ms)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1776,7 +1866,7 @@ where
                 output("Error: MX requires a value (0-16383)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1797,7 +1887,7 @@ where
                 output("Error: MM requires a value (0 or 1)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1818,7 +1908,7 @@ where
                 output("Error: ME requires a value (0 or 1)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1839,7 +1929,7 @@ where
                 output("Error: FA requires a value (0-16383)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1860,7 +1950,7 @@ where
                 output("Error: DA requires a value (0-16383)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some(expr_val) = eval_expression(parts[1], variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1902,6 +1992,38 @@ where
             metro_tx.send(MetroCommand::SendParam("da".to_string(), OscType::Int(0)))?;
             metro_tx.send(MetroCommand::SendVolume(1.0))?;
             output("Reset to defaults".to_string());
+        }
+        "RND" => {
+            if parts.len() < 2 {
+                output("Error: RND requires a max value".to_string());
+                return Ok(vec![]);
+            }
+            let max: i16 = parts[1]
+                .parse()
+                .context("Failed to parse max value as number")?;
+            if max <= 0 {
+                output("0".to_string());
+            } else {
+                let result = rand::thread_rng().gen_range(0..max);
+                output(format!("{}", result));
+            }
+        }
+        "RRND" => {
+            if parts.len() < 3 {
+                output("Error: RRND requires min and max values".to_string());
+                return Ok(vec![]);
+            }
+            let mut min: i16 = parts[1]
+                .parse()
+                .context("Failed to parse min value as number")?;
+            let mut max: i16 = parts[2]
+                .parse()
+                .context("Failed to parse max value as number")?;
+            if min > max {
+                std::mem::swap(&mut min, &mut max);
+            }
+            let result = rand::thread_rng().gen_range(min..=max);
+            output(format!("{}", result));
         }
         "SCRIPT" => {
             if parts.len() < 2 {

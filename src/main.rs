@@ -55,6 +55,7 @@ struct Variables {
     b: i16,
     c: i16,
     d: i16,
+    i: i16,
     x: i16,
     y: i16,
     z: i16,
@@ -68,6 +69,7 @@ impl Default for Variables {
             b: 0,
             c: 0,
             d: 0,
+            i: 0,
             x: 0,
             y: 0,
             z: 0,
@@ -399,6 +401,163 @@ impl App {
                 writeln!(f, "Processing line {}: '{}'", line_num + 1, line).ok();
             }
 
+            if line.to_uppercase().starts_with("L ") {
+                if let Some(colon_pos) = line.find(':') {
+                    let loop_part = &line[2..colon_pos].trim();
+                    let parts: Vec<&str> = loop_part.split_whitespace().collect();
+                    if parts.len() >= 2 {
+                        let start = resolve_value(parts[0], &self.variables);
+                        let end = resolve_value(parts[1], &self.variables);
+                        let commands = line[colon_pos + 1..].trim();
+
+                        let old_i = self.variables.i;
+
+                        if start <= end {
+                            for i_val in start..=end {
+                                self.variables.i = i_val;
+                                for sub_cmd in commands.split(';') {
+                                    let sub_cmd = sub_cmd.trim();
+                                    if sub_cmd.is_empty() {
+                                        continue;
+                                    }
+
+                                    let (condition, cmd_to_run) = if let Some(colon_pos) = sub_cmd.find(':') {
+                                        let cond = &sub_cmd[..colon_pos];
+                                        let cmd = sub_cmd[colon_pos + 1..].trim();
+                                        (Some(cond), cmd)
+                                    } else {
+                                        (None, sub_cmd)
+                                    };
+
+                                    if cmd_to_run.is_empty() {
+                                        continue;
+                                    }
+
+                                    if let Some(cond) = condition {
+                                        if !eval_condition(cond, &self.variables) {
+                                            continue;
+                                        }
+                                    }
+
+                                    let mut output_messages = Vec::new();
+                                    let result = process_command(&self.metro_tx, &mut metro_interval, &mut self.variables, &mut self.patterns, cmd_to_run, |msg| {
+                                        output_messages.push(msg);
+                                    });
+
+                                    match result {
+                                        Ok(scripts_to_run) => {
+                                            for msg in output_messages {
+                                                self.add_output(msg);
+                                            }
+                                            for script_idx in scripts_to_run {
+                                                self.execute_script_with_depth(script_idx, depth + 1);
+                                            }
+                                        }
+                                        Err(e) => {
+                                            output_messages.push(format!("Error: {}", e));
+                                            for msg in output_messages {
+                                                self.add_output(msg);
+                                            }
+                                        }
+                                    }
+
+                                    let mut state = self.metro_state.lock().unwrap();
+                                    state.interval_ms = metro_interval;
+                                    if cmd_to_run.to_uppercase().starts_with("M.ACT") {
+                                        if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
+                                            if let Ok(val) = parts.parse::<i32>() {
+                                                state.active = val != 0;
+                                            }
+                                        }
+                                    }
+                                    if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
+                                        if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
+                                            if let Ok(idx) = parts.parse::<usize>() {
+                                                if idx >= 1 && idx <= 8 {
+                                                    state.script_index = idx - 1;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            for i_val in (end..=start).rev() {
+                                self.variables.i = i_val;
+                                for sub_cmd in commands.split(';') {
+                                    let sub_cmd = sub_cmd.trim();
+                                    if sub_cmd.is_empty() {
+                                        continue;
+                                    }
+
+                                    let (condition, cmd_to_run) = if let Some(colon_pos) = sub_cmd.find(':') {
+                                        let cond = &sub_cmd[..colon_pos];
+                                        let cmd = sub_cmd[colon_pos + 1..].trim();
+                                        (Some(cond), cmd)
+                                    } else {
+                                        (None, sub_cmd)
+                                    };
+
+                                    if cmd_to_run.is_empty() {
+                                        continue;
+                                    }
+
+                                    if let Some(cond) = condition {
+                                        if !eval_condition(cond, &self.variables) {
+                                            continue;
+                                        }
+                                    }
+
+                                    let mut output_messages = Vec::new();
+                                    let result = process_command(&self.metro_tx, &mut metro_interval, &mut self.variables, &mut self.patterns, cmd_to_run, |msg| {
+                                        output_messages.push(msg);
+                                    });
+
+                                    match result {
+                                        Ok(scripts_to_run) => {
+                                            for msg in output_messages {
+                                                self.add_output(msg);
+                                            }
+                                            for script_idx in scripts_to_run {
+                                                self.execute_script_with_depth(script_idx, depth + 1);
+                                            }
+                                        }
+                                        Err(e) => {
+                                            output_messages.push(format!("Error: {}", e));
+                                            for msg in output_messages {
+                                                self.add_output(msg);
+                                            }
+                                        }
+                                    }
+
+                                    let mut state = self.metro_state.lock().unwrap();
+                                    state.interval_ms = metro_interval;
+                                    if cmd_to_run.to_uppercase().starts_with("M.ACT") {
+                                        if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
+                                            if let Ok(val) = parts.parse::<i32>() {
+                                                state.active = val != 0;
+                                            }
+                                        }
+                                    }
+                                    if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
+                                        if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
+                                            if let Ok(idx) = parts.parse::<usize>() {
+                                                if idx >= 1 && idx <= 8 {
+                                                    state.script_index = idx - 1;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        self.variables.i = old_i;
+                        continue;
+                    }
+                }
+            }
+
             let line_to_process = if line.to_uppercase().starts_with("EV ") {
                 if let Some(colon_pos) = line.find(':') {
                     let ev_part = &line[3..colon_pos].trim();
@@ -515,6 +674,163 @@ impl App {
             let state = self.metro_state.lock().unwrap();
             state.interval_ms
         };
+
+        if cmd.to_uppercase().starts_with("L ") {
+            if let Some(colon_pos) = cmd.find(':') {
+                let loop_part = &cmd[2..colon_pos].trim();
+                let parts: Vec<&str> = loop_part.split_whitespace().collect();
+                if parts.len() >= 2 {
+                    let start = resolve_value(parts[0], &self.variables);
+                    let end = resolve_value(parts[1], &self.variables);
+                    let commands = cmd[colon_pos + 1..].trim();
+
+                    let old_i = self.variables.i;
+
+                    if start <= end {
+                        for i_val in start..=end {
+                            self.variables.i = i_val;
+                            for sub_cmd in commands.split(';') {
+                                let sub_cmd = sub_cmd.trim();
+                                if sub_cmd.is_empty() {
+                                    continue;
+                                }
+
+                                let (condition, cmd_to_run) = if let Some(colon_pos) = sub_cmd.find(':') {
+                                    let cond = &sub_cmd[..colon_pos];
+                                    let cmd = sub_cmd[colon_pos + 1..].trim();
+                                    (Some(cond), cmd)
+                                } else {
+                                    (None, sub_cmd)
+                                };
+
+                                if cmd_to_run.is_empty() {
+                                    continue;
+                                }
+
+                                if let Some(cond) = condition {
+                                    if !eval_condition(cond, &self.variables) {
+                                        continue;
+                                    }
+                                }
+
+                                let mut output_messages = Vec::new();
+                                let result = process_command(&self.metro_tx, &mut metro_interval, &mut self.variables, &mut self.patterns, cmd_to_run, |msg| {
+                                    output_messages.push(msg);
+                                });
+
+                                match result {
+                                    Ok(scripts_to_run) => {
+                                        for msg in output_messages {
+                                            self.add_output(msg);
+                                        }
+                                        for script_idx in scripts_to_run {
+                                            self.execute_script(script_idx);
+                                        }
+                                    }
+                                    Err(e) => {
+                                        output_messages.push(format!("Error: {}", e));
+                                        for msg in output_messages {
+                                            self.add_output(msg);
+                                        }
+                                    }
+                                }
+
+                                let mut state = self.metro_state.lock().unwrap();
+                                state.interval_ms = metro_interval;
+                                if cmd_to_run.to_uppercase().starts_with("M.ACT") {
+                                    if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
+                                        if let Ok(val) = parts.parse::<i32>() {
+                                            state.active = val != 0;
+                                        }
+                                    }
+                                }
+                                if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
+                                    if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
+                                        if let Ok(idx) = parts.parse::<usize>() {
+                                            if idx >= 1 && idx <= 8 {
+                                                state.script_index = idx - 1;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        for i_val in (end..=start).rev() {
+                            self.variables.i = i_val;
+                            for sub_cmd in commands.split(';') {
+                                let sub_cmd = sub_cmd.trim();
+                                if sub_cmd.is_empty() {
+                                    continue;
+                                }
+
+                                let (condition, cmd_to_run) = if let Some(colon_pos) = sub_cmd.find(':') {
+                                    let cond = &sub_cmd[..colon_pos];
+                                    let cmd = sub_cmd[colon_pos + 1..].trim();
+                                    (Some(cond), cmd)
+                                } else {
+                                    (None, sub_cmd)
+                                };
+
+                                if cmd_to_run.is_empty() {
+                                    continue;
+                                }
+
+                                if let Some(cond) = condition {
+                                    if !eval_condition(cond, &self.variables) {
+                                        continue;
+                                    }
+                                }
+
+                                let mut output_messages = Vec::new();
+                                let result = process_command(&self.metro_tx, &mut metro_interval, &mut self.variables, &mut self.patterns, cmd_to_run, |msg| {
+                                    output_messages.push(msg);
+                                });
+
+                                match result {
+                                    Ok(scripts_to_run) => {
+                                        for msg in output_messages {
+                                            self.add_output(msg);
+                                        }
+                                        for script_idx in scripts_to_run {
+                                            self.execute_script(script_idx);
+                                        }
+                                    }
+                                    Err(e) => {
+                                        output_messages.push(format!("Error: {}", e));
+                                        for msg in output_messages {
+                                            self.add_output(msg);
+                                        }
+                                    }
+                                }
+
+                                let mut state = self.metro_state.lock().unwrap();
+                                state.interval_ms = metro_interval;
+                                if cmd_to_run.to_uppercase().starts_with("M.ACT") {
+                                    if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
+                                        if let Ok(val) = parts.parse::<i32>() {
+                                            state.active = val != 0;
+                                        }
+                                    }
+                                }
+                                if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
+                                    if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
+                                        if let Ok(idx) = parts.parse::<usize>() {
+                                            if idx >= 1 && idx <= 8 {
+                                                state.script_index = idx - 1;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    self.variables.i = old_i;
+                    return;
+                }
+            }
+        }
 
         for sub_cmd in cmd.split(';') {
             let sub_cmd = sub_cmd.trim();
@@ -820,6 +1136,7 @@ fn resolve_value(s: &str, variables: &Variables) -> i16 {
         "B" => variables.b,
         "C" => variables.c,
         "D" => variables.d,
+        "I" => variables.i,
         "X" => variables.x,
         "Y" => variables.y,
         "Z" => variables.z,
@@ -974,6 +1291,7 @@ fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, patt
         "B" => Some((variables.b, 1)),
         "C" => Some((variables.c, 1)),
         "D" => Some((variables.d, 1)),
+        "I" => Some((variables.i, 1)),
         "X" => Some((variables.x, 1)),
         "Y" => Some((variables.y, 1)),
         "Z" => Some((variables.z, 1)),
@@ -1105,6 +1423,17 @@ where
                 output(format!("Set D to {}", value));
             }
         }
+        "I" => {
+            if parts.len() == 1 {
+                output(format!("I = {}", variables.i));
+            } else {
+                let value: i16 = parts[1]
+                    .parse()
+                    .context("Failed to parse value for I")?;
+                variables.i = value;
+                output(format!("Set I to {}", value));
+            }
+        }
         "X" => {
             if parts.len() == 1 {
                 output(format!("X = {}", variables.x));
@@ -1222,20 +1551,29 @@ where
                 output("Error: P requires an index".to_string());
                 return Ok(vec![]);
             }
-            let idx: usize = parts[1]
-                .parse()
-                .context("Failed to parse pattern index")?;
+            let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+                expr_val as usize
+            } else {
+                parts[1]
+                    .parse()
+                    .context("Failed to parse pattern index")?
+            };
             if idx > 63 {
                 output("Error: Pattern index must be 0-63".to_string());
                 return Ok(vec![]);
             }
-            let pattern = &mut patterns.patterns[patterns.working];
             if parts.len() == 2 {
+                let pattern = &patterns.patterns[patterns.working];
                 output(format!("P {} = {}", idx, pattern.data[idx]));
             } else {
-                let value: i16 = parts[2]
-                    .parse()
-                    .context("Failed to parse pattern value")?;
+                let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns) {
+                    expr_val
+                } else {
+                    parts[2]
+                        .parse()
+                        .context("Failed to parse pattern value")?
+                };
+                let pattern = &mut patterns.patterns[patterns.working];
                 pattern.data[idx] = value;
                 output(format!("Set P {} to {}", idx, value));
             }
@@ -1245,24 +1583,33 @@ where
                 output("Error: PN.L requires pattern number (0-3)".to_string());
                 return Ok(vec![]);
             }
-            let pat: usize = parts[1]
-                .parse()
-                .context("Failed to parse pattern number")?;
+            let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+                expr_val as usize
+            } else {
+                parts[1]
+                    .parse()
+                    .context("Failed to parse pattern number")?
+            };
             if pat > 3 {
                 output("Error: Pattern number must be 0-3".to_string());
                 return Ok(vec![]);
             }
-            let pattern = &mut patterns.patterns[pat];
             if parts.len() == 2 {
+                let pattern = &patterns.patterns[pat];
                 output(format!("PN.L {} = {}", pat, pattern.length));
             } else {
-                let value: usize = parts[2]
-                    .parse()
-                    .context("Failed to parse pattern length")?;
+                let value: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns) {
+                    expr_val as usize
+                } else {
+                    parts[2]
+                        .parse()
+                        .context("Failed to parse pattern length")?
+                };
                 if value < 1 || value > 64 {
                     output("Error: Pattern length must be 1-64".to_string());
                     return Ok(vec![]);
                 }
+                let pattern = &mut patterns.patterns[pat];
                 pattern.length = value;
                 output(format!("Set pattern {} length to {}", pat, value));
             }
@@ -1272,24 +1619,33 @@ where
                 output("Error: PN.I requires pattern number (0-3)".to_string());
                 return Ok(vec![]);
             }
-            let pat: usize = parts[1]
-                .parse()
-                .context("Failed to parse pattern number")?;
+            let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+                expr_val as usize
+            } else {
+                parts[1]
+                    .parse()
+                    .context("Failed to parse pattern number")?
+            };
             if pat > 3 {
                 output("Error: Pattern number must be 0-3".to_string());
                 return Ok(vec![]);
             }
-            let pattern = &mut patterns.patterns[pat];
             if parts.len() == 2 {
+                let pattern = &patterns.patterns[pat];
                 output(format!("PN.I {} = {}", pat, pattern.index));
             } else {
-                let value: usize = parts[2]
-                    .parse()
-                    .context("Failed to parse pattern index")?;
+                let value: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns) {
+                    expr_val as usize
+                } else {
+                    parts[2]
+                        .parse()
+                        .context("Failed to parse pattern index")?
+                };
                 if value > 63 {
                     output("Error: Pattern index must be 0-63".to_string());
                     return Ok(vec![]);
                 }
+                let pattern = &mut patterns.patterns[pat];
                 pattern.index = value;
                 output(format!("Set pattern {} index to {}", pat, value));
             }
@@ -1299,9 +1655,13 @@ where
                 output("Error: PN.HERE requires pattern number (0-3)".to_string());
                 return Ok(vec![]);
             }
-            let pat: usize = parts[1]
-                .parse()
-                .context("Failed to parse pattern number")?;
+            let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+                expr_val as usize
+            } else {
+                parts[1]
+                    .parse()
+                    .context("Failed to parse pattern number")?
+            };
             if pat > 3 {
                 output("Error: Pattern number must be 0-3".to_string());
                 return Ok(vec![]);
@@ -1315,9 +1675,13 @@ where
                 output("Error: PN.NEXT requires pattern number (0-3)".to_string());
                 return Ok(vec![]);
             }
-            let pat: usize = parts[1]
-                .parse()
-                .context("Failed to parse pattern number")?;
+            let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+                expr_val as usize
+            } else {
+                parts[1]
+                    .parse()
+                    .context("Failed to parse pattern number")?
+            };
             if pat > 3 {
                 output("Error: Pattern number must be 0-3".to_string());
                 return Ok(vec![]);
@@ -1332,9 +1696,13 @@ where
                 output("Error: PN.PREV requires pattern number (0-3)".to_string());
                 return Ok(vec![]);
             }
-            let pat: usize = parts[1]
-                .parse()
-                .context("Failed to parse pattern number")?;
+            let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+                expr_val as usize
+            } else {
+                parts[1]
+                    .parse()
+                    .context("Failed to parse pattern number")?
+            };
             if pat > 3 {
                 output("Error: Pattern number must be 0-3".to_string());
                 return Ok(vec![]);
@@ -1353,27 +1721,40 @@ where
                 output("Error: PN requires pattern (0-3) and index (0-63)".to_string());
                 return Ok(vec![]);
             }
-            let pat: usize = parts[1]
-                .parse()
-                .context("Failed to parse pattern number")?;
+            let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+                expr_val as usize
+            } else {
+                parts[1]
+                    .parse()
+                    .context("Failed to parse pattern number")?
+            };
             if pat > 3 {
                 output("Error: Pattern number must be 0-3".to_string());
                 return Ok(vec![]);
             }
-            let idx: usize = parts[2]
-                .parse()
-                .context("Failed to parse pattern index")?;
+            let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns) {
+                expr_val as usize
+            } else {
+                parts[2]
+                    .parse()
+                    .context("Failed to parse pattern index")?
+            };
             if idx > 63 {
                 output("Error: Pattern index must be 0-63".to_string());
                 return Ok(vec![]);
             }
-            let pattern = &mut patterns.patterns[pat];
             if parts.len() == 3 {
+                let pattern = &patterns.patterns[pat];
                 output(format!("PN {} {} = {}", pat, idx, pattern.data[idx]));
             } else {
-                let val: i16 = parts[3]
-                    .parse()
-                    .context("Failed to parse pattern value")?;
+                let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 3, variables, patterns) {
+                    expr_val
+                } else {
+                    parts[3]
+                        .parse()
+                        .context("Failed to parse pattern value")?
+                };
+                let pattern = &mut patterns.patterns[pat];
                 pattern.data[idx] = val;
                 output(format!("Set PN {} {} to {}", pat, idx, val));
             }

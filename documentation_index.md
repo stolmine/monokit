@@ -86,6 +86,7 @@ Audio output
 #### Variables
 - `A`, `B`, `C`, `D` - General accumulators (get/set: `A` or `A 100`)
 - `X`, `Y`, `Z`, `T` - General accumulators
+- `I` - Loop counter (scoped to L loops, read-only)
 - Variables can be used in expressions: `PF A`, `DC X`
 
 #### Patterns (Working Pattern - P.N)
@@ -105,12 +106,13 @@ Audio output
 - `PN.NEXT <pat>` - Advance playhead, return value
 - `PN.PREV <pat>` - Reverse playhead, return value
 
-Note: All PN operations work in expression context (e.g., `DC PN.NEXT 0`)
+Note: All PN and P operations accept variables/expressions as arguments (e.g., `DC PN.NEXT 0`, `P I`, `PN A B`)
 
 #### Control Flow (PRE separator)
 - `IF <cond>: <cmd>` - Execute cmd if condition true
 - `PROB <0-100>: <cmd>` - Execute cmd with probability
 - `EV <n>: <cmd>` - Execute cmd every Nth tick (applies to whole line including semicolons)
+- `L <start> <end>: <commands>` - Loop from start to end (inclusive), supports forward/backward iteration, I is loop counter
 - Comparisons: `>`, `<`, `>=`, `<=`, `==`, `!=`
 - Sub-commands: `cmd1; cmd2; cmd3` - Multiple commands on one line
 

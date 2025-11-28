@@ -31,6 +31,7 @@ pub struct App {
     pub pattern_cursor: (usize, usize),
     pub pattern_input: String,
     pub ev_counters: [[u32; 8]; 10],
+    pub if_else_condition: bool,
 }
 
 impl App {
@@ -53,6 +54,7 @@ impl App {
             pattern_cursor: (0, 0),
             pattern_input: String::new(),
             ev_counters: [[0; 8]; 10],
+            if_else_condition: true,
         }
     }
 
@@ -123,6 +125,7 @@ impl App {
     }
 
     pub fn execute_script(&mut self, script_index: usize) {
+        self.if_else_condition = true;
         self.execute_script_with_depth(script_index, 0);
     }
 
@@ -219,6 +222,169 @@ impl App {
                                         continue;
                                     }
 
+                                    if sub_cmd.to_uppercase().starts_with("ELIF ") {
+                                        if let Some(colon_pos) = sub_cmd.find(':') {
+                                            let elif_cond = sub_cmd[5..colon_pos].trim();
+                                            let cmd_to_run = sub_cmd[colon_pos + 1..].trim();
+
+                                            if !self.if_else_condition {
+                                                if eval_condition(
+                                                    elif_cond,
+                                                    &self.variables,
+                                                    &mut self.patterns,
+                                                    &self.scripts,
+                                                    script_index,
+                                                ) {
+                                                    self.if_else_condition = true;
+
+                                                    let mut output_messages = Vec::new();
+                                                    let result = process_command(
+                                                        &self.metro_tx,
+                                                        &mut metro_interval,
+                                                        &mut self.variables,
+                                                        &mut self.patterns,
+                                                        &mut self.scripts,
+                                                        script_index,
+                                                        cmd_to_run,
+                                                        |msg| {
+                                                            output_messages.push(msg);
+                                                        },
+                                                    );
+
+                                                    match result {
+                                                        Ok(scripts_to_run) => {
+                                                            for msg in output_messages {
+                                                                self.add_output(msg);
+                                                            }
+                                                            for script_idx in scripts_to_run {
+                                                                self.execute_script_with_depth(script_idx, depth + 1);
+                                                            }
+                                                        }
+                                                        Err(e) => {
+                                                            output_messages.push(format!("Error: {}", e));
+                                                            for msg in output_messages {
+                                                                self.add_output(msg);
+                                                            }
+                                                        }
+                                                    }
+
+                                                    let mut state = self.metro_state.lock().unwrap();
+                                                    state.interval_ms = metro_interval;
+                                                    if cmd_to_run.to_uppercase().starts_with("M.ACT") {
+                                                        let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                                        if parts.len() >= 2 {
+                                                            if let Some((val, _)) = eval_expression(
+                                                                &parts,
+                                                                1,
+                                                                &self.variables,
+                                                                &mut self.patterns,
+                                                                &self.scripts,
+                                                                script_index,
+                                                            ) {
+                                                                state.active = val != 0;
+                                                            }
+                                                        }
+                                                    }
+                                                    if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
+                                                        let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                                        if parts.len() >= 2 {
+                                                            if let Some((idx, _)) = eval_expression(
+                                                                &parts,
+                                                                1,
+                                                                &self.variables,
+                                                                &mut self.patterns,
+                                                                &self.scripts,
+                                                                script_index,
+                                                            ) {
+                                                                let idx = idx as usize;
+                                                                if idx >= 1 && idx <= 8 {
+                                                                    state.script_index = idx - 1;
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            continue;
+                                        }
+                                    }
+
+                                    if sub_cmd.to_uppercase().starts_with("ELSE:") {
+                                        let cmd_to_run = sub_cmd[5..].trim();
+
+                                        if !self.if_else_condition {
+                                            self.if_else_condition = true;
+
+                                            let mut output_messages = Vec::new();
+                                            let result = process_command(
+                                                &self.metro_tx,
+                                                &mut metro_interval,
+                                                &mut self.variables,
+                                                &mut self.patterns,
+                                                &mut self.scripts,
+                                                script_index,
+                                                cmd_to_run,
+                                                |msg| {
+                                                    output_messages.push(msg);
+                                                },
+                                            );
+
+                                            match result {
+                                                Ok(scripts_to_run) => {
+                                                    for msg in output_messages {
+                                                        self.add_output(msg);
+                                                    }
+                                                    for script_idx in scripts_to_run {
+                                                        self.execute_script_with_depth(script_idx, depth + 1);
+                                                    }
+                                                }
+                                                Err(e) => {
+                                                    output_messages.push(format!("Error: {}", e));
+                                                    for msg in output_messages {
+                                                        self.add_output(msg);
+                                                    }
+                                                }
+                                            }
+
+                                            let mut state = self.metro_state.lock().unwrap();
+                                            state.interval_ms = metro_interval;
+                                            if cmd_to_run.to_uppercase().starts_with("M.ACT") {
+                                                let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                                if parts.len() >= 2 {
+                                                    if let Some((val, _)) = eval_expression(
+                                                        &parts,
+                                                        1,
+                                                        &self.variables,
+                                                        &mut self.patterns,
+                                                        &self.scripts,
+                                                        script_index,
+                                                    ) {
+                                                        state.active = val != 0;
+                                                    }
+                                                }
+                                            }
+                                            if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
+                                                let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                                if parts.len() >= 2 {
+                                                    if let Some((idx, _)) = eval_expression(
+                                                        &parts,
+                                                        1,
+                                                        &self.variables,
+                                                        &mut self.patterns,
+                                                        &self.scripts,
+                                                        script_index,
+                                                    ) {
+                                                        let idx = idx as usize;
+                                                        if idx >= 1 && idx <= 8 {
+                                                            state.script_index = idx - 1;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        continue;
+                                    }
+
                                     let (condition, cmd_to_run) =
                                         if let Some(colon_pos) = sub_cmd.find(':') {
                                             let cond = &sub_cmd[..colon_pos];
@@ -233,7 +399,20 @@ impl App {
                                     }
 
                                     if let Some(cond) = condition {
-                                        if !eval_condition(
+                                        if cond.trim().to_uppercase().starts_with("IF ") {
+                                            self.if_else_condition = false;
+                                            if eval_condition(
+                                                cond,
+                                                &self.variables,
+                                                &mut self.patterns,
+                                                &self.scripts,
+                                                script_index,
+                                            ) {
+                                                self.if_else_condition = true;
+                                            } else {
+                                                continue;
+                                            }
+                                        } else if !eval_condition(
                                             cond,
                                             &self.variables,
                                             &mut self.patterns,
@@ -321,6 +500,169 @@ impl App {
                                         continue;
                                     }
 
+                                    if sub_cmd.to_uppercase().starts_with("ELIF ") {
+                                        if let Some(colon_pos) = sub_cmd.find(':') {
+                                            let elif_cond = sub_cmd[5..colon_pos].trim();
+                                            let cmd_to_run = sub_cmd[colon_pos + 1..].trim();
+
+                                            if !self.if_else_condition {
+                                                if eval_condition(
+                                                    elif_cond,
+                                                    &self.variables,
+                                                    &mut self.patterns,
+                                                    &self.scripts,
+                                                    script_index,
+                                                ) {
+                                                    self.if_else_condition = true;
+
+                                                    let mut output_messages = Vec::new();
+                                                    let result = process_command(
+                                                        &self.metro_tx,
+                                                        &mut metro_interval,
+                                                        &mut self.variables,
+                                                        &mut self.patterns,
+                                                        &mut self.scripts,
+                                                        script_index,
+                                                        cmd_to_run,
+                                                        |msg| {
+                                                            output_messages.push(msg);
+                                                        },
+                                                    );
+
+                                                    match result {
+                                                        Ok(scripts_to_run) => {
+                                                            for msg in output_messages {
+                                                                self.add_output(msg);
+                                                            }
+                                                            for script_idx in scripts_to_run {
+                                                                self.execute_script_with_depth(script_idx, depth + 1);
+                                                            }
+                                                        }
+                                                        Err(e) => {
+                                                            output_messages.push(format!("Error: {}", e));
+                                                            for msg in output_messages {
+                                                                self.add_output(msg);
+                                                            }
+                                                        }
+                                                    }
+
+                                                    let mut state = self.metro_state.lock().unwrap();
+                                                    state.interval_ms = metro_interval;
+                                                    if cmd_to_run.to_uppercase().starts_with("M.ACT") {
+                                                        let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                                        if parts.len() >= 2 {
+                                                            if let Some((val, _)) = eval_expression(
+                                                                &parts,
+                                                                1,
+                                                                &self.variables,
+                                                                &mut self.patterns,
+                                                                &self.scripts,
+                                                                script_index,
+                                                            ) {
+                                                                state.active = val != 0;
+                                                            }
+                                                        }
+                                                    }
+                                                    if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
+                                                        let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                                        if parts.len() >= 2 {
+                                                            if let Some((idx, _)) = eval_expression(
+                                                                &parts,
+                                                                1,
+                                                                &self.variables,
+                                                                &mut self.patterns,
+                                                                &self.scripts,
+                                                                script_index,
+                                                            ) {
+                                                                let idx = idx as usize;
+                                                                if idx >= 1 && idx <= 8 {
+                                                                    state.script_index = idx - 1;
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            continue;
+                                        }
+                                    }
+
+                                    if sub_cmd.to_uppercase().starts_with("ELSE:") {
+                                        let cmd_to_run = sub_cmd[5..].trim();
+
+                                        if !self.if_else_condition {
+                                            self.if_else_condition = true;
+
+                                            let mut output_messages = Vec::new();
+                                            let result = process_command(
+                                                &self.metro_tx,
+                                                &mut metro_interval,
+                                                &mut self.variables,
+                                                &mut self.patterns,
+                                                &mut self.scripts,
+                                                script_index,
+                                                cmd_to_run,
+                                                |msg| {
+                                                    output_messages.push(msg);
+                                                },
+                                            );
+
+                                            match result {
+                                                Ok(scripts_to_run) => {
+                                                    for msg in output_messages {
+                                                        self.add_output(msg);
+                                                    }
+                                                    for script_idx in scripts_to_run {
+                                                        self.execute_script_with_depth(script_idx, depth + 1);
+                                                    }
+                                                }
+                                                Err(e) => {
+                                                    output_messages.push(format!("Error: {}", e));
+                                                    for msg in output_messages {
+                                                        self.add_output(msg);
+                                                    }
+                                                }
+                                            }
+
+                                            let mut state = self.metro_state.lock().unwrap();
+                                            state.interval_ms = metro_interval;
+                                            if cmd_to_run.to_uppercase().starts_with("M.ACT") {
+                                                let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                                if parts.len() >= 2 {
+                                                    if let Some((val, _)) = eval_expression(
+                                                        &parts,
+                                                        1,
+                                                        &self.variables,
+                                                        &mut self.patterns,
+                                                        &self.scripts,
+                                                        script_index,
+                                                    ) {
+                                                        state.active = val != 0;
+                                                    }
+                                                }
+                                            }
+                                            if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
+                                                let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                                if parts.len() >= 2 {
+                                                    if let Some((idx, _)) = eval_expression(
+                                                        &parts,
+                                                        1,
+                                                        &self.variables,
+                                                        &mut self.patterns,
+                                                        &self.scripts,
+                                                        script_index,
+                                                    ) {
+                                                        let idx = idx as usize;
+                                                        if idx >= 1 && idx <= 8 {
+                                                            state.script_index = idx - 1;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        continue;
+                                    }
+
                                     let (condition, cmd_to_run) =
                                         if let Some(colon_pos) = sub_cmd.find(':') {
                                             let cond = &sub_cmd[..colon_pos];
@@ -335,7 +677,20 @@ impl App {
                                     }
 
                                     if let Some(cond) = condition {
-                                        if !eval_condition(
+                                        if cond.trim().to_uppercase().starts_with("IF ") {
+                                            self.if_else_condition = false;
+                                            if eval_condition(
+                                                cond,
+                                                &self.variables,
+                                                &mut self.patterns,
+                                                &self.scripts,
+                                                script_index,
+                                            ) {
+                                                self.if_else_condition = true;
+                                            } else {
+                                                continue;
+                                            }
+                                        } else if !eval_condition(
                                             cond,
                                             &self.variables,
                                             &mut self.patterns,
@@ -450,6 +805,34 @@ impl App {
                 } else {
                     line
                 }
+            } else if line.to_uppercase().starts_with("SKIP ") {
+                if let Some(colon_pos) = line.find(':') {
+                    let skip_part = &line[5..colon_pos].trim();
+                    let parts: Vec<&str> = skip_part.split_whitespace().collect();
+                    if let Some((divisor, _)) = eval_expression(
+                        &parts,
+                        0,
+                        &self.variables,
+                        &mut self.patterns,
+                        &self.scripts,
+                        script_index,
+                    ) {
+                        if divisor > 0 {
+                            let divisor = divisor as u32;
+                            self.ev_counters[script_index][line_num] += 1;
+                            if self.ev_counters[script_index][line_num] % divisor == 0 {
+                                continue;
+                            }
+                            line[colon_pos + 1..].trim()
+                        } else {
+                            line
+                        }
+                    } else {
+                        line
+                    }
+                } else {
+                    line
+                }
             } else {
                 line
             };
@@ -467,6 +850,169 @@ impl App {
                     writeln!(f, "  sub_cmd: '{}'", sub_cmd).ok();
                 }
 
+                if sub_cmd.to_uppercase().starts_with("ELIF ") {
+                    if let Some(colon_pos) = sub_cmd.find(':') {
+                        let elif_cond = sub_cmd[5..colon_pos].trim();
+                        let cmd_to_run = sub_cmd[colon_pos + 1..].trim();
+
+                        if !self.if_else_condition {
+                            if eval_condition(
+                                elif_cond,
+                                &self.variables,
+                                &mut self.patterns,
+                                &self.scripts,
+                                script_index,
+                            ) {
+                                self.if_else_condition = true;
+
+                                let mut output_messages = Vec::new();
+                                let result = process_command(
+                                    &self.metro_tx,
+                                    &mut metro_interval,
+                                    &mut self.variables,
+                                    &mut self.patterns,
+                                    &mut self.scripts,
+                                    script_index,
+                                    cmd_to_run,
+                                    |msg| {
+                                        output_messages.push(msg);
+                                    },
+                                );
+
+                                match result {
+                                    Ok(scripts_to_run) => {
+                                        for msg in output_messages {
+                                            self.add_output(msg);
+                                        }
+                                        for script_idx in scripts_to_run {
+                                            self.execute_script_with_depth(script_idx, depth + 1);
+                                        }
+                                    }
+                                    Err(e) => {
+                                        output_messages.push(format!("Error: {}", e));
+                                        for msg in output_messages {
+                                            self.add_output(msg);
+                                        }
+                                    }
+                                }
+
+                                let mut state = self.metro_state.lock().unwrap();
+                                state.interval_ms = metro_interval;
+                                if cmd_to_run.to_uppercase().starts_with("M.ACT") {
+                                    let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                    if parts.len() >= 2 {
+                                        if let Some((val, _)) = eval_expression(
+                                            &parts,
+                                            1,
+                                            &self.variables,
+                                            &mut self.patterns,
+                                            &self.scripts,
+                                            script_index,
+                                        ) {
+                                            state.active = val != 0;
+                                        }
+                                    }
+                                }
+                                if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
+                                    let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                    if parts.len() >= 2 {
+                                        if let Some((idx, _)) = eval_expression(
+                                            &parts,
+                                            1,
+                                            &self.variables,
+                                            &mut self.patterns,
+                                            &self.scripts,
+                                            script_index,
+                                        ) {
+                                            let idx = idx as usize;
+                                            if idx >= 1 && idx <= 8 {
+                                                state.script_index = idx - 1;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        continue;
+                    }
+                }
+
+                if sub_cmd.to_uppercase().starts_with("ELSE:") {
+                    let cmd_to_run = sub_cmd[5..].trim();
+
+                    if !self.if_else_condition {
+                        self.if_else_condition = true;
+
+                        let mut output_messages = Vec::new();
+                        let result = process_command(
+                            &self.metro_tx,
+                            &mut metro_interval,
+                            &mut self.variables,
+                            &mut self.patterns,
+                            &mut self.scripts,
+                            script_index,
+                            cmd_to_run,
+                            |msg| {
+                                output_messages.push(msg);
+                            },
+                        );
+
+                        match result {
+                            Ok(scripts_to_run) => {
+                                for msg in output_messages {
+                                    self.add_output(msg);
+                                }
+                                for script_idx in scripts_to_run {
+                                    self.execute_script_with_depth(script_idx, depth + 1);
+                                }
+                            }
+                            Err(e) => {
+                                output_messages.push(format!("Error: {}", e));
+                                for msg in output_messages {
+                                    self.add_output(msg);
+                                }
+                            }
+                        }
+
+                        let mut state = self.metro_state.lock().unwrap();
+                        state.interval_ms = metro_interval;
+                        if cmd_to_run.to_uppercase().starts_with("M.ACT") {
+                            let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                            if parts.len() >= 2 {
+                                if let Some((val, _)) = eval_expression(
+                                    &parts,
+                                    1,
+                                    &self.variables,
+                                    &mut self.patterns,
+                                    &self.scripts,
+                                    script_index,
+                                ) {
+                                    state.active = val != 0;
+                                }
+                            }
+                        }
+                        if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
+                            let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                            if parts.len() >= 2 {
+                                if let Some((idx, _)) = eval_expression(
+                                    &parts,
+                                    1,
+                                    &self.variables,
+                                    &mut self.patterns,
+                                    &self.scripts,
+                                    script_index,
+                                ) {
+                                    let idx = idx as usize;
+                                    if idx >= 1 && idx <= 8 {
+                                        state.script_index = idx - 1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    continue;
+                }
+
                 let (condition, cmd_to_run) = if let Some(colon_pos) = sub_cmd.find(':') {
                     let cond = &sub_cmd[..colon_pos];
                     let cmd = sub_cmd[colon_pos + 1..].trim();
@@ -480,7 +1026,20 @@ impl App {
                 }
 
                 if let Some(cond) = condition {
-                    if !eval_condition(
+                    if cond.trim().to_uppercase().starts_with("IF ") {
+                        self.if_else_condition = false;
+                        if eval_condition(
+                            cond,
+                            &self.variables,
+                            &mut self.patterns,
+                            &self.scripts,
+                            script_index,
+                        ) {
+                            self.if_else_condition = true;
+                        } else {
+                            continue;
+                        }
+                    } else if !eval_condition(
                         cond,
                         &self.variables,
                         &mut self.patterns,
@@ -635,6 +1194,169 @@ impl App {
                                     continue;
                                 }
 
+                                if sub_cmd.to_uppercase().starts_with("ELIF ") {
+                                    if let Some(colon_pos) = sub_cmd.find(':') {
+                                        let elif_cond = sub_cmd[5..colon_pos].trim();
+                                        let cmd_to_run = sub_cmd[colon_pos + 1..].trim();
+
+                                        if !self.if_else_condition {
+                                            if eval_condition(
+                                                elif_cond,
+                                                &self.variables,
+                                                &mut self.patterns,
+                                                &self.scripts,
+                                                10,
+                                            ) {
+                                                self.if_else_condition = true;
+
+                                                let mut output_messages = Vec::new();
+                                                let result = process_command(
+                                                    &self.metro_tx,
+                                                    &mut metro_interval,
+                                                    &mut self.variables,
+                                                    &mut self.patterns,
+                                                    &mut self.scripts,
+                                                    10,
+                                                    cmd_to_run,
+                                                    |msg| {
+                                                        output_messages.push(msg);
+                                                    },
+                                                );
+
+                                                match result {
+                                                    Ok(scripts_to_run) => {
+                                                        for msg in output_messages {
+                                                            self.add_output(msg);
+                                                        }
+                                                        for script_idx in scripts_to_run {
+                                                            self.execute_script(script_idx);
+                                                        }
+                                                    }
+                                                    Err(e) => {
+                                                        output_messages.push(format!("Error: {}", e));
+                                                        for msg in output_messages {
+                                                            self.add_output(msg);
+                                                        }
+                                                    }
+                                                }
+
+                                                let mut state = self.metro_state.lock().unwrap();
+                                                state.interval_ms = metro_interval;
+                                                if cmd_to_run.to_uppercase().starts_with("M.ACT") {
+                                                    let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                                    if parts.len() >= 2 {
+                                                        if let Some((val, _)) = eval_expression(
+                                                            &parts,
+                                                            1,
+                                                            &self.variables,
+                                                            &mut self.patterns,
+                                                            &self.scripts,
+                                                            10,
+                                                        ) {
+                                                            state.active = val != 0;
+                                                        }
+                                                    }
+                                                }
+                                                if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
+                                                    let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                                    if parts.len() >= 2 {
+                                                        if let Some((idx, _)) = eval_expression(
+                                                            &parts,
+                                                            1,
+                                                            &self.variables,
+                                                            &mut self.patterns,
+                                                            &self.scripts,
+                                                            10,
+                                                        ) {
+                                                            let idx = idx as usize;
+                                                            if idx >= 1 && idx <= 8 {
+                                                                state.script_index = idx - 1;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        continue;
+                                    }
+                                }
+
+                                if sub_cmd.to_uppercase().starts_with("ELSE:") {
+                                    let cmd_to_run = sub_cmd[5..].trim();
+
+                                    if !self.if_else_condition {
+                                        self.if_else_condition = true;
+
+                                        let mut output_messages = Vec::new();
+                                        let result = process_command(
+                                            &self.metro_tx,
+                                            &mut metro_interval,
+                                            &mut self.variables,
+                                            &mut self.patterns,
+                                            &mut self.scripts,
+                                            10,
+                                            cmd_to_run,
+                                            |msg| {
+                                                output_messages.push(msg);
+                                            },
+                                        );
+
+                                        match result {
+                                            Ok(scripts_to_run) => {
+                                                for msg in output_messages {
+                                                    self.add_output(msg);
+                                                }
+                                                for script_idx in scripts_to_run {
+                                                    self.execute_script(script_idx);
+                                                }
+                                            }
+                                            Err(e) => {
+                                                output_messages.push(format!("Error: {}", e));
+                                                for msg in output_messages {
+                                                    self.add_output(msg);
+                                                }
+                                            }
+                                        }
+
+                                        let mut state = self.metro_state.lock().unwrap();
+                                        state.interval_ms = metro_interval;
+                                        if cmd_to_run.to_uppercase().starts_with("M.ACT") {
+                                            let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                            if parts.len() >= 2 {
+                                                if let Some((val, _)) = eval_expression(
+                                                    &parts,
+                                                    1,
+                                                    &self.variables,
+                                                    &mut self.patterns,
+                                                    &self.scripts,
+                                                    10,
+                                                ) {
+                                                    state.active = val != 0;
+                                                }
+                                            }
+                                        }
+                                        if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
+                                            let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                            if parts.len() >= 2 {
+                                                if let Some((idx, _)) = eval_expression(
+                                                    &parts,
+                                                    1,
+                                                    &self.variables,
+                                                    &mut self.patterns,
+                                                    &self.scripts,
+                                                    10,
+                                                ) {
+                                                    let idx = idx as usize;
+                                                    if idx >= 1 && idx <= 8 {
+                                                        state.script_index = idx - 1;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    continue;
+                                }
+
                                 let (condition, cmd_to_run) =
                                     if let Some(colon_pos) = sub_cmd.find(':') {
                                         let cond = &sub_cmd[..colon_pos];
@@ -649,7 +1371,20 @@ impl App {
                                 }
 
                                 if let Some(cond) = condition {
-                                    if !eval_condition(
+                                    if cond.trim().to_uppercase().starts_with("IF ") {
+                                        self.if_else_condition = false;
+                                        if eval_condition(
+                                            cond,
+                                            &self.variables,
+                                            &mut self.patterns,
+                                            &self.scripts,
+                                            10,
+                                        ) {
+                                            self.if_else_condition = true;
+                                        } else {
+                                            continue;
+                                        }
+                                    } else if !eval_condition(
                                         cond,
                                         &self.variables,
                                         &mut self.patterns,
@@ -737,6 +1472,169 @@ impl App {
                                     continue;
                                 }
 
+                                if sub_cmd.to_uppercase().starts_with("ELIF ") {
+                                    if let Some(colon_pos) = sub_cmd.find(':') {
+                                        let elif_cond = sub_cmd[5..colon_pos].trim();
+                                        let cmd_to_run = sub_cmd[colon_pos + 1..].trim();
+
+                                        if !self.if_else_condition {
+                                            if eval_condition(
+                                                elif_cond,
+                                                &self.variables,
+                                                &mut self.patterns,
+                                                &self.scripts,
+                                                10,
+                                            ) {
+                                                self.if_else_condition = true;
+
+                                                let mut output_messages = Vec::new();
+                                                let result = process_command(
+                                                    &self.metro_tx,
+                                                    &mut metro_interval,
+                                                    &mut self.variables,
+                                                    &mut self.patterns,
+                                                    &mut self.scripts,
+                                                    10,
+                                                    cmd_to_run,
+                                                    |msg| {
+                                                        output_messages.push(msg);
+                                                    },
+                                                );
+
+                                                match result {
+                                                    Ok(scripts_to_run) => {
+                                                        for msg in output_messages {
+                                                            self.add_output(msg);
+                                                        }
+                                                        for script_idx in scripts_to_run {
+                                                            self.execute_script(script_idx);
+                                                        }
+                                                    }
+                                                    Err(e) => {
+                                                        output_messages.push(format!("Error: {}", e));
+                                                        for msg in output_messages {
+                                                            self.add_output(msg);
+                                                        }
+                                                    }
+                                                }
+
+                                                let mut state = self.metro_state.lock().unwrap();
+                                                state.interval_ms = metro_interval;
+                                                if cmd_to_run.to_uppercase().starts_with("M.ACT") {
+                                                    let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                                    if parts.len() >= 2 {
+                                                        if let Some((val, _)) = eval_expression(
+                                                            &parts,
+                                                            1,
+                                                            &self.variables,
+                                                            &mut self.patterns,
+                                                            &self.scripts,
+                                                            10,
+                                                        ) {
+                                                            state.active = val != 0;
+                                                        }
+                                                    }
+                                                }
+                                                if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
+                                                    let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                                    if parts.len() >= 2 {
+                                                        if let Some((idx, _)) = eval_expression(
+                                                            &parts,
+                                                            1,
+                                                            &self.variables,
+                                                            &mut self.patterns,
+                                                            &self.scripts,
+                                                            10,
+                                                        ) {
+                                                            let idx = idx as usize;
+                                                            if idx >= 1 && idx <= 8 {
+                                                                state.script_index = idx - 1;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        continue;
+                                    }
+                                }
+
+                                if sub_cmd.to_uppercase().starts_with("ELSE:") {
+                                    let cmd_to_run = sub_cmd[5..].trim();
+
+                                    if !self.if_else_condition {
+                                        self.if_else_condition = true;
+
+                                        let mut output_messages = Vec::new();
+                                        let result = process_command(
+                                            &self.metro_tx,
+                                            &mut metro_interval,
+                                            &mut self.variables,
+                                            &mut self.patterns,
+                                            &mut self.scripts,
+                                            10,
+                                            cmd_to_run,
+                                            |msg| {
+                                                output_messages.push(msg);
+                                            },
+                                        );
+
+                                        match result {
+                                            Ok(scripts_to_run) => {
+                                                for msg in output_messages {
+                                                    self.add_output(msg);
+                                                }
+                                                for script_idx in scripts_to_run {
+                                                    self.execute_script(script_idx);
+                                                }
+                                            }
+                                            Err(e) => {
+                                                output_messages.push(format!("Error: {}", e));
+                                                for msg in output_messages {
+                                                    self.add_output(msg);
+                                                }
+                                            }
+                                        }
+
+                                        let mut state = self.metro_state.lock().unwrap();
+                                        state.interval_ms = metro_interval;
+                                        if cmd_to_run.to_uppercase().starts_with("M.ACT") {
+                                            let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                            if parts.len() >= 2 {
+                                                if let Some((val, _)) = eval_expression(
+                                                    &parts,
+                                                    1,
+                                                    &self.variables,
+                                                    &mut self.patterns,
+                                                    &self.scripts,
+                                                    10,
+                                                ) {
+                                                    state.active = val != 0;
+                                                }
+                                            }
+                                        }
+                                        if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
+                                            let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                            if parts.len() >= 2 {
+                                                if let Some((idx, _)) = eval_expression(
+                                                    &parts,
+                                                    1,
+                                                    &self.variables,
+                                                    &mut self.patterns,
+                                                    &self.scripts,
+                                                    10,
+                                                ) {
+                                                    let idx = idx as usize;
+                                                    if idx >= 1 && idx <= 8 {
+                                                        state.script_index = idx - 1;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    continue;
+                                }
+
                                 let (condition, cmd_to_run) =
                                     if let Some(colon_pos) = sub_cmd.find(':') {
                                         let cond = &sub_cmd[..colon_pos];
@@ -751,7 +1649,20 @@ impl App {
                                 }
 
                                 if let Some(cond) = condition {
-                                    if !eval_condition(
+                                    if cond.trim().to_uppercase().starts_with("IF ") {
+                                        self.if_else_condition = false;
+                                        if eval_condition(
+                                            cond,
+                                            &self.variables,
+                                            &mut self.patterns,
+                                            &self.scripts,
+                                            10,
+                                        ) {
+                                            self.if_else_condition = true;
+                                        } else {
+                                            continue;
+                                        }
+                                    } else if !eval_condition(
                                         cond,
                                         &self.variables,
                                         &mut self.patterns,
@@ -838,9 +1749,216 @@ impl App {
             }
         }
 
-        for sub_cmd in cmd.split(';') {
+        let cmd_to_process = if cmd.to_uppercase().starts_with("EV ") {
+            if let Some(colon_pos) = cmd.find(':') {
+                let ev_part = &cmd[3..colon_pos].trim();
+                let parts: Vec<&str> = ev_part.split_whitespace().collect();
+                if let Some((divisor, _)) = eval_expression(
+                    &parts,
+                    0,
+                    &self.variables,
+                    &mut self.patterns,
+                    &self.scripts,
+                    10,
+                ) {
+                    if divisor > 0 {
+                        self.add_output("Warning: EV in interactive mode - counters not persisted".to_string());
+                    }
+                }
+                cmd[colon_pos + 1..].trim().to_string()
+            } else {
+                cmd.clone()
+            }
+        } else if cmd.to_uppercase().starts_with("SKIP ") {
+            if let Some(colon_pos) = cmd.find(':') {
+                let skip_part = &cmd[5..colon_pos].trim();
+                let parts: Vec<&str> = skip_part.split_whitespace().collect();
+                if let Some((divisor, _)) = eval_expression(
+                    &parts,
+                    0,
+                    &self.variables,
+                    &mut self.patterns,
+                    &self.scripts,
+                    10,
+                ) {
+                    if divisor > 0 {
+                        self.add_output("Warning: SKIP in interactive mode - counters not persisted".to_string());
+                    }
+                }
+                cmd[colon_pos + 1..].trim().to_string()
+            } else {
+                cmd.clone()
+            }
+        } else {
+            cmd.clone()
+        };
+
+        for sub_cmd in cmd_to_process.split(';') {
             let sub_cmd = sub_cmd.trim();
             if sub_cmd.is_empty() {
+                continue;
+            }
+
+            if sub_cmd.to_uppercase().starts_with("ELIF ") {
+                if let Some(colon_pos) = sub_cmd.find(':') {
+                    let elif_cond = sub_cmd[5..colon_pos].trim();
+                    let cmd_to_run = sub_cmd[colon_pos + 1..].trim();
+
+                    if !self.if_else_condition {
+                        if eval_condition(
+                            elif_cond,
+                            &self.variables,
+                            &mut self.patterns,
+                            &self.scripts,
+                            10,
+                        ) {
+                            self.if_else_condition = true;
+
+                            let mut output_messages = Vec::new();
+                            let result = process_command(
+                                &self.metro_tx,
+                                &mut metro_interval,
+                                &mut self.variables,
+                                &mut self.patterns,
+                                &mut self.scripts,
+                                10,
+                                cmd_to_run,
+                                |msg| {
+                                    output_messages.push(msg);
+                                },
+                            );
+
+                            match result {
+                                Ok(scripts_to_run) => {
+                                    for msg in output_messages {
+                                        self.add_output(msg);
+                                    }
+                                    for script_idx in scripts_to_run {
+                                        self.execute_script(script_idx);
+                                    }
+                                }
+                                Err(e) => {
+                                    output_messages.push(format!("Error: {}", e));
+                                    for msg in output_messages {
+                                        self.add_output(msg);
+                                    }
+                                }
+                            }
+
+                            let mut state = self.metro_state.lock().unwrap();
+                            state.interval_ms = metro_interval;
+                            if cmd_to_run.to_uppercase().starts_with("M.ACT") {
+                                let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                if parts.len() >= 2 {
+                                    if let Some((val, _)) = eval_expression(
+                                        &parts,
+                                        1,
+                                        &self.variables,
+                                        &mut self.patterns,
+                                        &self.scripts,
+                                        10,
+                                    ) {
+                                        state.active = val != 0;
+                                    }
+                                }
+                            }
+                            if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
+                                let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                if parts.len() >= 2 {
+                                    if let Some((idx, _)) = eval_expression(
+                                        &parts,
+                                        1,
+                                        &self.variables,
+                                        &mut self.patterns,
+                                        &self.scripts,
+                                        10,
+                                    ) {
+                                        let idx = idx as usize;
+                                        if idx >= 1 && idx <= 8 {
+                                            state.script_index = idx - 1;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    continue;
+                }
+            }
+
+            if sub_cmd.to_uppercase().starts_with("ELSE:") {
+                let cmd_to_run = sub_cmd[5..].trim();
+
+                if !self.if_else_condition {
+                    self.if_else_condition = true;
+
+                    let mut output_messages = Vec::new();
+                    let result = process_command(
+                        &self.metro_tx,
+                        &mut metro_interval,
+                        &mut self.variables,
+                        &mut self.patterns,
+                        &mut self.scripts,
+                        10,
+                        cmd_to_run,
+                        |msg| {
+                            output_messages.push(msg);
+                        },
+                    );
+
+                    match result {
+                        Ok(scripts_to_run) => {
+                            for msg in output_messages {
+                                self.add_output(msg);
+                            }
+                            for script_idx in scripts_to_run {
+                                self.execute_script(script_idx);
+                            }
+                        }
+                        Err(e) => {
+                            output_messages.push(format!("Error: {}", e));
+                            for msg in output_messages {
+                                self.add_output(msg);
+                            }
+                        }
+                    }
+
+                    let mut state = self.metro_state.lock().unwrap();
+                    state.interval_ms = metro_interval;
+                    if cmd_to_run.to_uppercase().starts_with("M.ACT") {
+                        let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                        if parts.len() >= 2 {
+                            if let Some((val, _)) = eval_expression(
+                                &parts,
+                                1,
+                                &self.variables,
+                                &mut self.patterns,
+                                &self.scripts,
+                                10,
+                            ) {
+                                state.active = val != 0;
+                            }
+                        }
+                    }
+                    if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
+                        let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                        if parts.len() >= 2 {
+                            if let Some((idx, _)) = eval_expression(
+                                &parts,
+                                1,
+                                &self.variables,
+                                &mut self.patterns,
+                                &self.scripts,
+                                10,
+                            ) {
+                                let idx = idx as usize;
+                                if idx >= 1 && idx <= 8 {
+                                    state.script_index = idx - 1;
+                                }
+                            }
+                        }
+                    }
+                }
                 continue;
             }
 
@@ -857,7 +1975,20 @@ impl App {
             }
 
             if let Some(cond) = condition {
-                if !eval_condition(
+                if cond.trim().to_uppercase().starts_with("IF ") {
+                    self.if_else_condition = false;
+                    if eval_condition(
+                        cond,
+                        &self.variables,
+                        &mut self.patterns,
+                        &self.scripts,
+                        10,
+                    ) {
+                        self.if_else_condition = true;
+                    } else {
+                        continue;
+                    }
+                } else if !eval_condition(
                     cond,
                     &self.variables,
                     &mut self.patterns,

@@ -846,3 +846,497 @@ fn test_pattern_storage_default() {
         }
     }
 }
+
+#[test]
+fn test_if_condition_true_executes() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    variables.a = 10;
+
+    assert_eq!(eval_condition("IF A == 10", &variables, &mut patterns, &scripts, 0), true);
+    assert_eq!(eval_condition("IF A > 5", &variables, &mut patterns, &scripts, 0), true);
+    assert_eq!(eval_condition("IF A >= 10", &variables, &mut patterns, &scripts, 0), true);
+}
+
+#[test]
+fn test_if_condition_false_skips() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    variables.a = 5;
+
+    assert_eq!(eval_condition("IF A == 10", &variables, &mut patterns, &scripts, 0), false);
+    assert_eq!(eval_condition("IF A > 10", &variables, &mut patterns, &scripts, 0), false);
+    assert_eq!(eval_condition("IF A < 5", &variables, &mut patterns, &scripts, 0), false);
+}
+
+#[test]
+fn test_if_with_nested_expressions() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    variables.a = 5;
+    variables.b = 3;
+
+    assert_eq!(eval_condition("IF ADD A B == 8", &variables, &mut patterns, &scripts, 0), true);
+    assert_eq!(eval_condition("IF MUL A B == 15", &variables, &mut patterns, &scripts, 0), true);
+    assert_eq!(eval_condition("IF SUB A B == 2", &variables, &mut patterns, &scripts, 0), true);
+}
+
+#[test]
+fn test_nested_math_in_conditions() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    variables.a = 10;
+
+    assert_eq!(eval_condition("IF ADD A 5 >= 15", &variables, &mut patterns, &scripts, 0), true);
+    assert_eq!(eval_condition("IF MUL ADD A 2 2 == 24", &variables, &mut patterns, &scripts, 0), true);
+}
+
+#[test]
+fn test_pattern_ops_in_conditions() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    patterns.patterns[0].data[0] = 100;
+    patterns.patterns[0].length = 1;
+    patterns.patterns[0].index = 0;
+
+    assert_eq!(eval_condition("IF PN 0 == 100", &variables, &mut patterns, &scripts, 0), true);
+    assert_eq!(eval_condition("IF PN 0 >= 50", &variables, &mut patterns, &scripts, 0), true);
+    assert_eq!(eval_condition("IF PN 0 != 0", &variables, &mut patterns, &scripts, 0), true);
+}
+
+#[test]
+fn test_variables_in_all_expression_positions() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    variables.a = 10;
+    variables.b = 5;
+    variables.c = 2;
+
+    let parts = vec!["ADD", "A", "B"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result.unwrap().0, 15);
+
+    let parts = vec!["MUL", "ADD", "A", "B", "C"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result.unwrap().0, 30);
+}
+
+#[test]
+fn test_prob_condition_always_in_range() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    let mut true_count = 0;
+    let mut false_count = 0;
+
+    for _ in 0..100 {
+        if eval_condition("PROB 50", &variables, &mut patterns, &scripts, 0) {
+            true_count += 1;
+        } else {
+            false_count += 1;
+        }
+    }
+
+    assert!(true_count > 20 && true_count < 80, "PROB 50 should be roughly 50/50, got {}/{}", true_count, false_count);
+}
+
+#[test]
+fn test_prob_with_expression() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    variables.a = 25;
+
+    let mut true_count = 0;
+    for _ in 0..100 {
+        if eval_condition("PROB ADD A 25", &variables, &mut patterns, &scripts, 0) {
+            true_count += 1;
+        }
+    }
+
+    assert!(true_count > 20 && true_count < 80, "PROB (25+25=50) should be roughly 50%, got {}", true_count);
+}
+
+#[test]
+fn test_deeply_nested_pattern_and_math() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    patterns.patterns[0].data[0] = 10;
+    patterns.patterns[0].data[1] = 20;
+    patterns.patterns[0].length = 2;
+    patterns.patterns[0].index = 0;
+
+    variables.a = 5;
+
+    let parts = vec!["MUL", "ADD", "PN", "0", "A", "SUB", "10", "3"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result.unwrap().0, 105);
+}
+
+#[test]
+fn test_condition_comparison_operators() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    variables.a = 10;
+
+    assert_eq!(eval_condition("IF A > 5", &variables, &mut patterns, &scripts, 0), true);
+    assert_eq!(eval_condition("IF A < 15", &variables, &mut patterns, &scripts, 0), true);
+    assert_eq!(eval_condition("IF A >= 10", &variables, &mut patterns, &scripts, 0), true);
+    assert_eq!(eval_condition("IF A <= 10", &variables, &mut patterns, &scripts, 0), true);
+    assert_eq!(eval_condition("IF A == 10", &variables, &mut patterns, &scripts, 0), true);
+    assert_eq!(eval_condition("IF A != 5", &variables, &mut patterns, &scripts, 0), true);
+
+    assert_eq!(eval_condition("IF A > 10", &variables, &mut patterns, &scripts, 0), false);
+    assert_eq!(eval_condition("IF A < 10", &variables, &mut patterns, &scripts, 0), false);
+    assert_eq!(eval_condition("IF A == 5", &variables, &mut patterns, &scripts, 0), false);
+    assert_eq!(eval_condition("IF A != 10", &variables, &mut patterns, &scripts, 0), false);
+}
+
+#[test]
+fn test_semicolon_separated_expressions() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    variables.a = 0;
+
+    let parts = vec!["ADD", "1", "1"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result.unwrap().0, 2);
+
+    let parts = vec!["ADD", "2", "2"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result.unwrap().0, 4);
+}
+
+#[test]
+fn test_expression_with_all_parameter_types() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    variables.a = 10;
+    patterns.patterns[0].data[0] = 20;
+    patterns.patterns[0].length = 1;
+    patterns.patterns[0].index = 0;
+
+    let parts = vec!["ADD", "A", "PN", "0"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result.unwrap().0, 30);
+
+    let parts = vec!["ADD", "5", "10"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result.unwrap().0, 15);
+
+    let parts = vec!["ADD", "ADD", "5", "5", "A"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result.unwrap().0, 20);
+}
+
+#[test]
+fn test_script_j_k_variables() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let mut scripts = create_test_scripts();
+
+    scripts.scripts[0].j = 42;
+    scripts.scripts[0].k = 100;
+
+    let parts = vec!["J"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result.unwrap().0, 42);
+
+    let parts = vec!["K"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result.unwrap().0, 100);
+
+    let parts = vec!["ADD", "J", "K"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result.unwrap().0, 142);
+}
+
+#[test]
+fn test_all_math_operations() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    let parts = vec!["ADD", "10", "5"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 15);
+
+    let parts = vec!["SUB", "10", "5"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 5);
+
+    let parts = vec!["MUL", "10", "5"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 50);
+
+    let parts = vec!["DIV", "10", "5"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 2);
+
+    let parts = vec!["MOD", "10", "3"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 1);
+}
+
+#[test]
+fn test_div_by_zero_returns_zero() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    let parts = vec!["DIV", "10", "0"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 0);
+}
+
+#[test]
+fn test_mod_by_zero_returns_zero() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    let parts = vec!["MOD", "10", "0"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 0);
+}
+
+#[test]
+fn test_triple_nested_expressions() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    variables.a = 2;
+
+    let parts = vec!["MUL", "ADD", "MUL", "A", "3", "ADD", "1", "1", "DIV", "20", "2"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result.unwrap().0, 80);
+}
+
+#[test]
+fn test_all_variables_in_expressions() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    variables.a = 1;
+    variables.b = 2;
+    variables.c = 3;
+    variables.d = 4;
+    variables.i = 5;
+    variables.x = 6;
+    variables.y = 7;
+    variables.z = 8;
+    variables.t = 9;
+
+    assert_eq!(eval_expression(&vec!["A"], 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 1);
+    assert_eq!(eval_expression(&vec!["B"], 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 2);
+    assert_eq!(eval_expression(&vec!["C"], 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 3);
+    assert_eq!(eval_expression(&vec!["D"], 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 4);
+    assert_eq!(eval_expression(&vec!["I"], 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 5);
+    assert_eq!(eval_expression(&vec!["X"], 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 6);
+    assert_eq!(eval_expression(&vec!["Y"], 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 7);
+    assert_eq!(eval_expression(&vec!["Z"], 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 8);
+    assert_eq!(eval_expression(&vec!["T"], 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 9);
+}
+
+#[test]
+fn test_pattern_p_next_advances_index() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    patterns.patterns[0].data[0] = 10;
+    patterns.patterns[0].data[1] = 20;
+    patterns.patterns[0].data[2] = 30;
+    patterns.patterns[0].length = 3;
+    patterns.patterns[0].index = 0;
+    patterns.working = 0;
+
+    let parts = vec!["P.NEXT"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 20);
+    assert_eq!(patterns.patterns[0].index, 1);
+
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 30);
+    assert_eq!(patterns.patterns[0].index, 2);
+
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 10);
+    assert_eq!(patterns.patterns[0].index, 0);
+}
+
+#[test]
+fn test_pattern_pn_next_with_index() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    patterns.patterns[2].data[0] = 100;
+    patterns.patterns[2].data[1] = 200;
+    patterns.patterns[2].length = 2;
+    patterns.patterns[2].index = 0;
+
+    let parts = vec!["PN.NEXT", "2"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 200);
+    assert_eq!(patterns.patterns[2].index, 1);
+
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 100);
+    assert_eq!(patterns.patterns[2].index, 0);
+}
+
+#[test]
+fn test_saturating_arithmetic() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    let parts = vec!["ADD", "32000", "32000"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result.unwrap().0, 32767);
+
+    let parts = vec!["SUB", "-32000", "32000"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result.unwrap().0, -32768);
+
+    let parts = vec!["MUL", "1000", "1000"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result.unwrap().0, 32767);
+}
+
+#[test]
+fn test_negative_numbers_in_expressions() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    let parts = vec!["ADD", "-10", "5"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, -5);
+
+    let parts = vec!["SUB", "-10", "5"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, -15);
+
+    let parts = vec!["MUL", "-10", "5"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, -50);
+
+    let parts = vec!["DIV", "-10", "5"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, -2);
+}
+
+#[test]
+fn test_condition_with_negative_numbers() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    variables.a = -10;
+
+    assert_eq!(eval_condition("IF A < 0", &variables, &mut patterns, &scripts, 0), true);
+    assert_eq!(eval_condition("IF A >= -10", &variables, &mut patterns, &scripts, 0), true);
+    assert_eq!(eval_condition("IF A == -10", &variables, &mut patterns, &scripts, 0), true);
+}
+
+#[test]
+fn test_pattern_here_doesnt_change_index() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    patterns.patterns[0].data[0] = 10;
+    patterns.patterns[0].data[1] = 20;
+    patterns.patterns[0].length = 2;
+    patterns.patterns[0].index = 1;
+    patterns.working = 0;
+
+    let parts = vec!["P.HERE"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 20);
+    assert_eq!(patterns.patterns[0].index, 1);
+
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 20);
+    assert_eq!(patterns.patterns[0].index, 1);
+}
+
+#[test]
+fn test_all_pattern_operations() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    patterns.patterns[1].data[0] = 100;
+    patterns.patterns[1].data[1] = 200;
+    patterns.patterns[1].data[2] = 300;
+    patterns.patterns[1].length = 3;
+    patterns.patterns[1].index = 1;
+
+    let parts = vec!["PN", "1"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 200);
+
+    let parts = vec!["PN.HERE", "1"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 200);
+
+    let parts = vec!["PN.L", "1"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 3);
+
+    let parts = vec!["PN.I", "1"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 1);
+
+    let parts = vec!["PN.NEXT", "1"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 300);
+
+    let parts = vec!["PN.PREV", "1"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 200);
+}
+
+#[test]
+fn test_resolve_value_with_j_k() {
+    let variables = create_test_variables();
+    let mut scripts = create_test_scripts();
+
+    scripts.scripts[5].j = 99;
+    scripts.scripts[5].k = 88;
+
+    assert_eq!(resolve_value("J", &variables, &scripts, 5), 99);
+    assert_eq!(resolve_value("K", &variables, &scripts, 5), 88);
+
+    assert_eq!(resolve_value("J", &variables, &scripts, 10), 0);
+    assert_eq!(resolve_value("K", &variables, &scripts, 10), 0);
+}
+
+#[test]
+fn test_rnd_with_expression_argument() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    variables.a = 10;
+
+    let parts = vec!["RND", "ADD", "A", "10"];
+    for _ in 0..20 {
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        assert!(result.is_some());
+        let (value, _) = result.unwrap();
+        assert!(value >= 0 && value < 20);
+    }
+}
+
+#[test]
+fn test_complex_nested_pattern_and_math() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    patterns.patterns[0].data[0] = 5;
+    patterns.patterns[1].data[0] = 10;
+    variables.a = 2;
+
+    let parts = vec!["ADD", "MUL", "PN", "0", "A", "DIV", "PN", "1", "2"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result.unwrap().0, 15);
+}

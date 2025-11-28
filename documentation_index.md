@@ -129,8 +129,11 @@ All numeric arguments accept nested expressions, including:
 
 #### Control Flow (PRE separator)
 - `IF <cond>: <cmd>` - Execute cmd if condition true
+- `ELIF <cond>: <cmd>` - Else-if, executes if previous IF/ELIF was false and condition is true
+- `ELSE: <cmd>` - Else branch, executes if all previous IF/ELIF were false
 - `PROB <0-100>: <cmd>` - Execute cmd with probability
 - `EV <n>: <cmd>` - Execute cmd every Nth tick (applies to whole line including semicolons)
+- `SKIP <n>: <cmd>` - Skip every Nth tick (inverse of EV, executes on all other ticks)
 - `L <start> <end>: <commands>` - Loop from start to end (inclusive), supports forward/backward iteration, I is loop counter
 - Comparisons: `>`, `<`, `>=`, `<=`, `==`, `!=`
 - Sub-commands: `cmd1; cmd2; cmd3` - Multiple commands on one line

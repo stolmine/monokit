@@ -20,9 +20,9 @@ Modular Rust implementation (11 files, 4,824 total lines):
 - **src/main.rs** (62 lines) - Application entry point, initializes TUI and starts main loop
 - **src/metro.rs** (112 lines) - Metro thread implementation with absolute timing
 - **src/types.rs** (230 lines) - Core data structures, enums, constants, and type definitions
-- **src/eval.rs** (364 lines) - Expression evaluation engine for nested operations and pattern access
+- **src/eval.rs** (482 lines) - Expression evaluation engine for nested operations, pattern access, and comparison operators
 - **src/ui.rs** (637 lines) - TUI rendering with ratatui, page-based interface
-- **src/tests.rs** (848 lines) - Comprehensive unit test suite
+- **src/tests.rs** (1,982 lines) - Comprehensive unit test suite (108 tests)
 - **src/scene.rs** (169 lines) - Scene persistence, file I/O
 - **src/app/mod.rs** (125 lines) - App struct, constructor, navigation
 - **src/app/input.rs** (131 lines) - Input handling methods
@@ -34,7 +34,9 @@ Key features:
 - Script storage: 10 scripts × 8 lines (Scripts 1-8, M, I)
 - Pattern storage: 4 patterns × 64 steps (i16 values)
 - Variables: A-D, X-Y-Z-T (global), J-K (per-script local), I (loop counter)
-- Control flow: IF conditions, PROB probabilistic execution, EV every-N-tick execution
+- Control flow: IF/ELIF/ELSE conditions, PROB probabilistic, EV/SKIP every-N-tick
+- Comparison operators: EZ, NZ, EQ, NE, GT, LT, GTE, LTE (return 1/0)
+- N operator: Semitone to frequency conversion (N 0 = C3 = 131 Hz)
 - Expression evaluation in all numeric arguments
 - Metro thread sends script execution requests to main thread
 - OSC client sending to SuperCollider (127.0.0.1:57120)
@@ -137,15 +139,32 @@ All numeric arguments accept nested expressions, including:
 - Nested combinations: `PF ADD PN.NEXT 0 RND 100`
 
 #### Control Flow (PRE separator)
-- `IF <cond>: <cmd>` - Execute cmd if condition true
+- `IF <expr>: <cmd>` - Execute cmd if expr != 0 (truthy). Example: `IF PN.HERE 0: TR`
+- `IF <cond>: <cmd>` - With comparison: `IF A > 5: TR`, `IF GT A 5: TR`
 - `ELIF <cond>: <cmd>` - Else-if, executes if previous IF/ELIF was false and condition is true
 - `ELSE: <cmd>` - Else branch, executes if all previous IF/ELIF were false
 - `PROB <0-100>: <cmd>` - Execute cmd with probability
 - `EV <n>: <cmd>` - Execute cmd every Nth tick (applies to whole line including semicolons)
 - `SKIP <n>: <cmd>` - Skip every Nth tick (inverse of EV, executes on all other ticks)
 - `L <start> <end>: <commands>` - Loop from start to end (inclusive), supports forward/backward iteration, I is loop counter
-- Comparisons: `>`, `<`, `>=`, `<=`, `==`, `!=`
 - Sub-commands: `cmd1; cmd2; cmd3` - Multiple commands on one line
+
+#### Comparison Operators (return 1 for true, 0 for false)
+- `EZ <x>` - Equals zero (x == 0)
+- `NZ <x>` - Not zero (x != 0)
+- `EQ <a> <b>` - Equals (a == b)
+- `NE <a> <b>` - Not equals (a != b)
+- `GT <a> <b>` - Greater than (a > b)
+- `LT <a> <b>` - Less than (a < b)
+- `GTE <a> <b>` - Greater than or equal (a >= b)
+- `LTE <a> <b>` - Less than or equal (a <= b)
+- Infix comparisons also supported in conditions: `>`, `<`, `>=`, `<=`, `==`, `!=`
+
+Examples:
+- `IF PN.HERE 0: TR` - Trigger if pattern value is non-zero
+- `IF EZ A: TR` - Trigger if A equals zero
+- `IF GT A 5: TR` - Trigger if A > 5
+- `IF A > 5: TR` - Same as above (infix syntax)
 
 #### HD2 Voice Parameters (22 total)
 
@@ -199,6 +218,14 @@ All numeric arguments accept nested expressions, including:
 #### Random Number Generation
 - `RND <max>` - Random integer from 0 to max-1 (works as command and in expressions)
 - `RRND <min> <max>` - Random integer from min to max inclusive (works as command and in expressions)
+
+#### Note/Pitch Conversion
+- `N <semitones>` - Convert semitones to frequency in Hz (12-TET, works in expressions)
+  - N 0 = C3 (131 Hz) - matches Teletype reference pitch
+  - N 12 = C4 (262 Hz)
+  - N 21 = A4 (440 Hz)
+  - N -12 = C2 (65 Hz)
+  - Usage: `PF N 0` (set primary freq to C3), `PF N ADD A 7` (C3 + A semitones + perfect 5th)
 
 #### System
 - `RST` - Reset all parameters to defaults

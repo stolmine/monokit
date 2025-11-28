@@ -104,7 +104,8 @@ PROB 50: DC 8000
 - Right of `:` executes if condition passes
 
 **Control flow ops (all implemented):**
-- `IF <cond>:` - conditional execution
+- `IF <expr>:` - conditional execution (expr != 0 is truthy)
+- `IF <cond>:` - with comparison: `IF A > 5:` or `IF GT A 5:`
 - `ELIF <cond>:` - else-if (must follow IF/ELIF)
 - `ELSE:` - fallback (must follow IF/ELIF)
 - `L <start> <end>:` - loop with I as iterator (inclusive)
@@ -112,9 +113,16 @@ PROB 50: DC 8000
 - `EVERY <n>:` - execute every nth trigger
 - `SKIP <n>:` - skip every nth trigger (inverse of EVERY)
 
-**Comparison operators:**
-- `>`, `<`, `>=`, `<=`, `==`, `!=`
-- Can compare variables and literals
+**Comparison operators (return 1/0):**
+- `EZ <x>` - equals zero
+- `NZ <x>` - not zero
+- `EQ <a> <b>` - equals
+- `NE <a> <b>` - not equals
+- `GT <a> <b>` - greater than
+- `LT <a> <b>` - less than
+- `GTE <a> <b>` - greater or equal
+- `LTE <a> <b>` - less or equal
+- Infix: `>`, `<`, `>=`, `<=`, `==`, `!=` (in conditions)
 
 **Sub-command separator (`;`):**
 - Multiple commands on one line: `PF 100; DC 8000; TR`

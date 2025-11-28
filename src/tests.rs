@@ -1487,3 +1487,495 @@ fn test_scene_path_uses_sanitized_name() {
     let path_str = path.to_string_lossy();
     assert!(path_str.ends_with("my-test-scene.json"));
 }
+
+// N operator tests (semitone to frequency)
+
+#[test]
+fn test_n_zero_is_c3() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    let parts = vec!["N", "0"];
+
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert!(result.is_some());
+    let (value, consumed) = result.unwrap();
+    // C3 = 130.81 Hz, rounds to 131
+    assert_eq!(value, 131);
+    assert_eq!(consumed, 2);
+}
+
+#[test]
+fn test_n_12_is_c4() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    let parts = vec!["N", "12"];
+
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert!(result.is_some());
+    let (value, consumed) = result.unwrap();
+    // C4 = 261.63 Hz, rounds to 262
+    assert_eq!(value, 262);
+    assert_eq!(consumed, 2);
+}
+
+#[test]
+fn test_n_24_is_c5() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    let parts = vec!["N", "24"];
+
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert!(result.is_some());
+    let (value, consumed) = result.unwrap();
+    // C5 = 523.25 Hz, rounds to 523
+    assert_eq!(value, 523);
+    assert_eq!(consumed, 2);
+}
+
+#[test]
+fn test_n_negative_12_is_c2() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    let parts = vec!["N", "-12"];
+
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert!(result.is_some());
+    let (value, consumed) = result.unwrap();
+    // C2 = 65.41 Hz, rounds to 65
+    assert_eq!(value, 65);
+    assert_eq!(consumed, 2);
+}
+
+#[test]
+fn test_n_21_is_a4_440hz() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    // A4 = 440 Hz is 21 semitones above C3 (C3 + 9 semitones = A3, + 12 = A4)
+    let parts = vec!["N", "21"];
+
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert!(result.is_some());
+    let (value, consumed) = result.unwrap();
+    // A4 = 440 Hz
+    assert_eq!(value, 440);
+    assert_eq!(consumed, 2);
+}
+
+#[test]
+fn test_n_with_variable() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    variables.a = 12; // C4
+    let parts = vec!["N", "A"];
+
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert!(result.is_some());
+    let (value, consumed) = result.unwrap();
+    assert_eq!(value, 262); // C4
+    assert_eq!(consumed, 2);
+}
+
+#[test]
+fn test_n_nested_in_expression() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    // ADD N 0 N 12 = 131 + 262 = 393
+    let parts = vec!["ADD", "N", "0", "N", "12"];
+
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert!(result.is_some());
+    let (value, consumed) = result.unwrap();
+    assert_eq!(value, 393);
+    assert_eq!(consumed, 5);
+}
+
+#[test]
+fn test_n_with_add_semitones() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    // N ADD 0 7 = N 7 = G3 (7 semitones above C3)
+    let parts = vec!["N", "ADD", "0", "7"];
+
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert!(result.is_some());
+    let (value, consumed) = result.unwrap();
+    // G3 = 196 Hz
+    assert_eq!(value, 196);
+    assert_eq!(consumed, 4);
+}
+
+// Comparison operator tests
+
+#[test]
+fn test_ez_equals_zero() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    // EZ 0 should return 1 (true)
+    let parts = vec!["EZ", "0"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((1, 2)));
+
+    // EZ 5 should return 0 (false)
+    let parts = vec!["EZ", "5"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((0, 2)));
+}
+
+#[test]
+fn test_nz_not_zero() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    // NZ 0 should return 0 (false)
+    let parts = vec!["NZ", "0"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((0, 2)));
+
+    // NZ 5 should return 1 (true)
+    let parts = vec!["NZ", "5"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((1, 2)));
+
+    // NZ -5 should return 1 (true) - negative is non-zero
+    let parts = vec!["NZ", "-5"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((1, 2)));
+}
+
+#[test]
+fn test_eq_equals() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    // EQ 5 5 should return 1
+    let parts = vec!["EQ", "5", "5"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((1, 3)));
+
+    // EQ 5 3 should return 0
+    let parts = vec!["EQ", "5", "3"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((0, 3)));
+}
+
+#[test]
+fn test_ne_not_equals() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    // NE 5 3 should return 1
+    let parts = vec!["NE", "5", "3"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((1, 3)));
+
+    // NE 5 5 should return 0
+    let parts = vec!["NE", "5", "5"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((0, 3)));
+}
+
+#[test]
+fn test_gt_greater_than() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    // GT 5 3 should return 1
+    let parts = vec!["GT", "5", "3"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((1, 3)));
+
+    // GT 3 5 should return 0
+    let parts = vec!["GT", "3", "5"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((0, 3)));
+
+    // GT 5 5 should return 0
+    let parts = vec!["GT", "5", "5"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((0, 3)));
+}
+
+#[test]
+fn test_lt_less_than() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    // LT 3 5 should return 1
+    let parts = vec!["LT", "3", "5"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((1, 3)));
+
+    // LT 5 3 should return 0
+    let parts = vec!["LT", "5", "3"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((0, 3)));
+}
+
+#[test]
+fn test_gte_greater_than_or_equal() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    // GTE 5 3 should return 1
+    let parts = vec!["GTE", "5", "3"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((1, 3)));
+
+    // GTE 5 5 should return 1
+    let parts = vec!["GTE", "5", "5"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((1, 3)));
+
+    // GTE 3 5 should return 0
+    let parts = vec!["GTE", "3", "5"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((0, 3)));
+}
+
+#[test]
+fn test_lte_less_than_or_equal() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    // LTE 3 5 should return 1
+    let parts = vec!["LTE", "3", "5"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((1, 3)));
+
+    // LTE 5 5 should return 1
+    let parts = vec!["LTE", "5", "5"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((1, 3)));
+
+    // LTE 5 3 should return 0
+    let parts = vec!["LTE", "5", "3"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((0, 3)));
+}
+
+#[test]
+fn test_comparison_with_variables() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    variables.a = 10;
+    variables.b = 5;
+
+    // GT A B should return 1 (10 > 5)
+    let parts = vec!["GT", "A", "B"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((1, 3)));
+
+    // EZ A should return 0 (10 != 0)
+    let parts = vec!["EZ", "A"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((0, 2)));
+}
+
+#[test]
+fn test_comparison_with_pattern_ops() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    patterns.patterns[0].data[0] = 100;
+    patterns.patterns[0].data[1] = 0;
+
+    // NZ PN.HERE 0 should return 1 (100 != 0)
+    let parts = vec!["NZ", "PN.HERE", "0"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((1, 3)));
+
+    // Advance to index 1 which has value 0
+    patterns.patterns[0].index = 1;
+
+    // NZ PN.HERE 0 should return 0 (0 is zero)
+    let parts = vec!["NZ", "PN.HERE", "0"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((0, 3)));
+
+    // EZ PN.HERE 0 should return 1 (0 == 0)
+    let parts = vec!["EZ", "PN.HERE", "0"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((1, 3)));
+}
+
+// IF truthy/falsy condition tests
+
+#[test]
+fn test_if_truthy_nonzero_is_true() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    variables.a = 5;
+
+    // IF A (where A=5) should be true
+    assert!(eval_condition("IF A", &variables, &mut patterns, &scripts, 0));
+
+    // Negative numbers are also truthy
+    variables.a = -5;
+    assert!(eval_condition("IF A", &variables, &mut patterns, &scripts, 0));
+}
+
+#[test]
+fn test_if_falsy_zero_is_false() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    variables.a = 0;
+
+    // IF A (where A=0) should be false
+    assert!(!eval_condition("IF A", &variables, &mut patterns, &scripts, 0));
+}
+
+#[test]
+fn test_if_with_pattern_value_truthy() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    patterns.patterns[0].data[0] = 100;
+
+    // IF PN.HERE 0 (value=100) should be true
+    assert!(eval_condition("IF PN.HERE 0", &variables, &mut patterns, &scripts, 0));
+}
+
+#[test]
+fn test_if_with_pattern_value_falsy() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    patterns.patterns[0].data[0] = 0;
+
+    // IF PN.HERE 0 (value=0) should be false
+    assert!(!eval_condition("IF PN.HERE 0", &variables, &mut patterns, &scripts, 0));
+}
+
+#[test]
+fn test_if_with_comparison_operators() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    variables.a = 10;
+
+    // IF GT A 5 should be true (10 > 5)
+    assert!(eval_condition("IF GT A 5", &variables, &mut patterns, &scripts, 0));
+
+    // IF LT A 5 should be false (10 < 5 is false)
+    assert!(!eval_condition("IF LT A 5", &variables, &mut patterns, &scripts, 0));
+
+    // IF EZ A should be false (10 != 0)
+    assert!(!eval_condition("IF EZ A", &variables, &mut patterns, &scripts, 0));
+
+    // IF NZ A should be true (10 != 0)
+    assert!(eval_condition("IF NZ A", &variables, &mut patterns, &scripts, 0));
+}
+
+#[test]
+fn test_if_with_mixed_pattern_values() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    // Set up pattern with alternating 0 and 1 values
+    patterns.patterns[0].data[0] = 1;
+    patterns.patterns[0].data[1] = 0;
+    patterns.patterns[0].data[2] = 1;
+    patterns.patterns[0].data[3] = 0;
+    patterns.patterns[0].length = 4;
+
+    // Test each position
+    patterns.patterns[0].index = 0;
+    assert!(eval_condition("IF PN.HERE 0", &variables, &mut patterns, &scripts, 0)); // 1 is truthy
+
+    patterns.patterns[0].index = 1;
+    assert!(!eval_condition("IF PN.HERE 0", &variables, &mut patterns, &scripts, 0)); // 0 is falsy
+
+    patterns.patterns[0].index = 2;
+    assert!(eval_condition("IF PN.HERE 0", &variables, &mut patterns, &scripts, 0)); // 1 is truthy
+
+    patterns.patterns[0].index = 3;
+    assert!(!eval_condition("IF PN.HERE 0", &variables, &mut patterns, &scripts, 0)); // 0 is falsy
+}
+
+#[test]
+fn test_nested_comparison_in_if() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    variables.a = 3;
+    variables.b = 7;
+
+    // IF GT ADD A B 5 should be true (3+7=10 > 5)
+    assert!(eval_condition("IF GT ADD A B 5", &variables, &mut patterns, &scripts, 0));
+
+    // IF EQ MUL A B 21 should be true (3*7=21 == 21)
+    assert!(eval_condition("IF EQ MUL A B 21", &variables, &mut patterns, &scripts, 0));
+}
+
+#[test]
+fn test_if_pn_here_after_pn_next() {
+    // This reproduces the user's bug: PN.NEXT 0; IF PN.HERE 0: TR
+    // Pattern has mix of 0s and 1s, IF should only trigger on non-zero
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    // Set up pattern 0 with: 1, 0, 1, 0
+    patterns.patterns[0].data[0] = 1;
+    patterns.patterns[0].data[1] = 0;
+    patterns.patterns[0].data[2] = 1;
+    patterns.patterns[0].data[3] = 0;
+    patterns.patterns[0].length = 4;
+    patterns.patterns[0].index = 0;
+
+    // Simulate: PN.NEXT 0 (advances to index 1, returns value at index 1 which is 0)
+    let parts = vec!["PN.NEXT", "0"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((0, 2))); // Value at new index is 0
+    assert_eq!(patterns.patterns[0].index, 1); // Index advanced to 1
+
+    // Now IF PN.HERE 0: should be FALSE (value at index 1 is 0)
+    assert!(!eval_condition("IF PN.HERE 0", &variables, &mut patterns, &scripts, 0));
+
+    // Advance again: PN.NEXT 0 (advances to index 2, returns value at index 2 which is 1)
+    let parts = vec!["PN.NEXT", "0"];
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    assert_eq!(result, Some((1, 2))); // Value at new index is 1
+    assert_eq!(patterns.patterns[0].index, 2); // Index advanced to 2
+
+    // Now IF PN.HERE 0: should be TRUE (value at index 2 is 1)
+    assert!(eval_condition("IF PN.HERE 0", &variables, &mut patterns, &scripts, 0));
+}
+
+#[test]
+fn test_if_lowercase_pn_here() {
+    // Test that lowercase works too
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    patterns.patterns[0].data[0] = 42;
+    patterns.patterns[0].index = 0;
+
+    // Lowercase should work
+    assert!(eval_condition("IF pn.here 0", &variables, &mut patterns, &scripts, 0));
+
+    patterns.patterns[0].data[0] = 0;
+    assert!(!eval_condition("IF pn.here 0", &variables, &mut patterns, &scripts, 0));
+}

@@ -245,6 +245,114 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             }
             None
         }
+        "N" => {
+            // Semitone to frequency conversion (12-TET)
+            // N 0 = C3 (130.81 Hz) to match Teletype
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((semitone, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                const C3_HZ: f32 = 130.8128;
+                let freq = C3_HZ * 2f32.powf(semitone as f32 / 12.0);
+                // Clamp to valid audio range and i16 range
+                let freq_clamped = freq.round().clamp(1.0, 32767.0) as i16;
+                return Some((freq_clamped, 1 + consumed));
+            }
+            None
+        }
+        // Comparison operators (return 1 for true, 0 for false)
+        "EZ" => {
+            // Equals Zero
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                return Some((if val == 0 { 1 } else { 0 }, 1 + consumed));
+            }
+            None
+        }
+        "NZ" => {
+            // Not Zero
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                return Some((if val != 0 { 1 } else { 0 }, 1 + consumed));
+            }
+            None
+        }
+        "EQ" => {
+            // Equals
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+                    return Some((if a == b { 1 } else { 0 }, 1 + a_consumed + b_consumed));
+                }
+            }
+            None
+        }
+        "NE" => {
+            // Not Equals
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+                    return Some((if a != b { 1 } else { 0 }, 1 + a_consumed + b_consumed));
+                }
+            }
+            None
+        }
+        "GT" => {
+            // Greater Than
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+                    return Some((if a > b { 1 } else { 0 }, 1 + a_consumed + b_consumed));
+                }
+            }
+            None
+        }
+        "LT" => {
+            // Less Than
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+                    return Some((if a < b { 1 } else { 0 }, 1 + a_consumed + b_consumed));
+                }
+            }
+            None
+        }
+        "GTE" => {
+            // Greater Than or Equal
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+                    return Some((if a >= b { 1 } else { 0 }, 1 + a_consumed + b_consumed));
+                }
+            }
+            None
+        }
+        "LTE" => {
+            // Less Than or Equal
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+                    return Some((if a <= b { 1 } else { 0 }, 1 + a_consumed + b_consumed));
+                }
+            }
+            None
+        }
         "A" => Some((variables.a, 1)),
         "B" => Some((variables.b, 1)),
         "C" => Some((variables.c, 1)),
@@ -292,7 +400,12 @@ pub fn eval_condition(cond: &str, variables: &Variables, patterns: &mut PatternS
         return false;
     }
 
-    let cond = cond.strip_prefix("IF ").unwrap_or(cond);
+    // Strip IF prefix case-insensitively
+    let cond = if cond.to_uppercase().starts_with("IF ") {
+        &cond[3..]
+    } else {
+        cond
+    };
 
     if let Some(pos) = cond.find(">=") {
         let left_parts: Vec<&str> = cond[..pos].split_whitespace().collect();
@@ -360,5 +473,10 @@ pub fn eval_condition(cond: &str, variables: &Variables, patterns: &mut PatternS
         return false;
     }
 
-    true
+    // No comparison operator found - evaluate as truthy/falsy (non-zero = true)
+    let parts: Vec<&str> = cond.split_whitespace().collect();
+    if let Some((value, _)) = eval_expression(&parts, 0, variables, patterns, scripts, script_index) {
+        return value != 0;
+    }
+    false
 }

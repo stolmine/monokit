@@ -20,7 +20,7 @@
   - 13 pages: Live, Script 1-8, Metro (M), Init (I), Pattern (P), Help
   - Script storage: 10 scripts × 8 lines (Scripts 1-8, M, I)
   - Pattern storage: 4 patterns × 64 steps (i16 values)
-  - Variables: A-D, X-Y-Z-T (global), J-K (per-script)
+  - Variables: A-D, X-Y-Z-T (global), J-K (per-script local), I (loop counter)
   - Control flow: IF conditions, PROB probabilistic execution, EV every-N-tick execution
   - Expression evaluation in arguments (P.NEXT, variables, etc.)
   - Metro thread sends script execution requests to main thread
@@ -86,6 +86,7 @@ Audio output
 #### Variables
 - `A`, `B`, `C`, `D` - General accumulators (get/set: `A` or `A 100`)
 - `X`, `Y`, `Z`, `T` - General accumulators
+- `J`, `K` - Per-script local variables (each script has its own J and K)
 - `I` - Loop counter (scoped to L loops, read-only)
 - Variables can be used in expressions: `PF A`, `DC X`
 
@@ -107,6 +108,14 @@ Audio output
 - `PN.PREV <pat>` - Reverse playhead, return value
 
 Note: All PN and P operations accept variables/expressions as arguments (e.g., `DC PN.NEXT 0`, `P I`, `PN A B`)
+
+#### Expression Support
+All numeric arguments accept nested expressions, including:
+- Math operations: `PF ADD A 100`, `DC MUL X 2`
+- Pattern operations: `PF PN.NEXT 0`, `DC SUB PN.HERE 0 PN.HERE 1`
+- Random operations: `PF RND 1000`, `A RRND 0 127`
+- Variables: `PF A`, `DC X`, `MF J`
+- Nested combinations: `PF ADD PN.NEXT 0 RND 100`
 
 #### Control Flow (PRE separator)
 - `IF <cond>: <cmd>` - Execute cmd if condition true
@@ -157,6 +166,13 @@ Note: All PN and P operations accept variables/expressions as arguments (e.g., `
 - `PA <0-16>` - Pitch envelope amount
 - `FA <0-16>` - FM envelope amount
 - `DA <0-16>` - Discontinuity envelope amount
+
+#### Math Operations
+- `ADD <a> <b>` - Add two values (works as command and in expressions)
+- `SUB <a> <b>` - Subtract b from a (works as command and in expressions)
+- `MUL <a> <b>` - Multiply two values (works as command and in expressions)
+- `DIV <a> <b>` - Divide a by b (works as command and in expressions)
+- `MOD <a> <b>` - Modulo a by b (works as command and in expressions)
 
 #### Random Number Generation
 - `RND <max>` - Random integer from 0 to max-1 (works as command and in expressions)

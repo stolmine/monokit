@@ -406,8 +406,18 @@ impl App {
                     let loop_part = &line[2..colon_pos].trim();
                     let parts: Vec<&str> = loop_part.split_whitespace().collect();
                     if parts.len() >= 2 {
-                        let start = resolve_value(parts[0], &self.variables);
-                        let end = resolve_value(parts[1], &self.variables);
+                        let start = if let Some((val, _)) = eval_expression(&parts, 0, &self.variables, &mut self.patterns, &self.scripts, script_index) {
+                            val
+                        } else {
+                            self.add_output(format!("Error: Failed to evaluate loop start value"));
+                            continue;
+                        };
+                        let end = if let Some((val, _)) = eval_expression(&parts, 1, &self.variables, &mut self.patterns, &self.scripts, script_index) {
+                            val
+                        } else {
+                            self.add_output(format!("Error: Failed to evaluate loop end value"));
+                            continue;
+                        };
                         let commands = line[colon_pos + 1..].trim();
 
                         let old_i = self.variables.i;
@@ -434,13 +444,13 @@ impl App {
                                     }
 
                                     if let Some(cond) = condition {
-                                        if !eval_condition(cond, &self.variables) {
+                                        if !eval_condition(cond, &self.variables, &mut self.patterns, &self.scripts, script_index) {
                                             continue;
                                         }
                                     }
 
                                     let mut output_messages = Vec::new();
-                                    let result = process_command(&self.metro_tx, &mut metro_interval, &mut self.variables, &mut self.patterns, cmd_to_run, |msg| {
+                                    let result = process_command(&self.metro_tx, &mut metro_interval, &mut self.variables, &mut self.patterns, &mut self.scripts, script_index, cmd_to_run, |msg| {
                                         output_messages.push(msg);
                                     });
 
@@ -464,15 +474,18 @@ impl App {
                                     let mut state = self.metro_state.lock().unwrap();
                                     state.interval_ms = metro_interval;
                                     if cmd_to_run.to_uppercase().starts_with("M.ACT") {
-                                        if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
-                                            if let Ok(val) = parts.parse::<i32>() {
+                                        let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                        if parts.len() >= 2 {
+                                            if let Some((val, _)) = eval_expression(&parts, 1, &self.variables, &mut self.patterns, &self.scripts, script_index) {
                                                 state.active = val != 0;
                                             }
                                         }
                                     }
                                     if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
-                                        if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
-                                            if let Ok(idx) = parts.parse::<usize>() {
+                                        let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                        if parts.len() >= 2 {
+                                            if let Some((idx, _)) = eval_expression(&parts, 1, &self.variables, &mut self.patterns, &self.scripts, script_index) {
+                                                let idx = idx as usize;
                                                 if idx >= 1 && idx <= 8 {
                                                     state.script_index = idx - 1;
                                                 }
@@ -503,13 +516,13 @@ impl App {
                                     }
 
                                     if let Some(cond) = condition {
-                                        if !eval_condition(cond, &self.variables) {
+                                        if !eval_condition(cond, &self.variables, &mut self.patterns, &self.scripts, script_index) {
                                             continue;
                                         }
                                     }
 
                                     let mut output_messages = Vec::new();
-                                    let result = process_command(&self.metro_tx, &mut metro_interval, &mut self.variables, &mut self.patterns, cmd_to_run, |msg| {
+                                    let result = process_command(&self.metro_tx, &mut metro_interval, &mut self.variables, &mut self.patterns, &mut self.scripts, script_index, cmd_to_run, |msg| {
                                         output_messages.push(msg);
                                     });
 
@@ -533,15 +546,18 @@ impl App {
                                     let mut state = self.metro_state.lock().unwrap();
                                     state.interval_ms = metro_interval;
                                     if cmd_to_run.to_uppercase().starts_with("M.ACT") {
-                                        if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
-                                            if let Ok(val) = parts.parse::<i32>() {
+                                        let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                        if parts.len() >= 2 {
+                                            if let Some((val, _)) = eval_expression(&parts, 1, &self.variables, &mut self.patterns, &self.scripts, script_index) {
                                                 state.active = val != 0;
                                             }
                                         }
                                     }
                                     if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
-                                        if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
-                                            if let Ok(idx) = parts.parse::<usize>() {
+                                        let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                        if parts.len() >= 2 {
+                                            if let Some((idx, _)) = eval_expression(&parts, 1, &self.variables, &mut self.patterns, &self.scripts, script_index) {
+                                                let idx = idx as usize;
                                                 if idx >= 1 && idx <= 8 {
                                                     state.script_index = idx - 1;
                                                 }
@@ -561,8 +577,10 @@ impl App {
             let line_to_process = if line.to_uppercase().starts_with("EV ") {
                 if let Some(colon_pos) = line.find(':') {
                     let ev_part = &line[3..colon_pos].trim();
-                    if let Ok(divisor) = ev_part.parse::<u32>() {
+                    let parts: Vec<&str> = ev_part.split_whitespace().collect();
+                    if let Some((divisor, _)) = eval_expression(&parts, 0, &self.variables, &mut self.patterns, &self.scripts, script_index) {
                         if divisor > 0 {
+                            let divisor = divisor as u32;
                             self.ev_counters[script_index][line_num] += 1;
                             if self.ev_counters[script_index][line_num] % divisor != 0 {
                                 continue;
@@ -605,13 +623,13 @@ impl App {
                 }
 
                 if let Some(cond) = condition {
-                    if !eval_condition(cond, &self.variables) {
+                    if !eval_condition(cond, &self.variables, &mut self.patterns, &self.scripts, script_index) {
                         continue;
                     }
                 }
 
                 let mut output_messages = Vec::new();
-                let result = process_command(&self.metro_tx, &mut metro_interval, &mut self.variables, &mut self.patterns, cmd_to_run, |msg| {
+                let result = process_command(&self.metro_tx, &mut metro_interval, &mut self.variables, &mut self.patterns, &mut self.scripts, script_index, cmd_to_run, |msg| {
                     output_messages.push(msg);
                 });
 
@@ -640,15 +658,18 @@ impl App {
                 let mut state = self.metro_state.lock().unwrap();
                 state.interval_ms = metro_interval;
                 if cmd_to_run.to_uppercase().starts_with("M.ACT") {
-                    if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
-                        if let Ok(val) = parts.parse::<i32>() {
+                    let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                    if parts.len() >= 2 {
+                        if let Some((val, _)) = eval_expression(&parts, 1, &self.variables, &mut self.patterns, &self.scripts, 10) {
                             state.active = val != 0;
                         }
                     }
                 }
                 if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
-                    if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
-                        if let Ok(idx) = parts.parse::<usize>() {
+                    let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                    if parts.len() >= 2 {
+                        if let Some((idx, _)) = eval_expression(&parts, 1, &self.variables, &mut self.patterns, &self.scripts, 10) {
+                            let idx = idx as usize;
                             if idx >= 1 && idx <= 8 {
                                 state.script_index = idx - 1;
                             }
@@ -680,8 +701,18 @@ impl App {
                 let loop_part = &cmd[2..colon_pos].trim();
                 let parts: Vec<&str> = loop_part.split_whitespace().collect();
                 if parts.len() >= 2 {
-                    let start = resolve_value(parts[0], &self.variables);
-                    let end = resolve_value(parts[1], &self.variables);
+                    let start = if let Some((val, _)) = eval_expression(&parts, 0, &self.variables, &mut self.patterns, &self.scripts, 10) {
+                        val
+                    } else {
+                        self.add_output(format!("Error: Failed to evaluate loop start value"));
+                        return;
+                    };
+                    let end = if let Some((val, _)) = eval_expression(&parts, 1, &self.variables, &mut self.patterns, &self.scripts, 10) {
+                        val
+                    } else {
+                        self.add_output(format!("Error: Failed to evaluate loop end value"));
+                        return;
+                    };
                     let commands = cmd[colon_pos + 1..].trim();
 
                     let old_i = self.variables.i;
@@ -708,13 +739,13 @@ impl App {
                                 }
 
                                 if let Some(cond) = condition {
-                                    if !eval_condition(cond, &self.variables) {
+                                    if !eval_condition(cond, &self.variables, &mut self.patterns, &self.scripts, 10) {
                                         continue;
                                     }
                                 }
 
                                 let mut output_messages = Vec::new();
-                                let result = process_command(&self.metro_tx, &mut metro_interval, &mut self.variables, &mut self.patterns, cmd_to_run, |msg| {
+                                let result = process_command(&self.metro_tx, &mut metro_interval, &mut self.variables, &mut self.patterns, &mut self.scripts, 10, cmd_to_run, |msg| {
                                     output_messages.push(msg);
                                 });
 
@@ -738,15 +769,18 @@ impl App {
                                 let mut state = self.metro_state.lock().unwrap();
                                 state.interval_ms = metro_interval;
                                 if cmd_to_run.to_uppercase().starts_with("M.ACT") {
-                                    if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
-                                        if let Ok(val) = parts.parse::<i32>() {
+                                    let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                    if parts.len() >= 2 {
+                                        if let Some((val, _)) = eval_expression(&parts, 1, &self.variables, &mut self.patterns, &self.scripts, 10) {
                                             state.active = val != 0;
                                         }
                                     }
                                 }
                                 if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
-                                    if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
-                                        if let Ok(idx) = parts.parse::<usize>() {
+                                    let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                    if parts.len() >= 2 {
+                                        if let Some((idx, _)) = eval_expression(&parts, 1, &self.variables, &mut self.patterns, &self.scripts, 10) {
+                                            let idx = idx as usize;
                                             if idx >= 1 && idx <= 8 {
                                                 state.script_index = idx - 1;
                                             }
@@ -777,13 +811,13 @@ impl App {
                                 }
 
                                 if let Some(cond) = condition {
-                                    if !eval_condition(cond, &self.variables) {
+                                    if !eval_condition(cond, &self.variables, &mut self.patterns, &self.scripts, 10) {
                                         continue;
                                     }
                                 }
 
                                 let mut output_messages = Vec::new();
-                                let result = process_command(&self.metro_tx, &mut metro_interval, &mut self.variables, &mut self.patterns, cmd_to_run, |msg| {
+                                let result = process_command(&self.metro_tx, &mut metro_interval, &mut self.variables, &mut self.patterns, &mut self.scripts, 10, cmd_to_run, |msg| {
                                     output_messages.push(msg);
                                 });
 
@@ -807,15 +841,18 @@ impl App {
                                 let mut state = self.metro_state.lock().unwrap();
                                 state.interval_ms = metro_interval;
                                 if cmd_to_run.to_uppercase().starts_with("M.ACT") {
-                                    if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
-                                        if let Ok(val) = parts.parse::<i32>() {
+                                    let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                    if parts.len() >= 2 {
+                                        if let Some((val, _)) = eval_expression(&parts, 1, &self.variables, &mut self.patterns, &self.scripts, 10) {
                                             state.active = val != 0;
                                         }
                                     }
                                 }
                                 if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
-                                    if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
-                                        if let Ok(idx) = parts.parse::<usize>() {
+                                    let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                                    if parts.len() >= 2 {
+                                        if let Some((idx, _)) = eval_expression(&parts, 1, &self.variables, &mut self.patterns, &self.scripts, 10) {
+                                            let idx = idx as usize;
                                             if idx >= 1 && idx <= 8 {
                                                 state.script_index = idx - 1;
                                             }
@@ -851,13 +888,13 @@ impl App {
             }
 
             if let Some(cond) = condition {
-                if !eval_condition(cond, &self.variables) {
+                if !eval_condition(cond, &self.variables, &mut self.patterns, &self.scripts, 10) {
                     continue;
                 }
             }
 
             let mut output_messages = Vec::new();
-            let result = process_command(&self.metro_tx, &mut metro_interval, &mut self.variables, &mut self.patterns, cmd_to_run, |msg| {
+            let result = process_command(&self.metro_tx, &mut metro_interval, &mut self.variables, &mut self.patterns, &mut self.scripts, 10, cmd_to_run, |msg| {
                 output_messages.push(msg);
             });
 
@@ -881,15 +918,18 @@ impl App {
             let mut state = self.metro_state.lock().unwrap();
             state.interval_ms = metro_interval;
             if cmd_to_run.to_uppercase().starts_with("M.ACT") {
-                if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
-                    if let Ok(val) = parts.parse::<i32>() {
+                let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                if parts.len() >= 2 {
+                    if let Some((val, _)) = eval_expression(&parts, 1, &self.variables, &mut self.patterns, &self.scripts, 10) {
                         state.active = val != 0;
                     }
                 }
             }
             if cmd_to_run.to_uppercase().starts_with("M.SCRIPT") {
-                if let Some(parts) = cmd_to_run.split_whitespace().nth(1) {
-                    if let Ok(idx) = parts.parse::<usize>() {
+                let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+                if parts.len() >= 2 {
+                    if let Some((idx, _)) = eval_expression(&parts, 1, &self.variables, &mut self.patterns, &self.scripts, 10) {
+                        let idx = idx as usize;
                         if idx >= 1 && idx <= 8 {
                             state.script_index = idx - 1;
                         }
@@ -1130,13 +1170,27 @@ fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroState>>,
     }
 }
 
-fn resolve_value(s: &str, variables: &Variables) -> i16 {
+fn resolve_value(s: &str, variables: &Variables, scripts: &ScriptStorage, script_index: usize) -> i16 {
     match s.trim().to_uppercase().as_str() {
         "A" => variables.a,
         "B" => variables.b,
         "C" => variables.c,
         "D" => variables.d,
         "I" => variables.i,
+        "J" => {
+            if script_index < 10 {
+                scripts.scripts[script_index].j
+            } else {
+                0
+            }
+        }
+        "K" => {
+            if script_index < 10 {
+                scripts.scripts[script_index].k
+            } else {
+                0
+            }
+        }
         "X" => variables.x,
         "Y" => variables.y,
         "Z" => variables.z,
@@ -1145,7 +1199,7 @@ fn resolve_value(s: &str, variables: &Variables) -> i16 {
     }
 }
 
-fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, patterns: &mut PatternStorage) -> Option<(i16, usize)> {
+fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, patterns: &mut PatternStorage, scripts: &ScriptStorage, script_index: usize) -> Option<(i16, usize)> {
     if start_idx >= parts.len() {
         return None;
     }
@@ -1157,11 +1211,12 @@ fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, patt
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Ok(pat) = parts[start_idx + 1].parse::<usize>() {
+            if let Some((pat_val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                let pat = pat_val as usize;
                 if pat <= 3 {
                     let pattern = &mut patterns.patterns[pat];
                     pattern.index = (pattern.index + 1) % pattern.length;
-                    return Some((pattern.data[pattern.index], 2));
+                    return Some((pattern.data[pattern.index], 1 + consumed));
                 }
             }
             None
@@ -1170,7 +1225,8 @@ fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, patt
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Ok(pat) = parts[start_idx + 1].parse::<usize>() {
+            if let Some((pat_val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                let pat = pat_val as usize;
                 if pat <= 3 {
                     let pattern = &mut patterns.patterns[pat];
                     if pattern.index == 0 {
@@ -1178,7 +1234,7 @@ fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, patt
                     } else {
                         pattern.index -= 1;
                     }
-                    return Some((pattern.data[pattern.index], 2));
+                    return Some((pattern.data[pattern.index], 1 + consumed));
                 }
             }
             None
@@ -1187,10 +1243,11 @@ fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, patt
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Ok(pat) = parts[start_idx + 1].parse::<usize>() {
+            if let Some((pat_val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                let pat = pat_val as usize;
                 if pat <= 3 {
                     let pattern = &patterns.patterns[pat];
-                    return Some((pattern.data[pattern.index], 2));
+                    return Some((pattern.data[pattern.index], 1 + consumed));
                 }
             }
             None
@@ -1199,10 +1256,11 @@ fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, patt
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Ok(pat) = parts[start_idx + 1].parse::<usize>() {
+            if let Some((pat_val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                let pat = pat_val as usize;
                 if pat <= 3 {
                     let pattern = &patterns.patterns[pat];
-                    return Some((pattern.data[pattern.index], 2));
+                    return Some((pattern.data[pattern.index], 1 + consumed));
                 }
             }
             None
@@ -1211,10 +1269,11 @@ fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, patt
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Ok(pat) = parts[start_idx + 1].parse::<usize>() {
+            if let Some((pat_val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                let pat = pat_val as usize;
                 if pat <= 3 {
                     let pattern = &patterns.patterns[pat];
-                    return Some((pattern.length as i16, 2));
+                    return Some((pattern.length as i16, 1 + consumed));
                 }
             }
             None
@@ -1223,10 +1282,11 @@ fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, patt
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Ok(pat) = parts[start_idx + 1].parse::<usize>() {
+            if let Some((pat_val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                let pat = pat_val as usize;
                 if pat <= 3 {
                     let pattern = &patterns.patterns[pat];
-                    return Some((pattern.index as i16, 2));
+                    return Some((pattern.index as i16, 1 + consumed));
                 }
             }
             None
@@ -1262,28 +1322,95 @@ fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, patt
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Ok(max) = parts[start_idx + 1].parse::<i16>() {
+            if let Some((max, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
                 if max <= 0 {
-                    return Some((0, 2));
+                    return Some((0, 1 + consumed));
                 }
                 let result = rand::thread_rng().gen_range(0..max);
-                return Some((result, 2));
+                return Some((result, 1 + consumed));
             }
             None
         }
         "RRND" => {
-            if start_idx + 2 >= parts.len() {
+            if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let (Ok(mut min), Ok(mut max)) = (
-                parts[start_idx + 1].parse::<i16>(),
-                parts[start_idx + 2].parse::<i16>()
-            ) {
-                if min > max {
-                    std::mem::swap(&mut min, &mut max);
+            if let Some((mut min, min_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                if let Some((mut max, max_consumed)) = eval_expression(parts, start_idx + 1 + min_consumed, variables, patterns, scripts, script_index) {
+                    if min > max {
+                        std::mem::swap(&mut min, &mut max);
+                    }
+                    let result = rand::thread_rng().gen_range(min..=max);
+                    return Some((result, 1 + min_consumed + max_consumed));
                 }
-                let result = rand::thread_rng().gen_range(min..=max);
-                return Some((result, 3));
+            }
+            None
+        }
+        "ADD" => {
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+                    let result = a.saturating_add(b);
+                    return Some((result, 1 + a_consumed + b_consumed));
+                }
+            }
+            None
+        }
+        "SUB" => {
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+                    let result = a.saturating_sub(b);
+                    return Some((result, 1 + a_consumed + b_consumed));
+                }
+            }
+            None
+        }
+        "MUL" => {
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+                    let result = a.saturating_mul(b);
+                    return Some((result, 1 + a_consumed + b_consumed));
+                }
+            }
+            None
+        }
+        "DIV" => {
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+                    if b == 0 {
+                        return Some((0, 1 + a_consumed + b_consumed));
+                    } else {
+                        let result = a / b;
+                        return Some((result, 1 + a_consumed + b_consumed));
+                    }
+                }
+            }
+            None
+        }
+        "MOD" => {
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+                    if b == 0 {
+                        return Some((0, 1 + a_consumed + b_consumed));
+                    } else {
+                        let result = a % b;
+                        return Some((result, 1 + a_consumed + b_consumed));
+                    }
+                }
             }
             None
         }
@@ -1292,6 +1419,20 @@ fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, patt
         "C" => Some((variables.c, 1)),
         "D" => Some((variables.d, 1)),
         "I" => Some((variables.i, 1)),
+        "J" => {
+            if script_index < 10 {
+                Some((scripts.scripts[script_index].j, 1))
+            } else {
+                Some((0, 1))
+            }
+        }
+        "K" => {
+            if script_index < 10 {
+                Some((scripts.scripts[script_index].k, 1))
+            } else {
+                Some((0, 1))
+            }
+        }
         "X" => Some((variables.x, 1)),
         "Y" => Some((variables.y, 1)),
         "Z" => Some((variables.z, 1)),
@@ -1306,53 +1447,86 @@ fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, patt
     }
 }
 
-fn eval_condition(cond: &str, variables: &Variables) -> bool {
+fn eval_condition(cond: &str, variables: &Variables, patterns: &mut PatternStorage, scripts: &ScriptStorage, script_index: usize) -> bool {
     let cond = cond.trim();
 
     if cond.starts_with("PROB ") {
         let pct_str = cond.strip_prefix("PROB ").unwrap_or("0").trim();
-        let pct: u8 = pct_str.parse().unwrap_or(0);
-        let pct = pct.min(100);
-        let roll: u8 = rand::thread_rng().gen_range(0..100);
-        return roll < pct;
+        let parts: Vec<&str> = pct_str.split_whitespace().collect();
+        if let Some((pct_val, _)) = eval_expression(&parts, 0, variables, patterns, scripts, script_index) {
+            let pct = (pct_val as u8).min(100);
+            let roll: u8 = rand::thread_rng().gen_range(0..100);
+            return roll < pct;
+        }
+        return false;
     }
 
     let cond = cond.strip_prefix("IF ").unwrap_or(cond);
 
     if let Some(pos) = cond.find(">=") {
-        let left = resolve_value(&cond[..pos], variables);
-        let right = resolve_value(&cond[pos + 2..], variables);
-        return left >= right;
+        let left_parts: Vec<&str> = cond[..pos].split_whitespace().collect();
+        let right_parts: Vec<&str> = cond[pos + 2..].split_whitespace().collect();
+        if let Some((left, _)) = eval_expression(&left_parts, 0, variables, patterns, scripts, script_index) {
+            if let Some((right, _)) = eval_expression(&right_parts, 0, variables, patterns, scripts, script_index) {
+                return left >= right;
+            }
+        }
+        return false;
     }
 
     if let Some(pos) = cond.find("<=") {
-        let left = resolve_value(&cond[..pos], variables);
-        let right = resolve_value(&cond[pos + 2..], variables);
-        return left <= right;
+        let left_parts: Vec<&str> = cond[..pos].split_whitespace().collect();
+        let right_parts: Vec<&str> = cond[pos + 2..].split_whitespace().collect();
+        if let Some((left, _)) = eval_expression(&left_parts, 0, variables, patterns, scripts, script_index) {
+            if let Some((right, _)) = eval_expression(&right_parts, 0, variables, patterns, scripts, script_index) {
+                return left <= right;
+            }
+        }
+        return false;
     }
 
     if let Some(pos) = cond.find("!=") {
-        let left = resolve_value(&cond[..pos], variables);
-        let right = resolve_value(&cond[pos + 2..], variables);
-        return left != right;
+        let left_parts: Vec<&str> = cond[..pos].split_whitespace().collect();
+        let right_parts: Vec<&str> = cond[pos + 2..].split_whitespace().collect();
+        if let Some((left, _)) = eval_expression(&left_parts, 0, variables, patterns, scripts, script_index) {
+            if let Some((right, _)) = eval_expression(&right_parts, 0, variables, patterns, scripts, script_index) {
+                return left != right;
+            }
+        }
+        return false;
     }
 
     if let Some(pos) = cond.find("==") {
-        let left = resolve_value(&cond[..pos], variables);
-        let right = resolve_value(&cond[pos + 2..], variables);
-        return left == right;
+        let left_parts: Vec<&str> = cond[..pos].split_whitespace().collect();
+        let right_parts: Vec<&str> = cond[pos + 2..].split_whitespace().collect();
+        if let Some((left, _)) = eval_expression(&left_parts, 0, variables, patterns, scripts, script_index) {
+            if let Some((right, _)) = eval_expression(&right_parts, 0, variables, patterns, scripts, script_index) {
+                return left == right;
+            }
+        }
+        return false;
     }
 
     if let Some(pos) = cond.find('>') {
-        let left = resolve_value(&cond[..pos], variables);
-        let right = resolve_value(&cond[pos + 1..], variables);
-        return left > right;
+        let left_parts: Vec<&str> = cond[..pos].split_whitespace().collect();
+        let right_parts: Vec<&str> = cond[pos + 1..].split_whitespace().collect();
+        if let Some((left, _)) = eval_expression(&left_parts, 0, variables, patterns, scripts, script_index) {
+            if let Some((right, _)) = eval_expression(&right_parts, 0, variables, patterns, scripts, script_index) {
+                return left > right;
+            }
+        }
+        return false;
     }
 
     if let Some(pos) = cond.find('<') {
-        let left = resolve_value(&cond[..pos], variables);
-        let right = resolve_value(&cond[pos + 1..], variables);
-        return left < right;
+        let left_parts: Vec<&str> = cond[..pos].split_whitespace().collect();
+        let right_parts: Vec<&str> = cond[pos + 1..].split_whitespace().collect();
+        if let Some((left, _)) = eval_expression(&left_parts, 0, variables, patterns, scripts, script_index) {
+            if let Some((right, _)) = eval_expression(&right_parts, 0, variables, patterns, scripts, script_index) {
+                return left < right;
+            }
+        }
+        return false;
     }
 
     true
@@ -1363,6 +1537,8 @@ fn process_command<F>(
     metro_interval: &mut u64,
     variables: &mut Variables,
     patterns: &mut PatternStorage,
+    scripts: &mut ScriptStorage,
+    script_index: usize,
     input: &str,
     mut output: F,
 ) -> Result<Vec<usize>>
@@ -1478,6 +1654,36 @@ where
                 output(format!("Set T to {}", value));
             }
         }
+        "J" => {
+            if script_index >= 10 {
+                output("Error: J requires script context".to_string());
+                return Ok(vec![]);
+            }
+            if parts.len() == 1 {
+                output(format!("J = {}", scripts.scripts[script_index].j));
+            } else {
+                let value: i16 = parts[1]
+                    .parse()
+                    .context("Failed to parse value for J")?;
+                scripts.scripts[script_index].j = value;
+                output(format!("Set J to {}", value));
+            }
+        }
+        "K" => {
+            if script_index >= 10 {
+                output("Error: K requires script context".to_string());
+                return Ok(vec![]);
+            }
+            if parts.len() == 1 {
+                output(format!("K = {}", scripts.scripts[script_index].k));
+            } else {
+                let value: i16 = parts[1]
+                    .parse()
+                    .context("Failed to parse value for K")?;
+                scripts.scripts[script_index].k = value;
+                output(format!("Set K to {}", value));
+            }
+        }
         "P.N" => {
             if parts.len() == 1 {
                 output(format!("P.N = {}", patterns.working));
@@ -1551,7 +1757,7 @@ where
                 output("Error: P requires an index".to_string());
                 return Ok(vec![]);
             }
-            let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as usize
             } else {
                 parts[1]
@@ -1566,7 +1772,7 @@ where
                 let pattern = &patterns.patterns[patterns.working];
                 output(format!("P {} = {}", idx, pattern.data[idx]));
             } else {
-                let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns) {
+                let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, scripts, script_index) {
                     expr_val
                 } else {
                     parts[2]
@@ -1583,7 +1789,7 @@ where
                 output("Error: PN.L requires pattern number (0-3)".to_string());
                 return Ok(vec![]);
             }
-            let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as usize
             } else {
                 parts[1]
@@ -1598,7 +1804,7 @@ where
                 let pattern = &patterns.patterns[pat];
                 output(format!("PN.L {} = {}", pat, pattern.length));
             } else {
-                let value: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns) {
+                let value: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, scripts, script_index) {
                     expr_val as usize
                 } else {
                     parts[2]
@@ -1619,7 +1825,7 @@ where
                 output("Error: PN.I requires pattern number (0-3)".to_string());
                 return Ok(vec![]);
             }
-            let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as usize
             } else {
                 parts[1]
@@ -1634,7 +1840,7 @@ where
                 let pattern = &patterns.patterns[pat];
                 output(format!("PN.I {} = {}", pat, pattern.index));
             } else {
-                let value: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns) {
+                let value: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, scripts, script_index) {
                     expr_val as usize
                 } else {
                     parts[2]
@@ -1655,7 +1861,7 @@ where
                 output("Error: PN.HERE requires pattern number (0-3)".to_string());
                 return Ok(vec![]);
             }
-            let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as usize
             } else {
                 parts[1]
@@ -1675,7 +1881,7 @@ where
                 output("Error: PN.NEXT requires pattern number (0-3)".to_string());
                 return Ok(vec![]);
             }
-            let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as usize
             } else {
                 parts[1]
@@ -1696,7 +1902,7 @@ where
                 output("Error: PN.PREV requires pattern number (0-3)".to_string());
                 return Ok(vec![]);
             }
-            let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as usize
             } else {
                 parts[1]
@@ -1721,7 +1927,7 @@ where
                 output("Error: PN requires pattern (0-3) and index (0-63)".to_string());
                 return Ok(vec![]);
             }
-            let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as usize
             } else {
                 parts[1]
@@ -1732,7 +1938,7 @@ where
                 output("Error: Pattern number must be 0-3".to_string());
                 return Ok(vec![]);
             }
-            let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns) {
+            let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, scripts, script_index) {
                 expr_val as usize
             } else {
                 parts[2]
@@ -1747,7 +1953,7 @@ where
                 let pattern = &patterns.patterns[pat];
                 output(format!("PN {} {} = {}", pat, idx, pattern.data[idx]));
             } else {
-                let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 3, variables, patterns) {
+                let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 3, variables, patterns, scripts, script_index) {
                     expr_val
                 } else {
                     parts[3]
@@ -1864,7 +2070,7 @@ where
                 output("Error: PF requires a frequency value (20-20000)".to_string());
                 return Ok(vec![]);
             }
-            let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as f32
             } else {
                 parts[1]
@@ -1885,7 +2091,7 @@ where
                 output("Error: PW requires a waveform value (0-2)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1906,7 +2112,7 @@ where
                 output("Error: MF requires a frequency value (20-20000)".to_string());
                 return Ok(vec![]);
             }
-            let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as f32
             } else {
                 parts[1]
@@ -1927,7 +2133,7 @@ where
                 output("Error: MW requires a waveform value (0-2)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1948,7 +2154,7 @@ where
                 output("Error: DC requires a value (0-16383)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1974,7 +2180,7 @@ where
                 output("Error: DM requires a mode value (0-2)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -1995,7 +2201,7 @@ where
                 output("Error: TK requires a value (0-16383)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -2016,7 +2222,7 @@ where
                 output("Error: MB requires a value (0-16383)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -2037,7 +2243,7 @@ where
                 output("Error: MP requires a value (0 or 1)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -2058,7 +2264,7 @@ where
                 output("Error: MD requires a value (0 or 1)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -2079,7 +2285,7 @@ where
                 output("Error: MT requires a value (0 or 1)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -2100,7 +2306,7 @@ where
                 output("Error: MA requires a value (0 or 1)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -2121,7 +2327,7 @@ where
                 output("Error: FM requires a value (0-16383)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -2142,7 +2348,7 @@ where
                 output("Error: AD requires a time value (1-10000 ms)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -2163,7 +2369,7 @@ where
                 output("Error: PD requires a time value (1-10000 ms)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -2184,7 +2390,7 @@ where
                 output("Error: FD requires a time value (1-10000 ms)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -2205,7 +2411,7 @@ where
                 output("Error: PA requires a multiplier value (0-16)".to_string());
                 return Ok(vec![]);
             }
-            let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as f32
             } else {
                 parts[1]
@@ -2226,7 +2432,7 @@ where
                 output("Error: DD requires a time value (1-10000 ms)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -2247,7 +2453,7 @@ where
                 output("Error: MX requires a value (0-16383)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -2268,7 +2474,7 @@ where
                 output("Error: MM requires a value (0 or 1)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -2289,7 +2495,7 @@ where
                 output("Error: ME requires a value (0 or 1)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -2310,7 +2516,7 @@ where
                 output("Error: FA requires a value (0-16383)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -2331,7 +2537,7 @@ where
                 output("Error: DA requires a value (0-16383)".to_string());
                 return Ok(vec![]);
             }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns) {
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 expr_val as i32
             } else {
                 parts[1]
@@ -2405,6 +2611,94 @@ where
             }
             let result = rand::thread_rng().gen_range(min..=max);
             output(format!("{}", result));
+        }
+        "ADD" => {
+            if parts.len() < 2 {
+                output("Error: ADD requires two operands".to_string());
+                return Ok(vec![]);
+            }
+            if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+                if let Some((y, _)) = eval_expression(&parts, 1 + x_consumed, variables, patterns, scripts, script_index) {
+                    let result = x.saturating_add(y);
+                    output(format!("{}", result));
+                } else {
+                    output("Error: Failed to evaluate second operand".to_string());
+                }
+            } else {
+                output("Error: Failed to evaluate first operand".to_string());
+            }
+        }
+        "SUB" => {
+            if parts.len() < 2 {
+                output("Error: SUB requires two operands".to_string());
+                return Ok(vec![]);
+            }
+            if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+                if let Some((y, _)) = eval_expression(&parts, 1 + x_consumed, variables, patterns, scripts, script_index) {
+                    let result = x.saturating_sub(y);
+                    output(format!("{}", result));
+                } else {
+                    output("Error: Failed to evaluate second operand".to_string());
+                }
+            } else {
+                output("Error: Failed to evaluate first operand".to_string());
+            }
+        }
+        "MUL" => {
+            if parts.len() < 2 {
+                output("Error: MUL requires two operands".to_string());
+                return Ok(vec![]);
+            }
+            if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+                if let Some((y, _)) = eval_expression(&parts, 1 + x_consumed, variables, patterns, scripts, script_index) {
+                    let result = x.saturating_mul(y);
+                    output(format!("{}", result));
+                } else {
+                    output("Error: Failed to evaluate second operand".to_string());
+                }
+            } else {
+                output("Error: Failed to evaluate first operand".to_string());
+            }
+        }
+        "DIV" => {
+            if parts.len() < 2 {
+                output("Error: DIV requires two operands".to_string());
+                return Ok(vec![]);
+            }
+            if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+                if let Some((y, _)) = eval_expression(&parts, 1 + x_consumed, variables, patterns, scripts, script_index) {
+                    if y == 0 {
+                        output("Error: Division by zero".to_string());
+                    } else {
+                        let result = x / y;
+                        output(format!("{}", result));
+                    }
+                } else {
+                    output("Error: Failed to evaluate second operand".to_string());
+                }
+            } else {
+                output("Error: Failed to evaluate first operand".to_string());
+            }
+        }
+        "MOD" => {
+            if parts.len() < 2 {
+                output("Error: MOD requires two operands".to_string());
+                return Ok(vec![]);
+            }
+            if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+                if let Some((y, _)) = eval_expression(&parts, 1 + x_consumed, variables, patterns, scripts, script_index) {
+                    if y == 0 {
+                        output("Error: Modulo by zero".to_string());
+                    } else {
+                        let result = x % y;
+                        output(format!("{}", result));
+                    }
+                } else {
+                    output("Error: Failed to evaluate second operand".to_string());
+                }
+            } else {
+                output("Error: Failed to evaluate first operand".to_string());
+            }
         }
         "SCRIPT" => {
             if parts.len() < 2 {
@@ -3269,14 +3563,19 @@ mod tests {
         PatternStorage::default()
     }
 
+    fn create_test_scripts() -> ScriptStorage {
+        ScriptStorage::default()
+    }
+
     #[test]
     fn test_rnd_returns_value_in_range() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
         let parts = vec!["RND", "100"];
 
         for _ in 0..20 {
-            let result = eval_expression(&parts, 0, &variables, &mut patterns);
+            let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
             assert!(result.is_some());
             let (value, consumed) = result.unwrap();
             assert!(value >= 0 && value < 100, "RND 100 returned {}", value);
@@ -3288,9 +3587,10 @@ mod tests {
     fn test_rnd_with_zero_returns_zero() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
         let parts = vec!["RND", "0"];
 
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, consumed) = result.unwrap();
         assert_eq!(value, 0);
@@ -3301,9 +3601,10 @@ mod tests {
     fn test_rnd_with_negative_returns_zero() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
         let parts = vec!["RND", "-10"];
 
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, consumed) = result.unwrap();
         assert_eq!(value, 0);
@@ -3314,10 +3615,11 @@ mod tests {
     fn test_rrnd_returns_value_in_range() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
         let parts = vec!["RRND", "50", "100"];
 
         for _ in 0..20 {
-            let result = eval_expression(&parts, 0, &variables, &mut patterns);
+            let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
             assert!(result.is_some());
             let (value, consumed) = result.unwrap();
             assert!(value >= 50 && value <= 100, "RRND 50 100 returned {}", value);
@@ -3329,10 +3631,11 @@ mod tests {
     fn test_rrnd_with_reversed_range() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
         let parts = vec!["RRND", "100", "50"];
 
         for _ in 0..20 {
-            let result = eval_expression(&parts, 0, &variables, &mut patterns);
+            let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
             assert!(result.is_some());
             let (value, consumed) = result.unwrap();
             assert!(value >= 50 && value <= 100, "RRND 100 50 returned {}", value);
@@ -3344,9 +3647,10 @@ mod tests {
     fn test_rrnd_with_same_min_max() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
         let parts = vec!["RRND", "42", "42"];
 
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, consumed) = result.unwrap();
         assert_eq!(value, 42);
@@ -3357,6 +3661,7 @@ mod tests {
     fn test_eval_expression_variables() {
         let mut variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
 
         variables.a = 10;
         variables.b = 20;
@@ -3371,7 +3676,7 @@ mod tests {
         ];
 
         for (parts, expected) in test_cases {
-            let result = eval_expression(&parts, 0, &variables, &mut patterns);
+            let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
             assert!(result.is_some());
             let (value, consumed) = result.unwrap();
             assert_eq!(value, expected);
@@ -3383,6 +3688,7 @@ mod tests {
     fn test_eval_expression_literal_numbers() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
 
         let test_cases = vec![
             (vec!["0"], 0),
@@ -3392,7 +3698,7 @@ mod tests {
         ];
 
         for (parts, expected) in test_cases {
-            let result = eval_expression(&parts, 0, &variables, &mut patterns);
+            let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
             assert!(result.is_some());
             let (value, consumed) = result.unwrap();
             assert_eq!(value, expected);
@@ -3404,6 +3710,7 @@ mod tests {
     fn test_pattern_operations_with_expressions() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
 
         patterns.patterns[0].data[0] = 100;
         patterns.patterns[0].data[1] = 200;
@@ -3412,21 +3719,21 @@ mod tests {
         patterns.patterns[0].index = 0;
 
         let parts = vec!["PN", "0"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, consumed) = result.unwrap();
         assert_eq!(value, 100);
         assert_eq!(consumed, 2);
 
         let parts = vec!["PN.I", "0"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, consumed) = result.unwrap();
         assert_eq!(value, 0);
         assert_eq!(consumed, 2);
 
         let parts = vec!["PN.L", "0"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, consumed) = result.unwrap();
         assert_eq!(value, 3);
@@ -3437,6 +3744,7 @@ mod tests {
     fn test_pattern_next_operation() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
 
         patterns.patterns[0].data[0] = 10;
         patterns.patterns[0].data[1] = 20;
@@ -3446,19 +3754,19 @@ mod tests {
         patterns.working = 0;
 
         let parts = vec!["P.NEXT"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, _) = result.unwrap();
         assert_eq!(value, 20);
         assert_eq!(patterns.patterns[0].index, 1);
 
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, _) = result.unwrap();
         assert_eq!(value, 30);
         assert_eq!(patterns.patterns[0].index, 2);
 
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, _) = result.unwrap();
         assert_eq!(value, 10);
@@ -3469,6 +3777,7 @@ mod tests {
     fn test_pattern_prev_operation() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
 
         patterns.patterns[0].data[0] = 10;
         patterns.patterns[0].data[1] = 20;
@@ -3478,13 +3787,13 @@ mod tests {
         patterns.working = 0;
 
         let parts = vec!["P.PREV"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, _) = result.unwrap();
         assert_eq!(value, 30);
         assert_eq!(patterns.patterns[0].index, 2);
 
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, _) = result.unwrap();
         assert_eq!(value, 20);
@@ -3495,6 +3804,7 @@ mod tests {
     fn test_pattern_here_operation() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
 
         patterns.patterns[0].data[0] = 10;
         patterns.patterns[0].data[1] = 20;
@@ -3504,7 +3814,7 @@ mod tests {
         patterns.working = 0;
 
         let parts = vec!["P.HERE"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, consumed) = result.unwrap();
         assert_eq!(value, 20);
@@ -3516,6 +3826,7 @@ mod tests {
     fn test_pn_next_with_pattern_number() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
 
         patterns.patterns[1].data[0] = 100;
         patterns.patterns[1].data[1] = 200;
@@ -3523,7 +3834,7 @@ mod tests {
         patterns.patterns[1].index = 0;
 
         let parts = vec!["PN.NEXT", "1"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, consumed) = result.unwrap();
         assert_eq!(value, 200);
@@ -3535,6 +3846,7 @@ mod tests {
     fn test_pn_prev_with_pattern_number() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
 
         patterns.patterns[2].data[0] = 50;
         patterns.patterns[2].data[1] = 60;
@@ -3543,7 +3855,7 @@ mod tests {
         patterns.patterns[2].index = 0;
 
         let parts = vec!["PN.PREV", "2"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, consumed) = result.unwrap();
         assert_eq!(value, 70);
@@ -3554,49 +3866,55 @@ mod tests {
     #[test]
     fn test_resolve_value_function() {
         let mut variables = create_test_variables();
+        let scripts = create_test_scripts();
         variables.a = 42;
         variables.b = -10;
         variables.i = 5;
 
-        assert_eq!(resolve_value("A", &variables), 42);
-        assert_eq!(resolve_value("B", &variables), -10);
-        assert_eq!(resolve_value("I", &variables), 5);
-        assert_eq!(resolve_value("100", &variables), 100);
-        assert_eq!(resolve_value("-5", &variables), -5);
-        assert_eq!(resolve_value("0", &variables), 0);
+        assert_eq!(resolve_value("A", &variables, &scripts, 0), 42);
+        assert_eq!(resolve_value("B", &variables, &scripts, 0), -10);
+        assert_eq!(resolve_value("I", &variables, &scripts, 0), 5);
+        assert_eq!(resolve_value("100", &variables, &scripts, 0), 100);
+        assert_eq!(resolve_value("-5", &variables, &scripts, 0), -5);
+        assert_eq!(resolve_value("0", &variables, &scripts, 0), 0);
     }
 
     #[test]
     fn test_eval_condition_simple_comparisons() {
         let mut variables = create_test_variables();
+        let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
         variables.a = 10;
         variables.b = 5;
 
-        assert_eq!(eval_condition("IF A >= B", &variables), true);
-        assert_eq!(eval_condition("IF A <= B", &variables), false);
-        assert_eq!(eval_condition("IF A != B", &variables), true);
-        assert_eq!(eval_condition("IF B != B", &variables), false);
+        assert_eq!(eval_condition("IF A >= B", &variables, &mut patterns, &scripts, 0), true);
+        assert_eq!(eval_condition("IF A <= B", &variables, &mut patterns, &scripts, 0), false);
+        assert_eq!(eval_condition("IF A != B", &variables, &mut patterns, &scripts, 0), true);
+        assert_eq!(eval_condition("IF B != B", &variables, &mut patterns, &scripts, 0), false);
 
         variables.a = 5;
-        assert_eq!(eval_condition("IF A >= B", &variables), true);
-        assert_eq!(eval_condition("IF A <= B", &variables), true);
-        assert_eq!(eval_condition("IF A != B", &variables), false);
+        assert_eq!(eval_condition("IF A >= B", &variables, &mut patterns, &scripts, 0), true);
+        assert_eq!(eval_condition("IF A <= B", &variables, &mut patterns, &scripts, 0), true);
+        assert_eq!(eval_condition("IF A != B", &variables, &mut patterns, &scripts, 0), false);
     }
 
     #[test]
     fn test_eval_condition_with_literals() {
         let variables = create_test_variables();
+        let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
 
-        assert_eq!(eval_condition("IF 10 >= 5", &variables), true);
-        assert_eq!(eval_condition("IF 5 <= 10", &variables), true);
-        assert_eq!(eval_condition("IF 5 != 10", &variables), true);
-        assert_eq!(eval_condition("IF 5 != 5", &variables), false);
+        assert_eq!(eval_condition("IF 10 >= 5", &variables, &mut patterns, &scripts, 0), true);
+        assert_eq!(eval_condition("IF 5 <= 10", &variables, &mut patterns, &scripts, 0), true);
+        assert_eq!(eval_condition("IF 5 != 10", &variables, &mut patterns, &scripts, 0), true);
+        assert_eq!(eval_condition("IF 5 != 5", &variables, &mut patterns, &scripts, 0), false);
     }
 
     #[test]
     fn test_pattern_operations_with_variable_indices() {
         let mut variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
 
         patterns.patterns[0].data[0] = 100;
         patterns.patterns[1].data[0] = 200;
@@ -3605,19 +3923,19 @@ mod tests {
 
         variables.i = 0;
         let parts = vec!["PN", "0"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert_eq!(result.unwrap().0, 100);
 
         let parts = vec!["PN", "1"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert_eq!(result.unwrap().0, 200);
 
         let parts = vec!["PN", "2"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert_eq!(result.unwrap().0, 300);
 
         let parts = vec!["PN", "3"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert_eq!(result.unwrap().0, 400);
     }
 
@@ -3625,6 +3943,7 @@ mod tests {
     fn test_rnd_with_different_ranges() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
 
         let test_cases = vec![
             (vec!["RND", "1"], 0, 1),
@@ -3634,7 +3953,7 @@ mod tests {
 
         for (parts, min, max) in test_cases {
             for _ in 0..10 {
-                let result = eval_expression(&parts, 0, &variables, &mut patterns);
+                let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
                 assert!(result.is_some());
                 let (value, _) = result.unwrap();
                 assert!(value >= min && value < max,
@@ -3648,17 +3967,18 @@ mod tests {
     fn test_rrnd_edge_cases() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
 
         let parts = vec!["RRND", "-100", "-50"];
         for _ in 0..10 {
-            let result = eval_expression(&parts, 0, &variables, &mut patterns);
+            let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
             assert!(result.is_some());
             let (value, _) = result.unwrap();
             assert!(value >= -100 && value <= -50);
         }
 
         let parts = vec!["RRND", "0", "0"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert_eq!(result.unwrap().0, 0);
     }
 
@@ -3666,6 +3986,7 @@ mod tests {
     fn test_pattern_length_wrapping() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
 
         patterns.patterns[0].data[0] = 1;
         patterns.patterns[0].data[1] = 2;
@@ -3675,7 +3996,7 @@ mod tests {
         patterns.working = 0;
 
         let parts = vec!["P.NEXT"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert_eq!(result.unwrap().0, 1);
         assert_eq!(patterns.patterns[0].index, 0);
     }
@@ -3684,6 +4005,7 @@ mod tests {
     fn test_pattern_prev_wrapping() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
 
         patterns.patterns[0].data[0] = 1;
         patterns.patterns[0].data[1] = 2;
@@ -3693,7 +4015,7 @@ mod tests {
         patterns.working = 0;
 
         let parts = vec!["P.PREV"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert_eq!(result.unwrap().0, 3);
         assert_eq!(patterns.patterns[0].index, 2);
     }
@@ -3716,13 +4038,287 @@ mod tests {
     }
 
     #[test]
+    fn test_nested_math_add_two_pattern_values() {
+        let variables = create_test_variables();
+        let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
+
+        patterns.patterns[0].data[0] = 10;
+        patterns.patterns[0].data[1] = 20;
+        patterns.patterns[0].length = 2;
+        patterns.patterns[0].index = 0;
+
+        let parts = vec!["ADD", "PN.HERE", "0", "PN.HERE", "0"];
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        assert!(result.is_some());
+        let (value, consumed) = result.unwrap();
+        assert_eq!(value, 20);
+        assert_eq!(consumed, 5);
+    }
+
+    #[test]
+    fn test_nested_math_sub_variables() {
+        let mut variables = create_test_variables();
+        let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
+
+        variables.a = 50;
+        variables.b = 20;
+
+        let parts = vec!["SUB", "A", "B"];
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        assert!(result.is_some());
+        let (value, consumed) = result.unwrap();
+        assert_eq!(value, 30);
+        assert_eq!(consumed, 3);
+    }
+
+    #[test]
+    fn test_nested_math_mul_rnd() {
+        let variables = create_test_variables();
+        let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
+
+        let parts = vec!["MUL", "RND", "10", "5"];
+        for _ in 0..20 {
+            let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+            assert!(result.is_some());
+            let (value, consumed) = result.unwrap();
+            assert!(value >= 0 && value < 50);
+            assert_eq!(consumed, 4);
+        }
+    }
+
+    #[test]
+    fn test_nested_add_add() {
+        let variables = create_test_variables();
+        let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
+
+        let parts = vec!["ADD", "ADD", "1", "2", "3"];
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        assert!(result.is_some());
+        let (value, consumed) = result.unwrap();
+        assert_eq!(value, 6);
+        assert_eq!(consumed, 5);
+    }
+
+    #[test]
+    fn test_nested_mul_add() {
+        let mut variables = create_test_variables();
+        let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
+
+        variables.a = 5;
+
+        let parts = vec!["MUL", "ADD", "A", "1", "2"];
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        assert!(result.is_some());
+        let (value, consumed) = result.unwrap();
+        assert_eq!(value, 12);
+        assert_eq!(consumed, 5);
+    }
+
+    #[test]
+    fn test_pattern_next_with_expression_index() {
+        let variables = create_test_variables();
+        let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
+
+        patterns.patterns[0].data[0] = 100;
+        patterns.patterns[0].data[1] = 200;
+        patterns.patterns[0].length = 2;
+        patterns.patterns[0].index = 0;
+
+        let parts = vec!["PN.NEXT", "ADD", "0", "0"];
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        assert!(result.is_some());
+        let (value, consumed) = result.unwrap();
+        assert_eq!(value, 200);
+        assert_eq!(consumed, 4);
+        assert_eq!(patterns.patterns[0].index, 1);
+    }
+
+    #[test]
+    fn test_pattern_with_expression_pattern_and_index() {
+        let variables = create_test_variables();
+        let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
+
+        patterns.patterns[0].data[0] = 100;
+        patterns.patterns[1].data[0] = 200;
+        patterns.patterns[1].data[1] = 250;
+        patterns.patterns[1].data[2] = 300;
+        patterns.patterns[1].length = 3;
+        patterns.patterns[1].index = 2;
+
+        let parts = vec!["PN", "ADD", "0", "1"];
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        assert!(result.is_some());
+        let (value, consumed) = result.unwrap();
+        assert_eq!(value, 300);
+        assert_eq!(consumed, 4);
+    }
+
+    #[test]
+    fn test_condition_with_add_expression() {
+        let mut variables = create_test_variables();
+        let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
+
+        variables.a = 10;
+
+        assert_eq!(eval_condition("IF ADD A 1 > 0", &variables, &mut patterns, &scripts, 0), true);
+        assert_eq!(eval_condition("IF ADD A 1 >= 11", &variables, &mut patterns, &scripts, 0), true);
+        assert_eq!(eval_condition("IF ADD A 1 <= 11", &variables, &mut patterns, &scripts, 0), true);
+        assert_eq!(eval_condition("IF ADD A 1 == 11", &variables, &mut patterns, &scripts, 0), true);
+    }
+
+    #[test]
+    fn test_condition_with_mul_expression() {
+        let variables = create_test_variables();
+        let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
+
+        assert_eq!(eval_condition("IF MUL 2 3 == 6", &variables, &mut patterns, &scripts, 0), true);
+        assert_eq!(eval_condition("IF MUL 2 3 != 5", &variables, &mut patterns, &scripts, 0), true);
+        assert_eq!(eval_condition("IF MUL 2 3 >= 6", &variables, &mut patterns, &scripts, 0), true);
+        assert_eq!(eval_condition("IF MUL 2 3 <= 6", &variables, &mut patterns, &scripts, 0), true);
+    }
+
+    #[test]
+    fn test_rnd_with_mul_expression() {
+        let variables = create_test_variables();
+        let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
+
+        let parts = vec!["RND", "MUL", "10", "10"];
+        for _ in 0..20 {
+            let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+            assert!(result.is_some());
+            let (value, consumed) = result.unwrap();
+            assert!(value >= 0 && value < 100);
+            assert_eq!(consumed, 4);
+        }
+    }
+
+    #[test]
+    fn test_rrnd_with_add_expressions() {
+        let variables = create_test_variables();
+        let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
+
+        let parts = vec!["RRND", "ADD", "0", "50", "ADD", "50", "50"];
+        for _ in 0..20 {
+            let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+            assert!(result.is_some());
+            let (value, consumed) = result.unwrap();
+            assert!(value >= 50 && value <= 100);
+            assert_eq!(consumed, 7);
+        }
+    }
+
+    #[test]
+    fn test_deeply_nested_expressions() {
+        let mut variables = create_test_variables();
+        let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
+
+        variables.a = 2;
+        variables.b = 3;
+
+        let parts = vec!["MUL", "ADD", "A", "B", "SUB", "10", "5"];
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        assert!(result.is_some());
+        let (value, consumed) = result.unwrap();
+        assert_eq!(value, 25);
+        assert_eq!(consumed, 7);
+    }
+
+    #[test]
+    fn test_nested_pattern_operations() {
+        let variables = create_test_variables();
+        let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
+
+        patterns.patterns[0].data[0] = 1;
+        patterns.patterns[0].data[1] = 2;
+        patterns.patterns[0].length = 2;
+        patterns.patterns[0].index = 0;
+
+        patterns.patterns[1].data[0] = 10;
+        patterns.patterns[1].data[1] = 20;
+        patterns.patterns[1].length = 2;
+        patterns.patterns[1].index = 1;
+
+        let parts = vec!["ADD", "PN", "0", "PN", "1"];
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        assert!(result.is_some());
+        let (value, consumed) = result.unwrap();
+        assert_eq!(value, 21);
+        assert_eq!(consumed, 5);
+    }
+
+    #[test]
+    fn test_div_with_nested_expressions() {
+        let variables = create_test_variables();
+        let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
+
+        let parts = vec!["DIV", "MUL", "10", "5", "ADD", "2", "3"];
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        assert!(result.is_some());
+        let (value, consumed) = result.unwrap();
+        assert_eq!(value, 10);
+        assert_eq!(consumed, 7);
+    }
+
+    #[test]
+    fn test_mod_with_nested_expressions() {
+        let variables = create_test_variables();
+        let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
+
+        let parts = vec!["MOD", "ADD", "17", "3", "SUB", "10", "3"];
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        assert!(result.is_some());
+        let (value, consumed) = result.unwrap();
+        assert_eq!(value, 6);
+        assert_eq!(consumed, 7);
+    }
+
+    #[test]
+    fn test_sub_with_pattern_values() {
+        let variables = create_test_variables();
+        let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
+
+        patterns.patterns[0].data[0] = 100;
+        patterns.patterns[0].data[1] = 30;
+        patterns.patterns[0].length = 2;
+        patterns.patterns[0].index = 0;
+
+        patterns.patterns[1].data[0] = 30;
+        patterns.patterns[1].length = 1;
+        patterns.patterns[1].index = 0;
+
+        let parts = vec!["SUB", "PN.HERE", "0", "PN.HERE", "1"];
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        assert!(result.is_some());
+        let (value, consumed) = result.unwrap();
+        assert_eq!(value, 70);
+        assert_eq!(consumed, 5);
+    }
+
+    #[test]
     fn test_eval_expression_with_start_idx() {
         let mut variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
         variables.a = 10;
 
         let parts = vec!["SOME", "A", "IGNORED"];
-        let result = eval_expression(&parts, 1, &variables, &mut patterns);
+        let result = eval_expression(&parts, 1, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, consumed) = result.unwrap();
         assert_eq!(value, 10);
@@ -3733,9 +4329,10 @@ mod tests {
     fn test_rnd_insufficient_args() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
 
         let parts = vec!["RND"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_none());
     }
 
@@ -3743,9 +4340,10 @@ mod tests {
     fn test_rrnd_insufficient_args() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
 
         let parts = vec!["RRND", "50"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_none());
     }
 
@@ -3753,13 +4351,14 @@ mod tests {
     fn test_pattern_operations_bounds() {
         let variables = create_test_variables();
         let mut patterns = create_test_patterns();
+        let scripts = create_test_scripts();
 
         let parts = vec!["PN", "4"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_none());
 
         let parts = vec!["PN.NEXT", "5"];
-        let result = eval_expression(&parts, 0, &variables, &mut patterns);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_none());
     }
 

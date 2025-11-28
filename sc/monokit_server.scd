@@ -1,4 +1,7 @@
 (
+// Disable input to avoid sample rate mismatch issues
+s.options.numInputBusChannels = 0;
+
 s.waitForBoot {
     SynthDef(\monokit, {
         arg pf = 200,

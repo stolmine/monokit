@@ -456,7 +456,7 @@ pub fn render_footer(app: &super::App) -> Paragraph<'static> {
     let footer_text = vec![
         input_line,
         Line::from(Span::styled(
-            "[ ] pages  Alt+H help  q quit",
+            "[ ] pages  Alt+H help  type 'quit' to exit",
             Style::default().fg(Color::DarkGray),
         )),
     ];
@@ -486,11 +486,14 @@ pub fn run_app<B: ratatui::backend::Backend>(
                 let has_alt = key.modifiers.contains(KeyModifiers::ALT);
 
                 match key.code {
-                    KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                        return Ok(());
+                    KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) && app.is_script_page() => {
+                        app.copy_line();
                     }
-                    KeyCode::Char('q') if !has_alt => {
-                        return Ok(());
+                    KeyCode::Char('x') if key.modifiers.contains(KeyModifiers::CONTROL) && app.is_script_page() => {
+                        app.cut_line();
+                    }
+                    KeyCode::Char('v') if key.modifiers.contains(KeyModifiers::CONTROL) && app.is_script_page() => {
+                        app.paste_line();
                     }
                     KeyCode::Char('[') => {
                         app.prev_page();
@@ -604,6 +607,9 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     }
                     KeyCode::Enter if !is_help && app.current_page != Page::Pattern => {
                         app.execute_command();
+                        if app.should_quit {
+                            return Ok(());
+                        }
                     }
                     KeyCode::Char('k') if !is_help && app.is_script_page() && key.modifiers.contains(KeyModifiers::CONTROL) => {
                         app.delete_entire_line();

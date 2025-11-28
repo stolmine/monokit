@@ -195,7 +195,7 @@ All numeric arguments accept nested expressions, including:
 
 #### System
 - `RST` - Reset all parameters to defaults
-- `q` - Quit application
+- `q`, `quit`, or `exit` - Quit application (typed in REPL)
 
 ### Navigation (Keybindings)
 
@@ -217,7 +217,9 @@ All numeric arguments accept nested expressions, including:
 - `Ctrl+Left/Right` - Word-by-word cursor movement
 - `Ctrl+D` - Duplicate line (script pages)
 - `Ctrl+K` - Delete entire line (script pages)
-- `Ctrl+C` - Quit
+- `Ctrl+C` - Copy line (script pages)
+- `Ctrl+X` - Cut line (script pages)
+- `Ctrl+V` - Paste line (script pages)
 
 ## OSC Protocol
 

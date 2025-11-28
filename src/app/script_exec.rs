@@ -406,6 +406,13 @@ impl App {
         self.input.clear();
         self.cursor_position = 0;
 
+        // Handle quit commands
+        let cmd_upper = cmd.to_uppercase();
+        if cmd_upper == "Q" || cmd_upper == "QUIT" || cmd_upper == "EXIT" {
+            self.should_quit = true;
+            return;
+        }
+
         let mut metro_interval = {
             let state = self.metro_state.lock().unwrap();
             state.interval_ms

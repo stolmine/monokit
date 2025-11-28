@@ -193,4 +193,29 @@ impl App {
 
         self.cursor_position = pos;
     }
+
+    pub fn copy_line(&mut self) {
+        if let Some(script_idx) = self.current_script_index() {
+            if let Some(selected) = self.selected_line {
+                let script = self.scripts.get_script(script_idx);
+                self.clipboard = script.lines[selected].clone();
+            }
+        }
+    }
+
+    pub fn cut_line(&mut self) {
+        self.copy_line();
+        self.delete_entire_line();
+    }
+
+    pub fn paste_line(&mut self) {
+        if let Some(script_idx) = self.current_script_index() {
+            if let Some(selected) = self.selected_line {
+                let script = self.scripts.get_script_mut(script_idx);
+                script.lines[selected] = self.clipboard.clone();
+                self.input = self.clipboard.clone();
+                self.cursor_position = self.input.len();
+            }
+        }
+    }
 }

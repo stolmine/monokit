@@ -26,6 +26,8 @@ pub struct App {
     pub pattern_input: String,
     pub ev_counters: [[u32; 8]; 10],
     pub if_else_condition: bool,
+    pub clipboard: String,
+    pub should_quit: bool,
 }
 
 impl App {
@@ -49,6 +51,8 @@ impl App {
             pattern_input: String::new(),
             ev_counters: [[0; 8]; 10],
             if_else_condition: true,
+            clipboard: String::new(),
+            should_quit: false,
         }
     }
 

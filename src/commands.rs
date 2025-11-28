@@ -1187,6 +1187,66 @@ where
             }
             return Ok(vec![num - 1]);
         }
+        "SAVE" => {
+            if parts.len() < 2 {
+                output("Error: SAVE requires a scene name".to_string());
+                return Ok(vec![]);
+            }
+            let name = parts[1..].join(" ");
+            let scene = crate::scene::Scene::from_app_state(scripts, patterns);
+            match crate::scene::save_scene(&name, &scene) {
+                Ok(()) => output(format!("Saved scene: {}", name)),
+                Err(e) => output(format!("Error: {:?}", e)),
+            }
+        }
+        "LOAD" => {
+            if parts.len() < 2 {
+                output("Error: LOAD requires a scene name".to_string());
+                return Ok(vec![]);
+            }
+            let name = parts[1..].join(" ");
+            match crate::scene::load_scene(&name) {
+                Ok(scene) => {
+                    scene.apply_to_app_state(scripts, patterns);
+                    *variables = crate::types::Variables::default();
+                    output(format!("Loaded scene: {}", name));
+                }
+                Err(crate::scene::SceneError::NotFound(_)) => {
+                    output(format!("Error: Scene '{}' not found", name));
+                }
+                Err(e) => output(format!("Error: {:?}", e)),
+            }
+        }
+        "SCENES" => {
+            match crate::scene::list_scenes() {
+                Ok(scenes) => {
+                    if scenes.is_empty() {
+                        output("No scenes saved".to_string());
+                    } else {
+                        output("Scenes:".to_string());
+                        for (name, size) in scenes {
+                            let size_kb = size as f64 / 1024.0;
+                            output(format!("  {} ({:.1} KB)", name, size_kb));
+                        }
+                    }
+                }
+                Err(e) => output(format!("Error: {:?}", e)),
+            }
+        }
+        "DELETE" => {
+            if parts.len() < 2 {
+                output("Error: DELETE requires a scene name".to_string());
+                return Ok(vec![]);
+            }
+            let name = parts[1..].join(" ");
+            match crate::scene::delete_scene(&name) {
+                Ok(()) => output(format!("Deleted scene: {}", name)),
+                Err(crate::scene::SceneError::NotFound(_)) => {
+                    output(format!("Error: Scene '{}' not found", name));
+                }
+                Err(e) => output(format!("Error: {:?}", e)),
+            }
+        }
         "HELP" => {
             output("=== MONOKIT COMMANDS ===".to_string());
             output("".to_string());
@@ -1232,6 +1292,12 @@ where
             output("".to_string());
             output("-- Scripts --".to_string());
             output("SCRIPT <1-8>  Execute stored script".to_string());
+            output("".to_string());
+            output("-- Scenes --".to_string());
+            output("SAVE <name>   Save current state".to_string());
+            output("LOAD <name>   Load saved state".to_string());
+            output("SCENES        List all scenes".to_string());
+            output("DELETE <name> Delete a scene".to_string());
         }
         _ => {
             output(format!("Unknown command: {}", cmd));

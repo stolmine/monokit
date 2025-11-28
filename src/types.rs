@@ -1,9 +1,11 @@
 use rosc::OscType;
+use serde::{Deserialize, Serialize};
+use serde_big_array::BigArray;
 use std::sync::mpsc::Sender;
 
 pub const OSC_ADDR: &str = "127.0.0.1:57120";
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Script {
     pub lines: [String; 8],
     pub j: i16,
@@ -58,8 +60,9 @@ impl Default for Variables {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Pattern {
+    #[serde(with = "BigArray")]
     pub data: [i16; 64],
     pub length: usize,
     pub index: usize,
@@ -75,7 +78,7 @@ impl Default for Pattern {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PatternStorage {
     pub patterns: [Pattern; 4],
     pub working: usize,
@@ -95,7 +98,7 @@ impl Default for PatternStorage {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScriptStorage {
     pub scripts: [Script; 10],
 }

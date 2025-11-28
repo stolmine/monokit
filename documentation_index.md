@@ -15,7 +15,7 @@
 
 ### Source Code
 
-Modular Rust implementation (10 files, 4,655 total lines):
+Modular Rust implementation (11 files, 4,824 total lines):
 
 - **src/main.rs** (62 lines) - Application entry point, initializes TUI and starts main loop
 - **src/metro.rs** (112 lines) - Metro thread implementation with absolute timing
@@ -23,6 +23,7 @@ Modular Rust implementation (10 files, 4,655 total lines):
 - **src/eval.rs** (364 lines) - Expression evaluation engine for nested operations and pattern access
 - **src/ui.rs** (637 lines) - TUI rendering with ratatui, page-based interface
 - **src/tests.rs** (848 lines) - Comprehensive unit test suite
+- **src/scene.rs** (169 lines) - Scene persistence, file I/O
 - **src/app/mod.rs** (125 lines) - App struct, constructor, navigation
 - **src/app/input.rs** (131 lines) - Input handling methods
 - **src/app/script_exec.rs** (473 lines) - Script/command execution with 10 extracted helper methods
@@ -94,6 +95,12 @@ Audio output
 - Scripts 1-8: User scripts
 - M script (index 8): Called on each metro tick
 - I script (index 9): Called on startup
+
+#### Scenes
+- `SAVE <name>` - Save current scene (scripts + patterns) to ~/.monokit/scenes/
+- `LOAD <name>` - Load scene from file, resets variables
+- `SCENES` - List available saved scenes
+- `DELETE <name>` - Delete a saved scene
 
 #### Variables
 - `A`, `B`, `C`, `D` - General accumulators (get/set: `A` or `A 100`)

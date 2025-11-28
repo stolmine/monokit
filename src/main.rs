@@ -2,6 +2,7 @@ mod app;
 mod commands;
 mod eval;
 mod metro;
+mod scene;
 mod types;
 mod ui;
 

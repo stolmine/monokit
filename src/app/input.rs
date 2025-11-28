@@ -128,4 +128,69 @@ impl App {
             self.cursor_position = 0;
         }
     }
+
+    pub fn duplicate_line(&mut self) {
+        if let Some(script_idx) = self.current_script_index() {
+            if let Some(selected) = self.selected_line {
+                if selected < 7 {
+                    let script = self.scripts.get_script(script_idx);
+                    let line_content = script.lines[selected].clone();
+                    let script = self.scripts.get_script_mut(script_idx);
+                    script.lines[selected + 1] = line_content;
+                    self.selected_line = Some(selected + 1);
+                }
+            }
+        }
+    }
+
+    pub fn delete_entire_line(&mut self) {
+        if let Some(script_idx) = self.current_script_index() {
+            if let Some(selected) = self.selected_line {
+                let script = self.scripts.get_script_mut(script_idx);
+                script.lines[selected].clear();
+                self.input.clear();
+                self.cursor_position = 0;
+            }
+        }
+    }
+
+    pub fn move_cursor_word_left(&mut self) {
+        if self.cursor_position == 0 {
+            return;
+        }
+
+        let chars: Vec<char> = self.input.chars().collect();
+        let mut pos = self.cursor_position;
+
+        while pos > 0 && chars[pos - 1] == ' ' {
+            pos -= 1;
+        }
+
+        while pos > 0 && chars[pos - 1] != ' ' {
+            pos -= 1;
+        }
+
+        self.cursor_position = pos;
+    }
+
+    pub fn move_cursor_word_right(&mut self) {
+        let chars: Vec<char> = self.input.chars().collect();
+        let len = chars.len();
+
+        if self.cursor_position >= len {
+            return;
+        }
+
+        let mut pos = self.cursor_position;
+
+        while pos < len && chars[pos] != ' ' {
+            pos += 1;
+        }
+
+        while pos < len && chars[pos] == ' ' {
+            pos += 1;
+        }
+
+        self.cursor_position = pos;
+    }
 }

@@ -596,11 +596,17 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     KeyCode::Down if !is_help && app.is_script_page() => {
                         app.select_line_down();
                     }
+                    KeyCode::Char('d') if !is_help && app.is_script_page() && key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        app.duplicate_line();
+                    }
                     KeyCode::Enter if !is_help && app.is_script_page() => {
                         app.save_line();
                     }
                     KeyCode::Enter if !is_help && app.current_page != Page::Pattern => {
                         app.execute_command();
+                    }
+                    KeyCode::Char('k') if !is_help && app.is_script_page() && key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        app.delete_entire_line();
                     }
                     KeyCode::Backspace if !is_help && app.current_page != Page::Pattern && key.modifiers.contains(KeyModifiers::SHIFT) => {
                         app.clear_input();
@@ -616,6 +622,12 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     }
                     KeyCode::Backspace if !is_help && app.current_page != Page::Pattern => {
                         app.delete_char();
+                    }
+                    KeyCode::Left if !is_help && app.current_page != Page::Pattern && key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        app.move_cursor_word_left();
+                    }
+                    KeyCode::Right if !is_help && app.current_page != Page::Pattern && key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        app.move_cursor_word_right();
                     }
                     KeyCode::Left if !is_help && app.current_page != Page::Pattern => {
                         app.move_cursor_left();

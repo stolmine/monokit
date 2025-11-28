@@ -214,6 +214,9 @@ All numeric arguments accept nested expressions, including:
 - `Enter` - Execute command
 - `Up/Down` - Command history (on non-Help pages)
 - `Left/Right` - Cursor movement
+- `Ctrl+Left/Right` - Word-by-word cursor movement
+- `Ctrl+D` - Duplicate line (script pages)
+- `Ctrl+K` - Delete entire line (script pages)
 - `Ctrl+C` - Quit
 
 ## OSC Protocol

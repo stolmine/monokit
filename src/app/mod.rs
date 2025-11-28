@@ -1,0 +1,125 @@
+use crate::types::{
+    MetroCommand, MetroState, Page, PatternStorage, ScriptStorage, Variables,
+};
+use std::sync::mpsc::Sender;
+use std::sync::{Arc, Mutex};
+
+mod input;
+mod script_exec;
+
+pub struct App {
+    pub current_page: Page,
+    pub previous_page: Page,
+    pub input: String,
+    pub cursor_position: usize,
+    pub history: Vec<String>,
+    pub history_index: Option<usize>,
+    pub output: Vec<String>,
+    pub help_scroll: usize,
+    pub metro_state: Arc<Mutex<MetroState>>,
+    pub metro_tx: Sender<MetroCommand>,
+    pub scripts: ScriptStorage,
+    pub selected_line: Option<usize>,
+    pub variables: Variables,
+    pub patterns: PatternStorage,
+    pub pattern_cursor: (usize, usize),
+    pub pattern_input: String,
+    pub ev_counters: [[u32; 8]; 10],
+    pub if_else_condition: bool,
+}
+
+impl App {
+    pub fn new(metro_tx: Sender<MetroCommand>, metro_state: Arc<Mutex<MetroState>>) -> Self {
+        Self {
+            current_page: Page::Live,
+            previous_page: Page::Live,
+            input: String::new(),
+            cursor_position: 0,
+            history: Vec::new(),
+            history_index: None,
+            output: Vec::new(),
+            help_scroll: 0,
+            metro_state,
+            metro_tx,
+            scripts: ScriptStorage::default(),
+            selected_line: None,
+            variables: Variables::default(),
+            patterns: PatternStorage::default(),
+            pattern_cursor: (0, 0),
+            pattern_input: String::new(),
+            ev_counters: [[0; 8]; 10],
+            if_else_condition: true,
+        }
+    }
+
+    pub fn go_to_page(&mut self, page: Page) {
+        if page != Page::Help {
+            self.previous_page = page;
+        }
+        self.current_page = page;
+        self.selected_line = None;
+    }
+
+    pub fn toggle_help(&mut self) {
+        if self.current_page == Page::Help {
+            self.current_page = self.previous_page;
+        } else {
+            self.previous_page = self.current_page;
+            self.current_page = Page::Help;
+        }
+    }
+
+    pub fn next_page(&mut self) {
+        self.current_page = self.current_page.next();
+        self.selected_line = None;
+    }
+
+    pub fn prev_page(&mut self) {
+        self.current_page = self.current_page.prev();
+        self.selected_line = None;
+    }
+
+    pub fn is_script_page(&self) -> bool {
+        matches!(
+            self.current_page,
+            Page::Script1
+                | Page::Script2
+                | Page::Script3
+                | Page::Script4
+                | Page::Script5
+                | Page::Script6
+                | Page::Script7
+                | Page::Script8
+                | Page::Metro
+                | Page::Init
+        )
+    }
+
+    pub fn current_script_index(&self) -> Option<usize> {
+        match self.current_page {
+            Page::Script1 => Some(0),
+            Page::Script2 => Some(1),
+            Page::Script3 => Some(2),
+            Page::Script4 => Some(3),
+            Page::Script5 => Some(4),
+            Page::Script6 => Some(5),
+            Page::Script7 => Some(6),
+            Page::Script8 => Some(7),
+            Page::Metro => Some(8),
+            Page::Init => Some(9),
+            _ => None,
+        }
+    }
+
+    pub fn add_output(&mut self, msg: String) {
+        self.output.push(msg);
+        if self.output.len() > 100 {
+            self.output.remove(0);
+        }
+    }
+
+    pub fn execute_script(&mut self, script_index: usize) {
+        self.if_else_condition = true;
+        self.execute_script_with_depth(script_index, 0);
+    }
+}

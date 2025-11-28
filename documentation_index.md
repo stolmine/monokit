@@ -15,16 +15,26 @@
 
 ### Source Code
 
-- **src/main.rs** - Rust TUI application
-  - Page-based interface with ratatui/crossterm
-  - 13 pages: Live, Script 1-8, Metro (M), Init (I), Pattern (P), Help
-  - Script storage: 10 scripts × 8 lines (Scripts 1-8, M, I)
-  - Pattern storage: 4 patterns × 64 steps (i16 values)
-  - Variables: A-D, X-Y-Z-T (global), J-K (per-script local), I (loop counter)
-  - Control flow: IF conditions, PROB probabilistic execution, EV every-N-tick execution
-  - Expression evaluation in arguments (P.NEXT, variables, etc.)
-  - Metro thread sends script execution requests to main thread
-  - OSC client sending to SuperCollider (127.0.0.1:57120)
+Modular Rust implementation (8 files, 4,655 total lines):
+
+- **src/main.rs** (62 lines) - Application entry point, initializes TUI and starts main loop
+- **src/metro.rs** (112 lines) - Metro thread implementation with absolute timing
+- **src/types.rs** (230 lines) - Core data structures, enums, constants, and type definitions
+- **src/eval.rs** (364 lines) - Expression evaluation engine for nested operations and pattern access
+- **src/ui.rs** (637 lines) - TUI rendering with ratatui, page-based interface
+- **src/tests.rs** (848 lines) - Comprehensive unit test suite
+- **src/app.rs** (1,067 lines) - App struct, state management, script execution context
+- **src/commands.rs** (1,335 lines) - Command parsing and processing logic
+
+Key features:
+- Page-based interface: Live, Script 1-8, Metro (M), Init (I), Pattern (P), Help
+- Script storage: 10 scripts × 8 lines (Scripts 1-8, M, I)
+- Pattern storage: 4 patterns × 64 steps (i16 values)
+- Variables: A-D, X-Y-Z-T (global), J-K (per-script local), I (loop counter)
+- Control flow: IF conditions, PROB probabilistic execution, EV every-N-tick execution
+- Expression evaluation in all numeric arguments
+- Metro thread sends script execution requests to main thread
+- OSC client sending to SuperCollider (127.0.0.1:57120)
 
 - **sc/monokit_server.scd** - SuperCollider sound engine
   - `\monokit` SynthDef: HD2-style dual oscillator with FM, discontinuity, envelopes

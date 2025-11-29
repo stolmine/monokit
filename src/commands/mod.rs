@@ -280,6 +280,57 @@ where
         "MF.F" => {
             synth_params::handle_mf_f(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
         }
+        "LB" => {
+            synth_params::handle_lb(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "LS" => {
+            synth_params::handle_ls(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "LM" => {
+            synth_params::handle_lm(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "RGF" => {
+            synth_params::handle_rgf(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "RGW" => {
+            synth_params::handle_rgw(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "RGM" => {
+            synth_params::handle_rgm(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "CT" => {
+            synth_params::handle_ct(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "CR" => {
+            synth_params::handle_cr(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "CA" => {
+            synth_params::handle_ca(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "CL" => {
+            synth_params::handle_cl(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "CM" => {
+            synth_params::handle_cm(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "EL" => {
+            synth_params::handle_el(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "EM" => {
+            synth_params::handle_em(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "EF" => {
+            synth_params::handle_ef(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "EQ" => {
+            synth_params::handle_eq_param(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "EH" => {
+            synth_params::handle_eh(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "PAN" => {
+            synth_params::handle_pan(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
         "RST" => {
             misc::handle_rst(metro_tx, *debug_level, output)?;
         }

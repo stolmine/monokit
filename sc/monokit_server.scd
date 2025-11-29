@@ -54,6 +54,23 @@ s.waitForBoot {
             dtail = 1,
             rmode = 1,
             rtail = 1,
+            lb = 16,      // Lo-fi bit depth (1-16)
+            ls = 48000,   // Lo-fi sample rate (100-48000)
+            lm = 0,       // Lo-fi mix (0-16383)
+            rgf = 440,    // Ring mod frequency (20-2000)
+            rgw = 0,      // Ring mod waveform (0-3)
+            rgm = 0,      // Ring mod mix (0-16383)
+            ct = 8192,    // Compressor threshold (0-16383)
+            cr = 4,       // Compressor ratio (1-20)
+            ca = 10,      // Compressor attack ms (1-500)
+            cl = 100,     // Compressor release ms (10-2000)
+            cm = 0,       // Compressor makeup gain (0-16383)
+            el = 0,       // EQ low shelf dB (-24 to +24)
+            em = 0,       // EQ mid peak dB (-24 to +24)
+            ef = 1000,    // EQ mid frequency Hz (200-8000)
+            eq = 1,       // EQ mid Q (0.1-10)
+            eh = 0,       // EQ high shelf dB (-24 to +24)
+            pn = 0,       // Pan position (-16383 to +16383)
             volume = 1,
             gate = 0;
 
@@ -68,6 +85,11 @@ s.waitForBoot {
         var reverbDecay, reverbDamping, reverbWet, reverbedL, reverbedR;
         var dmodeSmooth, delayWetSmooth, dfeedbackMult, delayInput, delayBypass;
         var rmodeSmooth, reverbWetSmooth, rinputGate, rroomSize, reverbInput;
+        var lofi, lofiBits, lofiRate, lofiMix;
+        var ringMod, ringModOsc, ringModMix;
+        var compressed, compThresh, compRatio;
+        var eqSig;
+        var panPos;
 
         // Envelope model: output = base + (envelope * amount)
         // Exception: ampEnv is multiplicative (0→1 gating)
@@ -120,11 +142,23 @@ s.waitForBoot {
         // Discontinuity: base + (envelope * amount)
         discontinuity = dcAmount + (dcEnv * da / 16383);
         sig = sig + (modOsc * discontinuity);
-        sig = Select.ar(dm.clip(0, 2).round, [
-            sig.fold2(1),
-            sig.tanh,
-            sig.softclip
+        sig = Select.ar(dm.clip(0, 6).round, [
+            sig.fold2(1),           // 0: fold
+            sig.tanh,               // 1: tanh
+            sig.softclip,           // 2: softclip
+            sig.clip2(1),           // 3: hard clip
+            (sig.abs.pow(0.5) * sig.sign),  // 4: asymmetric (sqrt saturation)
+            sig.abs,                // 5: full-wave rectify
+            (sig * 8).round / 8     // 6: bitcrush waveshape
         ]);
+
+        // Lo-Fi processor
+        lofiBits = lb.clip(1, 16);
+        lofiRate = ls.clip(100, 48000);
+        lofiMix = lm / 16383;
+        lofi = (sig * (2.pow(lofiBits - 1))).round / (2.pow(lofiBits - 1));
+        lofi = Latch.ar(lofi, Impulse.ar(lofiRate));
+        sig = (sig * (1 - lofiMix)) + (lofi * lofiMix);
 
         // SVF Multi-Mode Filter
         filterCutoff = fc + ((fk / 16383) * primaryFreq) + (filterEnv * (fe / 16383) * 5000) + (modBus * mf_f * 5000);
@@ -136,6 +170,16 @@ s.waitForBoot {
             SVF.ar(sig, filterCutoff, filterQ, 0, 0, 1, 0, 0),
             SVF.ar(sig, filterCutoff, filterQ, 0, 0, 0, 1, 0)
         ]);
+
+        // Ring modulator
+        ringModOsc = Select.ar(rgw.clip(0, 3).round, [
+            SinOsc.ar(rgf),
+            LFTri.ar(rgf),
+            LFSaw.ar(rgf),
+            LFPulse.ar(rgf, 0, 0.5, 2, -1)  // Square wave
+        ]);
+        ringModMix = rgm / 16383;
+        sig = (sig * (1 - ringModMix)) + ((sig * ringModOsc) * ringModMix);
 
         // Comb Resonator (Karplus-Strong)
         resonatorFreq = rf + ((rk / 16383) * (primaryFreq - rf));
@@ -149,8 +193,22 @@ s.waitForBoot {
         // Amplitude: base + (modBus * routing)
         amp = ampEnv * volume * (1 + (modBus * ma * 0.5));
         sig = sig * amp;
-        sigL = sig;
-        sigR = sig;
+
+        // Compressor
+        compThresh = (ct / 16383).clip(0.001, 1);
+        compRatio = 1 / cr.clip(1, 20);
+        sig = Compander.ar(sig, sig,
+            thresh: compThresh,
+            slopeBelow: 1,
+            slopeAbove: compRatio,
+            clampTime: ca / 1000,
+            relaxTime: cl / 1000
+        );
+        sig = sig * (1 + (cm / 16383 * 2));  // Makeup gain (up to 3x)
+
+        // Pan control
+        panPos = (pn / 16383).clip(-1, 1);
+        #sigL, sigR = Pan2.ar(sig, panPos);
 
         // Stereo Delay with Feedback Filtering and Routing Modes
         dmodeSmooth = Lag.kr(dmode, 0.02);
@@ -193,6 +251,14 @@ s.waitForBoot {
             (sigR * (1 - delayWetSmooth)) + (delayedR * delayWetSmooth),
             sigR + (delayedR * Select.kr(dtail.clip(0, 2).round, [delayWetSmooth, 1, 1]))
         ]);
+
+        // 3-Band EQ (post-delay, pre-reverb)
+        sigL = BLowShelf.ar(sigL, 200, 1, el.clip(-24, 24));
+        sigL = BPeakEQ.ar(sigL, ef.clip(200, 8000), (1/eq.clip(0.1, 10)), em.clip(-24, 24));
+        sigL = BHiShelf.ar(sigL, 4000, 1, eh.clip(-24, 24));
+        sigR = BLowShelf.ar(sigR, 200, 1, el.clip(-24, 24));
+        sigR = BPeakEQ.ar(sigR, ef.clip(200, 8000), (1/eq.clip(0.1, 10)), em.clip(-24, 24));
+        sigR = BHiShelf.ar(sigR, 4000, 1, eh.clip(-24, 24));
 
         // Plate Reverb with Routing Modes
         rmodeSmooth = Lag.kr(rmode, 0.02);

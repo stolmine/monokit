@@ -59,8 +59,8 @@ Key features:
 - **sc/monokit_server.scd** - SuperCollider sound engine
   - `\monokit` SynthDef: HD2-style dual oscillator with FM, discontinuity, envelopes, and DSP effects
   - Additive envelope model: output = base + env * amount
-  - Signal chain: Oscillators → FM → Mix → Discontinuity → SVF Filter → Comb Resonator → Amp → Stereo Delay → Plate Reverb → Out
-  - 49 synth parameters (25 oscillator/envelope + 20 DSP + 4 routing)
+  - Signal chain: Osc → Discontinuity → Lo-Fi → SVF → Ring Mod → Resonator → Amp → Compressor → Pan → Delay → EQ → Reverb → Out
+  - 66 synth parameters (25 oscillator/envelope + 37 DSP + 4 routing)
   - OSC responders:
     - `/monokit/trigger` - Gate trigger (no args)
     - `/monokit/param` - Generic parameter setter (string name, float/int value)
@@ -192,7 +192,7 @@ Examples:
 - `IF GT A 5: TR` - Trigger if A > 5
 - `IF A > 5: TR` - Same as above (infix syntax)
 
-#### Synth Parameters (49 total)
+#### Synth Parameters (66 total)
 
 **Primary Oscillator**
 - `PF <hz>` - Primary frequency (20-20000)
@@ -209,8 +209,13 @@ Examples:
 
 **Discontinuity (Waveshaping)**
 - `DC <0-16383>` - Discontinuity amount (mix of modulator into shaper)
-- `DM <0-2>` - Discontinuity mode (0=fold, 1=tanh, 2=softclip)
+- `DM <0-6>` - Discontinuity mode (0=fold, 1=tanh, 2=softclip, 3=hard, 4=asym, 5=sine, 6=crusher)
 - `DD <ms>` - Discontinuity envelope decay time (milliseconds, 1-10000)
+
+**Lo-Fi Processor**
+- `LB <1-16>` - Bit depth (1=crushed, 16=clean)
+- `LS <100-48000>` - Sample rate reduction (Hz)
+- `LM <0-16383>` - Lo-fi mix (dry/wet)
 
 **Tracking & Modulation Bus**
 - `TK <0-16383>` - Tracking amount (modulator frequency follows pitch envelope)
@@ -248,11 +253,26 @@ Examples:
 - `FK <0-16383>` - Filter key tracking amount
 - `MF.F <0|1>` - ModBus -> Filter cutoff routing
 
+**Ring Modulator**
+- `RGF <20-2000>` - Ring mod frequency (Hz)
+- `RGW <0-3>` - Waveform (0=sine, 1=tri, 2=saw, 3=square)
+- `RGM <0-16383>` - Ring mod mix
+
 **Comb Resonator (Karplus-Strong)**
 - `RF <hz>` - Resonator frequency (20-5000)
 - `RD <ms>` - Resonator decay time (10-5000 ms)
 - `RM <0-16383>` - Resonator mix (dry/wet)
 - `RK <0-16383>` - Resonator key tracking
+
+**Compressor**
+- `CT <0-16383>` - Threshold
+- `CR <1-20>` - Ratio (1=off, 20=limiting)
+- `CA <1-500>` - Attack (ms)
+- `CL <10-2000>` - Release (ms)
+- `CM <0-16383>` - Makeup gain
+
+**Pan**
+- `PAN <-16383 to +16383>` - Stereo position (-L, 0=center, +R)
 
 **Stereo Delay**
 - `DT <ms>` - Delay time (1-2000 ms)
@@ -260,6 +280,13 @@ Examples:
 - `DLP <hz>` - Delay lowpass filter cutoff (100-20000)
 - `DW <0-16383>` - Delay wet mix (INSERT mode) or send level (SEND mode)
 - `DS <0-1>` - Delay sync (0=free, 1=tempo - not implemented)
+
+**3-Band EQ (Post-Delay)**
+- `EL <-24 to +24>` - Low shelf gain (dB at 200Hz)
+- `EM <-24 to +24>` - Mid peak gain (dB)
+- `EF <200-8000>` - Mid frequency (Hz)
+- `EQ <0.1-10>` - Mid Q/bandwidth
+- `EH <-24 to +24>` - High shelf gain (dB at 4000Hz)
 
 **Plate Reverb**
 - `RV <0-16383>` - Reverb size/decay time
@@ -423,9 +450,14 @@ All communication from Rust CLI to SuperCollider server uses UDP over localhost 
   - `<name>` = parameter name (string):
     - Oscillator/FM: pf, pw, mf, mw, fb, fba, fbd, dc, dm, dd, tk, mb, mp, md, mt, ma, fm, mx, mm, me
     - Envelopes: ad, pd, fd, dd, pa, fa, da
+    - Lo-Fi: lb, ls, lm
     - Filter: fc, fq, ft, fe, fed, fk, mf_f
+    - Ring Mod: rgf, rgw, rgm
     - Resonator: rf, rd, rm, rk
+    - Compressor: ct, cr, ca, cl, cm
+    - Pan: pan
     - Delay: dt, df, dlp, dw, ds, dmode, dtail
+    - EQ: el, em, ef, eq, eh
     - Reverb: rv, rp, rh, rw, rmode, rtail
   - `<value>` = float or int depending on parameter type
 - **Reset:** `/monokit/reset` (no arguments, resets all parameters to defaults)

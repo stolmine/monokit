@@ -20,7 +20,7 @@ where
     if max <= 0 {
         output("0".to_string());
     } else {
-        let result = rand::thread_rng().gen_range(0..max);
+        let result = rand::thread_rng().gen_range(0..=max);
         output(format!("{}", result));
     }
     Ok(())

@@ -320,7 +320,7 @@ Note: In SEND mode with RING or FREEZE tail modes, the effect output remains at 
 - `MOD <a> <b>` or `% <a> <b>` - Modulo a by b (works as command and in expressions)
 
 #### Random Number Generation
-- `RND <max>` - Random integer from 0 to max-1 (works as command and in expressions)
+- `RND <max>` - Random integer from 0 to max inclusive (works as command and in expressions)
 - `RRND <min> <max>` - Random integer from min to max inclusive (works as command and in expressions)
 - `TOSS` - Random 0 or 1 (coin flip, works as command and in expressions)
 - `EITH <a> <b>` - Random choice between a and b (works as command and in expressions)

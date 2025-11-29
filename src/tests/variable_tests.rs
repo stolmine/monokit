@@ -33,7 +33,7 @@ fn test_variable_setter_with_rnd() {
             parts[1].parse().unwrap()
         };
 
-        assert!(value >= 0 && value < 100);
+        assert!(value >= 0 && value <= 100);
     }
 }
 

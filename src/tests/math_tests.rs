@@ -48,7 +48,7 @@ fn test_nested_math_mul_rnd() {
         let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, consumed) = result.unwrap();
-        assert!(value >= 0 && value < 50);
+        assert!(value >= 0 && value <= 50);
         assert_eq!(consumed, 4);
     }
 }

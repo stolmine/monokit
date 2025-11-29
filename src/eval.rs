@@ -165,7 +165,7 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
                 if max <= 0 {
                     return Some((0, 1 + consumed));
                 }
-                let result = rand::thread_rng().gen_range(0..max);
+                let result = rand::thread_rng().gen_range(0..=max);
                 return Some((result, 1 + consumed));
             }
             None

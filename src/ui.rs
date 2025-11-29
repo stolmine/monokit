@@ -440,7 +440,7 @@ pub const HELP_LINES: &[&str] = &[
     "  MOD/% <A> <B>   MODULO",
     "",
     "  RANDOM",
-    "  RND <MAX>        0 TO MAX-1",
+    "  RND <MAX>        0 TO MAX",
     "  RRND <MIN> <MAX> MIN TO MAX",
     "  TOSS             COIN FLIP (0/1)",
     "  EITH <A> <B>     RANDOM CHOICE A OR B",

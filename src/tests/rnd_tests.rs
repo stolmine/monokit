@@ -12,7 +12,7 @@ fn test_rnd_returns_value_in_range() {
         let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, consumed) = result.unwrap();
-        assert!(value >= 0 && value < 100, "RND 100 returned {}", value);
+        assert!(value >= 0 && value <= 100, "RND 100 returned {}", value);
         assert_eq!(consumed, 2);
     }
 }
@@ -62,8 +62,8 @@ fn test_rnd_with_different_ranges() {
             let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
             assert!(result.is_some());
             let (value, _) = result.unwrap();
-            assert!(value >= min && value < max,
-                "RND {} returned {} (expected {} <= value < {})",
+            assert!(value >= min && value <= max,
+                "RND {} returned {} (expected {} <= value <= {})",
                 parts[1], value, min, max);
         }
     }
@@ -80,7 +80,7 @@ fn test_rnd_with_mul_expression() {
         let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, consumed) = result.unwrap();
-        assert!(value >= 0 && value < 100);
+        assert!(value >= 0 && value <= 100);
         assert_eq!(consumed, 4);
     }
 }
@@ -98,7 +98,7 @@ fn test_rnd_with_expression_argument() {
         let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
         assert!(result.is_some());
         let (value, _) = result.unwrap();
-        assert!(value >= 0 && value < 20);
+        assert!(value >= 0 && value <= 20);
     }
 }
 

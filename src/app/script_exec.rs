@@ -423,6 +423,13 @@ impl App {
         // Handle quit commands
         let cmd_upper = cmd.to_uppercase();
         if cmd_upper == "Q" || cmd_upper == "QUIT" || cmd_upper == "EXIT" {
+            // Stop recording if in progress
+            if self.recording {
+                let _ = self.metro_tx.send(crate::types::MetroCommand::StopRecording);
+                self.recording = false;
+                self.recording_start = None;
+                self.add_output("RECORDING STOPPED (AUTO)".to_string());
+            }
             self.should_quit = true;
             return;
         }

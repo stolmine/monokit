@@ -239,13 +239,23 @@ Examples:
 #### Page Cycling
 - `[` / `]` - Cycle through pages (Live → 1-8 → M → I → P → wrap)
 
-#### Direct Page Access (Alt+key)
+#### Direct Page Access (Function Keys)
+- `F1` through `F8` - Script pages 1-8
+- `F9` - Live page
+- `F10` - Metro page
+- `F11` - Init page
+- `F12` - Pattern page
+- `ESC` - Toggle Help (overlay, scrollable with arrow keys)
+
+#### Alternative: Alt+key (requires iTerm2 configuration)
 - `Alt+L` - Live page
 - `Alt+1` through `Alt+8` - Script pages 1-8
 - `Alt+M` - Metro page
 - `Alt+I` - Init page
 - `Alt+P` - Pattern page
-- `Alt+H` - Toggle Help (overlay, scrollable with arrow keys)
+- `Alt+H` - Toggle Help
+
+**iTerm2 Note:** Alt+key combinations require setting "Left Option key = Esc+" in iTerm2 Preferences > Profiles > Keys > General. Function keys (F1-F12) work in all terminals without configuration.
 
 #### Input
 - `Enter` - Execute command
@@ -259,11 +269,27 @@ Examples:
 - `Ctrl+V` - Paste line (script pages)
 - Script pages show validation errors that auto-clear after 3 seconds or on successful save
 
-### Phase 1 UI Style (Teletype)
+### UI Style (Teletype)
 - **Uppercase text:** All UI text (commands, labels, output) displays in uppercase for a Teletype-style aesthetic
 - **User input conversion:** User input is automatically converted to uppercase on entry
 - **Script page highlighting:** Selected line shows white background with black text for brightness-based distinction
 - **Line numbers:** Removed from script pages for a cleaner display
+
+### Theme System
+The UI uses a comprehensive theme system with RGB colors for terminal compatibility:
+
+**Theme Colors:**
+- `background` - Main background color
+- `foreground` - Primary text color
+- `secondary` - Secondary/dimmed text (footer hints, etc.)
+- `highlight_bg` / `highlight_fg` - Selection highlighting (cursor, selected line)
+- `border` - Border elements
+- `error` - Error messages
+- `accent` - Selected items and active indicators
+- `success` - Positive states (metro active, etc.)
+- `label` - Section headers and labels
+
+**Rendering:** Uses buffer-based background rendering for proper theme support across different terminal emulators. Themes use RGB color values (Color::Rgb) for consistent cross-platform display.
 
 ## OSC Protocol
 

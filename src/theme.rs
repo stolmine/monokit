@@ -10,6 +10,9 @@ pub struct Theme {
     pub highlight_fg: Color,
     pub border: Color,
     pub error: Color,
+    pub accent: Color,      // Selected items, active indicators
+    pub success: Color,     // Positive states (metro on, etc.)
+    pub label: Color,       // Section labels, headers
     pub font: Option<String>,
 }
 
@@ -17,13 +20,16 @@ impl Theme {
     pub fn dark() -> Self {
         Self {
             name: "dark".to_string(),
-            background: Color::Black,
-            foreground: Color::White,
-            secondary: Color::Gray,
-            highlight_bg: Color::White,
-            highlight_fg: Color::Black,
-            border: Color::White,
-            error: Color::Red,
+            background: Color::Rgb(0, 0, 0),
+            foreground: Color::Rgb(255, 255, 255),
+            secondary: Color::Rgb(128, 128, 128),
+            highlight_bg: Color::Rgb(255, 255, 255),
+            highlight_fg: Color::Rgb(0, 0, 0),
+            border: Color::Rgb(255, 255, 255),
+            error: Color::Rgb(255, 80, 80),
+            accent: Color::Rgb(255, 255, 255),    // Bright white for selection
+            success: Color::Rgb(80, 255, 80),     // Green for active states
+            label: Color::Rgb(180, 180, 180),     // Light gray for labels
             font: Some("Menlo".to_string()),
         }
     }
@@ -31,13 +37,16 @@ impl Theme {
     pub fn light() -> Self {
         Self {
             name: "light".to_string(),
-            background: Color::White,
-            foreground: Color::Black,
-            secondary: Color::DarkGray,
-            highlight_bg: Color::Black,
-            highlight_fg: Color::White,
-            border: Color::Black,
-            error: Color::Red,
+            background: Color::Rgb(255, 255, 255),
+            foreground: Color::Rgb(0, 0, 0),
+            secondary: Color::Rgb(96, 96, 96),
+            highlight_bg: Color::Rgb(0, 0, 0),
+            highlight_fg: Color::Rgb(255, 255, 255),
+            border: Color::Rgb(0, 0, 0),
+            error: Color::Rgb(200, 0, 0),
+            accent: Color::Rgb(0, 0, 0),          // Black for selection
+            success: Color::Rgb(0, 160, 0),       // Dark green for active states
+            label: Color::Rgb(64, 64, 64),        // Dark gray for labels
             font: Some("Menlo".to_string()),
         }
     }

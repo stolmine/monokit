@@ -38,6 +38,7 @@ fn main() -> Result<()> {
     execute!(stdout, EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
+    terminal.clear()?; // Clear alternate screen before first render
 
     let config = config::load_config().unwrap_or_default();
     let theme = config::load_theme(&config).unwrap_or_default();

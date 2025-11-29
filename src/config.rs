@@ -34,8 +34,26 @@ pub struct CustomTheme {
     pub highlight_fg: String,
     pub border: String,
     pub error: String,
+    #[serde(default = "default_accent")]
+    pub accent: String,
+    #[serde(default = "default_success")]
+    pub success: String,
+    #[serde(default = "default_label")]
+    pub label: String,
     #[serde(default)]
     pub font: Option<String>,
+}
+
+fn default_accent() -> String {
+    "#ffffff".to_string()
+}
+
+fn default_success() -> String {
+    "#50ff50".to_string()
+}
+
+fn default_label() -> String {
+    "#b4b4b4".to_string()
 }
 
 fn default_theme_mode() -> String {
@@ -128,6 +146,9 @@ pub fn load_theme(config: &Config) -> Result<Theme> {
                     highlight_fg: parse_hex_color(&custom.highlight_fg)?,
                     border: parse_hex_color(&custom.border)?,
                     error: parse_hex_color(&custom.error)?,
+                    accent: parse_hex_color(&custom.accent)?,
+                    success: parse_hex_color(&custom.success)?,
+                    label: parse_hex_color(&custom.label)?,
                     font: custom.font.clone(),
                 })
             } else {

@@ -7,6 +7,18 @@ use std::time::Duration;
 use crate::types::{MetroEvent, Page, NAVIGABLE_PAGES};
 
 pub fn ui(f: &mut Frame, app: &super::App) {
+    // Fill background by setting every cell - most reliable method for all terminals
+    let area = f.area();
+    let bg = app.theme.background;
+    let fg = app.theme.foreground;
+    for y in area.top()..area.bottom() {
+        for x in area.left()..area.right() {
+            let cell = f.buffer_mut().get_mut(x, y);
+            cell.set_bg(bg);
+            cell.set_fg(fg);
+        }
+    }
+
     let is_help = app.current_page == Page::Help;
     let is_pattern = app.current_page == Page::Pattern;
 
@@ -63,7 +75,7 @@ pub fn render_header(app: &super::App) -> Paragraph<'static> {
         spans.push(Span::styled(
             "[HELP]",
             Style::default()
-                .fg(Color::Yellow)
+                .fg(app.theme.accent)
                 .add_modifier(Modifier::BOLD),
         ));
     } else {
@@ -72,7 +84,7 @@ pub fn render_header(app: &super::App) -> Paragraph<'static> {
                 spans.push(Span::styled(
                     format!("[{}]", page.name()),
                     Style::default()
-                        .fg(Color::Yellow)
+                        .fg(app.theme.accent)
                         .add_modifier(Modifier::BOLD),
                 ));
             } else {
@@ -86,11 +98,13 @@ pub fn render_header(app: &super::App) -> Paragraph<'static> {
     }
 
     Paragraph::new(Line::from(spans))
+        .style(Style::default().bg(app.theme.background).fg(app.theme.foreground))
         .block(
             Block::default()
                 .borders(Borders::ALL)
                 .border_style(Style::default().fg(app.theme.border))
                 .title(" MONOKIT ")
+                .title_style(Style::default().fg(app.theme.foreground))
         )
 }
 
@@ -99,27 +113,29 @@ pub fn render_metro_page(app: &super::App) -> Paragraph<'static> {
     let bpm = 60000.0 / state.interval_ms as f32;
     let status = if state.active { "ON" } else { "OFF" };
     let status_color = if state.active {
-        Color::Green
+        app.theme.success
     } else {
-        Color::Red
+        app.theme.error
     };
 
+    let label_color = app.theme.label;
+    let fg = app.theme.foreground;
     let mut text = Vec::new();
     text.push(Line::from(vec![
-        Span::styled("  BPM: ", Style::default().fg(Color::Cyan)),
-        Span::raw(format!("{:.1}", bpm)),
+        Span::styled("  BPM: ", Style::default().fg(label_color)),
+        Span::styled(format!("{:.1}", bpm), Style::default().fg(fg)),
         Span::raw("  "),
-        Span::styled("INTERVAL: ", Style::default().fg(Color::Cyan)),
-        Span::raw(format!("{}MS", state.interval_ms)),
+        Span::styled("INTERVAL: ", Style::default().fg(label_color)),
+        Span::styled(format!("{}MS", state.interval_ms), Style::default().fg(fg)),
     ]));
     text.push(Line::from(""));
     text.push(Line::from(vec![
-        Span::styled("  STATUS: ", Style::default().fg(Color::Cyan)),
+        Span::styled("  STATUS: ", Style::default().fg(label_color)),
         Span::styled(status, Style::default().fg(status_color).add_modifier(Modifier::BOLD)),
     ]));
     text.push(Line::from(""));
     text.push(Line::from(vec![
-        Span::styled("  M SCRIPT LINES:", Style::default().fg(Color::Cyan)),
+        Span::styled("  M SCRIPT LINES:", Style::default().fg(label_color)),
     ]));
 
     let metro_script = app.scripts.get_script(8);
@@ -150,11 +166,13 @@ pub fn render_metro_page(app: &super::App) -> Paragraph<'static> {
     }
 
     Paragraph::new(text)
+        .style(Style::default().bg(app.theme.background).fg(app.theme.foreground))
         .block(
             Block::default()
                 .borders(Borders::ALL)
                 .border_style(Style::default().fg(app.theme.border))
                 .title(" METRO ")
+                .title_style(Style::default().fg(app.theme.foreground))
         )
         .wrap(Wrap { trim: false })
 }
@@ -168,17 +186,20 @@ pub fn render_live_page(app: &super::App, height: usize) -> Paragraph<'static> {
         0
     };
 
+    let fg = app.theme.foreground;
     let text: Vec<Line> = app.output[start_idx..]
         .iter()
-        .map(|line| Line::from(format!("  {}", line)))
+        .map(|line| Line::from(Span::styled(format!("  {}", line), Style::default().fg(fg))))
         .collect();
 
     Paragraph::new(text)
+        .style(Style::default().bg(app.theme.background).fg(app.theme.foreground))
         .block(
             Block::default()
                 .borders(Borders::ALL)
                 .border_style(Style::default().fg(app.theme.border))
                 .title(" LIVE ")
+                .title_style(Style::default().fg(app.theme.foreground))
         )
 }
 
@@ -215,11 +236,13 @@ pub fn render_script_page(app: &super::App, num: u8) -> Paragraph<'static> {
     }
 
     Paragraph::new(lines)
+        .style(Style::default().bg(app.theme.background).fg(app.theme.foreground))
         .block(
             Block::default()
                 .borders(Borders::ALL)
                 .border_style(Style::default().fg(app.theme.border))
                 .title(format!(" SCRIPT {} ", num))
+                .title_style(Style::default().fg(app.theme.foreground))
         )
 }
 
@@ -255,11 +278,13 @@ pub fn render_init_page(app: &super::App) -> Paragraph<'static> {
     }
 
     Paragraph::new(lines)
+        .style(Style::default().bg(app.theme.background).fg(app.theme.foreground))
         .block(
             Block::default()
                 .borders(Borders::ALL)
                 .border_style(Style::default().fg(app.theme.border))
                 .title(" INIT ")
+                .title_style(Style::default().fg(app.theme.foreground))
         )
 }
 
@@ -281,7 +306,7 @@ pub fn render_pattern_page(app: &super::App) -> Paragraph<'static> {
     for pattern_idx in 0..4 {
         let label = format!("P{}", pattern_idx);
         let style = if pattern_idx == app.patterns.working {
-            Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+            Style::default().fg(app.theme.accent).add_modifier(Modifier::BOLD)
         } else {
             Style::default().fg(app.theme.secondary)
         };
@@ -320,7 +345,7 @@ pub fn render_pattern_page(app: &super::App) -> Paragraph<'static> {
             let style = if is_cursor {
                 Style::default().bg(app.theme.highlight_bg).fg(app.theme.highlight_fg)
             } else if is_playhead && !is_beyond_length {
-                Style::default().bg(Color::Cyan).fg(Color::Black)
+                Style::default().bg(app.theme.secondary).fg(app.theme.background)
             } else if is_beyond_length {
                 Style::default().fg(app.theme.secondary)
             } else {
@@ -335,11 +360,13 @@ pub fn render_pattern_page(app: &super::App) -> Paragraph<'static> {
 
     let title = format!(" PATTERN ({}/64) ", cursor_step);
     Paragraph::new(lines)
+        .style(Style::default().bg(app.theme.background).fg(app.theme.foreground))
         .block(
             Block::default()
                 .borders(Borders::ALL)
                 .border_style(Style::default().fg(app.theme.border))
                 .title(title)
+                .title_style(Style::default().fg(app.theme.foreground))
         )
 }
 
@@ -347,12 +374,12 @@ pub const HELP_LINES: &[&str] = &[
     "",
     "  NAVIGATION",
     "  [ ]           CYCLE PAGES",
-    "  ALT+L         LIVE PAGE",
-    "  ALT+1-8       SCRIPT 1-8",
-    "  ALT+M         METRO PAGE",
-    "  ALT+I         INIT PAGE",
-    "  ALT+P         PATTERN PAGE",
-    "  ALT+H         TOGGLE HELP",
+    "  ESC           TOGGLE HELP",
+    "  F1-F8         SCRIPT 1-8",
+    "  F9            LIVE PAGE",
+    "  F10           METRO PAGE",
+    "  F11           INIT PAGE",
+    "  F12           PATTERN PAGE",
     "",
     "  EDITING (SCRIPT PAGES)",
     "  UP/DOWN       SELECT LINE",
@@ -498,6 +525,8 @@ pub fn render_help_page(app: &super::App, height: usize) -> Paragraph<'static> {
     let visible = if height > 2 { height - 2 } else { 1 };
     let total = HELP_LINES.len();
     let start = scroll.min(total.saturating_sub(visible));
+    let fg = app.theme.foreground;
+    let label = app.theme.label;
 
     let lines: Vec<Line> = HELP_LINES
         .iter()
@@ -505,9 +534,9 @@ pub fn render_help_page(app: &super::App, height: usize) -> Paragraph<'static> {
         .take(visible)
         .map(|&s| {
             if s.starts_with("  ") && s.chars().nth(2).map_or(false, |c| c.is_uppercase()) && !s.contains('<') && !s.contains("0-") {
-                Line::from(Span::styled(s, Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)))
+                Line::from(Span::styled(s, Style::default().fg(label).add_modifier(Modifier::BOLD)))
             } else {
-                Line::from(s)
+                Line::from(Span::styled(s, Style::default().fg(fg)))
             }
         })
         .collect();
@@ -519,45 +548,50 @@ pub fn render_help_page(app: &super::App, height: usize) -> Paragraph<'static> {
     };
 
     Paragraph::new(lines)
+        .style(Style::default().bg(app.theme.background).fg(app.theme.foreground))
         .block(
             Block::default()
                 .borders(Borders::ALL)
                 .border_style(Style::default().fg(app.theme.border))
                 .title(title)
+                .title_style(Style::default().fg(app.theme.foreground))
         )
 }
 
 pub fn render_footer(app: &super::App) -> Paragraph<'static> {
     let input = &app.input;
     let pos = app.cursor_position;
+    let fg = app.theme.foreground;
 
     let before: String = input.chars().take(pos).collect();
     let cursor_char = input.chars().nth(pos).unwrap_or(' ');
     let after: String = input.chars().skip(pos + 1).collect();
 
     let input_line = Line::from(vec![
-        Span::raw("> "),
-        Span::raw(before),
+        Span::styled("> ", Style::default().fg(fg)),
+        Span::styled(before, Style::default().fg(fg)),
         Span::styled(
             cursor_char.to_string(),
             Style::default().bg(app.theme.highlight_bg).fg(app.theme.highlight_fg),
         ),
-        Span::raw(after),
+        Span::styled(after, Style::default().fg(fg)),
     ]);
 
     let footer_text = vec![
         input_line,
         Line::from(Span::styled(
-            "[ ] PAGES  ALT+H HELP  TYPE 'QUIT' TO EXIT",
+            "[ ] PAGES  ESC HELP  F1-F12 NAV  'QUIT' TO EXIT",
             Style::default().fg(app.theme.secondary),
         )),
     ];
 
-    Paragraph::new(footer_text).block(
-        Block::default()
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(app.theme.border))
-    )
+    Paragraph::new(footer_text)
+        .style(Style::default().bg(app.theme.background).fg(app.theme.foreground))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(app.theme.border))
+        )
 }
 
 pub fn run_app<B: ratatui::backend::Backend>(
@@ -598,6 +632,47 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     KeyCode::Char(']') => {
                         app.next_page();
                     }
+                    // Function keys (work in all terminals)
+                    KeyCode::F(1) => {
+                        app.go_to_page(Page::Script1);
+                    }
+                    KeyCode::F(2) => {
+                        app.go_to_page(Page::Script2);
+                    }
+                    KeyCode::F(3) => {
+                        app.go_to_page(Page::Script3);
+                    }
+                    KeyCode::F(4) => {
+                        app.go_to_page(Page::Script4);
+                    }
+                    KeyCode::F(5) => {
+                        app.go_to_page(Page::Script5);
+                    }
+                    KeyCode::F(6) => {
+                        app.go_to_page(Page::Script6);
+                    }
+                    KeyCode::F(7) => {
+                        app.go_to_page(Page::Script7);
+                    }
+                    KeyCode::F(8) => {
+                        app.go_to_page(Page::Script8);
+                    }
+                    KeyCode::F(9) => {
+                        app.go_to_page(Page::Live);
+                    }
+                    KeyCode::F(10) => {
+                        app.go_to_page(Page::Metro);
+                    }
+                    KeyCode::F(11) => {
+                        app.go_to_page(Page::Init);
+                    }
+                    KeyCode::F(12) => {
+                        app.go_to_page(Page::Pattern);
+                    }
+                    KeyCode::Esc => {
+                        app.toggle_help();
+                    }
+                    // Alt+key (requires iTerm2: Preferences > Profiles > Keys > Left Option = Esc+)
                     KeyCode::Char('h') if has_alt => {
                         app.toggle_help();
                     }

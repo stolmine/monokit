@@ -27,7 +27,15 @@ Refactor monokit's TUI to follow teletype's sparse, page-based design with scrip
 - **PATTERN** - Pattern storage/editing (4 patterns × 64 steps)
 - **HELP** - Command reference
 
-Navigation: `[` and `]` cycle through pages
+**Navigation:**
+- `[` and `]` - Cycle through pages
+- `F1-F8` - Direct access to Script pages 1-8
+- `F9` - Live page
+- `F10` - Metro page
+- `F11` - Init page
+- `F12` - Pattern page
+- `ESC` - Toggle Help
+- Alternative: Alt+key combinations (requires iTerm2 "Left Option = Esc+" setting)
 
 ### 2. Script Storage Model
 
@@ -136,6 +144,12 @@ PROB 50: DC 8000
 - Keyboard-only navigation
 - Dirty region refresh (only update changed areas)
 - Minimal decoration - content focused
+
+**Theme System (Implemented):**
+- RGB color support for cross-platform terminal compatibility
+- Theme struct includes: background, foreground, secondary, highlight_bg/fg, border, error, accent, success, label
+- Buffer-based rendering for proper background color support
+- Dark and light theme variants with system detection
 
 **Layout:**
 ```

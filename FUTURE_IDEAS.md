@@ -67,6 +67,29 @@ This document captures future feature ideas for consideration. Not prioritized o
 
 ---
 
+## Map / Scale Operators
+
+### Range Mapping
+- `MAP <val> <in_min> <in_max> <out_min> <out_max>` - Map value from input range to output range
+- Example: `PF MAP A 0 127 200 2000` - Map A (0-127) to frequency (200-2000 Hz)
+- Example: `DC MAP PN.NEXT 0 0 100 0 16383` - Map pattern value to full DC range
+
+### Clamped vs Unclamped
+- `MAP` - Clamps output to out_min/out_max range
+- `MAPU` - Unclamped, allows extrapolation beyond output range
+
+### Shorthand Variants
+- `MAP01 <val> <out_min> <out_max>` - Map from 0-1 range (for normalized inputs)
+- `MAP7 <val> <out_min> <out_max>` - Map from 0-127 range (MIDI values)
+- `MAP14 <val> <out_min> <out_max>` - Map from 0-16383 range (14-bit)
+
+### Curve Mapping
+- `MAPC <val> <in_min> <in_max> <out_min> <out_max> <curve>` - Map with curve
+- Curve: -8 to 8 (-8=log, 0=linear, 8=exp)
+- Useful for perceptual scaling (volume, frequency)
+
+---
+
 ## Envelope Shaping
 
 ### Envelope Curve Control
@@ -331,6 +354,7 @@ String-based pattern notation (inspired by Tidal):
 - LFO system
 - Slewing
 - TOG generator
+- MAP operator
 - More pattern ops
 - Variable display in UI
 

@@ -7,6 +7,7 @@ mod pattern_tests;
 mod variable_tests;
 mod validation_tests;
 mod math_tests;
+mod map_tests;
 mod comparison_tests;
 mod scene_tests;
 mod debug_level;

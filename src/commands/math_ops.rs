@@ -138,3 +138,43 @@ pub fn handle_mod<F>(
         output("ERROR: FAILED TO EVALUATE FIRST OPERAND".to_string());
     }
 }
+
+pub fn handle_map<F>(
+    parts: &[&str],
+    variables: &Variables,
+    patterns: &mut PatternStorage,
+    scripts: &ScriptStorage,
+    script_index: usize,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() < 6 {
+        output("ERROR: MAP REQUIRES FIVE ARGUMENTS".to_string());
+        return;
+    }
+    if let Some((val, val_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+        if let Some((in_min, in_min_consumed)) = eval_expression(&parts, 1 + val_consumed, variables, patterns, scripts, script_index) {
+            if let Some((in_max, in_max_consumed)) = eval_expression(&parts, 1 + val_consumed + in_min_consumed, variables, patterns, scripts, script_index) {
+                if let Some((out_min, out_min_consumed)) = eval_expression(&parts, 1 + val_consumed + in_min_consumed + in_max_consumed, variables, patterns, scripts, script_index) {
+                    if let Some((out_max, _)) = eval_expression(&parts, 1 + val_consumed + in_min_consumed + in_max_consumed + out_min_consumed, variables, patterns, scripts, script_index) {
+                        let result = if in_min == in_max {
+                            out_min
+                        } else {
+                            let mapped = out_min as i32 + ((val as i32 - in_min as i32) * (out_max as i32 - out_min as i32)) / (in_max as i32 - in_min as i32);
+                            let clamped = if out_min <= out_max {
+                                mapped.clamp(out_min as i32, out_max as i32)
+                            } else {
+                                mapped.clamp(out_max as i32, out_min as i32)
+                            };
+                            clamped as i16
+                        };
+                        output(format!("{}", result));
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    output("ERROR: FAILED TO EVALUATE MAP ARGUMENTS".to_string());
+}

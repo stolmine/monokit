@@ -392,6 +392,9 @@ where
         "MOD" | "%" => {
             math_ops::handle_mod(&parts, variables, patterns, scripts, script_index, output);
         }
+        "MAP" => {
+            math_ops::handle_map(&parts, variables, patterns, scripts, script_index, output);
+        }
         "SCRIPT" => {
             return misc::handle_script(&parts, variables, patterns, scripts, script_index);
         }

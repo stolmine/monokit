@@ -269,6 +269,35 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             }
             None
         }
+        "MAP" => {
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((val, val_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                if let Some((in_min, in_min_consumed)) = eval_expression(parts, start_idx + 1 + val_consumed, variables, patterns, scripts, script_index) {
+                    if let Some((in_max, in_max_consumed)) = eval_expression(parts, start_idx + 1 + val_consumed + in_min_consumed, variables, patterns, scripts, script_index) {
+                        if let Some((out_min, out_min_consumed)) = eval_expression(parts, start_idx + 1 + val_consumed + in_min_consumed + in_max_consumed, variables, patterns, scripts, script_index) {
+                            if let Some((out_max, _out_max_consumed)) = eval_expression(parts, start_idx + 1 + val_consumed + in_min_consumed + in_max_consumed + out_min_consumed, variables, patterns, scripts, script_index) {
+                                let result = if in_min == in_max {
+                                    out_min
+                                } else {
+                                    let mapped = out_min as i32 + ((val as i32 - in_min as i32) * (out_max as i32 - out_min as i32)) / (in_max as i32 - in_min as i32);
+                                    let clamped = if out_min <= out_max {
+                                        mapped.clamp(out_min as i32, out_max as i32)
+                                    } else {
+                                        mapped.clamp(out_max as i32, out_min as i32)
+                                    };
+                                    clamped as i16
+                                };
+                                let total_consumed = 1 + val_consumed + in_min_consumed + in_max_consumed + out_min_consumed + _out_max_consumed;
+                                return Some((result, total_consumed));
+                            }
+                        }
+                    }
+                }
+            }
+            None
+        }
         "N" => {
             // Semitone to frequency conversion (12-TET)
             // N 0 = C3 (130.81 Hz) to match Teletype

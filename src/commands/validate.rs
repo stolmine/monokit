@@ -83,6 +83,12 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
+        "MAP" => {
+            if argc < 5 {
+                return Err(anyhow::anyhow!("MAP requires at least 5 arguments"));
+            }
+            Ok(())
+        }
         "RND" => {
             if argc < 1 {
                 return Err(anyhow::anyhow!("RND requires at least 1 argument"));

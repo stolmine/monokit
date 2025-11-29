@@ -111,6 +111,9 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                         let _ = socket.send(&buf);
                     }
                 }
+                MetroCommand::Shutdown => {
+                    return; // Exit the metro thread
+                }
             }
         }
 

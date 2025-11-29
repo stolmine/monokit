@@ -143,6 +143,7 @@ pub enum MetroCommand {
     StartRecording(String),    // String is the directory path
     StopRecording,
     SetRecordingPath(String),  // Custom path prefix
+    Shutdown,                  // Signal metro thread to exit
 }
 
 #[derive(Debug, Clone)]

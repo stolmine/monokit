@@ -20,7 +20,7 @@ use std::thread;
 
 use crate::app::App;
 use crate::metro::metro_thread;
-use crate::types::{MetroEvent, MetroState};
+use crate::types::{MetroCommand, MetroEvent, MetroState};
 use crate::ui::run_app;
 
 fn main() -> Result<()> {
@@ -29,7 +29,7 @@ fn main() -> Result<()> {
     let (metro_event_tx, metro_event_rx) = mpsc::channel::<MetroEvent>();
 
     let metro_state_clone = metro_state.clone();
-    thread::spawn(move || {
+    let metro_handle = thread::spawn(move || {
         metro_thread(metro_rx, metro_state_clone, metro_event_tx);
     });
 
@@ -50,6 +50,10 @@ fn main() -> Result<()> {
     app.execute_script(9);
 
     let res = run_app(&mut terminal, &mut app, metro_event_rx);
+
+    // Graceful shutdown: send Shutdown command and wait for metro thread
+    let _ = app.metro_tx.send(MetroCommand::Shutdown);
+    let _ = metro_handle.join();
 
     disable_raw_mode()?;
     execute!(

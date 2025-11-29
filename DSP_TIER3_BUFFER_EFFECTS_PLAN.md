@@ -81,7 +81,7 @@ br_win = 5,        // Crossfade window (ms)
 br_mix = 8192,     // Mix amount
 
 // Add to var declarations:
-var beatRepeatBuf, brBufSize, brWritePos, brReadPos, brLoopLen;
+var beatRepeatBufL, beatRepeatBufR, brBufSize, brWritePos, brReadPos, brLoopLen;
 var brReadRate, brRepeated, brMix, brWindowSize, brCrossfade;
 var brActive;
 
@@ -91,13 +91,14 @@ brActive = br_act.clip(0, 1);
 brLoopLen = br_len_ms / 1000;  // Convert ms to seconds
 brBufSize = (brLoopLen * SampleRate.ir).ceil;
 
-// Create local buffer for beat repeat
-beatRepeatBuf = LocalBuf(brBufSize.max(4410), 2);  // Min 100ms stereo
+// Create separate mono buffers for L and R channels
+beatRepeatBufL = LocalBuf(brBufSize.max(4410), 1);  // Min 100ms mono
+beatRepeatBufR = LocalBuf(brBufSize.max(4410), 1);  // Min 100ms mono
 
-// Write incoming signal to buffer (continuous recording)
-brWritePos = Phasor.ar(0, 1, 0, brBufSize);
-BufWr.ar(sigL, beatRepeatBuf, brWritePos, 0);  // Channel 0
-BufWr.ar(sigR, beatRepeatBuf, brWritePos, 1);  // Channel 1
+// Write incoming signal to buffer (stops when active - buffer freezes)
+brWritePos = Phasor.ar(0, 1 - brActive, 0, brBufSize);  // Stops writing when active
+BufWr.ar(sigL, beatRepeatBufL, brWritePos);  // Left channel
+BufWr.ar(sigR, beatRepeatBufR, brWritePos);  // Right channel
 
 // Read position (loops when beat repeat is active)
 // Forward: 0 → brBufSize, Reverse: brBufSize → 0
@@ -118,8 +119,8 @@ brCrossfade = 1 - (
 
 // Read from buffer with cubic interpolation
 brRepeated = [
-    BufRd.ar(1, beatRepeatBuf, brReadPos, 0, 4),  // Left, cubic interp
-    BufRd.ar(1, beatRepeatBuf, brReadPos, 1, 4)   // Right, cubic interp
+    BufRd.ar(1, beatRepeatBufL, brReadPos, 0, 4),  // Left, cubic interp
+    BufRd.ar(1, beatRepeatBufR, brReadPos, 0, 4)   // Right, cubic interp
 ];
 
 // Mix: when inactive, pass through; when active, crossfade
@@ -308,7 +309,8 @@ SuperCollider provides `.midiratio` which converts a MIDI note interval to a fre
 pub fn handle_br_act() -> Result<()>
 // Range: 0-1 (Int)
 // Validation: Clip to 0-1
-// Also sends br_len_ms when activated
+// On activation (1): sets BR.MIX to 100% (16383) and sends br_len_ms
+// Buffer freezes when activated (write phasor stops)
 
 pub fn handle_br_len() -> Result<()>
 // Range: 0-7 (Int)
@@ -467,9 +469,11 @@ Add to `src/commands/mod.rs`:
 ```
 # Test 1: Activate beat repeat at 1/4 note (default)
 M 500          # 500ms metro (120 BPM quarter note)
-BR.ACT 1       # Activate
+BR.ACT 1       # Activate (freezes buffer, sets mix to 100%)
 TR             # Trigger note
 # Expected: Signal loops every 125ms (1/4 of 500ms)
+# Buffer frozen at activation moment
+# Mix automatically at 100%
 ```
 
 **Division Tests:**
@@ -508,26 +512,28 @@ BR.WIN 20      # 20ms window
 **Mix Control:**
 ```
 # Test 5: Dry/wet balance
-BR.MIX 0       # All dry
-# Expected: Pass through
+BR.ACT 0       # Deactivate first
+BR.MIX 0       # Set to all dry
+BR.ACT 1       # Activate (auto-sets mix to 16383)
+# Expected: Mix overridden to 100%, only looped signal
 
-BR.MIX 8192    # 50/50 mix
+BR.MIX 8192    # Adjust to 50/50 after activation
 # Expected: Both original and looped signal
 
-BR.MIX 16383   # Full wet
-# Expected: Only looped signal
+BR.MIX 0       # Reduce to dry
+# Expected: Pass through (mix adjustable after activation)
 ```
 
 **Metro Sync Changes:**
 ```
 # Test 6: Metro interval changes during active repeat
-BR.ACT 1
+BR.ACT 1       # Activate (freezes buffer)
 BR.LEN 4       # 1x metro
 M 500          # Set to 500ms
 TR
 M 1000         # Change to 1000ms mid-loop
-# Expected: Buffer size doesn't update (contains 500ms of old data)
-# Behavior: Glitchy/interesting, document as feature not bug
+# Expected: Buffer is frozen, no change to captured audio
+# Behavior: Captured moment preserved regardless of metro changes
 ```
 
 ### Pitch Shift Tests
@@ -778,12 +784,16 @@ This is well within LocalBuf limits (typically 100+ MB available).
 **Write/Read Pointer Phase Relationship:**
 
 ```
-Write pointer: continuous, wraps at buffer size
+Write pointer: continuous when inactive, STOPS when active (buffer freeze)
 Read pointer: resets when br_act triggers, loops independently
-Phase offset: no fixed relationship (creates "capture" effect)
+Phase offset: captures exact moment of activation
 ```
 
-When beat repeat activates, the read pointer captures whatever is currently in the buffer (last N milliseconds of audio).
+When beat repeat activates:
+1. Write phasor stops (multiplied by `1 - brActive`)
+2. Buffer contents freeze (no new audio enters)
+3. Read pointer captures whatever is in the buffer at that moment
+4. Mix is automatically set to 100% (16383) but remains adjustable
 
 ### Beat Repeat: Crossfade Windowing
 
@@ -1056,11 +1066,14 @@ Add to `/Users/why/repos/monokit/src/commands/validate.rs`:
 
 ### Beat Repeat Tests
 - [ ] BR.ACT activation/deactivation (smooth transitions)
+- [ ] BR.ACT automatically sets BR.MIX to 100% (16383) on activation
+- [ ] Buffer freezes on activation (write phasor stops)
+- [ ] BR.MIX adjustable after activation (not locked)
 - [ ] BR.LEN all divisions (0-7) sync correctly to metro
 - [ ] BR.REV forward/reverse switching (no pops)
 - [ ] BR.WIN crossfade prevents clicks (1ms vs 20ms)
-- [ ] BR.MIX dry/wet balance (0, 8192, 16383)
-- [ ] Metro interval changes during active repeat (glitch behavior acceptable)
+- [ ] Stereo separation maintained (separate L/R buffers)
+- [ ] Metro interval changes during active repeat (buffer remains frozen)
 - [ ] Extreme metro intervals (50ms, 5000ms) don't crash
 - [ ] Buffer doesn't capture delay/reverb tails
 

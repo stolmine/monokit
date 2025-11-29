@@ -357,6 +357,9 @@ Note: In SEND mode with RING or FREEZE tail modes, the effect output remains at 
 
 #### Beat Repeat
 - `BR.ACT <0|1>` - Enable/disable beat repeat (0=off, 1=on)
+  - Buffer freezes on activation (captures audio at moment of activation)
+  - Automatically sets BR.MIX to 100% (16383) when activated
+  - Uses separate L/R buffers for proper stereo operation
 - `BR.LEN <0-7>` - Loop division/length setting
   - 0 = 1/16 beat (shortest loop)
   - 1 = 1/8 beat
@@ -369,13 +372,14 @@ Note: In SEND mode with RING or FREEZE tail modes, the effect output remains at 
 - `BR.REV <0|1>` - Reverse playback (0=normal, 1=reversed)
 - `BR.WIN <1-50>` - Window/capture size in milliseconds (1-50ms)
 - `BR.MIX <0-16383>` - Dry/wet mix (0=dry, 16383=100% wet)
+  - Mix is adjustable after activation even though it auto-sets to 100%
 
 Example usage:
 ```
-BR.ACT 1          // Enable beat repeat
+BR.ACT 1          // Enable beat repeat (freezes buffer, sets mix to 100%)
 BR.LEN 2          // Set to 1/4 beat loop
 BR.WIN 10         // 10ms window
-BR.MIX 8192       // 50% mix
+BR.MIX 8192       // Adjust mix to 50% (can change after activation)
 BR.REV 1          // Reverse playback
 ```
 

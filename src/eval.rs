@@ -1,4 +1,4 @@
-use crate::types::{PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, PatternStorage, ScriptStorage, Variables};
 use rand::Rng;
 
 pub fn resolve_value(s: &str, variables: &Variables, scripts: &ScriptStorage, script_index: usize) -> i16 {
@@ -30,7 +30,7 @@ pub fn resolve_value(s: &str, variables: &Variables, scripts: &ScriptStorage, sc
     }
 }
 
-pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, patterns: &mut PatternStorage, scripts: &ScriptStorage, script_index: usize) -> Option<(i16, usize)> {
+pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, patterns: &mut PatternStorage, counters: &mut Counters, scripts: &ScriptStorage, script_index: usize) -> Option<(i16, usize)> {
     if start_idx >= parts.len() {
         return None;
     }
@@ -42,7 +42,7 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((pat_val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+            if let Some((pat_val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
                 let pat = pat_val as usize;
                 if pat <= 3 {
                     let pattern = &mut patterns.patterns[pat];
@@ -56,7 +56,7 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((pat_val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+            if let Some((pat_val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
                 let pat = pat_val as usize;
                 if pat <= 3 {
                     let pattern = &mut patterns.patterns[pat];
@@ -74,7 +74,7 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((pat_val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+            if let Some((pat_val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
                 let pat = pat_val as usize;
                 if pat <= 3 {
                     let pattern = &patterns.patterns[pat];
@@ -87,7 +87,7 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((pat_val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+            if let Some((pat_val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
                 let pat = pat_val as usize;
                 if pat <= 3 {
                     let pattern = &patterns.patterns[pat];
@@ -100,7 +100,7 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((pat_val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+            if let Some((pat_val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
                 let pat = pat_val as usize;
                 if pat <= 3 {
                     let pattern = &patterns.patterns[pat];
@@ -113,7 +113,7 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((pat_val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+            if let Some((pat_val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
                 let pat = pat_val as usize;
                 if pat <= 3 {
                     let pattern = &patterns.patterns[pat];
@@ -161,7 +161,7 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((max, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+            if let Some((max, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
                 if max <= 0 {
                     return Some((0, 1 + consumed));
                 }
@@ -174,8 +174,8 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((mut min, min_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
-                if let Some((mut max, max_consumed)) = eval_expression(parts, start_idx + 1 + min_consumed, variables, patterns, scripts, script_index) {
+            if let Some((mut min, min_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
+                if let Some((mut max, max_consumed)) = eval_expression(parts, start_idx + 1 + min_consumed, variables, patterns, counters, scripts, script_index) {
                     if min > max {
                         std::mem::swap(&mut min, &mut max);
                     }
@@ -193,8 +193,8 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
-                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index) {
                     let result = if rand::thread_rng().gen_bool(0.5) { a } else { b };
                     return Some((result, 1 + a_consumed + b_consumed));
                 }
@@ -205,8 +205,8 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
-                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index) {
                     let next_idx = start_idx + 1 + a_consumed + b_consumed;
                     let key = format!("{}_{}", script_index, parts[start_idx..next_idx].join("_"));
                     let counter = patterns.toggle_state.entry(key).or_insert(0);
@@ -221,8 +221,8 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
-                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index) {
                     let result = a.saturating_add(b);
                     return Some((result, 1 + a_consumed + b_consumed));
                 }
@@ -233,8 +233,8 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
-                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index) {
                     let result = a.saturating_sub(b);
                     return Some((result, 1 + a_consumed + b_consumed));
                 }
@@ -245,8 +245,8 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
-                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index) {
                     let result = a.saturating_mul(b);
                     return Some((result, 1 + a_consumed + b_consumed));
                 }
@@ -257,8 +257,8 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
-                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index) {
                     if b == 0 {
                         return Some((0, 1 + a_consumed + b_consumed));
                     } else {
@@ -273,8 +273,8 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
-                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index) {
                     if b == 0 {
                         return Some((0, 1 + a_consumed + b_consumed));
                     } else {
@@ -289,11 +289,11 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((val, val_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
-                if let Some((in_min, in_min_consumed)) = eval_expression(parts, start_idx + 1 + val_consumed, variables, patterns, scripts, script_index) {
-                    if let Some((in_max, in_max_consumed)) = eval_expression(parts, start_idx + 1 + val_consumed + in_min_consumed, variables, patterns, scripts, script_index) {
-                        if let Some((out_min, out_min_consumed)) = eval_expression(parts, start_idx + 1 + val_consumed + in_min_consumed + in_max_consumed, variables, patterns, scripts, script_index) {
-                            if let Some((out_max, _out_max_consumed)) = eval_expression(parts, start_idx + 1 + val_consumed + in_min_consumed + in_max_consumed + out_min_consumed, variables, patterns, scripts, script_index) {
+            if let Some((val, val_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
+                if let Some((in_min, in_min_consumed)) = eval_expression(parts, start_idx + 1 + val_consumed, variables, patterns, counters, scripts, script_index) {
+                    if let Some((in_max, in_max_consumed)) = eval_expression(parts, start_idx + 1 + val_consumed + in_min_consumed, variables, patterns, counters, scripts, script_index) {
+                        if let Some((out_min, out_min_consumed)) = eval_expression(parts, start_idx + 1 + val_consumed + in_min_consumed + in_max_consumed, variables, patterns, counters, scripts, script_index) {
+                            if let Some((out_max, _out_max_consumed)) = eval_expression(parts, start_idx + 1 + val_consumed + in_min_consumed + in_max_consumed + out_min_consumed, variables, patterns, counters, scripts, script_index) {
                                 let result = if in_min == in_max {
                                     out_min
                                 } else {
@@ -320,7 +320,7 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((semitone, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+            if let Some((semitone, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
                 const C3_HZ: f32 = 130.8128;
                 let freq = C3_HZ * 2f32.powf(semitone as f32 / 12.0);
                 // Clamp to valid audio range and i16 range
@@ -335,7 +335,7 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+            if let Some((val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
                 return Some((if val == 0 { 1 } else { 0 }, 1 + consumed));
             }
             None
@@ -345,7 +345,7 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+            if let Some((val, consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
                 return Some((if val != 0 { 1 } else { 0 }, 1 + consumed));
             }
             None
@@ -355,8 +355,8 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
-                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index) {
                     return Some((if a == b { 1 } else { 0 }, 1 + a_consumed + b_consumed));
                 }
             }
@@ -367,8 +367,8 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
-                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index) {
                     return Some((if a != b { 1 } else { 0 }, 1 + a_consumed + b_consumed));
                 }
             }
@@ -379,8 +379,8 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
-                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index) {
                     return Some((if a > b { 1 } else { 0 }, 1 + a_consumed + b_consumed));
                 }
             }
@@ -391,8 +391,8 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
-                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index) {
                     return Some((if a < b { 1 } else { 0 }, 1 + a_consumed + b_consumed));
                 }
             }
@@ -403,8 +403,8 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
-                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index) {
                     return Some((if a >= b { 1 } else { 0 }, 1 + a_consumed + b_consumed));
                 }
             }
@@ -415,12 +415,48 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             if start_idx + 1 >= parts.len() {
                 return None;
             }
-            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
-                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, counters, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index) {
                     return Some((if a <= b { 1 } else { 0 }, 1 + a_consumed + b_consumed));
                 }
             }
             None
+        }
+        "N1" => {
+            let current = counters.values[0];
+            counters.values[0] = if counters.max[0] > 0 {
+                (current + 1) % counters.max[0]
+            } else {
+                current.wrapping_add(1)
+            };
+            Some((current, 1))
+        }
+        "N2" => {
+            let current = counters.values[1];
+            counters.values[1] = if counters.max[1] > 0 {
+                (current + 1) % counters.max[1]
+            } else {
+                current.wrapping_add(1)
+            };
+            Some((current, 1))
+        }
+        "N3" => {
+            let current = counters.values[2];
+            counters.values[2] = if counters.max[2] > 0 {
+                (current + 1) % counters.max[2]
+            } else {
+                current.wrapping_add(1)
+            };
+            Some((current, 1))
+        }
+        "N4" => {
+            let current = counters.values[3];
+            counters.values[3] = if counters.max[3] > 0 {
+                (current + 1) % counters.max[3]
+            } else {
+                current.wrapping_add(1)
+            };
+            Some((current, 1))
         }
         "A" => Some((variables.a, 1)),
         "B" => Some((variables.b, 1)),
@@ -455,13 +491,13 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
     }
 }
 
-pub fn eval_condition(cond: &str, variables: &Variables, patterns: &mut PatternStorage, scripts: &ScriptStorage, script_index: usize) -> bool {
+pub fn eval_condition(cond: &str, variables: &Variables, patterns: &mut PatternStorage, counters: &mut Counters, scripts: &ScriptStorage, script_index: usize) -> bool {
     let cond = cond.trim();
 
     if cond.starts_with("PROB ") {
         let pct_str = cond.strip_prefix("PROB ").unwrap_or("0").trim();
         let parts: Vec<&str> = pct_str.split_whitespace().collect();
-        if let Some((pct_val, _)) = eval_expression(&parts, 0, variables, patterns, scripts, script_index) {
+        if let Some((pct_val, _)) = eval_expression(&parts, 0, variables, patterns, counters, scripts, script_index) {
             let pct = (pct_val as u8).min(100);
             let roll: u8 = rand::thread_rng().gen_range(0..100);
             return roll < pct;
@@ -479,8 +515,8 @@ pub fn eval_condition(cond: &str, variables: &Variables, patterns: &mut PatternS
     if let Some(pos) = cond.find(">=") {
         let left_parts: Vec<&str> = cond[..pos].split_whitespace().collect();
         let right_parts: Vec<&str> = cond[pos + 2..].split_whitespace().collect();
-        if let Some((left, _)) = eval_expression(&left_parts, 0, variables, patterns, scripts, script_index) {
-            if let Some((right, _)) = eval_expression(&right_parts, 0, variables, patterns, scripts, script_index) {
+        if let Some((left, _)) = eval_expression(&left_parts, 0, variables, patterns, counters, scripts, script_index) {
+            if let Some((right, _)) = eval_expression(&right_parts, 0, variables, patterns, counters, scripts, script_index) {
                 return left >= right;
             }
         }
@@ -490,8 +526,8 @@ pub fn eval_condition(cond: &str, variables: &Variables, patterns: &mut PatternS
     if let Some(pos) = cond.find("<=") {
         let left_parts: Vec<&str> = cond[..pos].split_whitespace().collect();
         let right_parts: Vec<&str> = cond[pos + 2..].split_whitespace().collect();
-        if let Some((left, _)) = eval_expression(&left_parts, 0, variables, patterns, scripts, script_index) {
-            if let Some((right, _)) = eval_expression(&right_parts, 0, variables, patterns, scripts, script_index) {
+        if let Some((left, _)) = eval_expression(&left_parts, 0, variables, patterns, counters, scripts, script_index) {
+            if let Some((right, _)) = eval_expression(&right_parts, 0, variables, patterns, counters, scripts, script_index) {
                 return left <= right;
             }
         }
@@ -501,8 +537,8 @@ pub fn eval_condition(cond: &str, variables: &Variables, patterns: &mut PatternS
     if let Some(pos) = cond.find("!=") {
         let left_parts: Vec<&str> = cond[..pos].split_whitespace().collect();
         let right_parts: Vec<&str> = cond[pos + 2..].split_whitespace().collect();
-        if let Some((left, _)) = eval_expression(&left_parts, 0, variables, patterns, scripts, script_index) {
-            if let Some((right, _)) = eval_expression(&right_parts, 0, variables, patterns, scripts, script_index) {
+        if let Some((left, _)) = eval_expression(&left_parts, 0, variables, patterns, counters, scripts, script_index) {
+            if let Some((right, _)) = eval_expression(&right_parts, 0, variables, patterns, counters, scripts, script_index) {
                 return left != right;
             }
         }
@@ -512,8 +548,8 @@ pub fn eval_condition(cond: &str, variables: &Variables, patterns: &mut PatternS
     if let Some(pos) = cond.find("==") {
         let left_parts: Vec<&str> = cond[..pos].split_whitespace().collect();
         let right_parts: Vec<&str> = cond[pos + 2..].split_whitespace().collect();
-        if let Some((left, _)) = eval_expression(&left_parts, 0, variables, patterns, scripts, script_index) {
-            if let Some((right, _)) = eval_expression(&right_parts, 0, variables, patterns, scripts, script_index) {
+        if let Some((left, _)) = eval_expression(&left_parts, 0, variables, patterns, counters, scripts, script_index) {
+            if let Some((right, _)) = eval_expression(&right_parts, 0, variables, patterns, counters, scripts, script_index) {
                 return left == right;
             }
         }
@@ -523,8 +559,8 @@ pub fn eval_condition(cond: &str, variables: &Variables, patterns: &mut PatternS
     if let Some(pos) = cond.find('>') {
         let left_parts: Vec<&str> = cond[..pos].split_whitespace().collect();
         let right_parts: Vec<&str> = cond[pos + 1..].split_whitespace().collect();
-        if let Some((left, _)) = eval_expression(&left_parts, 0, variables, patterns, scripts, script_index) {
-            if let Some((right, _)) = eval_expression(&right_parts, 0, variables, patterns, scripts, script_index) {
+        if let Some((left, _)) = eval_expression(&left_parts, 0, variables, patterns, counters, scripts, script_index) {
+            if let Some((right, _)) = eval_expression(&right_parts, 0, variables, patterns, counters, scripts, script_index) {
                 return left > right;
             }
         }
@@ -534,8 +570,8 @@ pub fn eval_condition(cond: &str, variables: &Variables, patterns: &mut PatternS
     if let Some(pos) = cond.find('<') {
         let left_parts: Vec<&str> = cond[..pos].split_whitespace().collect();
         let right_parts: Vec<&str> = cond[pos + 1..].split_whitespace().collect();
-        if let Some((left, _)) = eval_expression(&left_parts, 0, variables, patterns, scripts, script_index) {
-            if let Some((right, _)) = eval_expression(&right_parts, 0, variables, patterns, scripts, script_index) {
+        if let Some((left, _)) = eval_expression(&left_parts, 0, variables, patterns, counters, scripts, script_index) {
+            if let Some((right, _)) = eval_expression(&right_parts, 0, variables, patterns, counters, scripts, script_index) {
                 return left < right;
             }
         }
@@ -544,7 +580,7 @@ pub fn eval_condition(cond: &str, variables: &Variables, patterns: &mut PatternS
 
     // No comparison operator found - evaluate as truthy/falsy (non-zero = true)
     let parts: Vec<&str> = cond.split_whitespace().collect();
-    if let Some((value, _)) = eval_expression(&parts, 0, variables, patterns, scripts, script_index) {
+    if let Some((value, _)) = eval_expression(&parts, 0, variables, patterns, counters, scripts, script_index) {
         return value != 0;
     }
     false

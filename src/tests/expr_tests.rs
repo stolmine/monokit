@@ -1,11 +1,12 @@
 use crate::eval::{eval_expression, resolve_value};
-use super::common::{create_test_variables, create_test_patterns, create_test_scripts};
+use super::common::{create_test_variables, create_test_patterns, create_test_scripts, create_test_counters};
 
 #[test]
 fn test_eval_expression_variables() {
     let mut variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
 
     variables.a = 10;
     variables.b = 20;
@@ -20,7 +21,7 @@ fn test_eval_expression_variables() {
     ];
 
     for (parts, expected) in test_cases {
-        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
         assert!(result.is_some());
         let (value, consumed) = result.unwrap();
         assert_eq!(value, expected);
@@ -33,6 +34,7 @@ fn test_eval_expression_literal_numbers() {
     let variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
 
     let test_cases = vec![
         (vec!["0"], 0),
@@ -42,7 +44,7 @@ fn test_eval_expression_literal_numbers() {
     ];
 
     for (parts, expected) in test_cases {
-        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
         assert!(result.is_some());
         let (value, consumed) = result.unwrap();
         assert_eq!(value, expected);
@@ -55,10 +57,11 @@ fn test_eval_expression_with_start_idx() {
     let mut variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
     variables.a = 10;
 
     let parts = vec!["SOME", "A", "IGNORED"];
-    let result = eval_expression(&parts, 1, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 10);
@@ -69,6 +72,7 @@ fn test_eval_expression_with_start_idx() {
 fn test_resolve_value_function() {
     let mut variables = create_test_variables();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
     variables.a = 42;
     variables.b = -10;
     variables.i = 5;
@@ -101,20 +105,21 @@ fn test_variables_in_all_expression_positions() {
     let mut variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
 
     variables.a = 5;
     variables.b = 3;
 
     let parts = vec!["ADD", "A", "B"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert_eq!(result.unwrap().0, 8);
 
     let parts = vec!["MUL", "A", "B"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert_eq!(result.unwrap().0, 15);
 
     let parts = vec!["SUB", "A", "B"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert_eq!(result.unwrap().0, 2);
 }
 
@@ -142,6 +147,7 @@ fn test_all_variables_in_expressions() {
     let mut variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
 
     variables.a = 1;
     variables.b = 2;
@@ -154,31 +160,31 @@ fn test_all_variables_in_expressions() {
     variables.t = 9;
 
     let parts = vec!["A"];
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 1);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 1);
 
     let parts = vec!["B"];
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 2);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 2);
 
     let parts = vec!["C"];
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 3);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 3);
 
     let parts = vec!["D"];
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 4);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 4);
 
     let parts = vec!["I"];
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 5);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 5);
 
     let parts = vec!["X"];
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 6);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 6);
 
     let parts = vec!["Y"];
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 7);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 7);
 
     let parts = vec!["Z"];
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 8);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 8);
 
     let parts = vec!["T"];
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 9);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 9);
 }
 
 #[test]
@@ -198,19 +204,20 @@ fn test_semicolon_separated_expressions() {
     let mut variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
 
     variables.a = 10;
 
     let parts = vec!["A"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert_eq!(result.unwrap().0, 10);
 
     let parts = vec!["ADD", "A", "5"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert_eq!(result.unwrap().0, 15);
 
     let parts = vec!["MUL", "A", "2"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert_eq!(result.unwrap().0, 20);
 }
 
@@ -219,6 +226,7 @@ fn test_expression_with_all_parameter_types() {
     let mut variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
 
     variables.a = 10;
     patterns.patterns[0].data[0] = 5;
@@ -226,11 +234,11 @@ fn test_expression_with_all_parameter_types() {
     patterns.patterns[0].index = 0;
 
     let parts = vec!["ADD", "A", "PN", "0"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert_eq!(result.unwrap().0, 15);
 
     let parts = vec!["ADD", "10", "20"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert_eq!(result.unwrap().0, 30);
 }
 
@@ -239,12 +247,13 @@ fn test_deeply_nested_expressions() {
     let mut variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
 
     variables.a = 2;
     variables.b = 3;
 
     let parts = vec!["MUL", "ADD", "A", "B", "SUB", "10", "5"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 25);
@@ -256,9 +265,10 @@ fn test_triple_nested_expressions() {
     let variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
 
     let parts = vec!["ADD", "MUL", "2", "3", "DIV", "20", "SUB", "7", "2"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert_eq!(result.unwrap().0, 10);
 }
 
@@ -267,13 +277,14 @@ fn test_saturating_arithmetic() {
     let variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
 
     let parts = vec!["ADD", "32000", "32000"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert!(result.is_some());
 
     let parts = vec!["MUL", "1000", "1000"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert!(result.is_some());
 }
 
@@ -282,21 +293,22 @@ fn test_negative_numbers_in_expressions() {
     let variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
 
     let parts = vec!["-10"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert_eq!(result.unwrap().0, -10);
 
     let parts = vec!["ADD", "-5", "10"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert_eq!(result.unwrap().0, 5);
 
     let parts = vec!["SUB", "10", "-5"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert_eq!(result.unwrap().0, 15);
 
     let parts = vec!["MUL", "-3", "4"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert_eq!(result.unwrap().0, -12);
 }
 
@@ -305,9 +317,10 @@ fn test_n_zero_is_c3() {
     let variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
     let parts = vec!["N", "0"];
 
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 131);
@@ -319,9 +332,10 @@ fn test_n_12_is_c4() {
     let variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
     let parts = vec!["N", "12"];
 
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 262);
@@ -333,9 +347,10 @@ fn test_n_24_is_c5() {
     let variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
     let parts = vec!["N", "24"];
 
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 523);
@@ -347,9 +362,10 @@ fn test_n_negative_12_is_c2() {
     let variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
     let parts = vec!["N", "-12"];
 
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 65);
@@ -361,9 +377,10 @@ fn test_n_21_is_a4_440hz() {
     let variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
     let parts = vec!["N", "21"];
 
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 440);
@@ -375,10 +392,11 @@ fn test_n_with_variable() {
     let mut variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
     variables.a = 12;
     let parts = vec!["N", "A"];
 
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 262);
@@ -390,9 +408,10 @@ fn test_n_nested_in_expression() {
     let variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
     let parts = vec!["ADD", "N", "0", "N", "12"];
 
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 393);
@@ -404,9 +423,10 @@ fn test_n_with_add_semitones() {
     let variables = create_test_variables();
     let mut patterns = create_test_patterns();
     let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
     let parts = vec!["N", "ADD", "0", "7"];
 
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 196);

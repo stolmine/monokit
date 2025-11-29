@@ -1,4 +1,4 @@
-use crate::types::{PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, PatternStorage, ScriptStorage, Variables};
 
 pub fn create_test_variables() -> Variables {
     Variables {
@@ -20,4 +20,8 @@ pub fn create_test_patterns() -> PatternStorage {
 
 pub fn create_test_scripts() -> ScriptStorage {
     ScriptStorage::default()
+}
+
+pub fn create_test_counters() -> Counters {
+    Counters::default()
 }

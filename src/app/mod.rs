@@ -1,6 +1,6 @@
 use crate::theme::Theme;
 use crate::types::{
-    MetroCommand, MetroState, Page, PatternStorage, ScriptStorage, Variables,
+    Counters, MetroCommand, MetroState, Page, PatternStorage, ScriptStorage, Variables,
 };
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -24,6 +24,7 @@ pub struct App {
     pub selected_line: Option<usize>,
     pub variables: Variables,
     pub patterns: PatternStorage,
+    pub counters: Counters,
     pub pattern_cursor: (usize, usize),
     pub pattern_input: String,
     pub ev_counters: [[u32; 8]; 10],
@@ -56,6 +57,7 @@ impl App {
             selected_line: None,
             variables: Variables::default(),
             patterns: PatternStorage::default(),
+            counters: Counters::default(),
             pattern_cursor: (0, 0),
             pattern_input: String::new(),
             ev_counters: [[0; 8]; 10],

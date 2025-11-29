@@ -1,5 +1,5 @@
 use crate::commands::process_command;
-use crate::types::{MetroCommand, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScriptStorage, Variables};
 use std::sync::mpsc;
 
 #[test]
@@ -9,6 +9,7 @@ fn test_tog_command_integration() {
     let mut br_len = 2usize;
     let mut variables = Variables::default();
     let mut patterns = PatternStorage::default();
+    let mut counters = Counters::default();
     let mut scripts = ScriptStorage::default();
     let mut theme = crate::theme::Theme::default();
     let mut debug_level = 0u8;
@@ -25,6 +26,7 @@ fn test_tog_command_integration() {
         &mut br_len,
         &mut variables,
         &mut patterns,
+        &mut counters,
         &mut scripts,
         script_index,
         &mut theme,
@@ -44,6 +46,7 @@ fn test_tog_command_integration() {
         &mut br_len,
         &mut variables,
         &mut patterns,
+        &mut counters,
         &mut scripts,
         script_index,
         &mut theme,
@@ -63,6 +66,7 @@ fn test_tog_command_integration() {
         &mut br_len,
         &mut variables,
         &mut patterns,
+        &mut counters,
         &mut scripts,
         script_index,
         &mut theme,
@@ -80,6 +84,7 @@ fn test_tog_with_variable_assignment() {
     let mut br_len = 2usize;
     let mut variables = Variables::default();
     let mut patterns = PatternStorage::default();
+    let mut counters = Counters::default();
     let mut scripts = ScriptStorage::default();
     let mut theme = crate::theme::Theme::default();
     let mut debug_level = 0u8;
@@ -96,6 +101,7 @@ fn test_tog_with_variable_assignment() {
         &mut br_len,
         &mut variables,
         &mut patterns,
+        &mut counters,
         &mut scripts,
         script_index,
         &mut theme,
@@ -114,6 +120,7 @@ fn test_tog_with_variable_assignment() {
         &mut br_len,
         &mut variables,
         &mut patterns,
+        &mut counters,
         &mut scripts,
         script_index,
         &mut theme,
@@ -132,6 +139,7 @@ fn test_tog_with_variable_assignment() {
         &mut br_len,
         &mut variables,
         &mut patterns,
+        &mut counters,
         &mut scripts,
         script_index,
         &mut theme,

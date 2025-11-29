@@ -61,6 +61,21 @@ impl Default for Variables {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct Counters {
+    pub values: [i16; 4],
+    pub max: [i16; 4],
+}
+
+impl Default for Counters {
+    fn default() -> Self {
+        Self {
+            values: [0; 4],
+            max: [0; 4],
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Pattern {
     #[serde(with = "BigArray")]

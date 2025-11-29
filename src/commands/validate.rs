@@ -161,6 +161,18 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
+        "N1.RST" | "N2.RST" | "N3.RST" | "N4.RST" => {
+            if argc > 0 {
+                return Err(anyhow::anyhow!("{} takes no arguments", command));
+            }
+            Ok(())
+        }
+        "N1.MAX" | "N2.MAX" | "N3.MAX" | "N4.MAX" => {
+            if argc < 1 {
+                return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
+            }
+            Ok(())
+        }
         "M" => {
             if argc > 1 {
                 return Err(anyhow::anyhow!("M takes 0-1 arguments"));

@@ -1,10 +1,11 @@
 use crate::eval::eval_expression;
-use crate::types::{PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, PatternStorage, ScriptStorage, Variables};
 
 pub fn handle_add<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     mut output: F,
@@ -15,8 +16,8 @@ pub fn handle_add<F>(
         output("ERROR: ADD REQUIRES TWO OPERANDS".to_string());
         return;
     }
-    if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
-        if let Some((y, _)) = eval_expression(&parts, 1 + x_consumed, variables, patterns, scripts, script_index) {
+    if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        if let Some((y, _)) = eval_expression(&parts, 1 + x_consumed, variables, patterns, counters, scripts, script_index) {
             let result = x.saturating_add(y);
             output(format!("{}", result));
         } else {
@@ -31,6 +32,7 @@ pub fn handle_sub<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     mut output: F,
@@ -41,8 +43,8 @@ pub fn handle_sub<F>(
         output("ERROR: SUB REQUIRES TWO OPERANDS".to_string());
         return;
     }
-    if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
-        if let Some((y, _)) = eval_expression(&parts, 1 + x_consumed, variables, patterns, scripts, script_index) {
+    if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        if let Some((y, _)) = eval_expression(&parts, 1 + x_consumed, variables, patterns, counters, scripts, script_index) {
             let result = x.saturating_sub(y);
             output(format!("{}", result));
         } else {
@@ -57,6 +59,7 @@ pub fn handle_mul<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     mut output: F,
@@ -67,8 +70,8 @@ pub fn handle_mul<F>(
         output("ERROR: MUL REQUIRES TWO OPERANDS".to_string());
         return;
     }
-    if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
-        if let Some((y, _)) = eval_expression(&parts, 1 + x_consumed, variables, patterns, scripts, script_index) {
+    if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        if let Some((y, _)) = eval_expression(&parts, 1 + x_consumed, variables, patterns, counters, scripts, script_index) {
             let result = x.saturating_mul(y);
             output(format!("{}", result));
         } else {
@@ -83,6 +86,7 @@ pub fn handle_div<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     mut output: F,
@@ -93,8 +97,8 @@ pub fn handle_div<F>(
         output("ERROR: DIV REQUIRES TWO OPERANDS".to_string());
         return;
     }
-    if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
-        if let Some((y, _)) = eval_expression(&parts, 1 + x_consumed, variables, patterns, scripts, script_index) {
+    if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        if let Some((y, _)) = eval_expression(&parts, 1 + x_consumed, variables, patterns, counters, scripts, script_index) {
             if y == 0 {
                 output("ERROR: DIVISION BY ZERO".to_string());
             } else {
@@ -113,6 +117,7 @@ pub fn handle_mod<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     mut output: F,
@@ -123,8 +128,8 @@ pub fn handle_mod<F>(
         output("ERROR: MOD REQUIRES TWO OPERANDS".to_string());
         return;
     }
-    if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
-        if let Some((y, _)) = eval_expression(&parts, 1 + x_consumed, variables, patterns, scripts, script_index) {
+    if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        if let Some((y, _)) = eval_expression(&parts, 1 + x_consumed, variables, patterns, counters, scripts, script_index) {
             if y == 0 {
                 output("ERROR: MODULO BY ZERO".to_string());
             } else {
@@ -143,6 +148,7 @@ pub fn handle_map<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     mut output: F,
@@ -153,11 +159,11 @@ pub fn handle_map<F>(
         output("ERROR: MAP REQUIRES FIVE ARGUMENTS".to_string());
         return;
     }
-    if let Some((val, val_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
-        if let Some((in_min, in_min_consumed)) = eval_expression(&parts, 1 + val_consumed, variables, patterns, scripts, script_index) {
-            if let Some((in_max, in_max_consumed)) = eval_expression(&parts, 1 + val_consumed + in_min_consumed, variables, patterns, scripts, script_index) {
-                if let Some((out_min, out_min_consumed)) = eval_expression(&parts, 1 + val_consumed + in_min_consumed + in_max_consumed, variables, patterns, scripts, script_index) {
-                    if let Some((out_max, _)) = eval_expression(&parts, 1 + val_consumed + in_min_consumed + in_max_consumed + out_min_consumed, variables, patterns, scripts, script_index) {
+    if let Some((val, val_consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        if let Some((in_min, in_min_consumed)) = eval_expression(&parts, 1 + val_consumed, variables, patterns, counters, scripts, script_index) {
+            if let Some((in_max, in_max_consumed)) = eval_expression(&parts, 1 + val_consumed + in_min_consumed, variables, patterns, counters, scripts, script_index) {
+                if let Some((out_min, out_min_consumed)) = eval_expression(&parts, 1 + val_consumed + in_min_consumed + in_max_consumed, variables, patterns, counters, scripts, script_index) {
+                    if let Some((out_max, _)) = eval_expression(&parts, 1 + val_consumed + in_min_consumed + in_max_consumed + out_min_consumed, variables, patterns, counters, scripts, script_index) {
                         let result = if in_min == in_max {
                             out_min
                         } else {

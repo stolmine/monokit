@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{MetroCommand, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 use rosc::OscType;
 use std::io::Write;
@@ -9,6 +9,7 @@ pub fn handle_pf<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -22,7 +23,7 @@ where
         output("ERROR: PF REQUIRES A FREQUENCY VALUE (20-20000)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as f32
     } else {
         parts[1]
@@ -46,6 +47,7 @@ pub fn handle_pw<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -59,7 +61,7 @@ where
         output("ERROR: PW REQUIRES A WAVEFORM VALUE (0-2)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -83,6 +85,7 @@ pub fn handle_mf<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -96,7 +99,7 @@ where
         output("ERROR: MF REQUIRES A FREQUENCY VALUE (20-20000)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as f32
     } else {
         parts[1]
@@ -120,6 +123,7 @@ pub fn handle_mw<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -133,7 +137,7 @@ where
         output("ERROR: MW REQUIRES A WAVEFORM VALUE (0-3)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -157,6 +161,7 @@ pub fn handle_dc<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -170,7 +175,7 @@ where
         output("ERROR: DC REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -197,6 +202,7 @@ pub fn handle_dm<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -210,7 +216,7 @@ where
         output("ERROR: DM REQUIRES A MODE VALUE (0-6)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -234,6 +240,7 @@ pub fn handle_tk<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -247,7 +254,7 @@ where
         output("ERROR: TK REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -271,6 +278,7 @@ pub fn handle_mb<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -284,7 +292,7 @@ where
         output("ERROR: MB REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -308,6 +316,7 @@ pub fn handle_mp<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -321,7 +330,7 @@ where
         output("ERROR: MP REQUIRES A VALUE (0 OR 1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -345,6 +354,7 @@ pub fn handle_md<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -358,7 +368,7 @@ where
         output("ERROR: MD REQUIRES A VALUE (0 OR 1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -382,6 +392,7 @@ pub fn handle_mt<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -395,7 +406,7 @@ where
         output("ERROR: MT REQUIRES A VALUE (0 OR 1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -419,6 +430,7 @@ pub fn handle_ma<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -432,7 +444,7 @@ where
         output("ERROR: MA REQUIRES A VALUE (0 OR 1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -456,6 +468,7 @@ pub fn handle_fm<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -469,7 +482,7 @@ where
         output("ERROR: FM REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -493,6 +506,7 @@ pub fn handle_ad<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -506,7 +520,7 @@ where
         output("ERROR: AD REQUIRES A TIME VALUE (1-10000 MS)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -530,6 +544,7 @@ pub fn handle_pd<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -543,7 +558,7 @@ where
         output("ERROR: PD REQUIRES A TIME VALUE (1-10000 MS)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -567,6 +582,7 @@ pub fn handle_fd<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -580,7 +596,7 @@ where
         output("ERROR: FD REQUIRES A TIME VALUE (1-10000 MS)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -604,6 +620,7 @@ pub fn handle_pa<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -617,7 +634,7 @@ where
         output("ERROR: PA REQUIRES A MULTIPLIER VALUE (0-16)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as f32
     } else {
         parts[1]
@@ -641,6 +658,7 @@ pub fn handle_dd<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -654,7 +672,7 @@ where
         output("ERROR: DD REQUIRES A TIME VALUE (1-10000 MS)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -678,6 +696,7 @@ pub fn handle_mx<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -691,7 +710,7 @@ where
         output("ERROR: MX REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -715,6 +734,7 @@ pub fn handle_mm<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -728,7 +748,7 @@ where
         output("ERROR: MM REQUIRES A VALUE (0 OR 1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -752,6 +772,7 @@ pub fn handle_me<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -765,7 +786,7 @@ where
         output("ERROR: ME REQUIRES A VALUE (0 OR 1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -789,6 +810,7 @@ pub fn handle_fa<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -802,7 +824,7 @@ where
         output("ERROR: FA REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -826,6 +848,7 @@ pub fn handle_da<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -839,7 +862,7 @@ where
         output("ERROR: DA REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -863,6 +886,7 @@ pub fn handle_fb<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -876,7 +900,7 @@ where
         output("ERROR: FB REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -900,6 +924,7 @@ pub fn handle_fba<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -913,7 +938,7 @@ where
         output("ERROR: FBA REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -937,6 +962,7 @@ pub fn handle_fbd<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -950,7 +976,7 @@ where
         output("ERROR: FBD REQUIRES A TIME VALUE (1-10000 MS)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -974,6 +1000,7 @@ pub fn handle_rf<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -987,7 +1014,7 @@ where
         output("ERROR: RF REQUIRES A FREQUENCY VALUE (20-5000)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as f32
     } else {
         parts[1]
@@ -1011,6 +1038,7 @@ pub fn handle_rd<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1024,7 +1052,7 @@ where
         output("ERROR: RD REQUIRES A TIME VALUE (10-5000 MS)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1048,6 +1076,7 @@ pub fn handle_rm<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1061,7 +1090,7 @@ where
         output("ERROR: RM REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1085,6 +1114,7 @@ pub fn handle_rk<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1098,7 +1128,7 @@ where
         output("ERROR: RK REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1122,6 +1152,7 @@ pub fn handle_d_mode<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1135,7 +1166,7 @@ where
         output("ERROR: D.MODE REQUIRES A VALUE (0-2)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1165,6 +1196,7 @@ pub fn handle_d_tail<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1178,7 +1210,7 @@ where
         output("ERROR: D.TAIL REQUIRES A VALUE (0-2)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1208,6 +1240,7 @@ pub fn handle_dt<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1221,7 +1254,7 @@ where
         output("ERROR: DT REQUIRES A TIME VALUE (1-2000 MS)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1245,6 +1278,7 @@ pub fn handle_df<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1258,7 +1292,7 @@ where
         output("ERROR: DF REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1282,6 +1316,7 @@ pub fn handle_dlp<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1295,7 +1330,7 @@ where
         output("ERROR: DLP REQUIRES A FREQUENCY VALUE (100-20000 HZ)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as f32
     } else {
         parts[1]
@@ -1319,6 +1354,7 @@ pub fn handle_dw<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1332,7 +1368,7 @@ where
         output("ERROR: DW REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1356,6 +1392,7 @@ pub fn handle_ds<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1369,7 +1406,7 @@ where
         output("ERROR: DS REQUIRES A VALUE (0 OR 1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1393,6 +1430,7 @@ pub fn handle_r_mode<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1406,7 +1444,7 @@ where
         output("ERROR: R.MODE REQUIRES A VALUE (0-2)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1436,6 +1474,7 @@ pub fn handle_r_tail<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1449,7 +1488,7 @@ where
         output("ERROR: R.TAIL REQUIRES A VALUE (0-2)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1479,6 +1518,7 @@ pub fn handle_rv<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1492,7 +1532,7 @@ where
         output("ERROR: RV REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1516,6 +1556,7 @@ pub fn handle_rp<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1529,7 +1570,7 @@ where
         output("ERROR: RP REQUIRES A VALUE (0-100)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1553,6 +1594,7 @@ pub fn handle_rh<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1566,7 +1608,7 @@ where
         output("ERROR: RH REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1590,6 +1632,7 @@ pub fn handle_rw<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1603,7 +1646,7 @@ where
         output("ERROR: RW REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1627,6 +1670,7 @@ pub fn handle_fc<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1640,7 +1684,7 @@ where
         output("ERROR: FC REQUIRES A FREQUENCY VALUE (20-20000)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as f32
     } else {
         parts[1]
@@ -1664,6 +1708,7 @@ pub fn handle_fq<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1677,7 +1722,7 @@ where
         output("ERROR: FQ REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1701,6 +1746,7 @@ pub fn handle_ft<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1714,7 +1760,7 @@ where
         output("ERROR: FT REQUIRES A VALUE (0-3)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1738,6 +1784,7 @@ pub fn handle_fe<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1751,7 +1798,7 @@ where
         output("ERROR: FE REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1775,6 +1822,7 @@ pub fn handle_fed<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1788,7 +1836,7 @@ where
         output("ERROR: FED REQUIRES A TIME VALUE (1-10000 MS)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1812,6 +1860,7 @@ pub fn handle_fk<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1825,7 +1874,7 @@ where
         output("ERROR: FK REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1849,6 +1898,7 @@ pub fn handle_mf_f<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1862,7 +1912,7 @@ where
         output("ERROR: MF.F REQUIRES A VALUE (0 OR 1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1886,6 +1936,7 @@ pub fn handle_lb<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1899,7 +1950,7 @@ where
         output("ERROR: LB REQUIRES A VALUE (1-16)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1923,6 +1974,7 @@ pub fn handle_ls<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1936,7 +1988,7 @@ where
         output("ERROR: LS REQUIRES A VALUE (100-48000)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1960,6 +2012,7 @@ pub fn handle_lm<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -1973,7 +2026,7 @@ where
         output("ERROR: LM REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -1997,6 +2050,7 @@ pub fn handle_rgf<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2010,7 +2064,7 @@ where
         output("ERROR: RGF REQUIRES A FREQUENCY VALUE (20-2000)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as f32
     } else {
         parts[1]
@@ -2034,6 +2088,7 @@ pub fn handle_rgw<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2047,7 +2102,7 @@ where
         output("ERROR: RGW REQUIRES A VALUE (0-3)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -2071,6 +2126,7 @@ pub fn handle_rgm<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2084,7 +2140,7 @@ where
         output("ERROR: RGM REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -2108,6 +2164,7 @@ pub fn handle_ct<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2121,7 +2178,7 @@ where
         output("ERROR: CT REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -2145,6 +2202,7 @@ pub fn handle_cr<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2158,7 +2216,7 @@ where
         output("ERROR: CR REQUIRES A VALUE (1-20)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as f32
     } else {
         parts[1]
@@ -2182,6 +2240,7 @@ pub fn handle_ca<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2195,7 +2254,7 @@ where
         output("ERROR: CA REQUIRES A VALUE (1-500)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -2219,6 +2278,7 @@ pub fn handle_cl<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2232,7 +2292,7 @@ where
         output("ERROR: CL REQUIRES A VALUE (10-2000)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -2256,6 +2316,7 @@ pub fn handle_cm<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2269,7 +2330,7 @@ where
         output("ERROR: CM REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -2293,6 +2354,7 @@ pub fn handle_el<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2306,7 +2368,7 @@ where
         output("ERROR: EL REQUIRES A VALUE (-24 TO 24)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as f32
     } else {
         parts[1]
@@ -2330,6 +2392,7 @@ pub fn handle_em<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2343,7 +2406,7 @@ where
         output("ERROR: EM REQUIRES A VALUE (-24 TO 24)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as f32
     } else {
         parts[1]
@@ -2367,6 +2430,7 @@ pub fn handle_ef<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2380,7 +2444,7 @@ where
         output("ERROR: EF REQUIRES A FREQUENCY VALUE (200-8000)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as f32
     } else {
         parts[1]
@@ -2404,6 +2468,7 @@ pub fn handle_eq_param<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2417,7 +2482,7 @@ where
         output("ERROR: EQ REQUIRES A VALUE (0.1-10)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as f32
     } else {
         parts[1]
@@ -2441,6 +2506,7 @@ pub fn handle_eh<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2454,7 +2520,7 @@ where
         output("ERROR: EH REQUIRES A VALUE (-24 TO 24)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as f32
     } else {
         parts[1]
@@ -2478,6 +2544,7 @@ pub fn handle_pan<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2491,7 +2558,7 @@ where
         output("ERROR: PAN REQUIRES A VALUE (-16383 TO 16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -2517,6 +2584,7 @@ pub fn handle_br_act<F>(
     br_len: &mut usize,
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2530,7 +2598,7 @@ where
         output("ERROR: BR.ACT REQUIRES A VALUE (0-1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -2575,6 +2643,7 @@ pub fn handle_br_len<F>(
     br_len: &mut usize,
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2588,7 +2657,7 @@ where
         output("ERROR: BR.LEN REQUIRES A VALUE (0-7)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -2626,6 +2695,7 @@ pub fn handle_br_rev<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2639,7 +2709,7 @@ where
         output("ERROR: BR.REV REQUIRES A VALUE (0-1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -2660,6 +2730,7 @@ pub fn handle_br_win<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2673,7 +2744,7 @@ where
         output("ERROR: BR.WIN REQUIRES A VALUE (1-50)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -2694,6 +2765,7 @@ pub fn handle_br_mix<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2707,7 +2779,7 @@ where
         output("ERROR: BR.MIX REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -2728,6 +2800,7 @@ pub fn handle_ps_mode<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2741,7 +2814,7 @@ where
         output("ERROR: PS.MODE REQUIRES A VALUE (0-1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -2767,6 +2840,7 @@ pub fn handle_ps_semi<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2780,7 +2854,7 @@ where
         output("ERROR: PS.SEMI REQUIRES A VALUE (-24 TO 24)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -2801,6 +2875,7 @@ pub fn handle_ps_grain<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2814,7 +2889,7 @@ where
         output("ERROR: PS.GRAIN REQUIRES A VALUE (5-100)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -2835,6 +2910,7 @@ pub fn handle_ps_mix<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2848,7 +2924,7 @@ where
         output("ERROR: PS.MIX REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]
@@ -2869,6 +2945,7 @@ pub fn handle_ps_targ<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
@@ -2882,7 +2959,7 @@ where
         output("ERROR: PS.TARG REQUIRES A VALUE (0-1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as i32
     } else {
         parts[1]

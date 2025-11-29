@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, PatternStorage, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 use rand::Rng;
 
@@ -64,6 +64,7 @@ pub fn handle_eith<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     mut output: F,
@@ -74,8 +75,8 @@ pub fn handle_eith<F>(
         output("ERROR: EITH REQUIRES TWO VALUES".to_string());
         return;
     }
-    if let Some((a, a_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
-        if let Some((b, _)) = eval_expression(&parts, 1 + a_consumed, variables, patterns, scripts, script_index) {
+    if let Some((a, a_consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        if let Some((b, _)) = eval_expression(&parts, 1 + a_consumed, variables, patterns, counters, scripts, script_index) {
             let result = if rand::thread_rng().gen_bool(0.5) { a } else { b };
             output(format!("{}", result));
         } else {
@@ -90,6 +91,7 @@ pub fn handle_tog<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     mut output: F,
@@ -100,8 +102,8 @@ pub fn handle_tog<F>(
         output("ERROR: TOG REQUIRES AT LEAST TWO VALUES".to_string());
         return;
     }
-    if let Some((a, a_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
-        if let Some((b, _b_consumed)) = eval_expression(&parts, 1 + a_consumed, variables, patterns, scripts, script_index) {
+    if let Some((a, a_consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        if let Some((b, _b_consumed)) = eval_expression(&parts, 1 + a_consumed, variables, patterns, counters, scripts, script_index) {
             let key = format!("cmd_{}_{}", script_index, parts.join("_"));
             let counter = patterns.toggle_state.entry(key).or_insert(0);
             let result = if *counter % 2 == 0 { a } else { b };

@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, PatternStorage, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 
 pub fn handle_pattern_n<F>(
@@ -125,6 +125,7 @@ pub fn handle_pattern<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     mut output: F,
@@ -136,7 +137,7 @@ where
         output("ERROR: P REQUIRES AN INDEX".to_string());
         return Ok(());
     }
-    let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as usize
     } else {
         parts[1]
@@ -151,7 +152,7 @@ where
         let pattern = &patterns.patterns[patterns.working];
         output(format!("P {} = {}", idx, pattern.data[idx]));
     } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, scripts, script_index) {
+        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index) {
             expr_val
         } else {
             parts[2]
@@ -169,6 +170,7 @@ pub fn handle_pn_l<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     mut output: F,
@@ -180,7 +182,7 @@ where
         output("ERROR: PN.L REQUIRES PATTERN NUMBER (0-3)".to_string());
         return Ok(());
     }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as usize
     } else {
         parts[1]
@@ -195,7 +197,7 @@ where
         let pattern = &patterns.patterns[pat];
         output(format!("PN.L {} = {}", pat, pattern.length));
     } else {
-        let value: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, scripts, script_index) {
+        let value: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index) {
             expr_val as usize
         } else {
             parts[2]
@@ -217,6 +219,7 @@ pub fn handle_pn_i<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     mut output: F,
@@ -228,7 +231,7 @@ where
         output("ERROR: PN.I REQUIRES PATTERN NUMBER (0-3)".to_string());
         return Ok(());
     }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as usize
     } else {
         parts[1]
@@ -243,7 +246,7 @@ where
         let pattern = &patterns.patterns[pat];
         output(format!("PN.I {} = {}", pat, pattern.index));
     } else {
-        let value: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, scripts, script_index) {
+        let value: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index) {
             expr_val as usize
         } else {
             parts[2]
@@ -265,6 +268,7 @@ pub fn handle_pn_here<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     mut output: F,
@@ -276,7 +280,7 @@ where
         output("ERROR: PN.HERE REQUIRES PATTERN NUMBER (0-3)".to_string());
         return Ok(());
     }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as usize
     } else {
         parts[1]
@@ -297,6 +301,7 @@ pub fn handle_pn_next<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     mut output: F,
@@ -308,7 +313,7 @@ where
         output("ERROR: PN.NEXT REQUIRES PATTERN NUMBER (0-3)".to_string());
         return Ok(());
     }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as usize
     } else {
         parts[1]
@@ -330,6 +335,7 @@ pub fn handle_pn_prev<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     mut output: F,
@@ -341,7 +347,7 @@ where
         output("ERROR: PN.PREV REQUIRES PATTERN NUMBER (0-3)".to_string());
         return Ok(());
     }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as usize
     } else {
         parts[1]
@@ -367,6 +373,7 @@ pub fn handle_pn<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
+    counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     mut output: F,
@@ -378,7 +385,7 @@ where
         output("ERROR: PN REQUIRES PATTERN (0-3) AND INDEX (0-63)".to_string());
         return Ok(());
     }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
         expr_val as usize
     } else {
         parts[1]
@@ -389,7 +396,7 @@ where
         output("ERROR: PATTERN NUMBER MUST BE 0-3".to_string());
         return Ok(());
     }
-    let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, scripts, script_index) {
+    let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index) {
         expr_val as usize
     } else {
         parts[2]
@@ -404,7 +411,7 @@ where
         let pattern = &patterns.patterns[pat];
         output(format!("PN {} {} = {}", pat, idx, pattern.data[idx]));
     } else {
-        let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 3, variables, patterns, scripts, script_index) {
+        let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 3, variables, patterns, counters, scripts, script_index) {
             expr_val
         } else {
             parts[3]

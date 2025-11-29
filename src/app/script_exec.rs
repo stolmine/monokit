@@ -26,6 +26,7 @@ impl App {
                 elif_cond,
                 &self.variables,
                 &mut self.patterns,
+                &mut self.counters,
                 &self.scripts,
                 script_index,
             ) {
@@ -63,6 +64,7 @@ impl App {
                     cond,
                     &self.variables,
                     &mut self.patterns,
+                    &mut self.counters,
                     &self.scripts,
                     script_index,
                 ) {
@@ -74,6 +76,7 @@ impl App {
                 cond,
                 &self.variables,
                 &mut self.patterns,
+                &mut self.counters,
                 &self.scripts,
                 script_index,
             ) {
@@ -99,6 +102,7 @@ impl App {
             &mut self.br_len,
             &mut self.variables,
             &mut self.patterns,
+            &mut self.counters,
             &mut self.scripts,
             script_index,
             &mut self.theme,
@@ -145,6 +149,7 @@ impl App {
                     1,
                     &self.variables,
                     &mut self.patterns,
+                    &mut self.counters,
                     &self.scripts,
                     script_index,
                 ) {
@@ -161,6 +166,7 @@ impl App {
                     1,
                     &self.variables,
                     &mut self.patterns,
+                    &mut self.counters,
                     &self.scripts,
                     script_index,
                 ) {
@@ -253,6 +259,7 @@ impl App {
                     0,
                     &self.variables,
                     &mut self.patterns,
+                    &mut self.counters,
                     &self.scripts,
                     script_index,
                 ) {
@@ -266,6 +273,7 @@ impl App {
                     1,
                     &self.variables,
                     &mut self.patterns,
+                    &mut self.counters,
                     &self.scripts,
                     script_index,
                 ) {
@@ -312,6 +320,7 @@ impl App {
                     0,
                     &self.variables,
                     &mut self.patterns,
+                    &mut self.counters,
                     &self.scripts,
                     script_index,
                 ) {
@@ -334,6 +343,7 @@ impl App {
                     0,
                     &self.variables,
                     &mut self.patterns,
+                    &mut self.counters,
                     &self.scripts,
                     script_index,
                 ) {
@@ -462,6 +472,7 @@ impl App {
                     0,
                     &self.variables,
                     &mut self.patterns,
+                    &mut self.counters,
                     &self.scripts,
                     10,
                 ) {
@@ -482,6 +493,7 @@ impl App {
                     0,
                     &self.variables,
                     &mut self.patterns,
+                    &mut self.counters,
                     &self.scripts,
                     10,
                 ) {

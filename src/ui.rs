@@ -321,7 +321,7 @@ pub fn render_pattern_page(app: &super::App) -> Paragraph<'static> {
     let mut lines = vec![];
 
     let mut header_spans = vec![Span::raw("     ")];
-    for pattern_idx in 0..4 {
+    for pattern_idx in 0..6 {
         let label = format!("P{}", pattern_idx);
         let style = if pattern_idx == app.patterns.working {
             Style::default().fg(app.theme.accent).add_modifier(Modifier::BOLD)
@@ -333,7 +333,7 @@ pub fn render_pattern_page(app: &super::App) -> Paragraph<'static> {
     lines.push(Line::from(header_spans));
 
     let mut len_spans = vec![Span::styled(" LEN ", Style::default().fg(app.theme.secondary))];
-    for pattern_idx in 0..4 {
+    for pattern_idx in 0..6 {
         let pattern = &app.patterns.patterns[pattern_idx];
         len_spans.push(Span::styled(
             format!(" {:^5} ", pattern.length),
@@ -347,7 +347,7 @@ pub fn render_pattern_page(app: &super::App) -> Paragraph<'static> {
             Span::styled(format!("{:3}: ", step), Style::default().fg(app.theme.secondary)),
         ];
 
-        for pattern_idx in 0..4 {
+        for pattern_idx in 0..6 {
             let pattern = &app.patterns.patterns[pattern_idx];
             let value = pattern.data[step];
             let is_cursor = cursor_pattern == pattern_idx && cursor_step == step;
@@ -625,7 +625,7 @@ pub const HELP_LINES: &[&str] = &[
     "",
     "  PATTERNS (WORKING - P.N)",
     "  P.N           GET WORKING PATTERN",
-    "  P.N <0-3>     SET WORKING PATTERN",
+    "  P.N <0-5>     SET WORKING PATTERN",
     "  P.L / P.L <N> GET/SET LENGTH",
     "  P.I / P.I <N> GET/SET INDEX",
     "  P.HERE        VALUE AT INDEX",
@@ -866,7 +866,7 @@ pub fn run_app<B: ratatui::backend::Backend>(
                         app.pattern_input.clear();
                     }
                     KeyCode::Right if !is_help && app.current_page == Page::Pattern => {
-                        if app.pattern_cursor.0 < 3 {
+                        if app.pattern_cursor.0 < 5 {
                             app.pattern_cursor.0 += 1;
                         }
                         app.pattern_input.clear();

@@ -19,8 +19,8 @@ pub fn handle_pattern_n<F>(
                 return;
             }
         };
-        if value > 3 {
-            output("ERROR: PATTERN NUMBER MUST BE 0-3".to_string());
+        if value > 5 {
+            output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
             return;
         }
         patterns.working = value;
@@ -179,7 +179,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: PN.L REQUIRES PATTERN NUMBER (0-3)".to_string());
+        output("ERROR: PN.L REQUIRES PATTERN NUMBER (0-5)".to_string());
         return Ok(());
     }
     let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
@@ -189,8 +189,8 @@ where
             .parse()
             .context("Failed to parse pattern number")?
     };
-    if pat > 3 {
-        output("ERROR: PATTERN NUMBER MUST BE 0-3".to_string());
+    if pat > 5 {
+        output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
         return Ok(());
     }
     if parts.len() == 2 {
@@ -228,7 +228,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: PN.I REQUIRES PATTERN NUMBER (0-3)".to_string());
+        output("ERROR: PN.I REQUIRES PATTERN NUMBER (0-5)".to_string());
         return Ok(());
     }
     let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
@@ -238,8 +238,8 @@ where
             .parse()
             .context("Failed to parse pattern number")?
     };
-    if pat > 3 {
-        output("ERROR: PATTERN NUMBER MUST BE 0-3".to_string());
+    if pat > 5 {
+        output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
         return Ok(());
     }
     if parts.len() == 2 {
@@ -277,7 +277,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: PN.HERE REQUIRES PATTERN NUMBER (0-3)".to_string());
+        output("ERROR: PN.HERE REQUIRES PATTERN NUMBER (0-5)".to_string());
         return Ok(());
     }
     let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
@@ -287,8 +287,8 @@ where
             .parse()
             .context("Failed to parse pattern number")?
     };
-    if pat > 3 {
-        output("ERROR: PATTERN NUMBER MUST BE 0-3".to_string());
+    if pat > 5 {
+        output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
         return Ok(());
     }
     let pattern = &patterns.patterns[pat];
@@ -310,7 +310,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: PN.NEXT REQUIRES PATTERN NUMBER (0-3)".to_string());
+        output("ERROR: PN.NEXT REQUIRES PATTERN NUMBER (0-5)".to_string());
         return Ok(());
     }
     let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
@@ -320,8 +320,8 @@ where
             .parse()
             .context("Failed to parse pattern number")?
     };
-    if pat > 3 {
-        output("ERROR: PATTERN NUMBER MUST BE 0-3".to_string());
+    if pat > 5 {
+        output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
         return Ok(());
     }
     let pattern = &mut patterns.patterns[pat];
@@ -344,7 +344,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: PN.PREV REQUIRES PATTERN NUMBER (0-3)".to_string());
+        output("ERROR: PN.PREV REQUIRES PATTERN NUMBER (0-5)".to_string());
         return Ok(());
     }
     let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
@@ -354,8 +354,8 @@ where
             .parse()
             .context("Failed to parse pattern number")?
     };
-    if pat > 3 {
-        output("ERROR: PATTERN NUMBER MUST BE 0-3".to_string());
+    if pat > 5 {
+        output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
         return Ok(());
     }
     let pattern = &mut patterns.patterns[pat];
@@ -382,7 +382,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 3 {
-        output("ERROR: PN REQUIRES PATTERN (0-3) AND INDEX (0-63)".to_string());
+        output("ERROR: PN REQUIRES PATTERN (0-5) AND INDEX (0-63)".to_string());
         return Ok(());
     }
     let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
@@ -392,8 +392,8 @@ where
             .parse()
             .context("Failed to parse pattern number")?
     };
-    if pat > 3 {
-        output("ERROR: PATTERN NUMBER MUST BE 0-3".to_string());
+    if pat > 5 {
+        output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
         return Ok(());
     }
     let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index) {

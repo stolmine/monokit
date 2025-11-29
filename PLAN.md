@@ -77,7 +77,7 @@ Refactor monokit's TUI to follow teletype's sparse, page-based design with scrip
 ### 3. Pattern System
 
 **Structure:**
-- 4 patterns (0-3), selected via `P.N`
+- 6 patterns (0-5), selected via `P.N` (expanded from original 4 patterns)
 - 64 steps per pattern
 - Each step is int16 value
 - Playhead with idx, len, wrap, start, end
@@ -167,40 +167,48 @@ PROB 50: DC 8000
 
 ## Implementation Phases
 
-### Phase 1: Page Infrastructure
-- Add Page enum variants: Live, Script1-8, Metro, Init, Pattern, Help
-- Implement `[` / `]` navigation across all pages
-- Add page indicator in header
+### Phase 1: Page Infrastructure ✅ COMPLETE
+- ✅ Add Page enum variants: Live, Script1-8, Metro, Init, Pattern, Help
+- ✅ Implement `[` / `]` navigation across all pages
+- ✅ Add page indicator in header
 
-### Phase 2: Script Pages
-- Create ScriptStorage struct (lines, J, K per script)
-- Implement script page rendering (show stored lines)
-- Script input: Enter adds line to script, not executes
-- Add line selection and deletion
+### Phase 2: Script Pages ✅ COMPLETE
+- ✅ Create ScriptStorage struct (lines, J, K per script)
+- ✅ Implement script page rendering (show stored lines)
+- ✅ Script input: Enter adds line to script, not executes
+- ✅ Add line selection and deletion
 
-### Phase 3: Live Page (REPL)
-- Keep current terminal-style behavior
-- Commands execute immediately
-- Output scrolls like terminal
-- Can call `SCRIPT n` to execute stored script
+### Phase 3: Live Page (REPL) ✅ COMPLETE
+- ✅ Keep current terminal-style behavior
+- ✅ Commands execute immediately
+- ✅ Output scrolls like terminal
+- ✅ Can call `SCRIPT n` to execute stored script
 
-### Phase 4: Pattern System
-- Add pattern storage (4 × 64 int16)
-- Implement P ops in command parser
-- Pattern page shows values in columns
-- Pattern page allows editing values
+### Phase 4: Pattern System ✅ COMPLETE
+- ✅ Add pattern storage (6 × 64 int16, expanded from 4)
+- ✅ Implement P ops in command parser
+- ✅ Pattern page shows values in columns
+- ✅ Pattern page allows editing values
 
-### Phase 5: Variables & Control Flow
-- Add variable storage (A-D, X-Z, T, I, J, K)
-- Implement variable get/set ops
-- Add PRE separator parsing
-- Implement IF, L, PROB control flow
+### Phase 5: Variables & Control Flow ✅ COMPLETE
+- ✅ Add variable storage (A-D, X-Z, T, I, J, K)
+- ✅ Implement variable get/set ops
+- ✅ Add PRE separator parsing
+- ✅ Implement IF/ELIF/ELSE, L, PROB, EV/SKIP control flow
+- ✅ Add comparison operators (EQ, NE, GT, LT, GTE, LTE, EZ, NZ)
+- ✅ Infix comparison support
 
-### Phase 6: Script Execution
-- Parse stored script lines on trigger
-- Execute M script on metro tick
-- Execute I script on startup
-- SCRIPT command to call numbered scripts
+### Phase 6: Script Execution ✅ COMPLETE
+- ✅ Parse stored script lines on trigger
+- ✅ Execute M script on metro tick
+- ✅ Execute I script on startup
+- ✅ SCRIPT command to call numbered scripts
+
+### Additional Features (Post-PLAN) ✅ COMPLETE
+- ✅ MAP operator for range mapping
+- ✅ TOG generator for value toggling
+- ✅ N1-N4 counters with MIN/MAX/RST control
+- ✅ Scene persistence (SAVE/LOAD system)
 
 ## Files to Modify
 

@@ -164,6 +164,6 @@ impl Scene {
             }
         }
 
-        patterns.working = self.pattern_working.min(3);
+        patterns.working = self.pattern_working.min(5);
     }
 }

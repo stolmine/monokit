@@ -67,26 +67,19 @@ This document captures future feature ideas for consideration. Not prioritized o
 
 ---
 
-## Map / Scale Operators [Low Complexity]
+## ✅ DONE: Map / Scale Operators [Low Complexity]
 
 ### Range Mapping
-- `MAP <val> <in_min> <in_max> <out_min> <out_max>` - Map value from input range to output range
+- ✅ **IMPLEMENTED:** `MAP <val> <in_min> <in_max> <out_min> <out_max>` - Map value from input range to output range
 - Example: `PF MAP A 0 127 200 2000` - Map A (0-127) to frequency (200-2000 Hz)
 - Example: `DC MAP PN.NEXT 0 0 100 0 16383` - Map pattern value to full DC range
 
-### Clamped vs Unclamped
-- `MAP` - Clamps output to out_min/out_max range
+### Future Extensions (Not Implemented)
 - `MAPU` - Unclamped, allows extrapolation beyond output range
-
-### Shorthand Variants
 - `MAP01 <val> <out_min> <out_max>` - Map from 0-1 range (for normalized inputs)
 - `MAP7 <val> <out_min> <out_max>` - Map from 0-127 range (MIDI values)
 - `MAP14 <val> <out_min> <out_max>` - Map from 0-16383 range (14-bit)
-
-### Curve Mapping
-- `MAPC <val> <in_min> <in_max> <out_min> <out_max> <curve>` - Map with curve
-- Curve: -8 to 8 (-8=log, 0=linear, 8=exp)
-- Useful for perceptual scaling (volume, frequency)
+- `MAPC <val> <in_min> <in_max> <out_min> <out_max> <curve>` - Map with curve (curve: -8 to 8, -8=log, 0=linear, 8=exp)
 
 ---
 
@@ -108,13 +101,16 @@ This document captures future feature ideas for consideration. Not prioritized o
 
 ---
 
-## TOG Generator [Low Complexity]
+## ✅ DONE: TOG Generator [Low Complexity]
 
 Toggle between values on each trigger:
-- `TOG <a> <b>` - Returns a, then b, then a, then b...
-- `TOG <a> <b> <c>` - Cycle through 3+ values
+- ✅ **IMPLEMENTED:** `TOG <a> <b>` - Returns a, then b, then a, then b...
+- State is per-script and per-line
+- Usage: `PF TOG N 0 N 7` - Alternate between C3 and G3
+
+### Future Extensions (Not Implemented)
+- `TOG <a> <b> <c>` - Cycle through 3+ values (currently only 2 values supported)
 - `TOG.RST` - Reset toggle state
-- Usage: `PF TOG 200 400` - Alternate between frequencies
 
 ---
 
@@ -224,15 +220,17 @@ String-based pattern notation (inspired by Tidal):
 
 ---
 
-## Auto-Incrementing Variables [Low Complexity]
+## ✅ DONE: Auto-Incrementing Variables [Low Complexity]
 
 ### Dedicated Counter Variables
-- `N1`, `N2`, `N3`, `N4` - Auto-increment on each read
-- `N1.RST` - Reset to 0
-- `N1.MAX <n>` - Set wrap-around point
-- `N1.STEP <n>` - Set increment amount
+- ✅ **IMPLEMENTED:** `N1`, `N2`, `N3`, `N4` - Auto-increment on each read
+- ✅ **IMPLEMENTED:** `N1.RST`, `N2.RST`, `N3.RST`, `N4.RST` - Reset to MIN value
+- ✅ **IMPLEMENTED:** `N1.MAX <n>` - Set maximum value (wraps to MIN when exceeded, 0=disabled/no wrap)
+- ✅ **IMPLEMENTED:** `N1.MIN <n>` - Set minimum value (default 0, counter starts here)
+- Example: `N1.MIN 10; N1.MAX 14` - Counter cycles 10,11,12,13,14,10...
 
-### Accumulator Mode
+### Future Extensions (Not Implemented)
+- `N1.STEP <n>` - Set increment amount (currently always increments by 1)
 - `A.INC <n>` - Increment A by n each tick
 - `A.DEC <n>` - Decrement A by n each tick
 - `A.WRAP <min> <max>` - Wrap within range
@@ -242,13 +240,14 @@ String-based pattern notation (inspired by Tidal):
 ## Expanded Pattern Storage [Low Complexity]
 
 ### More Pattern Slots
-- Increase from 4 to 8 or 16 patterns
-- `PN <0-15>` addressing
-- Bank system: `P.BANK <0-3>` for 4 banks of 4
+- ✅ **PARTIALLY DONE:** Increased from 4 to 6 patterns (PN accepts 0-5)
+- Future: Increase to 8 or 16 patterns
+- Future: `PN <0-15>` addressing
+- Future: Bank system: `P.BANK <0-3>` for 4 banks of 4
 
 ### Pattern Length
-- Increase max from 64 to 128 or 256
-- Or variable per-pattern length limits
+- Future: Increase max from 64 to 128 or 256
+- Future: Variable per-pattern length limits
 
 ---
 

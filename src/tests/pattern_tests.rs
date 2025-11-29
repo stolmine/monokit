@@ -238,7 +238,7 @@ fn test_pattern_prev_wrapping() {
 fn test_multiple_pattern_indices() {
     let mut patterns = create_test_patterns();
 
-    for i in 0..4 {
+    for i in 0..6 {
         patterns.patterns[i].data[0] = (i as i16 + 1) * 10;
         patterns.patterns[i].data[1] = (i as i16 + 1) * 10 + 1;
         patterns.patterns[i].length = 2;
@@ -249,6 +249,8 @@ fn test_multiple_pattern_indices() {
     assert_eq!(patterns.patterns[1].data[0], 20);
     assert_eq!(patterns.patterns[2].data[0], 30);
     assert_eq!(patterns.patterns[3].data[0], 40);
+    assert_eq!(patterns.patterns[4].data[0], 50);
+    assert_eq!(patterns.patterns[5].data[0], 60);
 }
 
 #[test]
@@ -326,11 +328,11 @@ fn test_pattern_operations_bounds() {
     let scripts = create_test_scripts();
     let mut counters = create_test_counters();
 
-    let parts = vec!["PN", "4"];
+    let parts = vec!["PN", "6"];
     let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert!(result.is_none());
 
-    let parts = vec!["PN.NEXT", "5"];
+    let parts = vec!["PN.NEXT", "7"];
     let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert!(result.is_none());
 }
@@ -340,7 +342,7 @@ fn test_pattern_storage_default() {
     let patterns = create_test_patterns();
 
     assert_eq!(patterns.working, 0);
-    for i in 0..4 {
+    for i in 0..6 {
         assert_eq!(patterns.patterns[i].length, 64);
         assert_eq!(patterns.patterns[i].index, 0);
         for j in 0..64 {

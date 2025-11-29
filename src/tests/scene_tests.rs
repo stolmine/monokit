@@ -66,7 +66,7 @@ fn test_scene_from_app_state() {
     assert_eq!(scene.scripts[0].lines[1], "TR");
     assert_eq!(scene.scripts[0].j, 5);
     assert_eq!(scene.scripts[0].k, 10);
-    assert_eq!(scene.patterns.len(), 4);
+    assert_eq!(scene.patterns.len(), 6);
     assert_eq!(scene.patterns[0].data[0], 100);
     assert_eq!(scene.patterns[0].data[1], 200);
     assert_eq!(scene.patterns[0].data[2], 300);

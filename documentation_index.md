@@ -30,14 +30,27 @@ Modular Rust implementation (~7,000 total lines across 30+ files):
   - **mod.rs** (146 lines) - App struct, constructor, navigation
   - **input.rs** (234 lines) - Input handling methods
   - **script_exec.rs** (481 lines) - Script/command execution
-- **src/commands/** - Command processing module (10 files, ~2,600 lines)
+- **src/commands/** - Command processing module (22 files, ~2,600 lines)
   - **mod.rs** - Main dispatcher
   - **validate.rs** - Command validation
   - **variables.rs** - Variable handlers (A-K)
   - **patterns.rs** - Pattern operations (P.*, PN.*)
   - **math_ops.rs** - Math operations (ADD, SUB, MUL, DIV, MOD)
   - **random_ops.rs** - Random operations (RND, RRND, TOSS, EITH)
-  - **synth_params.rs** - Synth parameter handlers
+  - **synth_params/** - Synth parameter handlers (13 modules)
+    - **mod.rs** - Module coordinator
+    - **oscillator.rs** - Oscillator parameters (PF, PW, MF, MW)
+    - **modulation.rs** - Modulation and tracking (TK, MB, MP/MD/MT/MA, FM, MX, MM, ME)
+    - **discontinuity.rs** - Discontinuity/waveshaping (DC, DM, DD, FB, FBA, FBD)
+    - **envelopes.rs** - Envelope times and amounts (AD, PD, FD, DD, PA, FA, DA)
+    - **filter.rs** - SVF filter parameters (FC, FQ, FT, FE, FED, FK, MF.F)
+    - **resonator.rs** - Comb resonator (RF, RD, RM, RK)
+    - **delay.rs** - Stereo delay (DT, DF, DLP, DW, DS, D.MODE, D.TAIL)
+    - **reverb.rs** - Plate reverb (RV, RP, RH, RW, R.MODE, R.TAIL)
+    - **eq.rs** - 3-band EQ (EL, EM, EF, EQ, EH)
+    - **effects.rs** - Lo-Fi, Ring Mod, Compressor, Pan (LB, LS, LM, RGF, RGW, RGM, CT, CR, CA, CL, CM, PAN)
+    - **beat_repeat.rs** - Beat repeat (BR.ACT, BR.LEN, BR.REV, BR.WIN, BR.MIX)
+    - **pitch_shift.rs** - Pitch shift (PS.MODE, PS.SEMI, PS.GRAIN, PS.MIX, PS.TARG)
   - **metro_cmds.rs** - Metro commands
   - **scene_cmds.rs** - Scene commands
   - **misc.rs** - Other commands (TR, RST, VOL, THEME, etc.)
@@ -47,7 +60,7 @@ Modular Rust implementation (~7,000 total lines across 30+ files):
 Key features:
 - Page-based interface: Live, Script 1-8, Metro (M), Init (I), Pattern (P), Help
 - Script storage: 10 scripts × 8 lines (Scripts 1-8, M, I)
-- Pattern storage: 4 patterns × 64 steps (i16 values)
+- Pattern storage: 6 patterns × 64 steps (i16 values, PN accepts 0-5)
 - Variables: A-D, X-Y-Z-T (global), J-K (per-script local), I (loop counter)
 - Control flow: IF/ELIF/ELSE conditions, PROB probabilistic, EV/SKIP every-N-tick
 - Comparison operators: EZ, NZ, EQ, NE, GT, LT, GTE, LTE (return 1/0)
@@ -160,7 +173,7 @@ Audio output → Recording (optional)
 - `P <idx>` / `P <idx> <val>` - Get/set value at index
 
 #### Patterns (Explicit Pattern - PN)
-- `PN <pat> <idx>` / `PN <pat> <idx> <val>` - Get/set value
+- `PN <pat> <idx>` / `PN <pat> <idx> <val>` - Get/set value (pat: 0-5)
 - `PN.L <pat>` / `PN.L <pat> <len>` - Get/set length
 - `PN.I <pat>` / `PN.I <pat> <idx>` - Get/set playhead
 - `PN.HERE <pat>` - Get value at playhead

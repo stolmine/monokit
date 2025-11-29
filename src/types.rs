@@ -98,7 +98,7 @@ impl Default for Pattern {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PatternStorage {
-    pub patterns: [Pattern; 4],
+    pub patterns: [Pattern; 6],
     pub working: usize,
     #[serde(skip)]
     pub toggle_state: HashMap<String, usize>,
@@ -108,6 +108,8 @@ impl Default for PatternStorage {
     fn default() -> Self {
         Self {
             patterns: [
+                Pattern::default(),
+                Pattern::default(),
                 Pattern::default(),
                 Pattern::default(),
                 Pattern::default(),

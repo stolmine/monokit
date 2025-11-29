@@ -2,6 +2,7 @@ use crate::theme::Theme;
 use anyhow::{Context, Result};
 use ratatui::style::Color;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 
@@ -10,19 +11,13 @@ pub struct Config {
     #[serde(default)]
     pub display: DisplayConfig,
     #[serde(default)]
-    pub theme: ThemeConfig,
+    pub themes: HashMap<String, CustomTheme>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DisplayConfig {
     #[serde(default = "default_theme_mode")]
     pub theme: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ThemeConfig {
-    #[serde(default)]
-    pub custom: Option<CustomTheme>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -68,17 +63,11 @@ impl Default for DisplayConfig {
     }
 }
 
-impl Default for ThemeConfig {
-    fn default() -> Self {
-        Self { custom: None }
-    }
-}
-
 impl Default for Config {
     fn default() -> Self {
         Self {
             display: DisplayConfig::default(),
-            theme: ThemeConfig::default(),
+            themes: HashMap::new(),
         }
     }
 }
@@ -131,34 +120,53 @@ fn parse_hex_color(hex: &str) -> Result<Color> {
 }
 
 pub fn load_theme(config: &Config) -> Result<Theme> {
-    match config.display.theme.as_str() {
-        "dark" => Ok(Theme::dark()),
-        "light" => Ok(Theme::light()),
-        "system" => Ok(Theme::system()),
-        "custom" => {
-            if let Some(custom) = &config.theme.custom {
-                Ok(Theme {
-                    name: "custom".to_string(),
-                    background: parse_hex_color(&custom.background)?,
-                    foreground: parse_hex_color(&custom.foreground)?,
-                    secondary: parse_hex_color(&custom.secondary)?,
-                    highlight_bg: parse_hex_color(&custom.highlight_bg)?,
-                    highlight_fg: parse_hex_color(&custom.highlight_fg)?,
-                    border: parse_hex_color(&custom.border)?,
-                    error: parse_hex_color(&custom.error)?,
-                    accent: parse_hex_color(&custom.accent)?,
-                    success: parse_hex_color(&custom.success)?,
-                    label: parse_hex_color(&custom.label)?,
-                    font: custom.font.clone(),
-                })
-            } else {
-                anyhow::bail!("Custom theme selected but no custom theme defined in config");
-            }
-        }
-        _ => {
-            anyhow::bail!("Unknown theme mode: {}", config.display.theme);
-        }
+    load_theme_by_name(&config.display.theme, config)
+}
+
+pub fn load_theme_by_name(name: &str, config: &Config) -> Result<Theme> {
+    // Check built-in themes first
+    match name.to_lowercase().as_str() {
+        "dark" => return Ok(Theme::dark()),
+        "light" => return Ok(Theme::light()),
+        "system" => return Ok(Theme::system()),
+        _ => {}
     }
+
+    // Look up custom theme by name (case-insensitive)
+    let name_lower = name.to_lowercase();
+    if let Some(custom) = config.themes.get(&name_lower)
+        .or_else(|| config.themes.iter().find(|(k, _)| k.to_lowercase() == name_lower).map(|(_, v)| v))
+    {
+        Ok(Theme {
+            name: name.to_string(),
+            background: parse_hex_color(&custom.background)?,
+            foreground: parse_hex_color(&custom.foreground)?,
+            secondary: parse_hex_color(&custom.secondary)?,
+            highlight_bg: parse_hex_color(&custom.highlight_bg)?,
+            highlight_fg: parse_hex_color(&custom.highlight_fg)?,
+            border: parse_hex_color(&custom.border)?,
+            error: parse_hex_color(&custom.error)?,
+            accent: parse_hex_color(&custom.accent)?,
+            success: parse_hex_color(&custom.success)?,
+            label: parse_hex_color(&custom.label)?,
+            font: custom.font.clone(),
+        })
+    } else {
+        anyhow::bail!("Unknown theme: {}. Available: dark, light, system{}",
+            name,
+            if config.themes.is_empty() {
+                String::new()
+            } else {
+                format!(", {}", config.themes.keys().cloned().collect::<Vec<_>>().join(", "))
+            }
+        )
+    }
+}
+
+pub fn list_themes(config: &Config) -> Vec<String> {
+    let mut themes = vec!["dark".to_string(), "light".to_string(), "system".to_string()];
+    themes.extend(config.themes.keys().cloned());
+    themes
 }
 
 pub fn save_theme_mode(mode: &str) -> Result<()> {

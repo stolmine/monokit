@@ -15,19 +15,33 @@
 
 ### Source Code
 
-Modular Rust implementation (11 files, 4,824 total lines):
+Modular Rust implementation (~7,000 total lines across 30+ files):
 
-- **src/main.rs** (62 lines) - Application entry point, initializes TUI and starts main loop
+- **src/main.rs** (69 lines) - Application entry point, initializes TUI and starts main loop
 - **src/metro.rs** (112 lines) - Metro thread implementation with absolute timing
-- **src/types.rs** (230 lines) - Core data structures, enums, constants, and type definitions
-- **src/eval.rs** (482 lines) - Expression evaluation engine for nested operations, pattern access, and comparison operators
-- **src/ui.rs** (637 lines) - TUI rendering with ratatui, page-based interface
-- **src/tests.rs** (2,421 lines) - Comprehensive unit test suite (138 tests)
+- **src/types.rs** (233 lines) - Core data structures, enums, constants, and type definitions
+- **src/eval.rs** (498 lines) - Expression evaluation engine for nested operations, pattern access, and comparison operators
+- **src/ui.rs** (827 lines) - TUI rendering with ratatui, page-based interface
 - **src/scene.rs** (169 lines) - Scene persistence, file I/O
-- **src/app/mod.rs** (125 lines) - App struct, constructor, navigation
-- **src/app/input.rs** (131 lines) - Input handling methods
-- **src/app/script_exec.rs** (473 lines) - Script/command execution with 10 extracted helper methods
-- **src/commands.rs** (1,335 lines) - Command parsing and processing logic
+- **src/theme.rs** (67 lines) - Theme struct and built-in themes (dark, light, system)
+- **src/config.rs** (170 lines) - Configuration loading, named theme support
+- **src/app/** - Application module
+  - **mod.rs** (146 lines) - App struct, constructor, navigation
+  - **input.rs** (234 lines) - Input handling methods
+  - **script_exec.rs** (481 lines) - Script/command execution
+- **src/commands/** - Command processing module (10 files, ~2,600 lines)
+  - **mod.rs** - Main dispatcher
+  - **validate.rs** - Command validation
+  - **variables.rs** - Variable handlers (A-K)
+  - **patterns.rs** - Pattern operations (P.*, PN.*)
+  - **math_ops.rs** - Math operations (ADD, SUB, MUL, DIV, MOD)
+  - **random_ops.rs** - Random operations (RND, RRND, TOSS, EITH)
+  - **synth_params.rs** - Synth parameter handlers
+  - **metro_cmds.rs** - Metro commands
+  - **scene_cmds.rs** - Scene commands
+  - **misc.rs** - Other commands (TR, RST, VOL, THEME, etc.)
+- **src/tests/** - Test suite module (12 files, ~2,400 lines, 138 tests)
+  - Organized by category: rnd, toss_eith, expr, condition, pattern, variable, validation, math, comparison, scene
 
 Key features:
 - Page-based interface: Live, Script 1-8, Metro (M), Init (I), Pattern (P), Help
@@ -234,6 +248,13 @@ Examples:
 - `RST` - Reset all parameters to defaults
 - `q`, `quit`, or `exit` - Quit application (typed in REPL)
 
+#### Themes
+- `THEME` - Show current theme and list all available themes
+- `THEME <name>` - Switch to theme by name (case-insensitive)
+- Built-in themes: `dark`, `light`, `system`
+- Custom themes defined in `~/.monokit/config.toml` under `[themes.name]` sections
+- Example themes included: dracula, solarized, coral, copper, neo_peachio_dark, nougat_light, and many more
+
 ### Navigation (Keybindings)
 
 #### Page Cycling
@@ -276,7 +297,23 @@ Examples:
 - **Line numbers:** Removed from script pages for a cleaner display
 
 ### Theme System
-The UI uses a comprehensive theme system with RGB colors for terminal compatibility:
+The UI uses a comprehensive theme system with RGB colors for terminal compatibility.
+
+**Named Theme Support:** Config file supports multiple named themes:
+```toml
+[display]
+theme = "dracula"    # Active theme name
+
+[themes.dracula]
+background = "#282a36"
+foreground = "#f8f8f2"
+# ... other colors
+
+[themes.coral]
+background = "#2d3748"
+foreground = "#fa8072"
+# ... other colors
+```
 
 **Theme Colors:**
 - `background` - Main background color
@@ -290,6 +327,9 @@ The UI uses a comprehensive theme system with RGB colors for terminal compatibil
 - `label` - Section headers and labels
 
 **Rendering:** Uses buffer-based background rendering for proper theme support across different terminal emulators. Themes use RGB color values (Color::Rgb) for consistent cross-platform display.
+
+**Config Location:** `~/.monokit/config.toml`
+**Example Config:** See `config.toml.example` in repo for 30+ pre-defined themes
 
 ## OSC Protocol
 

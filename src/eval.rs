@@ -149,6 +149,14 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             let pattern = &patterns.patterns[patterns.working];
             Some((pattern.data[pattern.index], 1))
         }
+        "P.L" => {
+            let pattern = &patterns.patterns[patterns.working];
+            Some((pattern.length as i16, 1))
+        }
+        "P.I" => {
+            let pattern = &patterns.patterns[patterns.working];
+            Some((pattern.index as i16, 1))
+        }
         "RND" => {
             if start_idx + 1 >= parts.len() {
                 return None;

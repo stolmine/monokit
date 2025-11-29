@@ -57,11 +57,16 @@ Key features:
 - OSC client sending to SuperCollider (127.0.0.1:57120)
 
 - **sc/monokit_server.scd** - SuperCollider sound engine
-  - `\monokit` SynthDef: HD2-style dual oscillator with FM, discontinuity, envelopes
+  - `\monokit` SynthDef: HD2-style dual oscillator with FM, discontinuity, envelopes, and DSP effects
   - Additive envelope model: output = base + env * amount
+  - Signal chain: Oscillators → FM → Mix → Discontinuity → SVF Filter → Comb Resonator → Amp → Stereo Delay → Plate Reverb → Out
+  - 49 synth parameters (25 oscillator/envelope + 20 DSP + 4 routing)
   - OSC responders:
     - `/monokit/trigger` - Gate trigger (no args)
     - `/monokit/param` - Generic parameter setter (string name, float/int value)
+    - `/monokit/rec` - Start recording
+    - `/monokit/rec/stop` - Stop recording
+    - `/monokit/rec/path` - Set recording path prefix
   - Stateless sound engine (no metro logic)
 
 ### Build Artifacts
@@ -183,7 +188,7 @@ Examples:
 - `IF GT A 5: TR` - Trigger if A > 5
 - `IF A > 5: TR` - Same as above (infix syntax)
 
-#### HD2 Voice Parameters (25 total)
+#### Synth Parameters (49 total)
 
 **Primary Oscillator**
 - `PF <hz>` - Primary frequency (20-20000)
@@ -229,6 +234,52 @@ Examples:
 - `PA <0-16>` - Pitch envelope amount
 - `FA <0-16>` - FM envelope amount
 - `DA <0-16>` - Discontinuity envelope amount
+
+**SVF Multi-Mode Filter**
+- `FC <hz>` - Filter cutoff frequency (20-20000)
+- `FQ <0-16383>` - Filter resonance (0-16383)
+- `FT <0-3>` - Filter type (0=LP, 1=HP, 2=BP, 3=Notch)
+- `FE <0-16383>` - Filter envelope amount
+- `FED <ms>` - Filter envelope decay (1-10000 ms)
+- `FK <0-16383>` - Filter key tracking amount
+- `MF.F <0|1>` - ModBus -> Filter cutoff routing
+
+**Comb Resonator (Karplus-Strong)**
+- `RF <hz>` - Resonator frequency (20-5000)
+- `RD <ms>` - Resonator decay time (10-5000 ms)
+- `RM <0-16383>` - Resonator mix (dry/wet)
+- `RK <0-16383>` - Resonator key tracking
+
+**Stereo Delay**
+- `DT <ms>` - Delay time (1-2000 ms)
+- `DF <0-16383>` - Delay feedback amount
+- `DLP <hz>` - Delay lowpass filter cutoff (100-20000)
+- `DW <0-16383>` - Delay wet mix (INSERT mode) or send level (SEND mode)
+- `DS <0-1>` - Delay sync (0=free, 1=tempo - not implemented)
+
+**Plate Reverb**
+- `RV <0-16383>` - Reverb size/decay time
+- `RP <ms>` - Reverb pre-delay (0-100 ms)
+- `RH <0-16383>` - Reverb high damping
+- `RW <0-16383>` - Reverb wet mix (INSERT mode) or send level (SEND mode)
+
+**Effect Routing**
+- `D.MODE <0-2>` - Delay routing mode (0=BYPASS, 1=INSERT, 2=SEND)
+- `D.TAIL <0-2>` - Delay tail behavior (0=CUT, 1=RING, 2=FREEZE)
+- `R.MODE <0-2>` - Reverb routing mode (0=BYPASS, 1=INSERT, 2=SEND)
+- `R.TAIL <0-2>` - Reverb tail behavior (0=CUT, 1=RING, 2=FREEZE)
+
+Effect routing modes:
+- **BYPASS (0)**: Effect disabled, signal passes through unchanged
+- **INSERT (1)**: Traditional series processing with wet/dry mix
+- **SEND (2)**: Parallel processing where wet parameter controls send level
+
+Tail behaviors:
+- **CUT (0)**: Tails cut immediately when wet=0 (gated output)
+- **RING (1)**: Tails decay naturally (default behavior)
+- **FREEZE (2)**: Stop new input, sustain current tail indefinitely
+
+Note: In SEND mode with RING or FREEZE tail modes, the effect output remains at full level when wet=0, allowing tails to continue naturally. In CUT mode, output is gated by the wet parameter.
 
 #### Math Operations
 - `ADD <a> <b>` or `+ <a> <b>` - Add two values (works as command and in expressions)
@@ -365,9 +416,19 @@ All communication from Rust CLI to SuperCollider server uses UDP over localhost 
 - **Trigger:** `/monokit/trigger` (no arguments)
 - **Master Volume:** `/monokit/volume` with float value (0.0-1.0)
 - **Parameter Control:** `/monokit/param <name> <value>` where:
-  - `<name>` = parameter name (string): pf, pw, mf, mw, dc, dm, dd, tk, mb, mp, md, mt, ma, fm, mx, mm, me, ad, pd, fd, dd, pa
+  - `<name>` = parameter name (string):
+    - Oscillator/FM: pf, pw, mf, mw, fb, fba, fbd, dc, dm, dd, tk, mb, mp, md, mt, ma, fm, mx, mm, me
+    - Envelopes: ad, pd, fd, dd, pa, fa, da
+    - Filter: fc, fq, ft, fe, fed, fk, mf_f
+    - Resonator: rf, rd, rm, rk
+    - Delay: dt, df, dlp, dw, ds, dmode, dtail
+    - Reverb: rv, rp, rh, rw, rmode, rtail
   - `<value>` = float or int depending on parameter type
 - **Reset:** `/monokit/reset` (no arguments, resets all parameters to defaults)
+- **Recording:**
+  - `/monokit/rec` - Start recording (with optional directory path)
+  - `/monokit/rec/stop` - Stop recording
+  - `/monokit/rec/path` - Set custom recording path prefix
 
 All parameter updates are validated in Rust CLI before sending and applied immediately on SuperCollider voice.
 

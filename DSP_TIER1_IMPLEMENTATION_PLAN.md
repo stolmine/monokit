@@ -1,14 +1,38 @@
 # Monokit Tier 1 DSP Blocks - Implementation Plan
 
+## STATUS: COMPLETE
+
+All Tier 1 DSP blocks have been implemented as of the current codebase state.
+
 ## Architecture Overview
 
-Current signal flow (from monokit_server.scd):
+### IMPLEMENTED Signal Flow
+
+Complete signal chain (from monokit_server.scd):
 1. Modulator oscillator (with optional feedback)
 2. Primary oscillator with FM
 3. Mix between primary and modulator
 4. Discontinuity injection + waveshaping (fold/tanh/softclip)
-5. Amplitude envelope
-6. **Pan2.ar (mono → stereo)** ← Output
+5. **SVF Multi-Mode Filter** (LP/HP/BP/Notch with envelope and key tracking)
+6. **Comb Resonator** (Karplus-Strong with key tracking)
+7. Amplitude envelope
+8. **Stereo Delay** (ping-pong with feedback filtering and routing modes)
+9. **Plate Reverb** (FreeVerb2 with pre-delay and routing modes)
+10. Stereo output
+
+### Effect Routing System
+
+Implemented routing modes for delay and reverb:
+- **BYPASS (0)**: Effect disabled, signal passes through unchanged
+- **INSERT (1)**: Traditional series processing with wet/dry mix
+- **SEND (2)**: Parallel processing where wet parameter controls send level
+
+Tail behaviors:
+- **CUT (0)**: Tails cut immediately when wet=0
+- **RING (1)**: Tails decay naturally (default)
+- **FREEZE (2)**: Stop new input, sustain current tail indefinitely
+
+Commands: D.MODE, D.TAIL, R.MODE, R.TAIL
 
 ---
 
@@ -723,6 +747,63 @@ TR              # Trigger
 
 ---
 
+## Implementation Summary
+
+### COMPLETED (All Phases)
+
+All Tier 1 DSP blocks have been successfully implemented:
+
+**Phase 1: SVF Filter** - COMPLETE
+- 7 parameters: FC, FQ, FT, FE, FED, FK, MF.F
+- Multi-mode filtering (LP/HP/BP/Notch)
+- Envelope modulation with independent decay
+- Key tracking to follow pitch
+- ModBus routing to cutoff
+
+**Phase 2: Comb Resonator** - COMPLETE
+- 4 parameters: RF, RD, RM, RK
+- Karplus-Strong algorithm using CombC
+- Key tracking for harmonic resonance
+- Variable decay time
+
+**Phase 3: Stereo Delay** - COMPLETE
+- 5 DSP parameters: DT, DF, DLP, DW, DS (DS not yet implemented for tempo sync)
+- 2 routing parameters: D.MODE, D.TAIL
+- Ping-pong stereo delay with cubic interpolation
+- Feedback lowpass filtering
+- Routing modes: BYPASS/INSERT/SEND
+- Tail behaviors: CUT/RING/FREEZE
+
+**Phase 4: Plate Reverb** - COMPLETE
+- 4 DSP parameters: RV, RP, RH, RW
+- 2 routing parameters: R.MODE, R.TAIL
+- FreeVerb2 implementation
+- Pre-delay and damping control
+- Routing modes: BYPASS/INSERT/SEND
+- Tail behaviors: CUT/RING/FREEZE
+
+### Parameter Count
+
+- **Total parameters:** 49
+  - Oscillator/FM/Mix: 25 parameters
+  - DSP blocks: 20 parameters (7 filter + 4 resonator + 5 delay + 4 reverb)
+  - Routing: 4 parameters (D.MODE, D.TAIL, R.MODE, R.TAIL)
+
+### Files Modified
+
+- `/Users/why/repos/monokit/sc/monokit_server.scd` - SuperCollider DSP implementation
+- `/Users/why/repos/monokit/src/commands/synth_params.rs` - Rust command handlers
+- `/Users/why/repos/monokit/src/commands/mod.rs` - Command routing
+- `/Users/why/repos/monokit/src/commands/validate.rs` - Parameter validation
+
+### Remaining Work
+
+- **DS (Delay Sync):** Tempo-synced delay divisions (requires BPM passing from metro)
+- **Additional ModBus routing:** Delay time, reverb size modulation
+- **Documentation updates:** Help text and usage examples
+
+---
+
 ## End of Implementation Plan
 
-This plan provides a complete roadmap for adding professional-grade DSP effects to Monokit. Each section can be implemented independently, with Phase 3 and 4 requiring the stereo refactor from Phase 3.
+This document served as the complete roadmap for adding professional-grade DSP effects to Monokit. All planned features have been successfully implemented.

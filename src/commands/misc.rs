@@ -158,6 +158,12 @@ pub fn handle_help<F>(
     output("VOLUME:  VOL <0.0-1.0>".to_string());
     output("RESET:   RST".to_string());
     output("".to_string());
+    output("-- REPL UTILITIES --".to_string());
+    output("CLEAR           CLEAR OUTPUT HISTORY".to_string());
+    output("DEBUG <0-2>     SET VERBOSITY (0=SILENT, 1=IMPORTANT, 2=VERBOSE)".to_string());
+    output("PRINT \"TEXT\"    OUTPUT LITERAL STRING".to_string());
+    output("PRINT <EXPR>    EVALUATE AND PRINT EXPRESSION".to_string());
+    output("".to_string());
     output("-- OSCILLATORS --".to_string());
     output("PF <HZ>     PRIMARY FREQ (20-20000)".to_string());
     output("PW <0-2>    PRIMARY WAVE (SIN/TRI/SAW)".to_string());

@@ -185,7 +185,31 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "PF" | "MF" | "PW" | "MW" | "DC" | "TK" | "MB" | "FM" | "MX" | "FA" | "DA" | "DM" | "MP" | "MD" | "MT" | "MA" | "MM" | "ME" | "AD" | "PD" | "FD" | "DD" | "PA" | "FB" | "FBA" | "FBD" => {
+        "D.MODE" => {
+            if argc < 1 {
+                return Err(anyhow::anyhow!("D.MODE REQUIRES A VALUE (0-2)"));
+            }
+            Ok(())
+        }
+        "D.TAIL" => {
+            if argc < 1 {
+                return Err(anyhow::anyhow!("D.TAIL REQUIRES A VALUE (0-2)"));
+            }
+            Ok(())
+        }
+        "R.MODE" => {
+            if argc < 1 {
+                return Err(anyhow::anyhow!("R.MODE REQUIRES A VALUE (0-2)"));
+            }
+            Ok(())
+        }
+        "R.TAIL" => {
+            if argc < 1 {
+                return Err(anyhow::anyhow!("R.TAIL REQUIRES A VALUE (0-2)"));
+            }
+            Ok(())
+        }
+        "PF" | "MF" | "PW" | "MW" | "DC" | "TK" | "MB" | "FM" | "MX" | "FA" | "DA" | "DM" | "MP" | "MD" | "MT" | "MA" | "MM" | "ME" | "AD" | "PD" | "FD" | "DD" | "PA" | "FB" | "FBA" | "FBD" | "RF" | "RD" | "RM" | "RK" | "DT" | "DF" | "DLP" | "DW" | "DS" | "RV" | "RP" | "RH" | "RW" | "FC" | "FQ" | "FT" | "FE" | "FED" | "FK" | "MF.F" => {
             if argc < 1 {
                 return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
             }

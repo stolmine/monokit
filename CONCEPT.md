@@ -42,9 +42,10 @@ The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity
 
 **SuperCollider Server** (`sc/monokit_server.scd`)
 - Runs headless scsynth with persistent HD2-style voice
-- `\monokit` SynthDef: complex oscillator with dual waveform engines, FM, discontinuity, modulation
+- `\monokit` SynthDef: complex oscillator with dual waveform engines, FM, discontinuity, modulation, and DSP effects
 - Additive envelope model: output = base parameter + env * amount
-- 25 parameters (includes FA, DA, FBA envelope amounts):
+- Signal chain: Oscillators → FM → Mix → Discontinuity → SVF Filter → Comb Resonator → Amp → Stereo Delay → Plate Reverb → Out
+- 49 parameters (25 oscillator/envelope + 20 DSP + 4 routing):
   - **Oscillators:** pf (primary freq), pw (primary waveform 0-2), mf (mod freq), mw (mod waveform 0-3)
   - **Feedback FM:** fb (feedback amount 0-16383), fba (feedback env amount 0-16383), fbd (feedback decay ms)
   - **Discontinuity:** dc (amount 0-16383), dm (mode 0-2: fold/tanh/softclip), dd (discontinuity decay 0.001-10s)
@@ -53,10 +54,15 @@ The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity
   - **Envelopes:** ad (amp decay ms), pd (pitch decay ms), fd (FM decay ms), dd (disc decay ms)
   - **Envelope Amounts:** pa (pitch 0-16), fa (FM 0-16), da (discontinuity 0-16)
   - **Mix Controls:** mx (mix to disc input 0-16383), mm (mix modulation amount 0-16383), me (mix modulation enable 0-1)
+  - **SVF Filter:** fc (cutoff Hz), fq (resonance 0-16383), ft (type 0-3), fe (env amount), fed (env decay ms), fk (key tracking), mf_f (modbus routing)
+  - **Comb Resonator:** rf (freq Hz), rd (decay ms), rm (mix 0-16383), rk (key tracking)
+  - **Stereo Delay:** dt (time ms), df (feedback), dlp (lowpass Hz), dw (wet/send), ds (sync 0-1), dmode (routing 0-2), dtail (tail mode 0-2)
+  - **Plate Reverb:** rv (decay), rp (pre-delay ms), rh (damping), rw (wet/send), rmode (routing 0-2), rtail (tail mode 0-2)
   - **Volume:** volume (0.0-1.0)
 - OSC responders:
   - `/monokit/trigger` - triggers gate for note playback
   - `/monokit/param <name> <value>` - sets any parameter by name
+  - `/monokit/rec`, `/monokit/rec/stop`, `/monokit/rec/path` - recording control
   - Sound engine only; no metro logic
 
 ### Running the MVP
@@ -106,7 +112,10 @@ Recording captures the SuperCollider audio output directly.
 
 ## Next Steps
 
-- Tier 1 DSP blocks: Filter (SVF), Resonator (Comb), Delay (stereo), Reverb (plate)
-- Additional modulation routing (ModBus to DSP blocks)
+- ✓ Tier 1 DSP blocks: Filter (SVF), Resonator (Comb), Delay (stereo), Reverb (plate) - COMPLETE
+- ✓ Effect routing system: BYPASS/INSERT/SEND modes with CUT/RING/FREEZE tail behaviors - COMPLETE
+- ✓ ModBus routing to filter cutoff - COMPLETE
 - Pattern/sequencing enhancements
 - LFO system for parameter modulation
+- Additional modulation routing (ModBus to delay time, reverb size, etc.)
+- Tempo-synced delay (DS parameter implementation)

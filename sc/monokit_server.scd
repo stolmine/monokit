@@ -30,14 +30,44 @@ s.waitForBoot {
             fb = 0,
             fba = 0,
             fbd = 10,
+            fc = 1000,
+            fq = 0,
+            ft = 0,
+            fe = 0,
+            fed = 100,
+            fk = 0,
+            mf_f = 0,
+            rf = 440,
+            rd = 500,
+            rm = 0,
+            rk = 0,
+            dt = 250,
+            df = 0,
+            dlp = 5000,
+            dw = 0,
+            ds = 0,
+            rv = 0,
+            rp = 0,
+            rh = 8000,
+            rw = 0,
+            dmode = 1,
+            dtail = 1,
+            rmode = 1,
+            rtail = 1,
             volume = 1,
             gate = 0;
 
         // All var declarations at top
-        var trig, pitchEnv, ampEnv, fmEnv, dcEnv, fbEnv;
+        var trig, pitchEnv, ampEnv, fmEnv, dcEnv, fbEnv, filterEnv;
         var modBus, trackingAmount, fmIndex, dcAmount, mixAmount, fbAmount;
         var primaryFreq, modulatorFreq, modOsc;
         var fmAmount, primaryOsc, sig, amp, discontinuity;
+        var filterCutoff, filterQ;
+        var resonatorFreq, resonatorDelay, resonatorDecay, resonatorMix, resonated;
+        var delayTime, delayFeedback, delayWet, sigL, sigR, delayedL, delayedR;
+        var reverbDecay, reverbDamping, reverbWet, reverbedL, reverbedR;
+        var dmodeSmooth, delayWetSmooth, dfeedbackMult, delayInput, delayBypass;
+        var rmodeSmooth, reverbWetSmooth, rinputGate, rroomSize, reverbInput;
 
         // Envelope model: output = base + (envelope * amount)
         // Exception: ampEnv is multiplicative (0→1 gating)
@@ -49,6 +79,7 @@ s.waitForBoot {
         fmEnv = EnvGen.kr(Env.perc(0.001, fd / 1000, 1, -4), trig);
         dcEnv = EnvGen.kr(Env.perc(0.001, dd / 1000, 1, -4), trig);
         fbEnv = EnvGen.kr(Env.perc(0.001, fbd / 1000, 1, -4), trig);
+        filterEnv = EnvGen.kr(Env.perc(0.001, fed / 1000, 1, -4), trig);
 
         // Scaled parameters
         modBus = mb / 16383;
@@ -95,10 +126,118 @@ s.waitForBoot {
             sig.softclip
         ]);
 
+        // SVF Multi-Mode Filter
+        filterCutoff = fc + ((fk / 16383) * primaryFreq) + (filterEnv * (fe / 16383) * 5000) + (modBus * mf_f * 5000);
+        filterCutoff = filterCutoff.clip(20, 20000);
+        filterQ = ((fq / 16383) * 0.9 + 0.1);
+        sig = Select.ar(ft.clip(0, 3).round, [
+            SVF.ar(sig, filterCutoff, filterQ, 1, 0, 0, 0, 0),
+            SVF.ar(sig, filterCutoff, filterQ, 0, 1, 0, 0, 0),
+            SVF.ar(sig, filterCutoff, filterQ, 0, 0, 1, 0, 0),
+            SVF.ar(sig, filterCutoff, filterQ, 0, 0, 0, 1, 0)
+        ]);
+
+        // Comb Resonator (Karplus-Strong)
+        resonatorFreq = rf + ((rk / 16383) * (primaryFreq - rf));
+        resonatorFreq = resonatorFreq.clip(20, 5000);
+        resonatorDelay = (1 / resonatorFreq).clip(0.0002, 0.05);
+        resonatorDecay = (rd / 1000).clip(0.01, 5.0);
+        resonated = CombC.ar(sig, 0.05, resonatorDelay, resonatorDecay);
+        resonatorMix = rm / 16383;
+        sig = (sig * (1 - resonatorMix)) + (resonated * resonatorMix);
+
         // Amplitude: base + (modBus * routing)
         amp = ampEnv * volume * (1 + (modBus * ma * 0.5));
+        sig = sig * amp;
+        sigL = sig;
+        sigR = sig;
 
-        Out.ar(0, Pan2.ar(sig * amp, 0));
+        // Stereo Delay with Feedback Filtering and Routing Modes
+        dmodeSmooth = Lag.kr(dmode, 0.02);
+        delayWetSmooth = Lag.kr(dw / 16383, 0.01);
+        delayTime = (dt / 1000).clip(0.001, 2.0);
+        delayFeedback = df / 16383;
+
+        // Tail behavior: CUT=gate feedback, RING=normal, FREEZE=infinite
+        dfeedbackMult = Select.kr(dtail.clip(0, 2).round, [
+            (dw > 100),    // CUT: feedback stops when wet low
+            1,             // RING: normal feedback
+            0.999          // FREEZE: infinite sustain
+        ]);
+
+        // Input gating: in SEND mode, wet controls input level
+        // In RING/FREEZE modes, input still gated by wet (only output differs)
+        delayInput = Select.ar(dmodeSmooth.clip(0, 2).round, [
+            sigL,                      // BYPASS: unused
+            sigL,                      // INSERT: full input
+            sigL * delayWetSmooth      // SEND: wet controls input
+        ]);
+
+        delayedL = CombC.ar(LPF.ar(delayInput, dlp), 2.0, delayTime, delayFeedback * 3 * dfeedbackMult);
+        delayedR = CombC.ar(LPF.ar(Select.ar(dmodeSmooth.clip(0, 2).round, [sigR, sigR, sigR * delayWetSmooth]), dlp), 2.0, delayTime * 1.02, delayFeedback * 3 * dfeedbackMult);
+
+        // Output mixing based on mode and tail behavior
+        // - BYPASS: dry only
+        // - INSERT: wet/dry crossfade
+        // - SEND: dry + delay (level depends on tail mode)
+        //   - CUT: delay output gated by wet (goes silent when wet=0)
+        //   - RING/FREEZE: delay output at FULL level (tails continue)
+        sigL = Select.ar(dmodeSmooth.clip(0, 2).round, [
+            sigL,                                                              // BYPASS
+            (sigL * (1 - delayWetSmooth)) + (delayedL * delayWetSmooth),       // INSERT: wet/dry mix
+            sigL + (delayedL * Select.kr(dtail.clip(0, 2).round, [delayWetSmooth, 1, 1]))  // SEND: CUT=wet, RING/FREEZE=full
+        ]);
+
+        sigR = Select.ar(dmodeSmooth.clip(0, 2).round, [
+            sigR,
+            (sigR * (1 - delayWetSmooth)) + (delayedR * delayWetSmooth),
+            sigR + (delayedR * Select.kr(dtail.clip(0, 2).round, [delayWetSmooth, 1, 1]))
+        ]);
+
+        // Plate Reverb with Routing Modes
+        rmodeSmooth = Lag.kr(rmode, 0.02);
+        reverbWetSmooth = Lag.kr(rw / 16383, 0.01);
+
+        // Room size: rv controls decay (0-1), FREEZE uses max
+        rroomSize = Select.kr(rtail.clip(0, 2).round, [
+            (rv / 16383).clip(0, 1),   // CUT: normal
+            (rv / 16383).clip(0, 1),   // RING: normal
+            1.0                         // FREEZE: maximum decay
+        ]);
+
+        // Input gating: SEND mode uses wet as send level
+        reverbInput = Select.ar(rmodeSmooth.clip(0, 2).round, [
+            DC.ar(0),                  // BYPASS: no input
+            sigL,                      // INSERT: full input
+            sigL * reverbWetSmooth     // SEND: wet controls send level
+        ]);
+
+        #reverbedL, reverbedR = FreeVerb2.ar(
+            DelayC.ar(reverbInput, 0.1, rp / 1000),
+            DelayC.ar(Select.ar(rmodeSmooth.clip(0, 2).round, [DC.ar(0), sigR, sigR * reverbWetSmooth]), 0.1, rp / 1000),
+            mix: 1,
+            room: rroomSize,
+            damp: (rh / 16383).clip(0, 1)
+        );
+
+        // Output level control:
+        // - BYPASS: dry only
+        // - INSERT: wet/dry crossfade
+        // - SEND + CUT: reverb gated by wet (silent when wet=0)
+        // - SEND + RING/FREEZE: reverb at FULL level (tails continue)
+        sigL = Select.ar(rmodeSmooth.clip(0, 2).round, [
+            sigL,                                                              // BYPASS
+            (sigL * (1 - reverbWetSmooth)) + (reverbedL * reverbWetSmooth),    // INSERT
+            sigL + (reverbedL * Select.kr(rtail.clip(0, 2).round, [reverbWetSmooth, 1, 1]))  // SEND
+        ]);
+
+        sigR = Select.ar(rmodeSmooth.clip(0, 2).round, [
+            sigR,
+            (sigR * (1 - reverbWetSmooth)) + (reverbedR * reverbWetSmooth),
+            sigR + (reverbedR * Select.kr(rtail.clip(0, 2).round, [reverbWetSmooth, 1, 1]))
+        ]);
+
+        Out.ar(0, [sigL, sigR]);
     }).add;
 
     s.sync;

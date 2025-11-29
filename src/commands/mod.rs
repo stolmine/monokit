@@ -208,6 +208,78 @@ where
         "FBD" => {
             synth_params::handle_fbd(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
         }
+        "RF" => {
+            synth_params::handle_rf(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "RD" => {
+            synth_params::handle_rd(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "RM" => {
+            synth_params::handle_rm(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "RK" => {
+            synth_params::handle_rk(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "DT" => {
+            synth_params::handle_dt(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "DF" => {
+            synth_params::handle_df(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "DLP" => {
+            synth_params::handle_dlp(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "DW" => {
+            synth_params::handle_dw(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "DS" => {
+            synth_params::handle_ds(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "RV" => {
+            synth_params::handle_rv(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "RP" => {
+            synth_params::handle_rp(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "RH" => {
+            synth_params::handle_rh(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "RW" => {
+            synth_params::handle_rw(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "D.MODE" => {
+            synth_params::handle_d_mode(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "D.TAIL" => {
+            synth_params::handle_d_tail(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "R.MODE" => {
+            synth_params::handle_r_mode(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "R.TAIL" => {
+            synth_params::handle_r_tail(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "FC" => {
+            synth_params::handle_fc(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "FQ" => {
+            synth_params::handle_fq(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "FT" => {
+            synth_params::handle_ft(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "FE" => {
+            synth_params::handle_fe(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "FED" => {
+            synth_params::handle_fed(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "FK" => {
+            synth_params::handle_fk(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "MF.F" => {
+            synth_params::handle_mf_f(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
         "RST" => {
             misc::handle_rst(metro_tx, *debug_level, output)?;
         }
@@ -245,7 +317,9 @@ where
             scene_cmds::handle_save(&parts, scripts, patterns, output);
         }
         "LOAD" => {
-            scene_cmds::handle_load(&parts, variables, scripts, patterns, output);
+            if scene_cmds::handle_load(&parts, variables, scripts, patterns, output) {
+                return Ok(vec![9]);
+            }
         }
         "SCENES" => {
             scene_cmds::handle_scenes(output);

@@ -26,12 +26,13 @@ pub fn handle_load<F>(
     scripts: &mut ScriptStorage,
     patterns: &mut PatternStorage,
     mut output: F,
-) where
+) -> bool
+where
     F: FnMut(String),
 {
     if parts.len() < 2 {
         output("ERROR: LOAD REQUIRES A SCENE NAME".to_string());
-        return;
+        return false;
     }
     let name = parts[1..].join(" ");
     match crate::scene::load_scene(&name) {
@@ -39,11 +40,16 @@ pub fn handle_load<F>(
             scene.apply_to_app_state(scripts, patterns);
             *variables = crate::types::Variables::default();
             output(format!("LOADED SCENE: {}", name));
+            true
         }
         Err(crate::scene::SceneError::NotFound(_)) => {
             output(format!("ERROR: SCENE '{}' NOT FOUND", name));
+            false
         }
-        Err(e) => output(format!("ERROR: {:?}", e)),
+        Err(e) => {
+            output(format!("ERROR: {:?}", e));
+            false
+        }
     }
 }
 

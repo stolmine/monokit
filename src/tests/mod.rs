@@ -1,6 +1,8 @@
 mod common;
 mod rnd_tests;
 mod toss_eith_tests;
+mod tog_tests;
+mod tog_integration_test;
 mod expr_tests;
 mod condition_tests;
 mod pattern_tests;

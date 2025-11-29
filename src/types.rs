@@ -1,6 +1,7 @@
 use rosc::OscType;
 use serde::{Deserialize, Serialize};
 use serde_big_array::BigArray;
+use std::collections::HashMap;
 use std::sync::mpsc::Sender;
 
 pub const OSC_ADDR: &str = "127.0.0.1:57120";
@@ -82,6 +83,8 @@ impl Default for Pattern {
 pub struct PatternStorage {
     pub patterns: [Pattern; 4],
     pub working: usize,
+    #[serde(skip)]
+    pub toggle_state: HashMap<String, usize>,
 }
 
 impl Default for PatternStorage {
@@ -94,6 +97,7 @@ impl Default for PatternStorage {
                 Pattern::default(),
             ],
             working: 0,
+            toggle_state: HashMap::new(),
         }
     }
 }

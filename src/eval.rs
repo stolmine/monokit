@@ -201,6 +201,22 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             }
             None
         }
+        "TOG" => {
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+                    let next_idx = start_idx + 1 + a_consumed + b_consumed;
+                    let key = format!("{}_{}", script_index, parts[start_idx..next_idx].join("_"));
+                    let counter = patterns.toggle_state.entry(key).or_insert(0);
+                    let result = if *counter % 2 == 0 { a } else { b };
+                    *counter = counter.wrapping_add(1);
+                    return Some((result, 1 + a_consumed + b_consumed));
+                }
+            }
+            None
+        }
         "ADD" | "+" => {
             if start_idx + 1 >= parts.len() {
                 return None;

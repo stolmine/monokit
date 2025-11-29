@@ -377,6 +377,9 @@ where
         "EITH" => {
             random_ops::handle_eith(&parts, variables, patterns, scripts, script_index, output);
         }
+        "TOG" => {
+            random_ops::handle_tog(&parts, variables, patterns, scripts, script_index, output);
+        }
         "ADD" | "+" => {
             math_ops::handle_add(&parts, variables, patterns, scripts, script_index, output);
         }

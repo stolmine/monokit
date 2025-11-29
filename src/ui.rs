@@ -447,6 +447,7 @@ pub const HELP_LINES: &[&str] = &[
     "  RRND <MIN> <MAX> MIN TO MAX",
     "  TOSS             COIN FLIP (0/1)",
     "  EITH <A> <B>     RANDOM CHOICE A OR B",
+    "  TOG <A> <B>      TOGGLE BETWEEN VALUES",
     "",
     "  NOTE/PITCH",
     "  N <SEMI>      SEMITONES TO HZ",

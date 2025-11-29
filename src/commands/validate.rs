@@ -113,6 +113,12 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
+        "TOG" => {
+            if argc < 2 {
+                return Err(anyhow::anyhow!("TOG requires at least 2 arguments"));
+            }
+            Ok(())
+        }
         "N" => {
             if argc < 1 {
                 return Err(anyhow::anyhow!("N requires at least 1 argument"));

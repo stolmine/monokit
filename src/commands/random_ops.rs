@@ -85,3 +85,32 @@ pub fn handle_eith<F>(
         output("ERROR: FAILED TO EVALUATE FIRST VALUE".to_string());
     }
 }
+
+pub fn handle_tog<F>(
+    parts: &[&str],
+    variables: &Variables,
+    patterns: &mut PatternStorage,
+    scripts: &ScriptStorage,
+    script_index: usize,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() < 3 {
+        output("ERROR: TOG REQUIRES AT LEAST TWO VALUES".to_string());
+        return;
+    }
+    if let Some((a, a_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+        if let Some((b, _b_consumed)) = eval_expression(&parts, 1 + a_consumed, variables, patterns, scripts, script_index) {
+            let key = format!("cmd_{}_{}", script_index, parts.join("_"));
+            let counter = patterns.toggle_state.entry(key).or_insert(0);
+            let result = if *counter % 2 == 0 { a } else { b };
+            *counter = counter.wrapping_add(1);
+            output(format!("{}", result));
+        } else {
+            output("ERROR: FAILED TO EVALUATE SECOND VALUE".to_string());
+        }
+    } else {
+        output("ERROR: FAILED TO EVALUATE FIRST VALUE".to_string());
+    }
+}

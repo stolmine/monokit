@@ -49,7 +49,10 @@ fn test_n1_wraps_at_max() {
     assert_eq!(result3.unwrap().0, 2);
 
     let result4 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
-    assert_eq!(result4.unwrap().0, 0, "N1 should wrap back to 0 when reaching max of 3");
+    assert_eq!(result4.unwrap().0, 3);
+
+    let result5 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    assert_eq!(result5.unwrap().0, 0, "N1 should wrap back to 0 after reaching max of 3");
 }
 
 #[test]
@@ -144,18 +147,20 @@ fn test_counter_wrapping_with_different_max_values() {
 
     assert_eq!(eval_expression(&parts_n1, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 0);
     assert_eq!(eval_expression(&parts_n1, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 1);
-    assert_eq!(eval_expression(&parts_n1, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 0, "N1 wraps at max 2");
+    assert_eq!(eval_expression(&parts_n1, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 2);
+    assert_eq!(eval_expression(&parts_n1, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 0, "N1 wraps after reaching max 2");
 
-    for i in 0..5 {
+    for i in 0..=5 {
         let result = eval_expression(&parts_n2, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0;
-        assert_eq!(result, i, "N2 should count 0..4");
+        assert_eq!(result, i, "N2 should count 0..5");
     }
-    assert_eq!(eval_expression(&parts_n2, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 0, "N2 wraps at max 5");
+    assert_eq!(eval_expression(&parts_n2, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 0, "N2 wraps after reaching max 5");
 
     assert_eq!(eval_expression(&parts_n3, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 0);
     assert_eq!(eval_expression(&parts_n3, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 1);
     assert_eq!(eval_expression(&parts_n3, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 2);
-    assert_eq!(eval_expression(&parts_n3, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 0, "N3 wraps at max 3");
+    assert_eq!(eval_expression(&parts_n3, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 3);
+    assert_eq!(eval_expression(&parts_n3, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 0, "N3 wraps after reaching max 3");
 }
 
 #[test]
@@ -203,7 +208,7 @@ fn test_n1_with_min_and_max() {
     let mut counters = create_test_counters();
 
     counters.min[0] = 10;
-    counters.max[0] = 5;
+    counters.max[0] = 14;
     counters.values[0] = 10;
 
     let parts = vec!["N1"];
@@ -213,7 +218,7 @@ fn test_n1_with_min_and_max() {
     assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 12);
     assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 13);
     assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 14);
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 10, "N1 should wrap back to min (10) after 5 steps");
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 10, "N1 should wrap back to min (10) after reaching max (14)");
 }
 
 #[test]
@@ -224,7 +229,7 @@ fn test_n2_with_min_and_max() {
     let mut counters = create_test_counters();
 
     counters.min[1] = 5;
-    counters.max[1] = 3;
+    counters.max[1] = 7;
     counters.values[1] = 5;
 
     let parts = vec!["N2"];
@@ -232,7 +237,7 @@ fn test_n2_with_min_and_max() {
     assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 5);
     assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 6);
     assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 7);
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 5, "N2 should wrap back to min (5) after 3 steps");
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 5, "N2 should wrap back to min (5) after reaching max (7)");
 }
 
 #[test]
@@ -243,7 +248,7 @@ fn test_n3_with_min_and_max() {
     let mut counters = create_test_counters();
 
     counters.min[2] = -5;
-    counters.max[2] = 4;
+    counters.max[2] = -2;
     counters.values[2] = -5;
 
     let parts = vec!["N3"];
@@ -252,7 +257,7 @@ fn test_n3_with_min_and_max() {
     assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, -4);
     assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, -3);
     assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, -2);
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, -5, "N3 should wrap back to min (-5) after 4 steps");
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, -5, "N3 should wrap back to min (-5) after reaching max (-2)");
 }
 
 #[test]
@@ -263,16 +268,16 @@ fn test_n4_with_min_and_max() {
     let mut counters = create_test_counters();
 
     counters.min[3] = 100;
-    counters.max[3] = 10;
+    counters.max[3] = 109;
     counters.values[3] = 100;
 
     let parts = vec!["N4"];
 
-    for i in 0..10 {
+    for i in 0..=9 {
         let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0;
         assert_eq!(result, 100 + i, "N4 should count from 100 to 109");
     }
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 100, "N4 should wrap back to min (100)");
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 100, "N4 should wrap back to min (100) after reaching max (109)");
 }
 
 #[test]

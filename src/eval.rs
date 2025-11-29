@@ -426,10 +426,11 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             let current = counters.values[0];
             let min = counters.min[0];
             let max = counters.max[0];
-            counters.values[0] = if max > 0 {
-                min + ((current - min + 1) % max)
-            } else {
+            counters.values[0] = if max == 0 {
                 current.wrapping_add(1)
+            } else {
+                let next = current + 1;
+                if next > max { min } else { next }
             };
             Some((current, 1))
         }
@@ -437,10 +438,11 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             let current = counters.values[1];
             let min = counters.min[1];
             let max = counters.max[1];
-            counters.values[1] = if max > 0 {
-                min + ((current - min + 1) % max)
-            } else {
+            counters.values[1] = if max == 0 {
                 current.wrapping_add(1)
+            } else {
+                let next = current + 1;
+                if next > max { min } else { next }
             };
             Some((current, 1))
         }
@@ -448,10 +450,11 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             let current = counters.values[2];
             let min = counters.min[2];
             let max = counters.max[2];
-            counters.values[2] = if max > 0 {
-                min + ((current - min + 1) % max)
-            } else {
+            counters.values[2] = if max == 0 {
                 current.wrapping_add(1)
+            } else {
+                let next = current + 1;
+                if next > max { min } else { next }
             };
             Some((current, 1))
         }
@@ -459,10 +462,11 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             let current = counters.values[3];
             let min = counters.min[3];
             let max = counters.max[3];
-            counters.values[3] = if max > 0 {
-                min + ((current - min + 1) % max)
-            } else {
+            counters.values[3] = if max == 0 {
                 current.wrapping_add(1)
+            } else {
+                let next = current + 1;
+                if next > max { min } else { next }
             };
             Some((current, 1))
         }

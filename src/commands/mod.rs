@@ -258,6 +258,15 @@ where
         "HELP" => {
             misc::handle_help(output);
         }
+        "REC" => {
+            misc::handle_rec(metro_tx, output)?;
+        }
+        "REC.STOP" => {
+            misc::handle_rec_stop(metro_tx, output)?;
+        }
+        "REC.PATH" => {
+            misc::handle_rec_path(&parts, metro_tx, output)?;
+        }
         _ => {
             output(format!("UNKNOWN COMMAND: {}", cmd));
         }

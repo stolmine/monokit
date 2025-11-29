@@ -140,6 +140,9 @@ pub enum MetroCommand {
     SendParam(String, OscType),
     SendTrigger,
     SendVolume(f32),
+    StartRecording(String),    // String is the directory path
+    StopRecording,
+    SetRecordingPath(String),  // Custom path prefix
 }
 
 #[derive(Debug, Clone)]

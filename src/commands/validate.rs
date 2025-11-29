@@ -161,9 +161,15 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "TR" | "RST" | "HELP" => {
+        "TR" | "RST" | "HELP" | "REC" | "REC.STOP" => {
             if argc > 0 {
                 return Err(anyhow::anyhow!("{} takes no arguments", command));
+            }
+            Ok(())
+        }
+        "REC.PATH" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("REC.PATH takes exactly 1 argument"));
             }
             Ok(())
         }

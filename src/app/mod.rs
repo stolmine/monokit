@@ -33,6 +33,8 @@ pub struct App {
     pub script_error: Option<String>,
     pub script_error_time: Option<Instant>,
     pub theme: Theme,
+    pub recording: bool,
+    pub recording_start: Option<Instant>,
 }
 
 impl App {
@@ -61,6 +63,8 @@ impl App {
             script_error: None,
             script_error_time: None,
             theme,
+            recording: false,
+            recording_start: None,
         }
     }
 

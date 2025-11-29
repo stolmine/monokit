@@ -81,6 +81,36 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                         let _ = socket.send(&buf);
                     }
                 }
+                MetroCommand::StartRecording(dir) => {
+                    let msg = OscMessage {
+                        addr: "/monokit/rec".to_string(),
+                        args: vec![OscType::String(dir)],
+                    };
+                    let packet = OscPacket::Message(msg);
+                    if let Ok(buf) = encoder::encode(&packet) {
+                        let _ = socket.send(&buf);
+                    }
+                }
+                MetroCommand::StopRecording => {
+                    let msg = OscMessage {
+                        addr: "/monokit/rec/stop".to_string(),
+                        args: vec![],
+                    };
+                    let packet = OscPacket::Message(msg);
+                    if let Ok(buf) = encoder::encode(&packet) {
+                        let _ = socket.send(&buf);
+                    }
+                }
+                MetroCommand::SetRecordingPath(path) => {
+                    let msg = OscMessage {
+                        addr: "/monokit/rec/path".to_string(),
+                        args: vec![OscType::String(path)],
+                    };
+                    let packet = OscPacket::Message(msg);
+                    if let Ok(buf) = encoder::encode(&packet) {
+                        let _ = socket.send(&buf);
+                    }
+                }
             }
         }
 

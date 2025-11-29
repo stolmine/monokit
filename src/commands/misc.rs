@@ -199,4 +199,63 @@ pub fn handle_help<F>(
     output("THEME LIGHT      LIGHT MODE".to_string());
     output("THEME SYSTEM     USE OS PREFERENCE".to_string());
     output("THEME CUSTOM     USE CUSTOM THEME".to_string());
+    output("".to_string());
+    output("-- RECORDING --".to_string());
+    output("REC              START RECORDING".to_string());
+    output("REC.STOP         STOP RECORDING".to_string());
+    output("REC.PATH <PATH>  SET CUSTOM PATH PREFIX".to_string());
+}
+
+pub fn handle_rec<F>(
+    metro_tx: &Sender<MetroCommand>,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    // Get current working directory
+    let cwd = std::env::current_dir()
+        .map(|p| p.to_string_lossy().to_string())
+        .unwrap_or_else(|_| ".".to_string());
+
+    metro_tx
+        .send(MetroCommand::StartRecording(cwd))
+        .context("Failed to send recording command")?;
+    output("RECORDING STARTED".to_string());
+    Ok(())
+}
+
+pub fn handle_rec_stop<F>(
+    metro_tx: &Sender<MetroCommand>,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    metro_tx
+        .send(MetroCommand::StopRecording)
+        .context("Failed to send stop recording command")?;
+    output("RECORDING STOPPED".to_string());
+    Ok(())
+}
+
+pub fn handle_rec_path<F>(
+    parts: &[&str],
+    metro_tx: &Sender<MetroCommand>,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    if parts.len() < 2 {
+        output("ERROR: REC.PATH REQUIRES A PATH PREFIX".to_string());
+        return Ok(());
+    }
+
+    let path = parts[1].to_string();
+    metro_tx
+        .send(MetroCommand::SetRecordingPath(path.clone()))
+        .context("Failed to send recording path")?;
+    output(format!("SET RECORDING PATH PREFIX TO: {}", path.to_uppercase()));
+    Ok(())
 }

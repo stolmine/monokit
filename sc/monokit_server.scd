@@ -124,6 +124,50 @@ s.waitForBoot {
         ~voice.set(paramName, paramValue);
     }, '/monokit/param');
 
+    // Recording support
+    ~recPath = nil;  // Custom path prefix (set by REC.PATH)
+    ~recIndex = 0;   // Counter for sequential recordings
+
+    OSCdef(\monokit_rec, { |msg|
+        var path, dir;
+        if(s.isRecording.not, {
+            // msg[1] is the directory from Rust (current working dir)
+            dir = if(msg[1].notNil, { msg[1].asString }, { "." });
+
+            if(~recPath.notNil, {
+                // Use custom prefix with index
+                path = ~recPath ++ "_" ++ ~recIndex ++ ".wav";
+                ~recIndex = ~recIndex + 1;
+            }, {
+                // Auto-generate timestamped filename in specified dir
+                path = dir +/+ "monokit_" ++ Date.getDate.stamp ++ ".wav";
+            });
+
+            s.recHeaderFormat = "wav";
+            s.recSampleFormat = "int24";
+            s.record(path);
+            ("REC: " ++ path).postln;
+        }, {
+            "Already recording".postln;
+        });
+    }, '/monokit/rec');
+
+    OSCdef(\monokit_rec_stop, { |msg|
+        if(s.isRecording, {
+            s.stopRecording;
+            "Recording stopped".postln;
+        }, {
+            "Not recording".postln;
+        });
+    }, '/monokit/rec/stop');
+
+    OSCdef(\monokit_rec_path, { |msg|
+        var pathPrefix = msg[1].asString;
+        ~recPath = pathPrefix;
+        ~recIndex = 0;
+        ("Recording path prefix: " ++ pathPrefix).postln;
+    }, '/monokit/rec/path');
+
     "monokit server ready".postln;
 };
 )

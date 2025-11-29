@@ -97,6 +97,24 @@ pub fn render_header(app: &super::App) -> Paragraph<'static> {
         }
     }
 
+    // Add recording indicator on the right side
+    if app.recording {
+        let duration = app.recording_start
+            .map(|start| start.elapsed().as_secs())
+            .unwrap_or(0);
+        let mins = duration / 60;
+        let secs = duration % 60;
+
+        // Add spacer to push recording indicator to the right
+        spans.push(Span::raw("  "));
+        spans.push(Span::styled(
+            format!("● REC {:02}:{:02}", mins, secs),
+            Style::default()
+                .fg(app.theme.error)
+                .add_modifier(Modifier::BOLD),
+        ));
+    }
+
     Paragraph::new(Line::from(spans))
         .style(Style::default().bg(app.theme.background).fg(app.theme.foreground))
         .block(

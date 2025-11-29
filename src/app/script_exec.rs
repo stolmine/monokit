@@ -169,6 +169,19 @@ impl App {
                 }
             }
         }
+
+        // Drop the lock before modifying self
+        drop(state);
+
+        // Update recording state
+        let upper_cmd = cmd_to_run.to_uppercase();
+        if upper_cmd == "REC" {
+            self.recording = true;
+            self.recording_start = Some(std::time::Instant::now());
+        } else if upper_cmd == "REC.STOP" {
+            self.recording = false;
+            self.recording_start = None;
+        }
     }
 
     fn process_sub_command(

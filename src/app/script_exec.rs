@@ -96,6 +96,7 @@ impl App {
         let result = process_command(
             &self.metro_tx,
             metro_interval,
+            &mut self.br_len,
             &mut self.variables,
             &mut self.patterns,
             &mut self.scripts,

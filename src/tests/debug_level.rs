@@ -22,6 +22,8 @@ fn test_debug_level_0_blocks_param_output() {
     let mut scripts = create_test_scripts();
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
+    let mut br_len = 2usize;
+    let mut br_len = 2usize;
     let mut theme = Theme::dark();
     let mut debug_level = 0u8;
     let mut output_messages = Vec::new();
@@ -29,6 +31,7 @@ fn test_debug_level_0_blocks_param_output() {
     let result = process_command(
         &metro_tx,
         &mut metro_interval,
+        &mut br_len,
         &mut variables,
         &mut patterns,
         &mut scripts,
@@ -52,6 +55,7 @@ fn test_debug_level_0_blocks_trigger_output() {
     let mut scripts = create_test_scripts();
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
+    let mut br_len = 2usize;
     let mut theme = Theme::dark();
     let mut debug_level = 0u8;
     let mut output_messages = Vec::new();
@@ -59,6 +63,7 @@ fn test_debug_level_0_blocks_trigger_output() {
     let result = process_command(
         &metro_tx,
         &mut metro_interval,
+        &mut br_len,
         &mut variables,
         &mut patterns,
         &mut scripts,
@@ -82,6 +87,7 @@ fn test_debug_level_0_blocks_print() {
     let mut scripts = create_test_scripts();
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
+    let mut br_len = 2usize;
     let mut theme = Theme::dark();
     let mut debug_level = 0u8;
     let mut output_messages = Vec::new();
@@ -89,6 +95,7 @@ fn test_debug_level_0_blocks_print() {
     let result = process_command(
         &metro_tx,
         &mut metro_interval,
+        &mut br_len,
         &mut variables,
         &mut patterns,
         &mut scripts,
@@ -112,6 +119,7 @@ fn test_debug_level_1_allows_print() {
     let mut scripts = create_test_scripts();
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
+    let mut br_len = 2usize;
     let mut theme = Theme::dark();
     let mut debug_level = 1u8;
     let mut output_messages = Vec::new();
@@ -119,6 +127,7 @@ fn test_debug_level_1_allows_print() {
     let result = process_command(
         &metro_tx,
         &mut metro_interval,
+        &mut br_len,
         &mut variables,
         &mut patterns,
         &mut scripts,
@@ -143,6 +152,7 @@ fn test_debug_level_1_blocks_params() {
     let mut scripts = create_test_scripts();
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
+    let mut br_len = 2usize;
     let mut theme = Theme::dark();
     let mut debug_level = 1u8;
     let mut output_messages = Vec::new();
@@ -150,6 +160,7 @@ fn test_debug_level_1_blocks_params() {
     let result = process_command(
         &metro_tx,
         &mut metro_interval,
+        &mut br_len,
         &mut variables,
         &mut patterns,
         &mut scripts,
@@ -173,6 +184,7 @@ fn test_debug_level_1_allows_metro_status() {
     let mut scripts = create_test_scripts();
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
+    let mut br_len = 2usize;
     let mut theme = Theme::dark();
     let mut debug_level = 1u8;
     let mut output_messages = Vec::new();
@@ -180,6 +192,7 @@ fn test_debug_level_1_allows_metro_status() {
     let result = process_command(
         &metro_tx,
         &mut metro_interval,
+        &mut br_len,
         &mut variables,
         &mut patterns,
         &mut scripts,
@@ -204,6 +217,7 @@ fn test_debug_level_2_allows_all() {
     let mut scripts = create_test_scripts();
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
+    let mut br_len = 2usize;
     let mut theme = Theme::dark();
     let mut debug_level = 2u8;
     let mut output_messages = Vec::new();
@@ -211,6 +225,7 @@ fn test_debug_level_2_allows_all() {
     let result = process_command(
         &metro_tx,
         &mut metro_interval,
+        &mut br_len,
         &mut variables,
         &mut patterns,
         &mut scripts,
@@ -232,6 +247,7 @@ fn test_debug_level_2_allows_all() {
     let result = process_command(
         &metro_tx,
         &mut metro_interval,
+        &mut br_len,
         &mut variables,
         &mut patterns,
         &mut scripts,
@@ -253,6 +269,7 @@ fn test_debug_level_2_allows_all() {
     let result = process_command(
         &metro_tx,
         &mut metro_interval,
+        &mut br_len,
         &mut variables,
         &mut patterns,
         &mut scripts,

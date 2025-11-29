@@ -18,6 +18,7 @@ pub use validate::validate_script_command;
 pub fn process_command<F>(
     metro_tx: &Sender<MetroCommand>,
     metro_interval: &mut u64,
+    br_len: &mut usize,
     variables: &mut Variables,
     patterns: &mut PatternStorage,
     scripts: &mut ScriptStorage,
@@ -330,6 +331,36 @@ where
         }
         "PAN" => {
             synth_params::handle_pan(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "BR.ACT" => {
+            synth_params::handle_br_act(&parts, *metro_interval, br_len, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "BR.LEN" => {
+            synth_params::handle_br_len(&parts, *metro_interval, br_len, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "BR.REV" => {
+            synth_params::handle_br_rev(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "BR.WIN" => {
+            synth_params::handle_br_win(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "BR.MIX" => {
+            synth_params::handle_br_mix(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "PS.MODE" => {
+            synth_params::handle_ps_mode(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "PS.SEMI" => {
+            synth_params::handle_ps_semi(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "PS.GRAIN" => {
+            synth_params::handle_ps_grain(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "PS.MIX" => {
+            synth_params::handle_ps_mix(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "PS.TARG" => {
+            synth_params::handle_ps_targ(&parts, variables, patterns, scripts, script_index, metro_tx, *debug_level, output)?;
         }
         "RST" => {
             misc::handle_rst(metro_tx, *debug_level, output)?;

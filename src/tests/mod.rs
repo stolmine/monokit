@@ -10,3 +10,4 @@ mod math_tests;
 mod comparison_tests;
 mod scene_tests;
 mod debug_level;
+mod buffer_effects_tests;

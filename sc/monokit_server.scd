@@ -71,6 +71,17 @@ s.waitForBoot {
             eq = 1,       // EQ mid Q (0.1-10)
             eh = 0,       // EQ high shelf dB (-24 to +24)
             pn = 0,       // Pan position (-16383 to +16383)
+            br_act = 0,   // Beat repeat active (0-1)
+            br_len = 2,   // Beat repeat loop division (0-7)
+            br_len_ms = 250, // Beat repeat loop length in ms
+            br_rev = 0,   // Beat repeat reverse (0-1)
+            br_win = 5,   // Beat repeat crossfade window ms (1-50)
+            br_mix = 0,   // Beat repeat mix (0-16383)
+            ps_mode = 0,  // Pitch shift mode (0=granular, 1=freq)
+            ps_semi = 0,  // Pitch shift semitones (-24 to +24)
+            ps_grain = 20, // Pitch shift grain size ms (5-100)
+            ps_mix = 0,   // Pitch shift mix (0-16383)
+            ps_targ = 0,  // Pitch shift target (0=main, 1=repeat)
             volume = 1,
             gate = 0;
 
@@ -90,6 +101,11 @@ s.waitForBoot {
         var compressed, compThresh, compRatio;
         var eqSig;
         var panPos;
+        var beatRepeatBuf, brBufSize, brWritePos, brReadPos, brLoopLen;
+        var brReadRate, brRepeated, brMix, brWindowSize, brCrossfade;
+        var brActive;
+        var psRatio, psGrainSize, psShifted, psMix;
+        var psInputL, psInputR;
 
         // Envelope model: output = base + (envelope * amount)
         // Exception: ampEnv is multiplicative (0→1 gating)
@@ -209,6 +225,92 @@ s.waitForBoot {
         // Pan control
         panPos = (pn / 16383).clip(-1, 1);
         #sigL, sigR = Pan2.ar(sig, panPos);
+
+        // Beat Repeat Buffer Processing
+        brActive = Lag.kr(br_act.clip(0, 1), 0.01);
+        brLoopLen = br_len_ms / 1000;
+        brBufSize = (brLoopLen * SampleRate.ir).ceil.max(4410);
+
+        beatRepeatBuf = LocalBuf(brBufSize, 2);
+
+        brWritePos = Phasor.ar(0, 1, 0, brBufSize);
+        BufWr.ar(sigL, beatRepeatBuf, brWritePos, 0);
+        BufWr.ar(sigR, beatRepeatBuf, brWritePos, 1);
+
+        brReadRate = Select.kr(br_rev.clip(0, 1), [1, -1]);
+        brReadPos = Phasor.ar(
+            brActive,
+            brReadRate,
+            0,
+            brBufSize,
+            Select.kr(br_rev.clip(0, 1), [0, brBufSize])
+        );
+
+        brWindowSize = (br_win / 1000 * SampleRate.ir).clip(1, brBufSize * 0.5);
+        brCrossfade = 1 - (
+            min(brReadPos, brBufSize - brReadPos) / brWindowSize
+        ).clip(0, 1).sqrt;
+
+        brRepeated = [
+            BufRd.ar(1, beatRepeatBuf, brReadPos, 0, 4),
+            BufRd.ar(1, beatRepeatBuf, brReadPos, 1, 4)
+        ];
+
+        brMix = (br_mix / 16383).clip(0, 1);
+        sigL = Select.ar(brActive, [
+            sigL,
+            (sigL * (1 - brMix)) + (brRepeated[0] * brMix)
+        ]);
+        sigR = Select.ar(brActive, [
+            sigR,
+            (sigR * (1 - brMix)) + (brRepeated[1] * brMix)
+        ]);
+
+        // Pitch Shift Processing
+        psInputL = Select.ar(ps_targ.clip(0, 1), [
+            sigL,
+            brRepeated[0] * brMix
+        ]);
+        psInputR = Select.ar(ps_targ.clip(0, 1), [
+            sigR,
+            brRepeated[1] * brMix
+        ]);
+
+        psRatio = (ps_semi / 12).midiratio;
+        psGrainSize = (ps_grain / 1000).clip(0.005, 0.1);
+
+        psShifted = Select.ar(ps_mode.clip(0, 1), [
+            [
+                PitchShift.ar(
+                    psInputL,
+                    psGrainSize,
+                    psRatio,
+                    0,
+                    0.1
+                ),
+                PitchShift.ar(
+                    psInputR,
+                    psGrainSize,
+                    psRatio,
+                    0,
+                    0.1
+                )
+            ],
+            [
+                FreqShift.ar(psInputL, ps_semi * 100),
+                FreqShift.ar(psInputR, ps_semi * 100)
+            ]
+        ]);
+
+        psMix = (ps_mix / 16383).clip(0, 1);
+        sigL = Select.ar(ps_targ.clip(0, 1), [
+            (sigL * (1 - psMix)) + (psShifted[0] * psMix),
+            sigL + (psShifted[0] * psMix)
+        ]);
+        sigR = Select.ar(ps_targ.clip(0, 1), [
+            (sigR * (1 - psMix)) + (psShifted[1] * psMix),
+            sigR + (psShifted[1] * psMix)
+        ]);
 
         // Stereo Delay with Feedback Filtering and Routing Modes
         dmodeSmooth = Lag.kr(dmode, 0.02);

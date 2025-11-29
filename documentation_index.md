@@ -59,8 +59,8 @@ Key features:
 - **sc/monokit_server.scd** - SuperCollider sound engine
   - `\monokit` SynthDef: HD2-style dual oscillator with FM, discontinuity, comprehensive DSP effects, and multi-stage processing
   - Additive envelope model: output = base + env * amount
-  - Signal chain: Osc → Discontinuity → Lo-Fi → SVF → Ring Mod → Resonator → Amp → Compressor → Pan → Delay → 3-Band EQ → Reverb → Out
-  - 66 synth parameters (25 oscillator/envelope + 37 DSP + 4 routing)
+  - Signal chain: Osc → Discontinuity → Lo-Fi → SVF → Ring Mod → Resonator → Amp → Compressor → Pan → Beat Repeat → Pitch Shift → Delay → 3-Band EQ → Reverb → Out
+  - 77 synth parameters (25 oscillator/envelope + 48 DSP + 4 routing)
   - OSC responders:
     - `/monokit/trigger` - Gate trigger (no args)
     - `/monokit/param` - Generic parameter setter (string name, float/int value)
@@ -192,7 +192,7 @@ Examples:
 - `IF GT A 5: TR` - Trigger if A > 5
 - `IF A > 5: TR` - Same as above (infix syntax)
 
-#### Synth Parameters (66 total)
+#### Synth Parameters (77 total)
 
 **Primary Oscillator**
 - `PF <hz>` - Primary frequency (20-20000)
@@ -274,6 +274,20 @@ Examples:
 **Pan**
 - `PAN <-16383 to +16383>` - Stereo position (-L, 0=center, +R)
 
+**Beat Repeat**
+- `BR.ACT <0|1>` - Enable/disable beat repeat
+- `BR.LEN <0-7>` - Loop division (0=1/16, 1=1/8, 2=1/4, 3=1/2, 4=1, 5=2, 6=4, 7=8 beats)
+- `BR.REV <0|1>` - Reverse playback
+- `BR.WIN <1-50>` - Window/capture size (ms)
+- `BR.MIX <0-16383>` - Dry/wet mix
+
+**Pitch Shift**
+- `PS.MODE <0|1>` - Mode (0=normal, 1=granular)
+- `PS.SEMI <-24 to 24>` - Pitch shift (semitones)
+- `PS.GRAIN <5-100>` - Grain size (ms)
+- `PS.MIX <0-16383>` - Dry/wet mix
+- `PS.TARG <0|1>` - Target (0=input, 1=output)
+
 **Stereo Delay**
 - `DT <ms>` - Delay time (1-2000 ms)
 - `DF <0-16383>` - Delay feedback amount
@@ -340,6 +354,51 @@ Note: In SEND mode with RING or FREEZE tail modes, the effect output remains at 
 - Files saved as WAV (int24) format
 - UI shows red "● REC MM:SS" indicator when recording
 - Recording auto-stops on quit to prevent file corruption
+
+#### Beat Repeat
+- `BR.ACT <0|1>` - Enable/disable beat repeat (0=off, 1=on)
+- `BR.LEN <0-7>` - Loop division/length setting
+  - 0 = 1/16 beat (shortest loop)
+  - 1 = 1/8 beat
+  - 2 = 1/4 beat
+  - 3 = 1/2 beat
+  - 4 = 1 beat
+  - 5 = 2 beats
+  - 6 = 4 beats
+  - 7 = 8 beats (longest loop)
+- `BR.REV <0|1>` - Reverse playback (0=normal, 1=reversed)
+- `BR.WIN <1-50>` - Window/capture size in milliseconds (1-50ms)
+- `BR.MIX <0-16383>` - Dry/wet mix (0=dry, 16383=100% wet)
+
+Example usage:
+```
+BR.ACT 1          // Enable beat repeat
+BR.LEN 2          // Set to 1/4 beat loop
+BR.WIN 10         // 10ms window
+BR.MIX 8192       // 50% mix
+BR.REV 1          // Reverse playback
+```
+
+#### Pitch Shift
+- `PS.MODE <0|1>` - Pitch shift mode (0=normal, 1=granular)
+- `PS.SEMI <-24 to 24>` - Pitch shift amount in semitones
+  - Negative values shift down
+  - Positive values shift up
+  - Range: -24 (2 octaves down) to +24 (2 octaves up)
+- `PS.GRAIN <5-100>` - Grain size in milliseconds (5-100ms)
+  - Smaller grains = more artifacts but tighter timing
+  - Larger grains = smoother but more latency
+- `PS.MIX <0-16383>` - Dry/wet mix (0=dry, 16383=100% wet)
+- `PS.TARG <0|1>` - Processing target (0=input signal, 1=output signal)
+
+Example usage:
+```
+PS.MODE 1         // Granular mode
+PS.SEMI 12        // Shift up one octave
+PS.GRAIN 20       // 20ms grain size
+PS.MIX 8192       // 50% mix
+PS.TARG 0         // Process input signal
+```
 
 #### Output
 - `PRINT "<text>"` or `PRINT '<text>'` - Print literal string to REPL output
@@ -456,6 +515,8 @@ All communication from Rust CLI to SuperCollider server uses UDP over localhost 
     - Resonator: rf, rd, rm, rk
     - Compressor: ct, cr, ca, cl, cm
     - Pan: pan
+    - Beat Repeat: br_act, br_len, br_rev, br_win, br_mix
+    - Pitch Shift: ps_mode, ps_semi, ps_grain, ps_mix, ps_targ
     - Delay: dt, df, dlp, dw, ds, dmode, dtail
     - EQ: el, em, ef, eq, eh
     - Reverb: rv, rp, rh, rw, rmode, rtail

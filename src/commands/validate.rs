@@ -209,7 +209,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "PF" | "MF" | "PW" | "MW" | "DC" | "TK" | "MB" | "FM" | "MX" | "FA" | "DA" | "DM" | "MP" | "MD" | "MT" | "MA" | "MM" | "ME" | "AD" | "PD" | "FD" | "DD" | "PA" | "FB" | "FBA" | "FBD" | "RF" | "RD" | "RM" | "RK" | "DT" | "DF" | "DLP" | "DW" | "DS" | "RV" | "RP" | "RH" | "RW" | "FC" | "FQ" | "FT" | "FE" | "FED" | "FK" | "MF.F" => {
+        "PF" | "MF" | "PW" | "MW" | "DC" | "TK" | "MB" | "FM" | "MX" | "FA" | "DA" | "DM" | "MP" | "MD" | "MT" | "MA" | "MM" | "ME" | "AD" | "PD" | "FD" | "DD" | "PA" | "FB" | "FBA" | "FBD" | "RF" | "RD" | "RM" | "RK" | "DT" | "DF" | "DLP" | "DW" | "DS" | "RV" | "RP" | "RH" | "RW" | "FC" | "FQ" | "FT" | "FE" | "FED" | "FK" | "MF.F" | "BR.ACT" | "BR.LEN" | "BR.REV" | "BR.WIN" | "BR.MIX" | "PS.MODE" | "PS.SEMI" | "PS.GRAIN" | "PS.MIX" | "PS.TARG" => {
             if argc < 1 {
                 return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
             }

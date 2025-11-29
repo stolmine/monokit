@@ -1,6 +1,59 @@
 use crate::eval::eval_expression;
 use crate::types::{Counters, PatternStorage, ScriptStorage, Variables};
 
+// Standalone counter read commands - returns value and increments
+pub fn handle_n1<F>(counters: &mut Counters, mut output: F)
+where
+    F: FnMut(String),
+{
+    let current = counters.values[0];
+    counters.values[0] = if counters.max[0] > 0 {
+        (current + 1) % counters.max[0]
+    } else {
+        current.wrapping_add(1)
+    };
+    output(format!("{}", current));
+}
+
+pub fn handle_n2<F>(counters: &mut Counters, mut output: F)
+where
+    F: FnMut(String),
+{
+    let current = counters.values[1];
+    counters.values[1] = if counters.max[1] > 0 {
+        (current + 1) % counters.max[1]
+    } else {
+        current.wrapping_add(1)
+    };
+    output(format!("{}", current));
+}
+
+pub fn handle_n3<F>(counters: &mut Counters, mut output: F)
+where
+    F: FnMut(String),
+{
+    let current = counters.values[2];
+    counters.values[2] = if counters.max[2] > 0 {
+        (current + 1) % counters.max[2]
+    } else {
+        current.wrapping_add(1)
+    };
+    output(format!("{}", current));
+}
+
+pub fn handle_n4<F>(counters: &mut Counters, mut output: F)
+where
+    F: FnMut(String),
+{
+    let current = counters.values[3];
+    counters.values[3] = if counters.max[3] > 0 {
+        (current + 1) % counters.max[3]
+    } else {
+        current.wrapping_add(1)
+    };
+    output(format!("{}", current));
+}
+
 pub fn handle_n1_rst<F>(counters: &mut Counters, mut output: F)
 where
     F: FnMut(String),

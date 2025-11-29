@@ -438,6 +438,18 @@ where
         "DEBUG" => {
             misc::handle_debug(&parts, debug_level, output);
         }
+        "N1" => {
+            counters::handle_n1(counters, output);
+        }
+        "N2" => {
+            counters::handle_n2(counters, output);
+        }
+        "N3" => {
+            counters::handle_n3(counters, output);
+        }
+        "N4" => {
+            counters::handle_n4(counters, output);
+        }
         "N1.RST" => {
             counters::handle_n1_rst(counters, output);
         }

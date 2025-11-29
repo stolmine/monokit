@@ -252,6 +252,38 @@ String-based pattern notation (inspired by Tidal):
 
 ---
 
+## DAW / MIDI Clock Sync
+
+### MIDI Clock Input
+- `M.SYNC <0-2>` - Sync mode (0=internal, 1=MIDI clock, 2=MIDI clock + transport)
+- Auto-detect MIDI clock from connected devices
+- Follow external tempo (24 PPQN standard)
+- Start/stop follows MIDI transport commands
+
+### MIDI Clock Output
+- `M.SEND <0|1>` - Send MIDI clock out
+- Other apps can sync to monokit as master
+- Send start/stop/continue messages
+
+### Ableton Link
+- `LINK <0|1>` - Enable Ableton Link
+- Sync with DAWs and apps on same network
+- Shared tempo and phase
+- Requires: Link SDK integration
+
+### Clock Division/Multiplication
+- `M.DIV <1-16>` - Divide incoming clock
+- `M.MUL <1-4>` - Multiply incoming clock
+- Allows different relationships to master clock
+
+### Transport Control
+- `PLAY` / `STOP` - Start/stop playback
+- `PAUSE` - Pause without reset
+- `RST.POS` - Reset to beginning
+- Respond to MIDI transport (MMC or MIDI realtime)
+
+---
+
 ## Final Boss Features
 
 ### Additional Voice Types
@@ -307,6 +339,7 @@ String-based pattern notation (inspired by Tidal):
 - Mini notation
 - Pattern randomization
 - Activity visualization
+- DAW/MIDI clock sync
 
 ### Tier 6 (Long Term)
 - CPU/metering

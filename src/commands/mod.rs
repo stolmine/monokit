@@ -5,6 +5,7 @@ mod misc;
 mod patterns;
 mod random_ops;
 mod scene_cmds;
+mod slew;
 mod synth_params;
 pub mod validate;
 mod variables;
@@ -363,6 +364,9 @@ where
         }
         "PS.TARG" => {
             synth_params::handle_ps_targ(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "SLEW.ALL" => {
+            slew::handle_slew_all(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
         }
         "RST" => {
             misc::handle_rst(metro_tx, *debug_level, output)?;

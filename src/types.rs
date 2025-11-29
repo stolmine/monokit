@@ -166,6 +166,7 @@ pub enum MetroCommand {
     StartRecording(String),    // String is the directory path
     StopRecording,
     SetRecordingPath(String),  // Custom path prefix
+    SetSlewTime(f32),          // Slew time in seconds
     Shutdown,                  // Signal metro thread to exit
 }
 

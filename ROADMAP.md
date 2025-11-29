@@ -39,6 +39,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **ModBus routing** to filter cutoff (MF_F parameter)
 - **Envelope system:** PA (pitch), FA (FM), DA (discontinuity) amounts with dedicated decay times
 - **Tracking system:** TK (key tracking), MB (mod bus), MP/MD/MT/MA (routing switches)
+- **Global parameter slew** via SLEW.ALL with SC-side Lag.kr smoothing
 
 ### Infrastructure
 - **Dedicated metro thread** with absolute timing (no cumulative drift)
@@ -53,11 +54,11 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 **Focus:** Quick wins that add immediate value with minimal dependencies
 
 ### Slewing & Interpolation [Medium]
-- [ ] `SLEW <param> <ms>` - Set slew time for parameter changes
-- [ ] `SLEW.ALL <ms>` - Global slew time for all parameters
-- [ ] `LERP <var> <target> <steps>` - Interpolate variable over N ticks
-- [ ] `A.LERP <target> <ms>` - Time-based interpolation
-- [ ] Background interpolation thread for smooth parameter changes
+- [x] `SLEW.ALL <ms>` - Global slew time for all parameters ✓
+- [x] SC-side Lag.kr smoothing for 30+ parameters ✓
+- [ ] `SLEW <param> <ms>` - Per-parameter slew override (optional)
+- [ ] `LERP <var> <target> <steps>` - Interpolate variable over N ticks (optional)
+- [ ] `A.LERP <target> <ms>` - Time-based interpolation (optional)
 
 ### Envelope Shaping [Medium]
 - [ ] `AD.CURVE <-8 to 8>` - Amp envelope curve control (log/linear/exp)

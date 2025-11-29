@@ -412,6 +412,7 @@ pub const HELP_LINES: &[&str] = &[
     "  TRIGGER & VOLUME",
     "  TR            TRIGGER VOICE",
     "  VOL 0-1       MASTER VOLUME",
+    "  SLEW.ALL <MS> PARAM SLEW TIME (0-10000)",
     "  RST           RESET TO DEFAULTS",
     "  Q/QUIT/EXIT   QUIT APPLICATION",
     "",

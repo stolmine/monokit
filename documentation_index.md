@@ -53,6 +53,7 @@ Modular Rust implementation (~7,000 total lines across 30+ files):
     - **pitch_shift.rs** - Pitch shift (PS.MODE, PS.SEMI, PS.GRAIN, PS.MIX, PS.TARG)
   - **metro_cmds.rs** - Metro commands
   - **scene_cmds.rs** - Scene commands
+  - **slew.rs** - Global slew control (SLEW.ALL)
   - **misc.rs** - Other commands (TR, RST, VOL, THEME, etc.)
 - **src/tests/** - Test suite module (12 files, ~2,400 lines, 138 tests)
   - Organized by category: rnd, toss_eith, expr, condition, pattern, variable, validation, math, comparison, scene
@@ -74,9 +75,11 @@ Key features:
   - Additive envelope model: output = base + env * amount
   - Signal chain: Osc → Discontinuity → Lo-Fi → SVF → Ring Mod → Resonator → Amp → Compressor → Pan → Beat Repeat → Pitch Shift → Delay → 3-Band EQ → Reverb → Out
   - 77 synth parameters (25 oscillator/envelope + 48 DSP + 4 routing)
+  - Global parameter slew with Lag.kr smoothing for artifact-free transitions
   - OSC responders:
     - `/monokit/trigger` - Gate trigger (no args)
     - `/monokit/param` - Generic parameter setter (string name, float/int value)
+    - `/monokit/slew` - Set global slew time (ms)
     - `/monokit/rec` - Start recording
     - `/monokit/rec/stop` - Stop recording
     - `/monokit/rec/path` - Set recording path prefix
@@ -438,6 +441,15 @@ PS.GRAIN 20       // 20ms grain size
 PS.MIX 8192       // 50% mix
 PS.TARG 0         // Process input signal
 ```
+
+#### Parameter Slew
+- `SLEW.ALL <0-10000>` - Set global slew time in milliseconds
+  - 0 = instant changes (default, backward compatible)
+  - Higher values = smoother transitions
+  - Applies to all smoothable parameters via SC-side Lag.kr
+  - Example: `SLEW.ALL 200` makes all param changes glide over 200ms
+- Smoothed parameters: PF, MF, FC, FM, MX, DC, FB, FQ, FK, FE, RF, RM, DT, DF, DW, RV, RW, volume, pan, LB, LS, LM, RGF, RGM, CT, CM, EL, EM, EH, EF
+- NOT smoothed (discrete): PW, MW, FT, DM, mode switches, triggers
 
 #### Output
 - `PRINT "<text>"` or `PRINT '<text>'` - Print literal string to REPL output

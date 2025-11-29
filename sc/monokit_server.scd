@@ -83,7 +83,8 @@ s.waitForBoot {
             ps_mix = 0,   // Pitch shift mix (0-16383)
             ps_targ = 0,  // Pitch shift target (0=main, 1=repeat)
             volume = 1,
-            gate = 0;
+            gate = 0,
+            slew_time = 0;
 
         // All var declarations at top
         var trig, pitchEnv, ampEnv, fmEnv, dcEnv, fbEnv, filterEnv;
@@ -106,6 +107,42 @@ s.waitForBoot {
         var brActive;
         var psRatio, psGrainSize, psShifted, psMix;
         var psInputL, psInputR;
+        var pfSmooth, mfSmooth, fcSmooth, fmSmooth, mxSmooth, dcSmooth, fbSmooth, fqSmooth, fkSmooth, feSmooth;
+        var rfSmooth, rmSmooth, dtSmooth, dfSmooth, dwSmooth, rvSmooth, rwSmooth, volumeSmooth, panSmooth;
+        var lbSmooth, lsSmooth, lmSmooth, rgfSmooth, rgmSmooth, ctSmooth, cmSmooth;
+        var elSmooth, emSmooth, ehSmooth, efSmooth;
+
+        // Smoothed parameters using Lag.kr
+        pfSmooth = Lag.kr(pf, slew_time);
+        mfSmooth = Lag.kr(mf, slew_time);
+        fcSmooth = Lag.kr(fc, slew_time);
+        fmSmooth = Lag.kr(fm, slew_time);
+        mxSmooth = Lag.kr(mx, slew_time);
+        dcSmooth = Lag.kr(dc, slew_time);
+        fbSmooth = Lag.kr(fb, slew_time);
+        fqSmooth = Lag.kr(fq, slew_time);
+        fkSmooth = Lag.kr(fk, slew_time);
+        feSmooth = Lag.kr(fe, slew_time);
+        rfSmooth = Lag.kr(rf, slew_time);
+        rmSmooth = Lag.kr(rm, slew_time);
+        dtSmooth = Lag.kr(dt, slew_time);
+        dfSmooth = Lag.kr(df, slew_time);
+        dwSmooth = Lag.kr(dw, slew_time);
+        rvSmooth = Lag.kr(rv, slew_time);
+        rwSmooth = Lag.kr(rw, slew_time);
+        volumeSmooth = Lag.kr(volume, slew_time);
+        panSmooth = Lag.kr(pn, slew_time);
+        lbSmooth = Lag.kr(lb, slew_time);
+        lsSmooth = Lag.kr(ls, slew_time);
+        lmSmooth = Lag.kr(lm, slew_time);
+        rgfSmooth = Lag.kr(rgf, slew_time);
+        rgmSmooth = Lag.kr(rgm, slew_time);
+        ctSmooth = Lag.kr(ct, slew_time);
+        cmSmooth = Lag.kr(cm, slew_time);
+        elSmooth = Lag.kr(el, slew_time);
+        emSmooth = Lag.kr(em, slew_time);
+        ehSmooth = Lag.kr(eh, slew_time);
+        efSmooth = Lag.kr(ef, slew_time);
 
         // Envelope model: output = base + (envelope * amount)
         // Exception: ampEnv is multiplicative (0→1 gating)
@@ -122,16 +159,16 @@ s.waitForBoot {
         // Scaled parameters
         modBus = mb / 16383;
         trackingAmount = tk / 16383;
-        fmIndex = fm / 16383;
-        dcAmount = dc / 16383;
-        mixAmount = mx / 16383;
-        fbAmount = (fb / 16383) + (fbEnv * fba / 16383);  // base + (envelope * amount)
+        fmIndex = fmSmooth / 16383;
+        dcAmount = dcSmooth / 16383;
+        mixAmount = mxSmooth / 16383;
+        fbAmount = (fbSmooth / 16383) + (fbEnv * fba / 16383);  // base + (envelope * amount)
 
         // Primary frequency: base + (pitchEnv * amount) + (modBus * routing)
-        primaryFreq = pf * (1 + (pitchEnv * pa) + (modBus * mp * 4));
+        primaryFreq = pfSmooth * (1 + (pitchEnv * pa) + (modBus * mp * 4));
 
         // Modulator frequency: base + (tracking) + (modBus * routing)
-        modulatorFreq = mf + (trackingAmount * mt * (pf * (1 + (pitchEnv * pa)) - pf));
+        modulatorFreq = mfSmooth + (trackingAmount * mt * (pfSmooth * (1 + (pitchEnv * pa)) - pfSmooth));
         modulatorFreq = modulatorFreq * (1 + (modBus * md));
 
         // Modulator oscillator (mw: 0=sine, 1=tri, 2=saw, 3=feedback)
@@ -169,17 +206,17 @@ s.waitForBoot {
         ]);
 
         // Lo-Fi processor
-        lofiBits = lb.clip(1, 16);
-        lofiRate = ls.clip(100, 48000);
-        lofiMix = lm / 16383;
+        lofiBits = lbSmooth.clip(1, 16);
+        lofiRate = lsSmooth.clip(100, 48000);
+        lofiMix = lmSmooth / 16383;
         lofi = (sig * (2.pow(lofiBits - 1))).round / (2.pow(lofiBits - 1));
         lofi = Latch.ar(lofi, Impulse.ar(lofiRate));
         sig = (sig * (1 - lofiMix)) + (lofi * lofiMix);
 
         // SVF Multi-Mode Filter
-        filterCutoff = fc + ((fk / 16383) * primaryFreq) + (filterEnv * (fe / 16383) * 5000) + (modBus * mf_f * 5000);
+        filterCutoff = fcSmooth + ((fkSmooth / 16383) * primaryFreq) + (filterEnv * (feSmooth / 16383) * 5000) + (modBus * mf_f * 5000);
         filterCutoff = filterCutoff.clip(20, 20000);
-        filterQ = ((fq / 16383) * 0.9 + 0.1);
+        filterQ = ((fqSmooth / 16383) * 0.9 + 0.1);
         sig = Select.ar(ft.clip(0, 3).round, [
             SVF.ar(sig, filterCutoff, filterQ, 1, 0, 0, 0, 0),
             SVF.ar(sig, filterCutoff, filterQ, 0, 1, 0, 0, 0),
@@ -189,29 +226,29 @@ s.waitForBoot {
 
         // Ring modulator
         ringModOsc = Select.ar(rgw.clip(0, 3).round, [
-            SinOsc.ar(rgf),
-            LFTri.ar(rgf),
-            LFSaw.ar(rgf),
-            LFPulse.ar(rgf, 0, 0.5, 2, -1)  // Square wave
+            SinOsc.ar(rgfSmooth),
+            LFTri.ar(rgfSmooth),
+            LFSaw.ar(rgfSmooth),
+            LFPulse.ar(rgfSmooth, 0, 0.5, 2, -1)  // Square wave
         ]);
-        ringModMix = rgm / 16383;
+        ringModMix = rgmSmooth / 16383;
         sig = (sig * (1 - ringModMix)) + ((sig * ringModOsc) * ringModMix);
 
         // Comb Resonator (Karplus-Strong)
-        resonatorFreq = rf + ((rk / 16383) * (primaryFreq - rf));
+        resonatorFreq = rfSmooth + ((rk / 16383) * (primaryFreq - rfSmooth));
         resonatorFreq = resonatorFreq.clip(20, 5000);
         resonatorDelay = (1 / resonatorFreq).clip(0.0002, 0.05);
         resonatorDecay = (rd / 1000).clip(0.01, 5.0);
         resonated = CombC.ar(sig, 0.05, resonatorDelay, resonatorDecay);
-        resonatorMix = rm / 16383;
+        resonatorMix = rmSmooth / 16383;
         sig = (sig * (1 - resonatorMix)) + (resonated * resonatorMix);
 
         // Amplitude: base + (modBus * routing)
-        amp = ampEnv * volume * (1 + (modBus * ma * 0.5));
+        amp = ampEnv * volumeSmooth * (1 + (modBus * ma * 0.5));
         sig = sig * amp;
 
         // Compressor
-        compThresh = (ct / 16383).clip(0.001, 1);
+        compThresh = (ctSmooth / 16383).clip(0.001, 1);
         compRatio = 1 / cr.clip(1, 20);
         sig = Compander.ar(sig, sig,
             thresh: compThresh,
@@ -220,10 +257,10 @@ s.waitForBoot {
             clampTime: ca / 1000,
             relaxTime: cl / 1000
         );
-        sig = sig * (1 + (cm / 16383 * 2));  // Makeup gain (up to 3x)
+        sig = sig * (1 + (cmSmooth / 16383 * 2));  // Makeup gain (up to 3x)
 
         // Pan control
-        panPos = (pn / 16383).clip(-1, 1);
+        panPos = (panSmooth / 16383).clip(-1, 1);
         #sigL, sigR = Pan2.ar(sig, panPos);
 
         // Beat Repeat Buffer Processing
@@ -316,13 +353,13 @@ s.waitForBoot {
 
         // Stereo Delay with Feedback Filtering and Routing Modes
         dmodeSmooth = Lag.kr(dmode, 0.02);
-        delayWetSmooth = Lag.kr(dw / 16383, 0.01);
-        delayTime = (dt / 1000).clip(0.001, 2.0);
-        delayFeedback = df / 16383;
+        delayWetSmooth = Lag.kr(dwSmooth / 16383, 0.01);
+        delayTime = (dtSmooth / 1000).clip(0.001, 2.0);
+        delayFeedback = dfSmooth / 16383;
 
         // Tail behavior: CUT=gate feedback, RING=normal, FREEZE=infinite
         dfeedbackMult = Select.kr(dtail.clip(0, 2).round, [
-            (dw > 100),    // CUT: feedback stops when wet low
+            (dwSmooth > 100),    // CUT: feedback stops when wet low
             1,             // RING: normal feedback
             0.999          // FREEZE: infinite sustain
         ]);
@@ -357,21 +394,21 @@ s.waitForBoot {
         ]);
 
         // 3-Band EQ (post-delay, pre-reverb)
-        sigL = BLowShelf.ar(sigL, 200, 1, el.clip(-24, 24));
-        sigL = BPeakEQ.ar(sigL, ef.clip(200, 8000), (1/eq.clip(0.1, 10)), em.clip(-24, 24));
-        sigL = BHiShelf.ar(sigL, 4000, 1, eh.clip(-24, 24));
-        sigR = BLowShelf.ar(sigR, 200, 1, el.clip(-24, 24));
-        sigR = BPeakEQ.ar(sigR, ef.clip(200, 8000), (1/eq.clip(0.1, 10)), em.clip(-24, 24));
-        sigR = BHiShelf.ar(sigR, 4000, 1, eh.clip(-24, 24));
+        sigL = BLowShelf.ar(sigL, 200, 1, elSmooth.clip(-24, 24));
+        sigL = BPeakEQ.ar(sigL, efSmooth.clip(200, 8000), (1/eq.clip(0.1, 10)), emSmooth.clip(-24, 24));
+        sigL = BHiShelf.ar(sigL, 4000, 1, ehSmooth.clip(-24, 24));
+        sigR = BLowShelf.ar(sigR, 200, 1, elSmooth.clip(-24, 24));
+        sigR = BPeakEQ.ar(sigR, efSmooth.clip(200, 8000), (1/eq.clip(0.1, 10)), emSmooth.clip(-24, 24));
+        sigR = BHiShelf.ar(sigR, 4000, 1, ehSmooth.clip(-24, 24));
 
         // Plate Reverb with Routing Modes
         rmodeSmooth = Lag.kr(rmode, 0.02);
-        reverbWetSmooth = Lag.kr(rw / 16383, 0.01);
+        reverbWetSmooth = Lag.kr(rwSmooth / 16383, 0.01);
 
         // Room size: rv controls decay (0-1), FREEZE uses max
         rroomSize = Select.kr(rtail.clip(0, 2).round, [
-            (rv / 16383).clip(0, 1),   // CUT: normal
-            (rv / 16383).clip(0, 1),   // RING: normal
+            (rvSmooth / 16383).clip(0, 1),   // CUT: normal
+            (rvSmooth / 16383).clip(0, 1),   // RING: normal
             1.0                         // FREEZE: maximum decay
         ]);
 
@@ -476,6 +513,13 @@ s.waitForBoot {
         ~recIndex = 0;
         ("Recording path prefix: " ++ pathPrefix).postln;
     }, '/monokit/rec/path');
+
+    OSCdef(\monokit_slew, { |msg|
+        var slewMs = msg[1].asFloat.clip(0, 10000);
+        var slewSec = slewMs / 1000;
+        ~voice.set(\slew_time, slewSec);
+        ("SLEW TIME SET TO" + slewMs + "MS").postln;
+    }, '/monokit/slew');
 
     "monokit server ready".postln;
 };

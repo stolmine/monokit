@@ -101,8 +101,8 @@ s.waitForBoot {
         var compressed, compThresh, compRatio;
         var eqSig;
         var panPos;
-        var beatRepeatBuf, brBufSize, brWritePos, brReadPos, brLoopLen;
-        var brReadRate, brRepeated, brMix, brWindowSize, brCrossfade;
+        var beatRepeatBufL, beatRepeatBufR, brBufSize, brWritePos, brReadPos, brLoopLen;
+        var brReadRate, brRepeatedL, brRepeatedR, brMix, brWindowSize, brCrossfade;
         var brActive;
         var psRatio, psGrainSize, psShifted, psMix;
         var psInputL, psInputR;
@@ -231,11 +231,14 @@ s.waitForBoot {
         brLoopLen = br_len_ms / 1000;
         brBufSize = (brLoopLen * SampleRate.ir).ceil.max(4410);
 
-        beatRepeatBuf = LocalBuf(brBufSize, 2);
+        // Separate mono buffers for L and R to avoid channel mismatch
+        beatRepeatBufL = LocalBuf(brBufSize, 1);
+        beatRepeatBufR = LocalBuf(brBufSize, 1);
 
-        brWritePos = Phasor.ar(0, 1, 0, brBufSize);
-        BufWr.ar(sigL, beatRepeatBuf, brWritePos, 0);
-        BufWr.ar(sigR, beatRepeatBuf, brWritePos, 1);
+        // Write phasor stops advancing when beat repeat is active (freeze buffer)
+        brWritePos = Phasor.ar(0, 1 - brActive, 0, brBufSize);
+        BufWr.ar(sigL, beatRepeatBufL, brWritePos, 0);
+        BufWr.ar(sigR, beatRepeatBufR, brWritePos, 0);
 
         brReadRate = Select.kr(br_rev.clip(0, 1), [1, -1]);
         brReadPos = Phasor.ar(
@@ -251,26 +254,28 @@ s.waitForBoot {
             min(brReadPos, brBufSize - brReadPos) / brWindowSize
         ).clip(0, 1).sqrt;
 
-        brRepeated = BufRd.ar(2, beatRepeatBuf, brReadPos, 0, 4);
+        // Read from separate L and R buffers
+        brRepeatedL = BufRd.ar(1, beatRepeatBufL, brReadPos, 0, 4);
+        brRepeatedR = BufRd.ar(1, beatRepeatBufR, brReadPos, 0, 4);
 
         brMix = (br_mix / 16383).clip(0, 1);
         sigL = Select.ar(brActive, [
             sigL,
-            (sigL * (1 - brMix)) + (brRepeated[0] * brMix)
+            (sigL * (1 - brMix)) + (brRepeatedL * brMix)
         ]);
         sigR = Select.ar(brActive, [
             sigR,
-            (sigR * (1 - brMix)) + (brRepeated[1] * brMix)
+            (sigR * (1 - brMix)) + (brRepeatedR * brMix)
         ]);
 
         // Pitch Shift Processing
         psInputL = Select.ar(ps_targ.clip(0, 1), [
             sigL,
-            brRepeated[0] * brMix
+            brRepeatedL * brMix
         ]);
         psInputR = Select.ar(ps_targ.clip(0, 1), [
             sigR,
-            brRepeated[1] * brMix
+            brRepeatedR * brMix
         ]);
 
         psRatio = (ps_semi / 12).midiratio;

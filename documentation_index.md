@@ -22,7 +22,7 @@ Modular Rust implementation (11 files, 4,824 total lines):
 - **src/types.rs** (230 lines) - Core data structures, enums, constants, and type definitions
 - **src/eval.rs** (482 lines) - Expression evaluation engine for nested operations, pattern access, and comparison operators
 - **src/ui.rs** (637 lines) - TUI rendering with ratatui, page-based interface
-- **src/tests.rs** (2,298 lines) - Comprehensive unit test suite (129 tests)
+- **src/tests.rs** (2,421 lines) - Comprehensive unit test suite (138 tests)
 - **src/scene.rs** (169 lines) - Scene persistence, file I/O
 - **src/app/mod.rs** (125 lines) - App struct, constructor, navigation
 - **src/app/input.rs** (131 lines) - Input handling methods
@@ -219,6 +219,8 @@ Examples:
 #### Random Number Generation
 - `RND <max>` - Random integer from 0 to max-1 (works as command and in expressions)
 - `RRND <min> <max>` - Random integer from min to max inclusive (works as command and in expressions)
+- `TOSS` - Random 0 or 1 (coin flip, works as command and in expressions)
+- `EITH <a> <b>` - Random choice between a and b (works as command and in expressions)
 
 #### Note/Pitch Conversion
 - `N <semitones>` - Convert semitones to frequency in Hz (12-TET, works in expressions)
@@ -255,6 +257,7 @@ Examples:
 - `Ctrl+C` - Copy line (script pages)
 - `Ctrl+X` - Cut line (script pages)
 - `Ctrl+V` - Paste line (script pages)
+- Script pages show validation errors that auto-clear after 3 seconds or on successful save
 
 ## OSC Protocol
 

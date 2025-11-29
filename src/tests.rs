@@ -115,6 +115,89 @@ fn test_rrnd_with_same_min_max() {
 }
 
 #[test]
+fn test_toss_returns_zero_or_one() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    let parts = vec!["TOSS"];
+
+    for _ in 0..20 {
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        assert!(result.is_some());
+        let (value, consumed) = result.unwrap();
+        assert!(value == 0 || value == 1, "TOSS returned {}", value);
+        assert_eq!(consumed, 1);
+    }
+}
+
+#[test]
+fn test_eith_returns_one_of_two_values() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    let parts = vec!["EITH", "100", "200"];
+
+    for _ in 0..20 {
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        assert!(result.is_some());
+        let (value, consumed) = result.unwrap();
+        assert!(value == 100 || value == 200, "EITH 100 200 returned {}", value);
+        assert_eq!(consumed, 3);
+    }
+}
+
+#[test]
+fn test_eith_with_expressions() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    variables.a = 50;
+    variables.b = 75;
+    let parts = vec!["EITH", "A", "B"];
+
+    for _ in 0..20 {
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        assert!(result.is_some());
+        let (value, consumed) = result.unwrap();
+        assert!(value == 50 || value == 75, "EITH A B returned {}", value);
+        assert_eq!(consumed, 3);
+    }
+}
+
+#[test]
+fn test_toss_in_expression_context() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    let parts = vec!["ADD", "TOSS", "10"];
+
+    for _ in 0..20 {
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        assert!(result.is_some());
+        let (value, consumed) = result.unwrap();
+        assert!(value == 10 || value == 11, "ADD TOSS 10 returned {}", value);
+        assert_eq!(consumed, 3);
+    }
+}
+
+#[test]
+fn test_eith_in_expression_context() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    let parts = vec!["MUL", "EITH", "2", "3", "5"];
+
+    for _ in 0..20 {
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0);
+        assert!(result.is_some());
+        let (value, consumed) = result.unwrap();
+        assert!(value == 10 || value == 15, "MUL (EITH 2 3) 5 returned {}", value);
+        assert_eq!(consumed, 5);
+    }
+}
+
+#[test]
 fn test_eval_expression_variables() {
     let mut variables = create_test_variables();
     let mut patterns = create_test_patterns();
@@ -2128,6 +2211,46 @@ fn test_validate_semicolon_commands() {
     use crate::commands::validate_script_command;
 
     assert!(validate_script_command("TR; PF 440; VOL 0.5").is_ok());
+}
+
+#[test]
+fn test_validate_synth_params_with_expressions() {
+    use crate::commands::validate_script_command;
+
+    assert!(validate_script_command("PA PN.NEXT 0").is_ok());
+    assert!(validate_script_command("PF ADD 100 200").is_ok());
+    assert!(validate_script_command("DC MUL A B").is_ok());
+    assert!(validate_script_command("TK RND 100").is_ok());
+    assert!(validate_script_command("FM PN.HERE 1").is_ok());
+    assert!(validate_script_command("AD SUB 1000 T").is_ok());
+}
+
+#[test]
+fn test_validate_pattern_ops_with_expressions() {
+    use crate::commands::validate_script_command;
+
+    assert!(validate_script_command("P ADD 5 10 100").is_ok());
+    assert!(validate_script_command("PN.NEXT ADD 1 2").is_ok());
+    assert!(validate_script_command("PN.L MUL 2 3").is_ok());
+    assert!(validate_script_command("PN ADD A B 10 200").is_ok());
+}
+
+#[test]
+fn test_validate_math_ops_with_expressions() {
+    use crate::commands::validate_script_command;
+
+    assert!(validate_script_command("ADD PN.NEXT 0 10").is_ok());
+    assert!(validate_script_command("MUL RND 100 5").is_ok());
+    assert!(validate_script_command("SUB ADD 10 20 5").is_ok());
+}
+
+#[test]
+fn test_validate_comparison_ops_with_expressions() {
+    use crate::commands::validate_script_command;
+
+    assert!(validate_script_command("EZ PN.NEXT 0").is_ok());
+    assert!(validate_script_command("EQ ADD 1 2 3").is_ok());
+    assert!(validate_script_command("GT MUL A 2 10").is_ok());
 }
 
 #[test]

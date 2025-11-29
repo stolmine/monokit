@@ -3,6 +3,7 @@ use crate::types::{
 };
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
+use std::time::Instant;
 
 mod input;
 mod script_exec;
@@ -28,6 +29,8 @@ pub struct App {
     pub if_else_condition: bool,
     pub clipboard: String,
     pub should_quit: bool,
+    pub script_error: Option<String>,
+    pub script_error_time: Option<Instant>,
 }
 
 impl App {
@@ -53,6 +56,8 @@ impl App {
             if_else_condition: true,
             clipboard: String::new(),
             should_quit: false,
+            script_error: None,
+            script_error_time: None,
         }
     }
 
@@ -125,5 +130,14 @@ impl App {
     pub fn execute_script(&mut self, script_index: usize) {
         self.if_else_condition = true;
         self.execute_script_with_depth(script_index, 0);
+    }
+
+    pub fn clear_expired_error(&mut self) {
+        if let Some(time) = self.script_error_time {
+            if time.elapsed().as_secs() >= 3 {
+                self.script_error = None;
+                self.script_error_time = None;
+            }
+        }
     }
 }

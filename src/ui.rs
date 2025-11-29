@@ -146,6 +146,13 @@ pub fn render_metro_page(app: &super::App) -> Paragraph<'static> {
         }
     }
 
+    if let Some(error_msg) = &app.script_error {
+        text.push(Line::from(""));
+        text.push(Line::from(vec![
+            Span::styled(format!("  {}", error_msg), Style::default().fg(Color::Red)),
+        ]));
+    }
+
     Paragraph::new(text)
         .block(Block::default().borders(Borders::ALL).title(" Metro "))
         .wrap(Wrap { trim: false })
@@ -203,6 +210,13 @@ pub fn render_script_page(app: &super::App, num: u8) -> Paragraph<'static> {
         }
     }
 
+    if let Some(error_msg) = &app.script_error {
+        lines.push(Line::from(""));
+        lines.push(Line::from(vec![
+            Span::styled(format!("  {}", error_msg), Style::default().fg(Color::Red)),
+        ]));
+    }
+
     Paragraph::new(lines)
         .block(Block::default().borders(Borders::ALL).title(format!(" Script {} ", num)))
 }
@@ -238,6 +252,13 @@ pub fn render_init_page(app: &super::App) -> Paragraph<'static> {
                 Span::raw(line_content.clone()),
             ]));
         }
+    }
+
+    if let Some(error_msg) = &app.script_error {
+        lines.push(Line::from(""));
+        lines.push(Line::from(vec![
+            Span::styled(format!("  {}", error_msg), Style::default().fg(Color::Red)),
+        ]));
     }
 
     Paragraph::new(lines)
@@ -532,6 +553,7 @@ pub fn run_app<B: ratatui::backend::Backend>(
     metro_event_rx: mpsc::Receiver<MetroEvent>,
 ) -> Result<()> {
     loop {
+        app.clear_expired_error();
         terminal.draw(|f| ui(f, app))?;
 
         while let Ok(event) = metro_event_rx.try_recv() {

@@ -177,6 +177,22 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             }
             None
         }
+        "TOSS" => {
+            let result = if rand::thread_rng().gen_bool(0.5) { 1 } else { 0 };
+            Some((result, 1))
+        }
+        "EITH" => {
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((a, a_consumed)) = eval_expression(parts, start_idx + 1, variables, patterns, scripts, script_index) {
+                if let Some((b, b_consumed)) = eval_expression(parts, start_idx + 1 + a_consumed, variables, patterns, scripts, script_index) {
+                    let result = if rand::thread_rng().gen_bool(0.5) { a } else { b };
+                    return Some((result, 1 + a_consumed + b_consumed));
+                }
+            }
+            None
+        }
         "ADD" | "+" => {
             if start_idx + 1 >= parts.len() {
                 return None;

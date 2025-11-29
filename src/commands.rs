@@ -1125,6 +1125,26 @@ where
             let result = rand::thread_rng().gen_range(min..=max);
             output(format!("{}", result));
         }
+        "TOSS" => {
+            let result = if rand::thread_rng().gen_bool(0.5) { 1 } else { 0 };
+            output(format!("{}", result));
+        }
+        "EITH" => {
+            if parts.len() < 2 {
+                output("Error: EITH requires two values".to_string());
+                return Ok(vec![]);
+            }
+            if let Some((a, a_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+                if let Some((b, _)) = eval_expression(&parts, 1 + a_consumed, variables, patterns, scripts, script_index) {
+                    let result = if rand::thread_rng().gen_bool(0.5) { a } else { b };
+                    output(format!("{}", result));
+                } else {
+                    output("Error: Failed to evaluate second value".to_string());
+                }
+            } else {
+                output("Error: Failed to evaluate first value".to_string());
+            }
+        }
         "ADD" => {
             if parts.len() < 2 {
                 output("Error: ADD requires two operands".to_string());
@@ -1404,72 +1424,84 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        // P <idx> [val] - 1-2 args
+        // P <idx> [val] - 1+ args (idx can be expression)
         "P" => {
-            if argc < 1 || argc > 2 {
-                return Err(anyhow::anyhow!("P takes 1-2 arguments"));
+            if argc < 1 {
+                return Err(anyhow::anyhow!("P requires at least 1 argument"));
             }
             Ok(())
         }
-        // Explicit pattern ops with exactly 1 arg
+        // Explicit pattern ops with 1+ args (pattern number can be expression)
         "PN.HERE" | "PN.NEXT" | "PN.PREV" => {
-            if argc != 1 {
-                return Err(anyhow::anyhow!("{} takes exactly 1 argument (pattern number)", command));
+            if argc < 1 {
+                return Err(anyhow::anyhow!("{} requires at least 1 argument (pattern number)", command));
             }
             Ok(())
         }
-        // Explicit pattern ops with 1-2 args
+        // Explicit pattern ops with 1+ args (accepts expressions)
         "PN.L" | "PN.I" => {
-            if argc < 1 || argc > 2 {
-                return Err(anyhow::anyhow!("{} takes 1-2 arguments", command));
+            if argc < 1 {
+                return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
             }
             Ok(())
         }
-        // PN <pat> <idx> [val] - 2-3 args
+        // PN <pat> <idx> [val] - 2+ args (accepts expressions)
         "PN" => {
-            if argc < 2 || argc > 3 {
-                return Err(anyhow::anyhow!("PN takes 2-3 arguments"));
+            if argc < 2 {
+                return Err(anyhow::anyhow!("PN requires at least 2 arguments"));
             }
             Ok(())
         }
-        // Math ops - exactly 2 args
+        // Math ops - 2+ args (accept expressions)
         "ADD" | "SUB" | "MUL" | "DIV" | "MOD" | "+" | "-" | "*" | "/" | "%" => {
-            if argc != 2 {
-                return Err(anyhow::anyhow!("{} takes exactly 2 arguments", command));
+            if argc < 2 {
+                return Err(anyhow::anyhow!("{} requires at least 2 arguments", command));
             }
             Ok(())
         }
-        // RND - 1 arg, RRND - 2 args
+        // Random ops - accept expressions
         "RND" => {
-            if argc != 1 {
-                return Err(anyhow::anyhow!("RND takes exactly 1 argument"));
+            if argc < 1 {
+                return Err(anyhow::anyhow!("RND requires at least 1 argument"));
             }
             Ok(())
         }
         "RRND" => {
-            if argc != 2 {
-                return Err(anyhow::anyhow!("RRND takes exactly 2 arguments"));
+            if argc < 2 {
+                return Err(anyhow::anyhow!("RRND requires at least 2 arguments"));
             }
             Ok(())
         }
-        // N - 1 arg
+        "TOSS" => {
+            if argc > 0 {
+                return Err(anyhow::anyhow!("TOSS takes no arguments"));
+            }
+            Ok(())
+        }
+        "EITH" => {
+            if argc < 2 {
+                return Err(anyhow::anyhow!("EITH requires at least 2 arguments"));
+            }
+            Ok(())
+        }
+        // N - 1+ arg (accepts expression)
         "N" => {
-            if argc != 1 {
-                return Err(anyhow::anyhow!("N takes exactly 1 argument"));
+            if argc < 1 {
+                return Err(anyhow::anyhow!("N requires at least 1 argument"));
             }
             Ok(())
         }
-        // Unary comparison - 1 arg
+        // Unary comparison - 1+ arg (accepts expression)
         "EZ" | "NZ" => {
-            if argc != 1 {
-                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+            if argc < 1 {
+                return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
             }
             Ok(())
         }
-        // Binary comparison - 2 args
+        // Binary comparison - 2+ args (accept expressions)
         "EQ" | "NE" | "GT" | "LT" | "GTE" | "LTE" => {
-            if argc != 2 {
-                return Err(anyhow::anyhow!("{} takes exactly 2 arguments", command));
+            if argc < 2 {
+                return Err(anyhow::anyhow!("{} requires at least 2 arguments", command));
             }
             Ok(())
         }
@@ -1513,17 +1545,17 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        // VOL - 1 arg
+        // VOL - 1 arg (doesn't use eval_expression, uses direct parse)
         "VOL" => {
             if argc != 1 {
                 return Err(anyhow::anyhow!("VOL takes exactly 1 argument"));
             }
             Ok(())
         }
-        // Synth params - 1 arg
+        // Synth params - 1+ args (accept expressions)
         "PF" | "MF" | "PW" | "MW" | "DC" | "TK" | "MB" | "FM" | "MX" | "FA" | "DA" | "DM" | "MP" | "MD" | "MT" | "MA" | "MM" | "ME" | "AD" | "PD" | "FD" | "DD" | "PA" => {
-            if argc != 1 {
-                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+            if argc < 1 {
+                return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
             }
             Ok(())
         }

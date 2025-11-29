@@ -123,7 +123,8 @@ impl App {
 
             if !self.input.trim().is_empty() {
                 if let Err(e) = crate::commands::validate_script_command(&self.input) {
-                    self.add_output(format!("Error: {}", e));
+                    self.script_error = Some(format!("Error: {}", e));
+                    self.script_error_time = Some(std::time::Instant::now());
                     return;
                 }
             }
@@ -134,6 +135,9 @@ impl App {
             self.selected_line = Some(next_line);
             self.input.clear();
             self.cursor_position = 0;
+            // Clear any previous error on successful save
+            self.script_error = None;
+            self.script_error_time = None;
         }
     }
 

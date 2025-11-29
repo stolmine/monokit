@@ -1,8 +1,8 @@
-# Monokit Tier 1 DSP Blocks - Implementation Plan
+# Monokit DSP Blocks Implementation - Complete Reference
 
-## STATUS: COMPLETE
+## STATUS: COMPLETE (Tier 1 + Tier 2)
 
-All Tier 1 DSP blocks have been implemented as of the current codebase state.
+All DSP blocks through Tier 2 have been implemented as of the current codebase state. This document serves as a comprehensive reference for the complete DSP architecture.
 
 ## Architecture Overview
 
@@ -12,13 +12,18 @@ Complete signal chain (from monokit_server.scd):
 1. Modulator oscillator (with optional feedback)
 2. Primary oscillator with FM
 3. Mix between primary and modulator
-4. Discontinuity injection + waveshaping (fold/tanh/softclip)
-5. **SVF Multi-Mode Filter** (LP/HP/BP/Notch with envelope and key tracking)
-6. **Comb Resonator** (Karplus-Strong with key tracking)
-7. Amplitude envelope
-8. **Stereo Delay** (ping-pong with feedback filtering and routing modes)
-9. **Plate Reverb** (FreeVerb2 with pre-delay and routing modes)
-10. Stereo output
+4. Discontinuity injection + waveshaping (fold/tanh/softclip/hard/asym/rectify/crush)
+5. **Lo-Fi Processor** (Tier 2: bit depth and sample rate reduction)
+6. **SVF Multi-Mode Filter** (LP/HP/BP/Notch with envelope and key tracking)
+7. **Ring Modulator** (Tier 2: sine/triangle/sawtooth/square with variable mix)
+8. **Comb Resonator** (Karplus-Strong with key tracking)
+9. Amplitude envelope
+10. **Compressor** (Tier 2: threshold, ratio, attack, release, makeup gain)
+11. **Pan** (Tier 2: stereo positioning)
+12. **Stereo Delay** (ping-pong with feedback filtering and routing modes)
+13. **3-Band EQ** (Tier 2: low/mid/high shelf filtering post-delay)
+14. **Plate Reverb** (FreeVerb2 with pre-delay and routing modes)
+15. Stereo output
 
 ### Effect Routing System
 
@@ -749,9 +754,11 @@ TR              # Trigger
 
 ## Implementation Summary
 
-### COMPLETED (All Phases)
+### COMPLETED (Tier 1 + Tier 2)
 
-All Tier 1 DSP blocks have been successfully implemented:
+All DSP blocks have been successfully implemented in two tiers:
+
+**TIER 1 - Core Processing**
 
 **Phase 1: SVF Filter** - COMPLETE
 - 7 parameters: FC, FQ, FT, FE, FED, FK, MF.F
@@ -782,11 +789,48 @@ All Tier 1 DSP blocks have been successfully implemented:
 - Routing modes: BYPASS/INSERT/SEND
 - Tail behaviors: CUT/RING/FREEZE
 
+**TIER 2 - Advanced Effects & Shaping**
+
+**Phase 5: Lo-Fi Processor** - COMPLETE
+- 3 parameters: LB, LS, LM
+- Bit depth reduction (1-16 bits)
+- Sample rate reduction (100-48000 Hz)
+- Dry/wet mix control
+
+**Phase 6: Ring Modulator** - COMPLETE
+- 3 parameters: RGF, RGW, RGM
+- Four waveform options (sine, triangle, sawtooth, square)
+- Frequency range 20-2000 Hz
+- Variable mix (0-16383)
+
+**Phase 7: Compressor** - COMPLETE
+- 5 parameters: CT, CR, CA, CL, CM
+- Threshold control (0-16383)
+- Ratio control (1-20)
+- Attack (1-500 ms) and Release (10-2000 ms)
+- Makeup gain (0-16383)
+
+**Phase 8: 3-Band EQ** - COMPLETE
+- 5 parameters: EL, EM, EF, EQ, EH
+- Low shelf at 200 Hz (-24 to +24 dB)
+- Mid peak (200-8000 Hz center, 0.1-10 Q)
+- High shelf at 4000 Hz (-24 to +24 dB)
+
+**Phase 9: Pan** - COMPLETE
+- 1 parameter: PAN
+- Stereo positioning (-16383 to +16383)
+
+**Phase 10: Extended Discontinuity Modes** - COMPLETE
+- DM expanded from 0-2 to 0-6 modes
+- New modes: hard clip, asymmetric, full-wave rectify, bitcrush
+
 ### Parameter Count
 
-- **Total parameters:** 49
+- **Total parameters:** 66
   - Oscillator/FM/Mix: 25 parameters
-  - DSP blocks: 20 parameters (7 filter + 4 resonator + 5 delay + 4 reverb)
+  - DSP blocks: 37 parameters:
+    - Tier 1: 20 parameters (7 filter + 4 resonator + 5 delay + 4 reverb)
+    - Tier 2: 17 parameters (3 lofi + 3 ringmod + 5 compressor + 5 eq + 1 pan)
   - Routing: 4 parameters (D.MODE, D.TAIL, R.MODE, R.TAIL)
 
 ### Files Modified

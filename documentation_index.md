@@ -57,9 +57,9 @@ Key features:
 - OSC client sending to SuperCollider (127.0.0.1:57120)
 
 - **sc/monokit_server.scd** - SuperCollider sound engine
-  - `\monokit` SynthDef: HD2-style dual oscillator with FM, discontinuity, envelopes, and DSP effects
+  - `\monokit` SynthDef: HD2-style dual oscillator with FM, discontinuity, comprehensive DSP effects, and multi-stage processing
   - Additive envelope model: output = base + env * amount
-  - Signal chain: Osc → Discontinuity → Lo-Fi → SVF → Ring Mod → Resonator → Amp → Compressor → Pan → Delay → EQ → Reverb → Out
+  - Signal chain: Osc → Discontinuity → Lo-Fi → SVF → Ring Mod → Resonator → Amp → Compressor → Pan → Delay → 3-Band EQ → Reverb → Out
   - 66 synth parameters (25 oscillator/envelope + 37 DSP + 4 routing)
   - OSC responders:
     - `/monokit/trigger` - Gate trigger (no args)
@@ -209,7 +209,7 @@ Examples:
 
 **Discontinuity (Waveshaping)**
 - `DC <0-16383>` - Discontinuity amount (mix of modulator into shaper)
-- `DM <0-6>` - Discontinuity mode (0=fold, 1=tanh, 2=softclip, 3=hard, 4=asym, 5=sine, 6=crusher)
+- `DM <0-6>` - Discontinuity mode (0=fold, 1=tanh, 2=softclip, 3=hard, 4=asym, 5=rectify, 6=crush)
 - `DD <ms>` - Discontinuity envelope decay time (milliseconds, 1-10000)
 
 **Lo-Fi Processor**
@@ -255,8 +255,8 @@ Examples:
 
 **Ring Modulator**
 - `RGF <20-2000>` - Ring mod frequency (Hz)
-- `RGW <0-3>` - Waveform (0=sine, 1=tri, 2=saw, 3=square)
-- `RGM <0-16383>` - Ring mod mix
+- `RGW <0-3>` - Ring mod waveform (0=sine, 1=triangle, 2=sawtooth, 3=square)
+- `RGM <0-16383>` - Ring mod mix (0=dry, 16383=100% modulated)
 
 **Comb Resonator (Karplus-Strong)**
 - `RF <hz>` - Resonator frequency (20-5000)
@@ -284,7 +284,7 @@ Examples:
 **3-Band EQ (Post-Delay)**
 - `EL <-24 to +24>` - Low shelf gain (dB at 200Hz)
 - `EM <-24 to +24>` - Mid peak gain (dB)
-- `EF <200-8000>` - Mid frequency (Hz)
+- `EF <200-8000>` - Mid center frequency (Hz)
 - `EQ <0.1-10>` - Mid Q/bandwidth
 - `EH <-24 to +24>` - High shelf gain (dB at 4000Hz)
 

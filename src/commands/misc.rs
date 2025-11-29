@@ -187,7 +187,7 @@ pub fn handle_help<F>(
     output("DC <0-16383>  DISCONTINUITY".to_string());
     output("DA <0-16383>  DC ENV AMOUNT".to_string());
     output("DD <MS>       DC ENV DECAY".to_string());
-    output("DM <0-2>      DC MODE (FOLD/TANH/SOFT)".to_string());
+    output("DM <0-6>      DC MODE (FOLD/TANH/SOFT/HARD/ASYM/RECT/CRUSH)".to_string());
     output("".to_string());
     output("-- ENVELOPES --".to_string());
     output("AD <MS>       AMP DECAY".to_string());

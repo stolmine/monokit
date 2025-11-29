@@ -207,7 +207,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: DM REQUIRES A MODE VALUE (0-2)".to_string());
+        output("ERROR: DM REQUIRES A MODE VALUE (0-6)".to_string());
         return Ok(());
     }
     let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -217,8 +217,8 @@ where
             .parse()
             .context("Failed to parse discontinuity mode")?
     };
-    if !(0..=2).contains(&value) {
-        output("ERROR: MODE MUST BE 0 (FOLD), 1 (TANH), OR 2 (SOFTCLIP)".to_string());
+    if !(0..=6).contains(&value) {
+        output("ERROR: MODE MUST BE 0-6 (FOLD/TANH/SOFT/HARD/ASYM/RECT/CRUSH)".to_string());
         return Ok(());
     }
     metro_tx

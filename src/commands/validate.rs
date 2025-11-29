@@ -143,9 +143,9 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "THEME" => {
+        "THEME" | "DEBUG" => {
             if argc > 1 {
-                return Err(anyhow::anyhow!("THEME takes 0-1 arguments"));
+                return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
             }
             Ok(())
         }
@@ -161,7 +161,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "TR" | "RST" | "HELP" | "REC" | "REC.STOP" => {
+        "TR" | "RST" | "HELP" | "REC" | "REC.STOP" | "CLEAR" => {
             if argc > 0 {
                 return Err(anyhow::anyhow!("{} takes no arguments", command));
             }
@@ -170,6 +170,12 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         "REC.PATH" => {
             if argc != 1 {
                 return Err(anyhow::anyhow!("REC.PATH takes exactly 1 argument"));
+            }
+            Ok(())
+        }
+        "PRINT" => {
+            if argc < 1 {
+                return Err(anyhow::anyhow!("PRINT requires at least 1 argument"));
             }
             Ok(())
         }

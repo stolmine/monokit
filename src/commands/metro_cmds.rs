@@ -6,13 +6,16 @@ pub fn handle_m<F>(
     parts: &[&str],
     metro_interval: &mut u64,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
     F: FnMut(String),
 {
     if parts.len() == 1 {
-        output(format!("METRO INTERVAL: {}MS", metro_interval));
+        if debug_level >= 1 {
+            output(format!("METRO INTERVAL: {}MS", metro_interval));
+        }
     } else {
         let value: u64 = parts[1]
             .parse()
@@ -25,7 +28,9 @@ where
             .send(MetroCommand::SetInterval(value))
             .context("Failed to send interval to metro thread")?;
         *metro_interval = value;
-        output(format!("SET METRO INTERVAL TO {}MS", value));
+        if debug_level >= 1 {
+            output(format!("SET METRO INTERVAL TO {}MS", value));
+        }
     }
     Ok(())
 }
@@ -34,6 +39,7 @@ pub fn handle_m_bpm<F>(
     parts: &[&str],
     metro_interval: &mut u64,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -55,13 +61,16 @@ where
         .send(MetroCommand::SetInterval(interval_ms))
         .context("Failed to send interval to metro thread")?;
     *metro_interval = interval_ms;
-    output(format!("SET METRO TO {} BPM ({}MS)", bpm, interval_ms));
+    if debug_level >= 1 {
+        output(format!("SET METRO TO {} BPM ({}MS)", bpm, interval_ms));
+    }
     Ok(())
 }
 
 pub fn handle_m_act<F>(
     parts: &[&str],
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -81,20 +90,23 @@ where
     metro_tx
         .send(MetroCommand::SetActive(value != 0))
         .context("Failed to send active state to metro thread")?;
-    output(format!(
-        "METRO {}",
-        if value != 0 {
-            "ACTIVATED"
-        } else {
-            "DEACTIVATED"
-        }
-    ));
+    if debug_level >= 1 {
+        output(format!(
+            "METRO {}",
+            if value != 0 {
+                "ACTIVATED"
+            } else {
+                "DEACTIVATED"
+            }
+        ));
+    }
     Ok(())
 }
 
 pub fn handle_m_script<F>(
     parts: &[&str],
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -114,6 +126,8 @@ where
     metro_tx
         .send(MetroCommand::SetScriptIndex(value - 1))
         .context("Failed to send script index to metro thread")?;
-    output(format!("METRO WILL CALL SCRIPT {} ON EACH TICK", value));
+    if debug_level >= 1 {
+        output(format!("METRO WILL CALL SCRIPT {} ON EACH TICK", value));
+    }
     Ok(())
 }

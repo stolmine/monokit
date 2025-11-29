@@ -259,8 +259,19 @@ Examples:
 - UI shows red "● REC MM:SS" indicator when recording
 - Recording auto-stops on quit to prevent file corruption
 
+#### Output
+- `PRINT "<text>"` or `PRINT '<text>'` - Print literal string to REPL output
+- `PRINT <expr>` - Evaluate expression and print result to REPL
+  - Examples: `PRINT A`, `PRINT ADD 1 2`, `PRINT PN.NEXT 0`
+  - Works with variables, math operations, pattern operations, etc.
+
 #### System
 - `RST` - Reset all parameters to defaults
+- `CLEAR` - Clear REPL output history
+- `DEBUG <level>` - Set debug verbosity level:
+  - `DEBUG 0` - Silent mode (no REPL output except errors and PRINT commands)
+  - `DEBUG 1` - Important messages (metro status, PRINT commands) - minimal verbosity
+  - `DEBUG 2` - Verbose mode (all parameter changes) - default level
 - `q`, `quit`, or `exit` - Quit application (typed in REPL)
 
 #### Themes

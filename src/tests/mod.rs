@@ -9,3 +9,4 @@ mod validation_tests;
 mod math_tests;
 mod comparison_tests;
 mod scene_tests;
+mod debug_level;

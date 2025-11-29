@@ -12,6 +12,7 @@ pub fn handle_pf<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -35,7 +36,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("pf".to_string(), OscType::Float(value)))
         .context("Failed to send param to metro thread")?;
-    output(format!("SET PRIMARY FREQUENCY TO {} HZ", value));
+    if debug_level >= 2 {
+        output(format!("SET PRIMARY FREQUENCY TO {} HZ", value));
+    }
     Ok(())
 }
 
@@ -46,6 +49,7 @@ pub fn handle_pw<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -69,7 +73,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("pw".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
-    output(format!("SET PRIMARY WAVEFORM TO {}", value));
+    if debug_level >= 2 {
+        output(format!("SET PRIMARY WAVEFORM TO {}", value));
+    }
     Ok(())
 }
 
@@ -80,6 +86,7 @@ pub fn handle_mf<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -103,7 +110,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("mf".to_string(), OscType::Float(value)))
         .context("Failed to send param to metro thread")?;
-    output(format!("SET MOD FREQUENCY TO {} HZ", value));
+    if debug_level >= 2 {
+        output(format!("SET MOD FREQUENCY TO {} HZ", value));
+    }
     Ok(())
 }
 
@@ -114,6 +123,7 @@ pub fn handle_mw<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -137,7 +147,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("mw".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET MOD WAVEFORM TO {}", value));
+    }
     Ok(())
 }
 
@@ -148,6 +160,7 @@ pub fn handle_dc<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -174,7 +187,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("dc".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET DISCONTINUITY AMOUNT TO {}", value));
+    }
     Ok(())
 }
 
@@ -185,6 +200,7 @@ pub fn handle_dm<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -208,7 +224,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("dm".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET DISCONTINUITY MODE TO {}", value));
+    }
     Ok(())
 }
 
@@ -219,6 +237,7 @@ pub fn handle_tk<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -242,7 +261,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("tk".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET TRACKING AMOUNT TO {}", value));
+    }
     Ok(())
 }
 
@@ -253,6 +274,7 @@ pub fn handle_mb<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -276,7 +298,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("mb".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET MOD BUS AMOUNT TO {}", value));
+    }
     Ok(())
 }
 
@@ -287,6 +311,7 @@ pub fn handle_mp<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -310,7 +335,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("mp".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET MOD -> PRIMARY FREQ TO {}", value));
+    }
     Ok(())
 }
 
@@ -321,6 +348,7 @@ pub fn handle_md<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -344,7 +372,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("md".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET MOD -> DISCONTINUITY TO {}", value));
+    }
     Ok(())
 }
 
@@ -355,6 +385,7 @@ pub fn handle_mt<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -378,7 +409,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("mt".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET MOD -> TRACKING TO {}", value));
+    }
     Ok(())
 }
 
@@ -389,6 +422,7 @@ pub fn handle_ma<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -412,7 +446,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("ma".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET MOD -> AMPLITUDE TO {}", value));
+    }
     Ok(())
 }
 
@@ -423,6 +459,7 @@ pub fn handle_fm<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -446,7 +483,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("fm".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET FM INDEX TO {}", value));
+    }
     Ok(())
 }
 
@@ -457,6 +496,7 @@ pub fn handle_ad<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -480,7 +520,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("ad".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET AMP DECAY TO {} MS", value));
+    }
     Ok(())
 }
 
@@ -491,6 +533,7 @@ pub fn handle_pd<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -514,7 +557,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("pd".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET PITCH DECAY TO {} MS", value));
+    }
     Ok(())
 }
 
@@ -525,6 +570,7 @@ pub fn handle_fd<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -548,7 +594,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("fd".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET FM DECAY TO {} MS", value));
+    }
     Ok(())
 }
 
@@ -559,6 +607,7 @@ pub fn handle_pa<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -582,7 +631,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("pa".to_string(), OscType::Float(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET PITCH ENV AMOUNT TO {}", value));
+    }
     Ok(())
 }
 
@@ -593,6 +644,7 @@ pub fn handle_dd<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -616,7 +668,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("dd".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET DISCONTINUITY DECAY TO {} MS", value));
+    }
     Ok(())
 }
 
@@ -627,6 +681,7 @@ pub fn handle_mx<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -650,7 +705,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("mx".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET MIX AMOUNT TO {}", value));
+    }
     Ok(())
 }
 
@@ -661,6 +718,7 @@ pub fn handle_mm<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -684,7 +742,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("mm".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET MOD BUS -> MIX TO {}", value));
+    }
     Ok(())
 }
 
@@ -695,6 +755,7 @@ pub fn handle_me<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -718,7 +779,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("me".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET ENVELOPE -> MIX TO {}", value));
+    }
     Ok(())
 }
 
@@ -729,6 +792,7 @@ pub fn handle_fa<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -752,7 +816,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("fa".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET FM ENVELOPE AMOUNT TO {}", value));
+    }
     Ok(())
 }
 
@@ -763,6 +829,7 @@ pub fn handle_da<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -786,7 +853,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("da".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET DC ENVELOPE AMOUNT TO {}", value));
+    }
     Ok(())
 }
 
@@ -797,6 +866,7 @@ pub fn handle_fb<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -820,7 +890,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("fb".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET FEEDBACK AMOUNT TO {}", value));
+    }
     Ok(())
 }
 
@@ -831,6 +903,7 @@ pub fn handle_fba<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -854,7 +927,9 @@ where
     metro_tx
         .send(MetroCommand::SendParam("fba".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET FEEDBACK ENVELOPE AMOUNT TO {}", value));
+    }
     Ok(())
 }
 
@@ -865,6 +940,7 @@ pub fn handle_fbd<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -888,6 +964,8 @@ where
     metro_tx
         .send(MetroCommand::SendParam("fbd".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
+    if debug_level >= 2 {
     output(format!("SET FEEDBACK DECAY TO {} MS", value));
+    }
     Ok(())
 }

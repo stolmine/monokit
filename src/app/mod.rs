@@ -35,6 +35,7 @@ pub struct App {
     pub theme: Theme,
     pub recording: bool,
     pub recording_start: Option<Instant>,
+    pub debug_level: u8,
 }
 
 impl App {
@@ -65,6 +66,7 @@ impl App {
             theme,
             recording: false,
             recording_start: None,
+            debug_level: 2,
         }
     }
 

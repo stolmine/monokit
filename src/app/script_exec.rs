@@ -101,6 +101,7 @@ impl App {
             &mut self.scripts,
             script_index,
             &mut self.theme,
+            &mut self.debug_level,
             cmd_to_run,
             |msg| {
                 output_messages.push(msg);
@@ -431,6 +432,12 @@ impl App {
                 self.add_output("RECORDING STOPPED (AUTO)".to_string());
             }
             self.should_quit = true;
+            return;
+        }
+
+        // Handle clear command
+        if cmd_upper == "CLEAR" {
+            self.output.clear();
             return;
         }
 

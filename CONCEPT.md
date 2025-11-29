@@ -36,7 +36,7 @@ The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity
   - **HD2 Parameters:** PF/MF, PW/MW, DC/DM, DD, TK/MB, MP/MD/MT/MA, FM, FB/FBA/FBD, AD/PD/FD/DD, PA, FA, DA
   - **Mix Controls:** MX, MM, ME
   - **Recording:** REC, REC.STOP, REC.PATH <prefix>
-  - **System:** RST (reset to defaults), help, exit, quit
+  - **System:** RST (reset to defaults), CLEAR (clear output), DEBUG <0-2> (verbosity), PRINT (output to REPL), help, exit, quit
 - Envelope amounts: PA (pitch), FA (FM), DA (discontinuity) — added to base parameter via modulation amount
 - M commands execute locally; parameter updates sent via OSC `/monokit/param` protocol
 

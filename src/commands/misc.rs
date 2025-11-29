@@ -1,12 +1,14 @@
 use crate::config;
+use crate::eval::eval_expression;
 use crate::theme::Theme;
-use crate::types::MetroCommand;
+use crate::types::{MetroCommand, PatternStorage, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
 
 pub fn handle_tr<F>(
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -15,13 +17,16 @@ where
     metro_tx
         .send(MetroCommand::SendTrigger)
         .context("Failed to send trigger to metro thread")?;
-    output("SENT TRIGGER".to_string());
+    if debug_level >= 2 {
+        output("SENT TRIGGER".to_string());
+    }
     Ok(())
 }
 
 pub fn handle_vol<F>(
     parts: &[&str],
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -40,12 +45,15 @@ where
     metro_tx
         .send(MetroCommand::SendVolume(value))
         .context("Failed to send volume to metro thread")?;
-    output(format!("SET VOLUME TO {}", value));
+    if debug_level >= 2 {
+        output(format!("SET VOLUME TO {}", value));
+    }
     Ok(())
 }
 
 pub fn handle_rst<F>(
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -75,7 +83,9 @@ where
     metro_tx.send(MetroCommand::SendParam("fa".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("da".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendVolume(1.0))?;
-    output("RESET TO DEFAULTS".to_string());
+    if debug_level >= 2 {
+        output("RESET TO DEFAULTS".to_string());
+    }
     Ok(())
 }
 
@@ -208,6 +218,7 @@ pub fn handle_help<F>(
 
 pub fn handle_rec<F>(
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -221,12 +232,15 @@ where
     metro_tx
         .send(MetroCommand::StartRecording(cwd))
         .context("Failed to send recording command")?;
-    output("RECORDING STARTED".to_string());
+    if debug_level >= 2 {
+        output("RECORDING STARTED".to_string());
+    }
     Ok(())
 }
 
 pub fn handle_rec_stop<F>(
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -235,13 +249,16 @@ where
     metro_tx
         .send(MetroCommand::StopRecording)
         .context("Failed to send stop recording command")?;
-    output("RECORDING STOPPED".to_string());
+    if debug_level >= 2 {
+        output("RECORDING STOPPED".to_string());
+    }
     Ok(())
 }
 
 pub fn handle_rec_path<F>(
     parts: &[&str],
     metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -256,6 +273,78 @@ where
     metro_tx
         .send(MetroCommand::SetRecordingPath(path.clone()))
         .context("Failed to send recording path")?;
-    output(format!("SET RECORDING PATH PREFIX TO: {}", path.to_uppercase()));
+    if debug_level >= 2 {
+        output(format!("SET RECORDING PATH PREFIX TO: {}", path.to_uppercase()));
+    }
     Ok(())
+}
+
+pub fn handle_print<F>(
+    parts: &[&str],
+    variables: &Variables,
+    patterns: &mut PatternStorage,
+    scripts: &ScriptStorage,
+    script_index: usize,
+    debug_level: u8,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() < 2 {
+        output("ERROR: PRINT REQUIRES AT LEAST 1 ARGUMENT".to_string());
+        return;
+    }
+
+    if parts[1].starts_with('"') || parts[1].starts_with('\'') {
+        let joined = parts[1..].join(" ");
+        let quote_char = if parts[1].starts_with('"') { '"' } else { '\'' };
+
+        if joined.starts_with(quote_char) && joined.ends_with(quote_char) && joined.len() > 1 {
+            let literal = &joined[1..joined.len() - 1];
+            if debug_level >= 1 {
+                output(literal.to_string());
+            }
+        } else {
+            output("ERROR: UNTERMINATED STRING LITERAL".to_string());
+        }
+    } else {
+        if let Some((result, _)) = eval_expression(parts, 1, variables, patterns, scripts, script_index) {
+            if debug_level >= 1 {
+                output(format!("{}", result));
+            }
+        } else {
+            output("ERROR: FAILED TO EVALUATE EXPRESSION".to_string());
+        }
+    }
+}
+
+pub fn handle_debug<F>(
+    parts: &[&str],
+    debug_level: &mut u8,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("DEBUG LEVEL: {}", debug_level));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *debug_level = 0;
+                output("DEBUG LEVEL: 0 (SILENT)".to_string());
+            }
+            "1" => {
+                *debug_level = 1;
+                output("DEBUG LEVEL: 1 (IMPORTANT)".to_string());
+            }
+            "2" => {
+                *debug_level = 2;
+                output("DEBUG LEVEL: 2 (VERBOSE)".to_string());
+            }
+            _ => {
+                output("ERROR: DEBUG TAKES 0 (SILENT), 1 (IMPORTANT), OR 2 (VERBOSE)".to_string());
+            }
+        }
+    }
 }

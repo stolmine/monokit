@@ -1,9 +1,10 @@
+use crate::config;
 use crate::eval::eval_expression;
-use crate::types::{MetroCommand, OSC_ADDR, PatternStorage, ScriptStorage, Variables};
+use crate::theme::Theme;
+use crate::types::{MetroCommand, PatternStorage, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 use rand::Rng;
-use rosc::{encoder, OscMessage, OscPacket, OscType};
-use std::net::UdpSocket;
+use rosc::OscType;
 use std::sync::mpsc::Sender;
 
 pub fn process_command<F>(
@@ -13,6 +14,7 @@ pub fn process_command<F>(
     patterns: &mut PatternStorage,
     scripts: &mut ScriptStorage,
     script_index: usize,
+    theme: &mut Theme,
     input: &str,
     mut output: F,
 ) -> Result<Vec<usize>>
@@ -41,7 +43,7 @@ where
                         .context("Failed to parse value for A")?
                 };
                 variables.a = value;
-                output(format!("Set A to {}", value));
+                output(format!("SET A TO {}", value));
             }
         }
         "B" => {
@@ -56,7 +58,7 @@ where
                         .context("Failed to parse value for B")?
                 };
                 variables.b = value;
-                output(format!("Set B to {}", value));
+                output(format!("SET B TO {}", value));
             }
         }
         "C" => {
@@ -71,7 +73,7 @@ where
                         .context("Failed to parse value for C")?
                 };
                 variables.c = value;
-                output(format!("Set C to {}", value));
+                output(format!("SET C TO {}", value));
             }
         }
         "D" => {
@@ -86,7 +88,7 @@ where
                         .context("Failed to parse value for D")?
                 };
                 variables.d = value;
-                output(format!("Set D to {}", value));
+                output(format!("SET D TO {}", value));
             }
         }
         "I" => {
@@ -97,7 +99,7 @@ where
                     .parse()
                     .context("Failed to parse value for I")?;
                 variables.i = value;
-                output(format!("Set I to {}", value));
+                output(format!("SET I TO {}", value));
             }
         }
         "X" => {
@@ -112,7 +114,7 @@ where
                         .context("Failed to parse value for X")?
                 };
                 variables.x = value;
-                output(format!("Set X to {}", value));
+                output(format!("SET X TO {}", value));
             }
         }
         "Y" => {
@@ -127,7 +129,7 @@ where
                         .context("Failed to parse value for Y")?
                 };
                 variables.y = value;
-                output(format!("Set Y to {}", value));
+                output(format!("SET Y TO {}", value));
             }
         }
         "Z" => {
@@ -142,7 +144,7 @@ where
                         .context("Failed to parse value for Z")?
                 };
                 variables.z = value;
-                output(format!("Set Z to {}", value));
+                output(format!("SET Z TO {}", value));
             }
         }
         "T" => {
@@ -157,12 +159,12 @@ where
                         .context("Failed to parse value for T")?
                 };
                 variables.t = value;
-                output(format!("Set T to {}", value));
+                output(format!("SET T TO {}", value));
             }
         }
         "J" => {
             if script_index >= 10 {
-                output("Error: J requires script context".to_string());
+                output("ERROR: J REQUIRES SCRIPT CONTEXT".to_string());
                 return Ok(vec![]);
             }
             if parts.len() == 1 {
@@ -176,12 +178,12 @@ where
                         .context("Failed to parse value for J")?
                 };
                 scripts.scripts[script_index].j = value;
-                output(format!("Set J to {}", value));
+                output(format!("SET J TO {}", value));
             }
         }
         "K" => {
             if script_index >= 10 {
-                output("Error: K requires script context".to_string());
+                output("ERROR: K REQUIRES SCRIPT CONTEXT".to_string());
                 return Ok(vec![]);
             }
             if parts.len() == 1 {
@@ -195,7 +197,7 @@ where
                         .context("Failed to parse value for K")?
                 };
                 scripts.scripts[script_index].k = value;
-                output(format!("Set K to {}", value));
+                output(format!("SET K TO {}", value));
             }
         }
         "P.N" => {
@@ -206,11 +208,11 @@ where
                     .parse()
                     .context("Failed to parse pattern number")?;
                 if value > 3 {
-                    output("Error: Pattern number must be 0-3".to_string());
+                    output("ERROR: PATTERN NUMBER MUST BE 0-3".to_string());
                     return Ok(vec![]);
                 }
                 patterns.working = value;
-                output(format!("Set working pattern to {}", value));
+                output(format!("SET WORKING PATTERN TO {}", value));
             }
         }
         "P.L" => {
@@ -222,11 +224,11 @@ where
                     .parse()
                     .context("Failed to parse pattern length")?;
                 if value < 1 || value > 64 {
-                    output("Error: Pattern length must be 1-64".to_string());
+                    output("ERROR: PATTERN LENGTH MUST BE 1-64".to_string());
                     return Ok(vec![]);
                 }
                 pattern.length = value;
-                output(format!("Set pattern {} length to {}", patterns.working, value));
+                output(format!("SET PATTERN {} LENGTH TO {}", patterns.working, value));
             }
         }
         "P.I" => {
@@ -238,11 +240,11 @@ where
                     .parse()
                     .context("Failed to parse pattern index")?;
                 if value > 63 {
-                    output("Error: Pattern index must be 0-63".to_string());
+                    output("ERROR: PATTERN INDEX MUST BE 0-63".to_string());
                     return Ok(vec![]);
                 }
                 pattern.index = value;
-                output(format!("Set pattern {} index to {}", patterns.working, value));
+                output(format!("SET PATTERN {} INDEX TO {}", patterns.working, value));
             }
         }
         "P.HERE" => {
@@ -254,7 +256,7 @@ where
             let pattern = &mut patterns.patterns[patterns.working];
             pattern.index = (pattern.index + 1) % pattern.length;
             let value = pattern.data[pattern.index];
-            output(format!("P.NEXT = {} (index now {})", value, pattern.index));
+            output(format!("P.NEXT = {} (INDEX NOW {})", value, pattern.index));
         }
         "P.PREV" => {
             let pattern = &mut patterns.patterns[patterns.working];
@@ -264,11 +266,11 @@ where
                 pattern.index -= 1;
             }
             let value = pattern.data[pattern.index];
-            output(format!("P.PREV = {} (index now {})", value, pattern.index));
+            output(format!("P.PREV = {} (INDEX NOW {})", value, pattern.index));
         }
         "P" => {
             if parts.len() == 1 {
-                output("Error: P requires an index".to_string());
+                output("ERROR: P REQUIRES AN INDEX".to_string());
                 return Ok(vec![]);
             }
             let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -279,7 +281,7 @@ where
                     .context("Failed to parse pattern index")?
             };
             if idx > 63 {
-                output("Error: Pattern index must be 0-63".to_string());
+                output("ERROR: PATTERN INDEX MUST BE 0-63".to_string());
                 return Ok(vec![]);
             }
             if parts.len() == 2 {
@@ -295,12 +297,12 @@ where
                 };
                 let pattern = &mut patterns.patterns[patterns.working];
                 pattern.data[idx] = value;
-                output(format!("Set P {} to {}", idx, value));
+                output(format!("SET P {} TO {}", idx, value));
             }
         }
         "PN.L" => {
             if parts.len() < 2 {
-                output("Error: PN.L requires pattern number (0-3)".to_string());
+                output("ERROR: PN.L REQUIRES PATTERN NUMBER (0-3)".to_string());
                 return Ok(vec![]);
             }
             let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -311,7 +313,7 @@ where
                     .context("Failed to parse pattern number")?
             };
             if pat > 3 {
-                output("Error: Pattern number must be 0-3".to_string());
+                output("ERROR: PATTERN NUMBER MUST BE 0-3".to_string());
                 return Ok(vec![]);
             }
             if parts.len() == 2 {
@@ -326,17 +328,17 @@ where
                         .context("Failed to parse pattern length")?
                 };
                 if value < 1 || value > 64 {
-                    output("Error: Pattern length must be 1-64".to_string());
+                    output("ERROR: PATTERN LENGTH MUST BE 1-64".to_string());
                     return Ok(vec![]);
                 }
                 let pattern = &mut patterns.patterns[pat];
                 pattern.length = value;
-                output(format!("Set pattern {} length to {}", pat, value));
+                output(format!("SET PATTERN {} LENGTH TO {}", pat, value));
             }
         }
         "PN.I" => {
             if parts.len() < 2 {
-                output("Error: PN.I requires pattern number (0-3)".to_string());
+                output("ERROR: PN.I REQUIRES PATTERN NUMBER (0-3)".to_string());
                 return Ok(vec![]);
             }
             let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -347,7 +349,7 @@ where
                     .context("Failed to parse pattern number")?
             };
             if pat > 3 {
-                output("Error: Pattern number must be 0-3".to_string());
+                output("ERROR: PATTERN NUMBER MUST BE 0-3".to_string());
                 return Ok(vec![]);
             }
             if parts.len() == 2 {
@@ -362,17 +364,17 @@ where
                         .context("Failed to parse pattern index")?
                 };
                 if value > 63 {
-                    output("Error: Pattern index must be 0-63".to_string());
+                    output("ERROR: PATTERN INDEX MUST BE 0-63".to_string());
                     return Ok(vec![]);
                 }
                 let pattern = &mut patterns.patterns[pat];
                 pattern.index = value;
-                output(format!("Set pattern {} index to {}", pat, value));
+                output(format!("SET PATTERN {} INDEX TO {}", pat, value));
             }
         }
         "PN.HERE" => {
             if parts.len() < 2 {
-                output("Error: PN.HERE requires pattern number (0-3)".to_string());
+                output("ERROR: PN.HERE REQUIRES PATTERN NUMBER (0-3)".to_string());
                 return Ok(vec![]);
             }
             let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -383,7 +385,7 @@ where
                     .context("Failed to parse pattern number")?
             };
             if pat > 3 {
-                output("Error: Pattern number must be 0-3".to_string());
+                output("ERROR: PATTERN NUMBER MUST BE 0-3".to_string());
                 return Ok(vec![]);
             }
             let pattern = &patterns.patterns[pat];
@@ -392,7 +394,7 @@ where
         }
         "PN.NEXT" => {
             if parts.len() < 2 {
-                output("Error: PN.NEXT requires pattern number (0-3)".to_string());
+                output("ERROR: PN.NEXT REQUIRES PATTERN NUMBER (0-3)".to_string());
                 return Ok(vec![]);
             }
             let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -403,17 +405,17 @@ where
                     .context("Failed to parse pattern number")?
             };
             if pat > 3 {
-                output("Error: Pattern number must be 0-3".to_string());
+                output("ERROR: PATTERN NUMBER MUST BE 0-3".to_string());
                 return Ok(vec![]);
             }
             let pattern = &mut patterns.patterns[pat];
             pattern.index = (pattern.index + 1) % pattern.length;
             let value = pattern.data[pattern.index];
-            output(format!("PN.NEXT {} = {} (index now {})", pat, value, pattern.index));
+            output(format!("PN.NEXT {} = {} (INDEX NOW {})", pat, value, pattern.index));
         }
         "PN.PREV" => {
             if parts.len() < 2 {
-                output("Error: PN.PREV requires pattern number (0-3)".to_string());
+                output("ERROR: PN.PREV REQUIRES PATTERN NUMBER (0-3)".to_string());
                 return Ok(vec![]);
             }
             let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -424,7 +426,7 @@ where
                     .context("Failed to parse pattern number")?
             };
             if pat > 3 {
-                output("Error: Pattern number must be 0-3".to_string());
+                output("ERROR: PATTERN NUMBER MUST BE 0-3".to_string());
                 return Ok(vec![]);
             }
             let pattern = &mut patterns.patterns[pat];
@@ -434,11 +436,11 @@ where
                 pattern.index -= 1;
             }
             let value = pattern.data[pattern.index];
-            output(format!("PN.PREV {} = {} (index now {})", pat, value, pattern.index));
+            output(format!("PN.PREV {} = {} (INDEX NOW {})", pat, value, pattern.index));
         }
         "PN" => {
             if parts.len() < 3 {
-                output("Error: PN requires pattern (0-3) and index (0-63)".to_string());
+                output("ERROR: PN REQUIRES PATTERN (0-3) AND INDEX (0-63)".to_string());
                 return Ok(vec![]);
             }
             let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -449,7 +451,7 @@ where
                     .context("Failed to parse pattern number")?
             };
             if pat > 3 {
-                output("Error: Pattern number must be 0-3".to_string());
+                output("ERROR: PATTERN NUMBER MUST BE 0-3".to_string());
                 return Ok(vec![]);
             }
             let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, scripts, script_index) {
@@ -460,7 +462,7 @@ where
                     .context("Failed to parse pattern index")?
             };
             if idx > 63 {
-                output("Error: Pattern index must be 0-63".to_string());
+                output("ERROR: PATTERN INDEX MUST BE 0-63".to_string());
                 return Ok(vec![]);
             }
             if parts.len() == 3 {
@@ -476,59 +478,59 @@ where
                 };
                 let pattern = &mut patterns.patterns[pat];
                 pattern.data[idx] = val;
-                output(format!("Set PN {} {} to {}", pat, idx, val));
+                output(format!("SET PN {} {} TO {}", pat, idx, val));
             }
         }
         "TR" => {
             metro_tx
                 .send(MetroCommand::SendTrigger)
                 .context("Failed to send trigger to metro thread")?;
-            output("Sent trigger".to_string());
+            output("SENT TRIGGER".to_string());
         }
         "VOL" => {
             if parts.len() < 2 {
-                output("Error: VOL requires a value (0.0-1.0)".to_string());
+                output("ERROR: VOL REQUIRES A VALUE (0.0-1.0)".to_string());
                 return Ok(vec![]);
             }
             let value: f32 = parts[1]
                 .parse()
                 .context("Failed to parse volume value as float")?;
             if !(0.0..=1.0).contains(&value) {
-                output("Warning: Volume should be between 0.0 and 1.0".to_string());
+                output("WARNING: VOLUME SHOULD BE BETWEEN 0.0 AND 1.0".to_string());
             }
             metro_tx
                 .send(MetroCommand::SendVolume(value))
                 .context("Failed to send volume to metro thread")?;
-            output(format!("Set volume to {}", value));
+            output(format!("SET VOLUME TO {}", value));
         }
         "M" => {
             if parts.len() == 1 {
-                output(format!("Metro interval: {}ms", metro_interval));
+                output(format!("METRO INTERVAL: {}MS", metro_interval));
             } else {
                 let value: u64 = parts[1]
                     .parse()
                     .context("Failed to parse interval as milliseconds")?;
                 if value == 0 {
-                    output("Error: Interval must be greater than 0".to_string());
+                    output("ERROR: INTERVAL MUST BE GREATER THAN 0".to_string());
                     return Ok(vec![]);
                 }
                 metro_tx
                     .send(MetroCommand::SetInterval(value))
                     .context("Failed to send interval to metro thread")?;
                 *metro_interval = value;
-                output(format!("Set metro interval to {}ms", value));
+                output(format!("SET METRO INTERVAL TO {}MS", value));
             }
         }
         "M.BPM" => {
             if parts.len() < 2 {
-                output("Error: M.BPM requires a BPM value".to_string());
+                output("ERROR: M.BPM REQUIRES A BPM VALUE".to_string());
                 return Ok(vec![]);
             }
             let bpm: f32 = parts[1]
                 .parse()
                 .context("Failed to parse BPM value as number")?;
             if bpm <= 0.0 {
-                output("Error: BPM must be greater than 0".to_string());
+                output("ERROR: BPM MUST BE GREATER THAN 0".to_string());
                 return Ok(vec![]);
             }
             let interval_ms = (60000.0 / bpm) as u64;
@@ -536,52 +538,52 @@ where
                 .send(MetroCommand::SetInterval(interval_ms))
                 .context("Failed to send interval to metro thread")?;
             *metro_interval = interval_ms;
-            output(format!("Set metro to {} BPM ({}ms)", bpm, interval_ms));
+            output(format!("SET METRO TO {} BPM ({}MS)", bpm, interval_ms));
         }
         "M.ACT" => {
             if parts.len() < 2 {
-                output("Error: M.ACT requires 0 or 1".to_string());
+                output("ERROR: M.ACT REQUIRES 0 OR 1".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = parts[1]
                 .parse()
                 .context("Failed to parse M.ACT value")?;
             if !(0..=1).contains(&value) {
-                output("Error: M.ACT value must be 0 or 1".to_string());
+                output("ERROR: M.ACT VALUE MUST BE 0 OR 1".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SetActive(value != 0))
                 .context("Failed to send active state to metro thread")?;
             output(format!(
-                "Metro {}",
+                "METRO {}",
                 if value != 0 {
-                    "activated"
+                    "ACTIVATED"
                 } else {
-                    "deactivated"
+                    "DEACTIVATED"
                 }
             ));
         }
         "M.SCRIPT" => {
             if parts.len() < 2 {
-                output("Error: M.SCRIPT requires a script number (1-8)".to_string());
+                output("ERROR: M.SCRIPT REQUIRES A SCRIPT NUMBER (1-8)".to_string());
                 return Ok(vec![]);
             }
             let value: usize = parts[1]
                 .parse()
                 .context("Failed to parse script number")?;
             if !(1..=8).contains(&value) {
-                output("Error: M.SCRIPT value must be 1-8".to_string());
+                output("ERROR: M.SCRIPT VALUE MUST BE 1-8".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SetScriptIndex(value - 1))
                 .context("Failed to send script index to metro thread")?;
-            output(format!("Metro will call Script {} on each tick", value));
+            output(format!("METRO WILL CALL SCRIPT {} ON EACH TICK", value));
         }
         "PF" => {
             if parts.len() < 2 {
-                output("Error: PF requires a frequency value (20-20000)".to_string());
+                output("ERROR: PF REQUIRES A FREQUENCY VALUE (20-20000)".to_string());
                 return Ok(vec![]);
             }
             let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -592,17 +594,17 @@ where
                     .context("Failed to parse frequency value")?
             };
             if !(20.0..=20000.0).contains(&value) {
-                output("Error: Frequency must be between 20 and 20000 Hz".to_string());
+                output("ERROR: FREQUENCY MUST BE BETWEEN 20 AND 20000 HZ".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("pf".to_string(), OscType::Float(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set primary frequency to {} Hz", value));
+            output(format!("SET PRIMARY FREQUENCY TO {} HZ", value));
         }
         "PW" => {
             if parts.len() < 2 {
-                output("Error: PW requires a waveform value (0-2)".to_string());
+                output("ERROR: PW REQUIRES A WAVEFORM VALUE (0-2)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -613,17 +615,17 @@ where
                     .context("Failed to parse waveform value")?
             };
             if !(0..=2).contains(&value) {
-                output("Error: Waveform must be 0 (sin), 1 (tri), or 2 (saw)".to_string());
+                output("ERROR: WAVEFORM MUST BE 0 (SIN), 1 (TRI), OR 2 (SAW)".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("pw".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set primary waveform to {}", value));
+            output(format!("SET PRIMARY WAVEFORM TO {}", value));
         }
         "MF" => {
             if parts.len() < 2 {
-                output("Error: MF requires a frequency value (20-20000)".to_string());
+                output("ERROR: MF REQUIRES A FREQUENCY VALUE (20-20000)".to_string());
                 return Ok(vec![]);
             }
             let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -634,17 +636,17 @@ where
                     .context("Failed to parse frequency value")?
             };
             if !(20.0..=20000.0).contains(&value) {
-                output("Error: Frequency must be between 20 and 20000 Hz".to_string());
+                output("ERROR: FREQUENCY MUST BE BETWEEN 20 AND 20000 HZ".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("mf".to_string(), OscType::Float(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set mod frequency to {} Hz", value));
+            output(format!("SET MOD FREQUENCY TO {} HZ", value));
         }
         "MW" => {
             if parts.len() < 2 {
-                output("Error: MW requires a waveform value (0-2)".to_string());
+                output("ERROR: MW REQUIRES A WAVEFORM VALUE (0-2)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -655,17 +657,17 @@ where
                     .context("Failed to parse waveform value")?
             };
             if !(0..=2).contains(&value) {
-                output("Error: Waveform must be 0 (sin), 1 (tri), or 2 (saw)".to_string());
+                output("ERROR: WAVEFORM MUST BE 0 (SIN), 1 (TRI), OR 2 (SAW)".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("mw".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set mod waveform to {}", value));
+            output(format!("SET MOD WAVEFORM TO {}", value));
         }
         "DC" => {
             if parts.len() < 2 {
-                output("Error: DC requires a value (0-16383)".to_string());
+                output("ERROR: DC REQUIRES A VALUE (0-16383)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -676,7 +678,7 @@ where
                     .context("Failed to parse discontinuity amount")?
             };
             if !(0..=16383).contains(&value) {
-                output("Error: Discontinuity amount must be between 0 and 16383".to_string());
+                output("ERROR: DISCONTINUITY AMOUNT MUST BE BETWEEN 0 AND 16383".to_string());
                 return Ok(vec![]);
             }
             use std::io::Write;
@@ -686,11 +688,11 @@ where
             metro_tx
                 .send(MetroCommand::SendParam("dc".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set discontinuity amount to {}", value));
+            output(format!("SET DISCONTINUITY AMOUNT TO {}", value));
         }
         "DM" => {
             if parts.len() < 2 {
-                output("Error: DM requires a mode value (0-2)".to_string());
+                output("ERROR: DM REQUIRES A MODE VALUE (0-2)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -701,17 +703,17 @@ where
                     .context("Failed to parse discontinuity mode")?
             };
             if !(0..=2).contains(&value) {
-                output("Error: Mode must be 0 (fold), 1 (tanh), or 2 (softclip)".to_string());
+                output("ERROR: MODE MUST BE 0 (FOLD), 1 (TANH), OR 2 (SOFTCLIP)".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("dm".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set discontinuity mode to {}", value));
+            output(format!("SET DISCONTINUITY MODE TO {}", value));
         }
         "TK" => {
             if parts.len() < 2 {
-                output("Error: TK requires a value (0-16383)".to_string());
+                output("ERROR: TK REQUIRES A VALUE (0-16383)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -722,17 +724,17 @@ where
                     .context("Failed to parse tracking amount")?
             };
             if !(0..=16383).contains(&value) {
-                output("Error: Tracking amount must be between 0 and 16383".to_string());
+                output("ERROR: TRACKING AMOUNT MUST BE BETWEEN 0 AND 16383".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("tk".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set tracking amount to {}", value));
+            output(format!("SET TRACKING AMOUNT TO {}", value));
         }
         "MB" => {
             if parts.len() < 2 {
-                output("Error: MB requires a value (0-16383)".to_string());
+                output("ERROR: MB REQUIRES A VALUE (0-16383)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -743,17 +745,17 @@ where
                     .context("Failed to parse mod bus amount")?
             };
             if !(0..=16383).contains(&value) {
-                output("Error: Mod bus amount must be between 0 and 16383".to_string());
+                output("ERROR: MOD BUS AMOUNT MUST BE BETWEEN 0 AND 16383".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("mb".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set mod bus amount to {}", value));
+            output(format!("SET MOD BUS AMOUNT TO {}", value));
         }
         "MP" => {
             if parts.len() < 2 {
-                output("Error: MP requires a value (0 or 1)".to_string());
+                output("ERROR: MP REQUIRES A VALUE (0 OR 1)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -764,17 +766,17 @@ where
                     .context("Failed to parse mod -> primary value")?
             };
             if !(0..=1).contains(&value) {
-                output("Error: Value must be 0 or 1".to_string());
+                output("ERROR: VALUE MUST BE 0 OR 1".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("mp".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set mod -> primary freq to {}", value));
+            output(format!("SET MOD -> PRIMARY FREQ TO {}", value));
         }
         "MD" => {
             if parts.len() < 2 {
-                output("Error: MD requires a value (0 or 1)".to_string());
+                output("ERROR: MD REQUIRES A VALUE (0 OR 1)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -785,17 +787,17 @@ where
                     .context("Failed to parse mod -> discontinuity value")?
             };
             if !(0..=1).contains(&value) {
-                output("Error: Value must be 0 or 1".to_string());
+                output("ERROR: VALUE MUST BE 0 OR 1".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("md".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set mod -> discontinuity to {}", value));
+            output(format!("SET MOD -> DISCONTINUITY TO {}", value));
         }
         "MT" => {
             if parts.len() < 2 {
-                output("Error: MT requires a value (0 or 1)".to_string());
+                output("ERROR: MT REQUIRES A VALUE (0 OR 1)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -806,17 +808,17 @@ where
                     .context("Failed to parse mod -> tracking value")?
             };
             if !(0..=1).contains(&value) {
-                output("Error: Value must be 0 or 1".to_string());
+                output("ERROR: VALUE MUST BE 0 OR 1".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("mt".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set mod -> tracking to {}", value));
+            output(format!("SET MOD -> TRACKING TO {}", value));
         }
         "MA" => {
             if parts.len() < 2 {
-                output("Error: MA requires a value (0 or 1)".to_string());
+                output("ERROR: MA REQUIRES A VALUE (0 OR 1)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -827,17 +829,17 @@ where
                     .context("Failed to parse mod -> amplitude value")?
             };
             if !(0..=1).contains(&value) {
-                output("Error: Value must be 0 or 1".to_string());
+                output("ERROR: VALUE MUST BE 0 OR 1".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("ma".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set mod -> amplitude to {}", value));
+            output(format!("SET MOD -> AMPLITUDE TO {}", value));
         }
         "FM" => {
             if parts.len() < 2 {
-                output("Error: FM requires a value (0-16383)".to_string());
+                output("ERROR: FM REQUIRES A VALUE (0-16383)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -848,17 +850,17 @@ where
                     .context("Failed to parse FM index")?
             };
             if !(0..=16383).contains(&value) {
-                output("Error: FM index must be between 0 and 16383".to_string());
+                output("ERROR: FM INDEX MUST BE BETWEEN 0 AND 16383".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("fm".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set FM index to {}", value));
+            output(format!("SET FM INDEX TO {}", value));
         }
         "AD" => {
             if parts.len() < 2 {
-                output("Error: AD requires a time value (1-10000 ms)".to_string());
+                output("ERROR: AD REQUIRES A TIME VALUE (1-10000 MS)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -869,17 +871,17 @@ where
                     .context("Failed to parse amp decay time")?
             };
             if !(1..=10000).contains(&value) {
-                output("Error: Amp decay must be between 1 and 10000 ms".to_string());
+                output("ERROR: AMP DECAY MUST BE BETWEEN 1 AND 10000 MS".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("ad".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set amp decay to {} ms", value));
+            output(format!("SET AMP DECAY TO {} MS", value));
         }
         "PD" => {
             if parts.len() < 2 {
-                output("Error: PD requires a time value (1-10000 ms)".to_string());
+                output("ERROR: PD REQUIRES A TIME VALUE (1-10000 MS)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -890,17 +892,17 @@ where
                     .context("Failed to parse pitch decay time")?
             };
             if !(1..=10000).contains(&value) {
-                output("Error: Pitch decay must be between 1 and 10000 ms".to_string());
+                output("ERROR: PITCH DECAY MUST BE BETWEEN 1 AND 10000 MS".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("pd".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set pitch decay to {} ms", value));
+            output(format!("SET PITCH DECAY TO {} MS", value));
         }
         "FD" => {
             if parts.len() < 2 {
-                output("Error: FD requires a time value (1-10000 ms)".to_string());
+                output("ERROR: FD REQUIRES A TIME VALUE (1-10000 MS)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -911,17 +913,17 @@ where
                     .context("Failed to parse FM decay time")?
             };
             if !(1..=10000).contains(&value) {
-                output("Error: FM decay must be between 1 and 10000 ms".to_string());
+                output("ERROR: FM DECAY MUST BE BETWEEN 1 AND 10000 MS".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("fd".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set FM decay to {} ms", value));
+            output(format!("SET FM DECAY TO {} MS", value));
         }
         "PA" => {
             if parts.len() < 2 {
-                output("Error: PA requires a multiplier value (0-16)".to_string());
+                output("ERROR: PA REQUIRES A MULTIPLIER VALUE (0-16)".to_string());
                 return Ok(vec![]);
             }
             let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -932,17 +934,17 @@ where
                     .context("Failed to parse pitch env amount")?
             };
             if !(0.0..=16.0).contains(&value) {
-                output("Error: Pitch env amount must be between 0 and 16".to_string());
+                output("ERROR: PITCH ENV AMOUNT MUST BE BETWEEN 0 AND 16".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("pa".to_string(), OscType::Float(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set pitch env amount to {}", value));
+            output(format!("SET PITCH ENV AMOUNT TO {}", value));
         }
         "DD" => {
             if parts.len() < 2 {
-                output("Error: DD requires a time value (1-10000 ms)".to_string());
+                output("ERROR: DD REQUIRES A TIME VALUE (1-10000 MS)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -953,17 +955,17 @@ where
                     .context("Failed to parse discontinuity decay time")?
             };
             if !(1..=10000).contains(&value) {
-                output("Error: Discontinuity decay must be between 1 and 10000 ms".to_string());
+                output("ERROR: DISCONTINUITY DECAY MUST BE BETWEEN 1 AND 10000 MS".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("dd".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set discontinuity decay to {} ms", value));
+            output(format!("SET DISCONTINUITY DECAY TO {} MS", value));
         }
         "MX" => {
             if parts.len() < 2 {
-                output("Error: MX requires a value (0-16383)".to_string());
+                output("ERROR: MX REQUIRES A VALUE (0-16383)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -974,17 +976,17 @@ where
                     .context("Failed to parse mix amount")?
             };
             if !(0..=16383).contains(&value) {
-                output("Error: Mix amount must be between 0 and 16383".to_string());
+                output("ERROR: MIX AMOUNT MUST BE BETWEEN 0 AND 16383".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("mx".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set mix amount to {}", value));
+            output(format!("SET MIX AMOUNT TO {}", value));
         }
         "MM" => {
             if parts.len() < 2 {
-                output("Error: MM requires a value (0 or 1)".to_string());
+                output("ERROR: MM REQUIRES A VALUE (0 OR 1)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -995,17 +997,17 @@ where
                     .context("Failed to parse mod bus -> mix value")?
             };
             if !(0..=1).contains(&value) {
-                output("Error: Value must be 0 or 1".to_string());
+                output("ERROR: VALUE MUST BE 0 OR 1".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("mm".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set mod bus -> mix to {}", value));
+            output(format!("SET MOD BUS -> MIX TO {}", value));
         }
         "ME" => {
             if parts.len() < 2 {
-                output("Error: ME requires a value (0 or 1)".to_string());
+                output("ERROR: ME REQUIRES A VALUE (0 OR 1)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -1016,17 +1018,17 @@ where
                     .context("Failed to parse envelope -> mix value")?
             };
             if !(0..=1).contains(&value) {
-                output("Error: Value must be 0 or 1".to_string());
+                output("ERROR: VALUE MUST BE 0 OR 1".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("me".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set envelope -> mix to {}", value));
+            output(format!("SET ENVELOPE -> MIX TO {}", value));
         }
         "FA" => {
             if parts.len() < 2 {
-                output("Error: FA requires a value (0-16383)".to_string());
+                output("ERROR: FA REQUIRES A VALUE (0-16383)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -1037,17 +1039,17 @@ where
                     .context("Failed to parse FM envelope amount")?
             };
             if !(0..=16383).contains(&value) {
-                output("Error: FM envelope amount must be between 0 and 16383".to_string());
+                output("ERROR: FM ENVELOPE AMOUNT MUST BE BETWEEN 0 AND 16383".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("fa".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set FM envelope amount to {}", value));
+            output(format!("SET FM ENVELOPE AMOUNT TO {}", value));
         }
         "DA" => {
             if parts.len() < 2 {
-                output("Error: DA requires a value (0-16383)".to_string());
+                output("ERROR: DA REQUIRES A VALUE (0-16383)".to_string());
                 return Ok(vec![]);
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -1058,13 +1060,13 @@ where
                     .context("Failed to parse DC envelope amount")?
             };
             if !(0..=16383).contains(&value) {
-                output("Error: DC envelope amount must be between 0 and 16383".to_string());
+                output("ERROR: DC ENVELOPE AMOUNT MUST BE BETWEEN 0 AND 16383".to_string());
                 return Ok(vec![]);
             }
             metro_tx
                 .send(MetroCommand::SendParam("da".to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            output(format!("Set DC envelope amount to {}", value));
+            output(format!("SET DC ENVELOPE AMOUNT TO {}", value));
         }
         "RST" => {
             metro_tx.send(MetroCommand::SendParam("pf".to_string(), OscType::Float(200.0)))?;
@@ -1091,11 +1093,11 @@ where
             metro_tx.send(MetroCommand::SendParam("fa".to_string(), OscType::Int(0)))?;
             metro_tx.send(MetroCommand::SendParam("da".to_string(), OscType::Int(0)))?;
             metro_tx.send(MetroCommand::SendVolume(1.0))?;
-            output("Reset to defaults".to_string());
+            output("RESET TO DEFAULTS".to_string());
         }
         "RND" => {
             if parts.len() < 2 {
-                output("Error: RND requires a max value".to_string());
+                output("ERROR: RND REQUIRES A MAX VALUE".to_string());
                 return Ok(vec![]);
             }
             let max: i16 = parts[1]
@@ -1110,7 +1112,7 @@ where
         }
         "RRND" => {
             if parts.len() < 3 {
-                output("Error: RRND requires min and max values".to_string());
+                output("ERROR: RRND REQUIRES MIN AND MAX VALUES".to_string());
                 return Ok(vec![]);
             }
             let mut min: i16 = parts[1]
@@ -1131,7 +1133,7 @@ where
         }
         "EITH" => {
             if parts.len() < 2 {
-                output("Error: EITH requires two values".to_string());
+                output("ERROR: EITH REQUIRES TWO VALUES".to_string());
                 return Ok(vec![]);
             }
             if let Some((a, a_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -1139,15 +1141,15 @@ where
                     let result = if rand::thread_rng().gen_bool(0.5) { a } else { b };
                     output(format!("{}", result));
                 } else {
-                    output("Error: Failed to evaluate second value".to_string());
+                    output("ERROR: FAILED TO EVALUATE SECOND VALUE".to_string());
                 }
             } else {
-                output("Error: Failed to evaluate first value".to_string());
+                output("ERROR: FAILED TO EVALUATE FIRST VALUE".to_string());
             }
         }
         "ADD" => {
             if parts.len() < 2 {
-                output("Error: ADD requires two operands".to_string());
+                output("ERROR: ADD REQUIRES TWO OPERANDS".to_string());
                 return Ok(vec![]);
             }
             if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -1155,15 +1157,15 @@ where
                     let result = x.saturating_add(y);
                     output(format!("{}", result));
                 } else {
-                    output("Error: Failed to evaluate second operand".to_string());
+                    output("ERROR: FAILED TO EVALUATE SECOND OPERAND".to_string());
                 }
             } else {
-                output("Error: Failed to evaluate first operand".to_string());
+                output("ERROR: FAILED TO EVALUATE FIRST OPERAND".to_string());
             }
         }
         "SUB" => {
             if parts.len() < 2 {
-                output("Error: SUB requires two operands".to_string());
+                output("ERROR: SUB REQUIRES TWO OPERANDS".to_string());
                 return Ok(vec![]);
             }
             if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -1171,15 +1173,15 @@ where
                     let result = x.saturating_sub(y);
                     output(format!("{}", result));
                 } else {
-                    output("Error: Failed to evaluate second operand".to_string());
+                    output("ERROR: FAILED TO EVALUATE SECOND OPERAND".to_string());
                 }
             } else {
-                output("Error: Failed to evaluate first operand".to_string());
+                output("ERROR: FAILED TO EVALUATE FIRST OPERAND".to_string());
             }
         }
         "MUL" => {
             if parts.len() < 2 {
-                output("Error: MUL requires two operands".to_string());
+                output("ERROR: MUL REQUIRES TWO OPERANDS".to_string());
                 return Ok(vec![]);
             }
             if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -1187,81 +1189,81 @@ where
                     let result = x.saturating_mul(y);
                     output(format!("{}", result));
                 } else {
-                    output("Error: Failed to evaluate second operand".to_string());
+                    output("ERROR: FAILED TO EVALUATE SECOND OPERAND".to_string());
                 }
             } else {
-                output("Error: Failed to evaluate first operand".to_string());
+                output("ERROR: FAILED TO EVALUATE FIRST OPERAND".to_string());
             }
         }
         "DIV" => {
             if parts.len() < 2 {
-                output("Error: DIV requires two operands".to_string());
+                output("ERROR: DIV REQUIRES TWO OPERANDS".to_string());
                 return Ok(vec![]);
             }
             if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 if let Some((y, _)) = eval_expression(&parts, 1 + x_consumed, variables, patterns, scripts, script_index) {
                     if y == 0 {
-                        output("Error: Division by zero".to_string());
+                        output("ERROR: DIVISION BY ZERO".to_string());
                     } else {
                         let result = x / y;
                         output(format!("{}", result));
                     }
                 } else {
-                    output("Error: Failed to evaluate second operand".to_string());
+                    output("ERROR: FAILED TO EVALUATE SECOND OPERAND".to_string());
                 }
             } else {
-                output("Error: Failed to evaluate first operand".to_string());
+                output("ERROR: FAILED TO EVALUATE FIRST OPERAND".to_string());
             }
         }
         "MOD" => {
             if parts.len() < 2 {
-                output("Error: MOD requires two operands".to_string());
+                output("ERROR: MOD REQUIRES TWO OPERANDS".to_string());
                 return Ok(vec![]);
             }
             if let Some((x, x_consumed)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
                 if let Some((y, _)) = eval_expression(&parts, 1 + x_consumed, variables, patterns, scripts, script_index) {
                     if y == 0 {
-                        output("Error: Modulo by zero".to_string());
+                        output("ERROR: MODULO BY ZERO".to_string());
                     } else {
                         let result = x % y;
                         output(format!("{}", result));
                     }
                 } else {
-                    output("Error: Failed to evaluate second operand".to_string());
+                    output("ERROR: FAILED TO EVALUATE SECOND OPERAND".to_string());
                 }
             } else {
-                output("Error: Failed to evaluate first operand".to_string());
+                output("ERROR: FAILED TO EVALUATE FIRST OPERAND".to_string());
             }
         }
         "SCRIPT" => {
             if parts.len() < 2 {
-                output("Error: SCRIPT requires number 1-8".to_string());
+                output("ERROR: SCRIPT REQUIRES NUMBER 1-8".to_string());
                 return Ok(vec![]);
             }
             let num: usize = parts[1]
                 .parse()
                 .context("Failed to parse script number")?;
             if num < 1 || num > 8 {
-                output("Error: SCRIPT number must be 1-8".to_string());
+                output("ERROR: SCRIPT NUMBER MUST BE 1-8".to_string());
                 return Ok(vec![]);
             }
             return Ok(vec![num - 1]);
         }
         "SAVE" => {
             if parts.len() < 2 {
-                output("Error: SAVE requires a scene name".to_string());
+                output("ERROR: SAVE REQUIRES A SCENE NAME".to_string());
                 return Ok(vec![]);
             }
             let name = parts[1..].join(" ");
             let scene = crate::scene::Scene::from_app_state(scripts, patterns);
             match crate::scene::save_scene(&name, &scene) {
-                Ok(()) => output(format!("Saved scene: {}", name)),
-                Err(e) => output(format!("Error: {:?}", e)),
+                Ok(()) => output(format!("SAVED SCENE: {}", name)),
+                Err(e) => output(format!("ERROR: {:?}", e)),
             }
         }
         "LOAD" => {
             if parts.len() < 2 {
-                output("Error: LOAD requires a scene name".to_string());
+                output("ERROR: LOAD REQUIRES A SCENE NAME".to_string());
                 return Ok(vec![]);
             }
             let name = parts[1..].join(" ");
@@ -1269,42 +1271,94 @@ where
                 Ok(scene) => {
                     scene.apply_to_app_state(scripts, patterns);
                     *variables = crate::types::Variables::default();
-                    output(format!("Loaded scene: {}", name));
+                    output(format!("LOADED SCENE: {}", name));
                 }
                 Err(crate::scene::SceneError::NotFound(_)) => {
-                    output(format!("Error: Scene '{}' not found", name));
+                    output(format!("ERROR: SCENE '{}' NOT FOUND", name));
                 }
-                Err(e) => output(format!("Error: {:?}", e)),
+                Err(e) => output(format!("ERROR: {:?}", e)),
             }
         }
         "SCENES" => {
             match crate::scene::list_scenes() {
                 Ok(scenes) => {
                     if scenes.is_empty() {
-                        output("No scenes saved".to_string());
+                        output("NO SCENES SAVED".to_string());
                     } else {
-                        output("Scenes:".to_string());
+                        output("SCENES:".to_string());
                         for (name, size) in scenes {
                             let size_kb = size as f64 / 1024.0;
                             output(format!("  {} ({:.1} KB)", name, size_kb));
                         }
                     }
                 }
-                Err(e) => output(format!("Error: {:?}", e)),
+                Err(e) => output(format!("ERROR: {:?}", e)),
             }
         }
         "DELETE" => {
             if parts.len() < 2 {
-                output("Error: DELETE requires a scene name".to_string());
+                output("ERROR: DELETE REQUIRES A SCENE NAME".to_string());
                 return Ok(vec![]);
             }
             let name = parts[1..].join(" ");
             match crate::scene::delete_scene(&name) {
-                Ok(()) => output(format!("Deleted scene: {}", name)),
+                Ok(()) => output(format!("DELETED SCENE: {}", name)),
                 Err(crate::scene::SceneError::NotFound(_)) => {
-                    output(format!("Error: Scene '{}' not found", name));
+                    output(format!("ERROR: SCENE '{}' NOT FOUND", name));
                 }
-                Err(e) => output(format!("Error: {:?}", e)),
+                Err(e) => output(format!("ERROR: {:?}", e)),
+            }
+        }
+        "THEME" => {
+            if parts.len() == 1 {
+                output(format!("CURRENT THEME: {}", theme.name.to_uppercase()));
+            } else {
+                let mode = parts[1].to_lowercase();
+                match mode.as_str() {
+                    "dark" => {
+                        *theme = Theme::dark();
+                        if let Err(e) = config::save_theme_mode("dark") {
+                            output(format!("WARNING: FAILED TO SAVE THEME: {:?}", e));
+                        }
+                        output("SWITCHED TO DARK THEME".to_string());
+                    }
+                    "light" => {
+                        *theme = Theme::light();
+                        if let Err(e) = config::save_theme_mode("light") {
+                            output(format!("WARNING: FAILED TO SAVE THEME: {:?}", e));
+                        }
+                        output("SWITCHED TO LIGHT THEME".to_string());
+                    }
+                    "system" => {
+                        *theme = Theme::system();
+                        if let Err(e) = config::save_theme_mode("system") {
+                            output(format!("WARNING: FAILED TO SAVE THEME: {:?}", e));
+                        }
+                        output("SWITCHED TO SYSTEM THEME".to_string());
+                    }
+                    "custom" => {
+                        match config::load_config() {
+                            Ok(cfg) => match config::load_theme(&cfg) {
+                                Ok(custom_theme) if cfg.display.theme == "custom" => {
+                                    *theme = custom_theme;
+                                    if let Err(e) = config::save_theme_mode("custom") {
+                                        output(format!("WARNING: FAILED TO SAVE THEME: {:?}", e));
+                                    }
+                                    output("SWITCHED TO CUSTOM THEME".to_string());
+                                }
+                                _ => {
+                                    output("ERROR: NO CUSTOM THEME DEFINED IN CONFIG".to_string());
+                                }
+                            },
+                            Err(e) => {
+                                output(format!("ERROR: FAILED TO LOAD CONFIG: {:?}", e));
+                            }
+                        }
+                    }
+                    _ => {
+                        output("ERROR: UNKNOWN THEME MODE (USE DARK, LIGHT, SYSTEM, OR CUSTOM)".to_string());
+                    }
+                }
             }
         }
         "HELP" => {
@@ -1314,53 +1368,60 @@ where
             output("VOLUME:  VOL <0.0-1.0>".to_string());
             output("RESET:   RST".to_string());
             output("".to_string());
-            output("-- Oscillators --".to_string());
-            output("PF <hz>     Primary freq (20-20000)".to_string());
-            output("PW <0-2>    Primary wave (sin/tri/saw)".to_string());
-            output("MF <hz>     Mod freq".to_string());
-            output("MW <0-2>    Mod wave".to_string());
+            output("-- OSCILLATORS --".to_string());
+            output("PF <HZ>     PRIMARY FREQ (20-20000)".to_string());
+            output("PW <0-2>    PRIMARY WAVE (SIN/TRI/SAW)".to_string());
+            output("MF <HZ>     MOD FREQ".to_string());
+            output("MW <0-2>    MOD WAVE".to_string());
             output("".to_string());
-            output("-- FM & Discontinuity --".to_string());
-            output("FM <0-16383>  FM index".to_string());
-            output("FA <0-16383>  FM env amount".to_string());
-            output("FD <ms>       FM env decay".to_string());
-            output("DC <0-16383>  Discontinuity".to_string());
-            output("DA <0-16383>  DC env amount".to_string());
-            output("DD <ms>       DC env decay".to_string());
-            output("DM <0-2>      DC mode (fold/tanh/soft)".to_string());
+            output("-- FM & DISCONTINUITY --".to_string());
+            output("FM <0-16383>  FM INDEX".to_string());
+            output("FA <0-16383>  FM ENV AMOUNT".to_string());
+            output("FD <MS>       FM ENV DECAY".to_string());
+            output("DC <0-16383>  DISCONTINUITY".to_string());
+            output("DA <0-16383>  DC ENV AMOUNT".to_string());
+            output("DD <MS>       DC ENV DECAY".to_string());
+            output("DM <0-2>      DC MODE (FOLD/TANH/SOFT)".to_string());
             output("".to_string());
-            output("-- Envelopes --".to_string());
-            output("AD <ms>       Amp decay".to_string());
-            output("PD <ms>       Pitch decay".to_string());
-            output("PA <0-16>     Pitch env amount".to_string());
+            output("-- ENVELOPES --".to_string());
+            output("AD <MS>       AMP DECAY".to_string());
+            output("PD <MS>       PITCH DECAY".to_string());
+            output("PA <0-16>     PITCH ENV AMOUNT".to_string());
             output("".to_string());
-            output("-- Mod Bus --".to_string());
-            output("MB <0-16383>  Mod bus amount".to_string());
-            output("MP/MD/MT/MA <0|1>  Routing toggles".to_string());
-            output("TK <0-16383>  Tracking".to_string());
+            output("-- MOD BUS --".to_string());
+            output("MB <0-16383>  MOD BUS AMOUNT".to_string());
+            output("MP/MD/MT/MA <0|1>  ROUTING TOGGLES".to_string());
+            output("TK <0-16383>  TRACKING".to_string());
             output("".to_string());
-            output("-- Mix --".to_string());
-            output("MX <0-16383>  Mix amount".to_string());
-            output("MM/ME <0|1>   Mix routing".to_string());
+            output("-- MIX --".to_string());
+            output("MX <0-16383>  MIX AMOUNT".to_string());
+            output("MM/ME <0|1>   MIX ROUTING".to_string());
             output("".to_string());
-            output("-- Metro --".to_string());
-            output("M             Show interval".to_string());
-            output("M <ms>        Set interval".to_string());
-            output("M.BPM <bpm>   Set BPM".to_string());
-            output("M.ACT <0|1>     Start/stop".to_string());
-            output("M.SCRIPT <1-8> Set script to call on each tick".to_string());
+            output("-- METRO --".to_string());
+            output("M             SHOW INTERVAL".to_string());
+            output("M <MS>        SET INTERVAL".to_string());
+            output("M.BPM <BPM>   SET BPM".to_string());
+            output("M.ACT <0|1>     START/STOP".to_string());
+            output("M.SCRIPT <1-8> SET SCRIPT TO CALL ON EACH TICK".to_string());
             output("".to_string());
-            output("-- Scripts --".to_string());
-            output("SCRIPT <1-8>  Execute stored script".to_string());
+            output("-- SCRIPTS --".to_string());
+            output("SCRIPT <1-8>  EXECUTE STORED SCRIPT".to_string());
             output("".to_string());
-            output("-- Scenes --".to_string());
-            output("SAVE <name>   Save current state".to_string());
-            output("LOAD <name>   Load saved state".to_string());
-            output("SCENES        List all scenes".to_string());
-            output("DELETE <name> Delete a scene".to_string());
+            output("-- SCENES --".to_string());
+            output("SAVE <NAME>   SAVE CURRENT STATE".to_string());
+            output("LOAD <NAME>   LOAD SAVED STATE".to_string());
+            output("SCENES        LIST ALL SCENES".to_string());
+            output("DELETE <NAME> DELETE A SCENE".to_string());
+            output("".to_string());
+            output("-- THEME --".to_string());
+            output("THEME            SHOW CURRENT".to_string());
+            output("THEME DARK       DARK MODE".to_string());
+            output("THEME LIGHT      LIGHT MODE".to_string());
+            output("THEME SYSTEM     USE OS PREFERENCE".to_string());
+            output("THEME CUSTOM     USE CUSTOM THEME".to_string());
         }
         _ => {
-            output(format!("Unknown command: {}", cmd));
+            output(format!("UNKNOWN COMMAND: {}", cmd));
         }
     }
 
@@ -1522,6 +1583,12 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         "SCENES" => {
             if argc > 0 {
                 return Err(anyhow::anyhow!("SCENES takes no arguments"));
+            }
+            Ok(())
+        }
+        "THEME" => {
+            if argc > 1 {
+                return Err(anyhow::anyhow!("THEME takes 0-1 arguments"));
             }
             Ok(())
         }

@@ -1,3 +1,4 @@
+use crate::theme::Theme;
 use crate::types::{
     MetroCommand, MetroState, Page, PatternStorage, ScriptStorage, Variables,
 };
@@ -31,10 +32,11 @@ pub struct App {
     pub should_quit: bool,
     pub script_error: Option<String>,
     pub script_error_time: Option<Instant>,
+    pub theme: Theme,
 }
 
 impl App {
-    pub fn new(metro_tx: Sender<MetroCommand>, metro_state: Arc<Mutex<MetroState>>) -> Self {
+    pub fn new(metro_tx: Sender<MetroCommand>, metro_state: Arc<Mutex<MetroState>>, theme: Theme) -> Self {
         Self {
             current_page: Page::Live,
             previous_page: Page::Live,
@@ -58,6 +60,7 @@ impl App {
             should_quit: false,
             script_error: None,
             script_error_time: None,
+            theme,
         }
     }
 

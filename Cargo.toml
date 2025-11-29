@@ -26,3 +26,8 @@ serde_json = "1"
 # Random number generation for PROB
 rand = "0.8"
 serde-big-array = "0.5.1"
+
+# Configuration and theming
+toml = "0.8"
+dirs = "5"
+dark-light = "1.0"

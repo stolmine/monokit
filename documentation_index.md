@@ -259,6 +259,12 @@ Examples:
 - `Ctrl+V` - Paste line (script pages)
 - Script pages show validation errors that auto-clear after 3 seconds or on successful save
 
+### Phase 1 UI Style (Teletype)
+- **Uppercase text:** All UI text (commands, labels, output) displays in uppercase for a Teletype-style aesthetic
+- **User input conversion:** User input is automatically converted to uppercase on entry
+- **Script page highlighting:** Selected line shows white background with black text for brightness-based distinction
+- **Line numbers:** Removed from script pages for a cleaner display
+
 ## OSC Protocol
 
 All communication from Rust CLI to SuperCollider server uses UDP over localhost (127.0.0.1:57120).

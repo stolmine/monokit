@@ -45,7 +45,7 @@ pub fn ui(f: &mut Frame, app: &super::App) {
         Page::Metro => render_metro_page(app),
         Page::Init => render_init_page(app),
         Page::Pattern => render_pattern_page(app),
-        Page::Help => render_help_page(app.help_scroll, chunks[1].height as usize),
+        Page::Help => render_help_page(app, chunks[1].height as usize),
     };
     f.render_widget(content, chunks[1]);
 
@@ -78,7 +78,7 @@ pub fn render_header(app: &super::App) -> Paragraph<'static> {
             } else {
                 spans.push(Span::styled(
                     page.name().to_string(),
-                    Style::default().fg(Color::DarkGray),
+                    Style::default().fg(app.theme.secondary),
                 ));
             }
             spans.push(Span::raw(" "));
@@ -86,7 +86,12 @@ pub fn render_header(app: &super::App) -> Paragraph<'static> {
     }
 
     Paragraph::new(Line::from(spans))
-        .block(Block::default().borders(Borders::ALL).title(" MONOKIT "))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(app.theme.border))
+                .title(" MONOKIT ")
+        )
 }
 
 pub fn render_metro_page(app: &super::App) -> Paragraph<'static> {
@@ -104,44 +109,35 @@ pub fn render_metro_page(app: &super::App) -> Paragraph<'static> {
         Span::styled("  BPM: ", Style::default().fg(Color::Cyan)),
         Span::raw(format!("{:.1}", bpm)),
         Span::raw("  "),
-        Span::styled("Interval: ", Style::default().fg(Color::Cyan)),
-        Span::raw(format!("{}ms", state.interval_ms)),
+        Span::styled("INTERVAL: ", Style::default().fg(Color::Cyan)),
+        Span::raw(format!("{}MS", state.interval_ms)),
     ]));
     text.push(Line::from(""));
     text.push(Line::from(vec![
-        Span::styled("  Status: ", Style::default().fg(Color::Cyan)),
+        Span::styled("  STATUS: ", Style::default().fg(Color::Cyan)),
         Span::styled(status, Style::default().fg(status_color).add_modifier(Modifier::BOLD)),
     ]));
     text.push(Line::from(""));
     text.push(Line::from(vec![
-        Span::styled("  M Script Lines:", Style::default().fg(Color::Cyan)),
+        Span::styled("  M SCRIPT LINES:", Style::default().fg(Color::Cyan)),
     ]));
 
     let metro_script = app.scripts.get_script(8);
     for i in 0..8 {
-        let line_num = i + 1;
         let line_content = &metro_script.lines[i];
         let is_selected = app.selected_line == Some(i);
 
         if is_selected {
-            if line_content.is_empty() {
-                text.push(Line::from(vec![
-                    Span::styled(format!("  > {}: ", line_num), Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
-                ]));
-            } else {
-                text.push(Line::from(vec![
-                    Span::styled(format!("  > {}: ", line_num), Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
-                    Span::styled(line_content.clone(), Style::default().fg(Color::Yellow)),
-                ]));
-            }
+            text.push(Line::from(vec![
+                Span::styled(format!("  {}", line_content), Style::default().bg(app.theme.highlight_bg).fg(app.theme.highlight_fg)),
+            ]));
         } else if line_content.is_empty() {
             text.push(Line::from(vec![
-                Span::styled(format!("    {}: ", line_num), Style::default().fg(Color::DarkGray)),
+                Span::styled("  ", Style::default().fg(app.theme.secondary)),
             ]));
         } else {
             text.push(Line::from(vec![
-                Span::styled(format!("    {}: ", line_num), Style::default().fg(Color::Cyan)),
-                Span::raw(line_content.clone()),
+                Span::styled(format!("  {}", line_content), Style::default().fg(app.theme.secondary)),
             ]));
         }
     }
@@ -149,12 +145,17 @@ pub fn render_metro_page(app: &super::App) -> Paragraph<'static> {
     if let Some(error_msg) = &app.script_error {
         text.push(Line::from(""));
         text.push(Line::from(vec![
-            Span::styled(format!("  {}", error_msg), Style::default().fg(Color::Red)),
+            Span::styled(format!("  {}", error_msg), Style::default().fg(app.theme.error)),
         ]));
     }
 
     Paragraph::new(text)
-        .block(Block::default().borders(Borders::ALL).title(" Metro "))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(app.theme.border))
+                .title(" METRO ")
+        )
         .wrap(Wrap { trim: false })
 }
 
@@ -173,7 +174,12 @@ pub fn render_live_page(app: &super::App, height: usize) -> Paragraph<'static> {
         .collect();
 
     Paragraph::new(text)
-        .block(Block::default().borders(Borders::ALL).title(" Live "))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(app.theme.border))
+                .title(" LIVE ")
+        )
 }
 
 pub fn render_script_page(app: &super::App, num: u8) -> Paragraph<'static> {
@@ -183,29 +189,20 @@ pub fn render_script_page(app: &super::App, num: u8) -> Paragraph<'static> {
     let mut lines = vec![Line::from("")];
 
     for i in 0..8 {
-        let line_num = i + 1;
         let line_content = &script.lines[i];
         let is_selected = app.selected_line == Some(i);
 
         if is_selected {
-            if line_content.is_empty() {
-                lines.push(Line::from(vec![
-                    Span::styled(format!("> {}: ", line_num), Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
-                ]));
-            } else {
-                lines.push(Line::from(vec![
-                    Span::styled(format!("> {}: ", line_num), Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
-                    Span::styled(line_content.clone(), Style::default().fg(Color::Yellow)),
-                ]));
-            }
+            lines.push(Line::from(vec![
+                Span::styled(format!("  {}", line_content), Style::default().bg(app.theme.highlight_bg).fg(app.theme.highlight_fg)),
+            ]));
         } else if line_content.is_empty() {
             lines.push(Line::from(vec![
-                Span::styled(format!("  {}: ", line_num), Style::default().fg(Color::DarkGray)),
+                Span::styled("  ", Style::default().fg(app.theme.secondary)),
             ]));
         } else {
             lines.push(Line::from(vec![
-                Span::styled(format!("  {}: ", line_num), Style::default().fg(Color::Cyan)),
-                Span::raw(line_content.clone()),
+                Span::styled(format!("  {}", line_content), Style::default().fg(app.theme.secondary)),
             ]));
         }
     }
@@ -213,12 +210,17 @@ pub fn render_script_page(app: &super::App, num: u8) -> Paragraph<'static> {
     if let Some(error_msg) = &app.script_error {
         lines.push(Line::from(""));
         lines.push(Line::from(vec![
-            Span::styled(format!("  {}", error_msg), Style::default().fg(Color::Red)),
+            Span::styled(format!("  {}", error_msg), Style::default().fg(app.theme.error)),
         ]));
     }
 
     Paragraph::new(lines)
-        .block(Block::default().borders(Borders::ALL).title(format!(" Script {} ", num)))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(app.theme.border))
+                .title(format!(" SCRIPT {} ", num))
+        )
 }
 
 pub fn render_init_page(app: &super::App) -> Paragraph<'static> {
@@ -227,29 +229,20 @@ pub fn render_init_page(app: &super::App) -> Paragraph<'static> {
     let mut lines = vec![Line::from("")];
 
     for i in 0..8 {
-        let line_num = i + 1;
         let line_content = &init_script.lines[i];
         let is_selected = app.selected_line == Some(i);
 
         if is_selected {
-            if line_content.is_empty() {
-                lines.push(Line::from(vec![
-                    Span::styled(format!("> {}: ", line_num), Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
-                ]));
-            } else {
-                lines.push(Line::from(vec![
-                    Span::styled(format!("> {}: ", line_num), Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
-                    Span::styled(line_content.clone(), Style::default().fg(Color::Yellow)),
-                ]));
-            }
+            lines.push(Line::from(vec![
+                Span::styled(format!("  {}", line_content), Style::default().bg(app.theme.highlight_bg).fg(app.theme.highlight_fg)),
+            ]));
         } else if line_content.is_empty() {
             lines.push(Line::from(vec![
-                Span::styled(format!("  {}: ", line_num), Style::default().fg(Color::DarkGray)),
+                Span::styled("  ", Style::default().fg(app.theme.secondary)),
             ]));
         } else {
             lines.push(Line::from(vec![
-                Span::styled(format!("  {}: ", line_num), Style::default().fg(Color::Cyan)),
-                Span::raw(line_content.clone()),
+                Span::styled(format!("  {}", line_content), Style::default().fg(app.theme.secondary)),
             ]));
         }
     }
@@ -257,12 +250,17 @@ pub fn render_init_page(app: &super::App) -> Paragraph<'static> {
     if let Some(error_msg) = &app.script_error {
         lines.push(Line::from(""));
         lines.push(Line::from(vec![
-            Span::styled(format!("  {}", error_msg), Style::default().fg(Color::Red)),
+            Span::styled(format!("  {}", error_msg), Style::default().fg(app.theme.error)),
         ]));
     }
 
     Paragraph::new(lines)
-        .block(Block::default().borders(Borders::ALL).title(" Init "))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(app.theme.border))
+                .title(" INIT ")
+        )
 }
 
 pub fn render_pattern_page(app: &super::App) -> Paragraph<'static> {
@@ -285,25 +283,25 @@ pub fn render_pattern_page(app: &super::App) -> Paragraph<'static> {
         let style = if pattern_idx == app.patterns.working {
             Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
         } else {
-            Style::default().fg(Color::DarkGray)
+            Style::default().fg(app.theme.secondary)
         };
         header_spans.push(Span::styled(format!(" {:^5} ", label), style));
     }
     lines.push(Line::from(header_spans));
 
-    let mut len_spans = vec![Span::styled(" len ", Style::default().fg(Color::DarkGray))];
+    let mut len_spans = vec![Span::styled(" LEN ", Style::default().fg(app.theme.secondary))];
     for pattern_idx in 0..4 {
         let pattern = &app.patterns.patterns[pattern_idx];
         len_spans.push(Span::styled(
             format!(" {:^5} ", pattern.length),
-            Style::default().fg(Color::DarkGray),
+            Style::default().fg(app.theme.secondary),
         ));
     }
     lines.push(Line::from(len_spans));
 
     for step in scroll_offset..(scroll_offset + visible_rows).min(64) {
         let mut row_spans = vec![
-            Span::styled(format!("{:3}: ", step), Style::default().fg(Color::DarkGray)),
+            Span::styled(format!("{:3}: ", step), Style::default().fg(app.theme.secondary)),
         ];
 
         for pattern_idx in 0..4 {
@@ -320,11 +318,11 @@ pub fn render_pattern_page(app: &super::App) -> Paragraph<'static> {
             };
 
             let style = if is_cursor {
-                Style::default().bg(Color::White).fg(Color::Black)
+                Style::default().bg(app.theme.highlight_bg).fg(app.theme.highlight_fg)
             } else if is_playhead && !is_beyond_length {
                 Style::default().bg(Color::Cyan).fg(Color::Black)
             } else if is_beyond_length {
-                Style::default().fg(Color::DarkGray)
+                Style::default().fg(app.theme.secondary)
             } else {
                 Style::default()
             };
@@ -335,162 +333,168 @@ pub fn render_pattern_page(app: &super::App) -> Paragraph<'static> {
         lines.push(Line::from(row_spans));
     }
 
-    let title = format!(" Pattern ({}/64) ", cursor_step);
+    let title = format!(" PATTERN ({}/64) ", cursor_step);
     Paragraph::new(lines)
-        .block(Block::default().borders(Borders::ALL).title(title))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(app.theme.border))
+                .title(title)
+        )
 }
 
 pub const HELP_LINES: &[&str] = &[
     "",
     "  NAVIGATION",
-    "  [ ]           Cycle pages",
-    "  Alt+L         Live page",
-    "  Alt+1-8       Script 1-8",
-    "  Alt+M         Metro page",
-    "  Alt+I         Init page",
-    "  Alt+P         Pattern page",
-    "  Alt+H         Toggle help",
+    "  [ ]           CYCLE PAGES",
+    "  ALT+L         LIVE PAGE",
+    "  ALT+1-8       SCRIPT 1-8",
+    "  ALT+M         METRO PAGE",
+    "  ALT+I         INIT PAGE",
+    "  ALT+P         PATTERN PAGE",
+    "  ALT+H         TOGGLE HELP",
     "",
-    "  EDITING (Script pages)",
-    "  Up/Down       Select line",
-    "  Enter         Save line",
-    "  Ctrl+D        Duplicate line",
-    "  Ctrl+K        Delete line",
-    "  Ctrl+C        Copy line",
-    "  Ctrl+X        Cut line",
-    "  Ctrl+V        Paste line",
-    "  Ctrl+L/R      Word movement",
+    "  EDITING (SCRIPT PAGES)",
+    "  UP/DOWN       SELECT LINE",
+    "  ENTER         SAVE LINE",
+    "  CTRL+D        DUPLICATE LINE",
+    "  CTRL+K        DELETE LINE",
+    "  CTRL+C        COPY LINE",
+    "  CTRL+X        CUT LINE",
+    "  CTRL+V        PASTE LINE",
+    "  CTRL+L/R      WORD MOVEMENT",
     "",
     "  TRIGGER & VOLUME",
-    "  TR            Trigger voice",
-    "  VOL 0-1       Master volume",
-    "  RST           Reset to defaults",
-    "  q/quit/exit   Quit application",
+    "  TR            TRIGGER VOICE",
+    "  VOL 0-1       MASTER VOLUME",
+    "  RST           RESET TO DEFAULTS",
+    "  Q/QUIT/EXIT   QUIT APPLICATION",
     "",
     "  VARIABLES",
-    "  A B C D       Global accumulators",
-    "  X Y Z T       Global accumulators",
-    "  J K           Per-script local vars",
-    "  I             Loop counter (in L)",
-    "  Example: A 100 (set), PF A (use)",
+    "  A B C D       GLOBAL ACCUMULATORS",
+    "  X Y Z T       GLOBAL ACCUMULATORS",
+    "  J K           PER-SCRIPT LOCAL VARS",
+    "  I             LOOP COUNTER (IN L)",
+    "  EXAMPLE: A 100 (SET), PF A (USE)",
     "",
-    "  MATH (command & expression)",
-    "  ADD/+ <a> <b>   Add",
-    "  SUB/- <a> <b>   Subtract",
-    "  MUL/* <a> <b>   Multiply",
-    "  DIV// <a> <b>   Divide",
-    "  MOD/% <a> <b>   Modulo",
+    "  MATH (COMMAND & EXPRESSION)",
+    "  ADD/+ <A> <B>   ADD",
+    "  SUB/- <A> <B>   SUBTRACT",
+    "  MUL/* <A> <B>   MULTIPLY",
+    "  DIV// <A> <B>   DIVIDE",
+    "  MOD/% <A> <B>   MODULO",
     "",
     "  RANDOM",
-    "  RND <max>        0 to max-1",
-    "  RRND <min> <max> min to max",
+    "  RND <MAX>        0 TO MAX-1",
+    "  RRND <MIN> <MAX> MIN TO MAX",
     "",
     "  NOTE/PITCH",
-    "  N <semi>      Semitones to Hz",
-    "  N 0 = C3 (131 Hz)",
+    "  N <SEMI>      SEMITONES TO HZ",
+    "  N 0 = C3 (131 HZ)",
     "  N 12 = C4, N 21 = A4 (440)",
-    "  Example: PF N 12, PF N ADD A 7",
+    "  EXAMPLE: PF N 12, PF N ADD A 7",
     "",
-    "  CONTROL FLOW (PRE operators)",
-    "  IF <x>: <cmd>        If x != 0 (truthy)",
-    "  IF <cond>: <cmd>     With comparison",
-    "  ELIF <cond>: <cmd>   Else-if",
-    "  ELSE: <cmd>          Else branch",
-    "  PROB <0-100>: <cmd>  Probability %",
-    "  EV <n>: <cmd>        Every Nth tick",
-    "  SKIP <n>: <cmd>      Skip every Nth",
-    "  L <s> <e>: <cmds>    Loop s to e",
-    "  cmd1; cmd2           Sub-commands",
+    "  CONTROL FLOW (PRE OPERATORS)",
+    "  IF <X>: <CMD>        IF X != 0 (TRUTHY)",
+    "  IF <COND>: <CMD>     WITH COMPARISON",
+    "  ELIF <COND>: <CMD>   ELSE-IF",
+    "  ELSE: <CMD>          ELSE BRANCH",
+    "  PROB <0-100>: <CMD>  PROBABILITY %",
+    "  EV <N>: <CMD>        EVERY NTH TICK",
+    "  SKIP <N>: <CMD>      SKIP EVERY NTH",
+    "  L <S> <E>: <CMDS>    LOOP S TO E",
+    "  CMD1; CMD2           SUB-COMMANDS",
     "",
-    "  COMPARISONS (return 1/0)",
-    "  EZ <x>       x == 0 (equals zero)",
-    "  NZ <x>       x != 0 (not zero)",
-    "  EQ <a> <b>   a == b",
-    "  NE <a> <b>   a != b",
-    "  GT <a> <b>   a > b",
-    "  LT <a> <b>   a < b",
-    "  GTE <a> <b>  a >= b",
-    "  LTE <a> <b>  a <= b",
-    "  Also: > < >= <= == != in cond",
+    "  COMPARISONS (RETURN 1/0)",
+    "  EZ <X>       X == 0 (EQUALS ZERO)",
+    "  NZ <X>       X != 0 (NOT ZERO)",
+    "  EQ <A> <B>   A == B",
+    "  NE <A> <B>   A != B",
+    "  GT <A> <B>   A > B",
+    "  LT <A> <B>   A < B",
+    "  GTE <A> <B>  A >= B",
+    "  LTE <A> <B>  A <= B",
+    "  ALSO: > < >= <= == != IN COND",
     "",
     "  SCENES",
-    "  SAVE <name>   Save scripts+patterns",
-    "  LOAD <name>   Load scene",
-    "  SCENES        List saved scenes",
-    "  DELETE <name> Delete scene",
+    "  SAVE <NAME>   SAVE SCRIPTS+PATTERNS",
+    "  LOAD <NAME>   LOAD SCENE",
+    "  SCENES        LIST SAVED SCENES",
+    "  DELETE <NAME> DELETE SCENE",
     "",
     "  OSCILLATORS",
-    "  PF <hz>       Primary freq (20-20000)",
-    "  PW <0-2>      Primary wave (sin/tri/saw)",
-    "  MF <hz>       Mod freq (20-20000)",
-    "  MW <0-2>      Mod wave (sin/tri/saw)",
+    "  PF <HZ>       PRIMARY FREQ (20-20000)",
+    "  PW <0-2>      PRIMARY WAVE (SIN/TRI/SAW)",
+    "  MF <HZ>       MOD FREQ (20-20000)",
+    "  MW <0-2>      MOD WAVE (SIN/TRI/SAW)",
     "",
     "  FM SYNTHESIS",
-    "  FM <0-16383>  FM index",
-    "  FA <0-16383>  FM env amount",
-    "  FD <ms>       FM env decay",
+    "  FM <0-16383>  FM INDEX",
+    "  FA <0-16383>  FM ENV AMOUNT",
+    "  FD <MS>       FM ENV DECAY",
     "",
     "  DISCONTINUITY",
-    "  DC <0-16383>  Discontinuity amount",
-    "  DA <0-16383>  DC env amount",
-    "  DD <ms>       DC env decay",
-    "  DM <0-2>      Mode (fold/tanh/soft)",
+    "  DC <0-16383>  DISCONTINUITY AMOUNT",
+    "  DA <0-16383>  DC ENV AMOUNT",
+    "  DD <MS>       DC ENV DECAY",
+    "  DM <0-2>      MODE (FOLD/TANH/SOFT)",
     "",
     "  ENVELOPES",
-    "  AD <ms>       Amp decay",
-    "  PD <ms>       Pitch decay",
-    "  PA <0-16>     Pitch env amount",
+    "  AD <MS>       AMP DECAY",
+    "  PD <MS>       PITCH DECAY",
+    "  PA <0-16>     PITCH ENV AMOUNT",
     "",
     "  MOD BUS",
-    "  MB <0-16383>  Mod bus amount",
-    "  TK <0-16383>  Tracking amount",
-    "  MP <0|1>      Mod -> primary freq",
-    "  MD <0|1>      Mod -> discontinuity",
-    "  MT <0|1>      Mod -> tracking",
-    "  MA <0|1>      Mod -> amplitude",
+    "  MB <0-16383>  MOD BUS AMOUNT",
+    "  TK <0-16383>  TRACKING AMOUNT",
+    "  MP <0|1>      MOD -> PRIMARY FREQ",
+    "  MD <0|1>      MOD -> DISCONTINUITY",
+    "  MT <0|1>      MOD -> TRACKING",
+    "  MA <0|1>      MOD -> AMPLITUDE",
     "",
     "  MIX",
-    "  MX <0-16383>  Mix amount",
-    "  MM <0|1>      Mod bus -> mix",
-    "  ME <0|1>      Envelope -> mix",
+    "  MX <0-16383>  MIX AMOUNT",
+    "  MM <0|1>      MOD BUS -> MIX",
+    "  ME <0|1>      ENVELOPE -> MIX",
     "",
     "  METRO",
-    "  M             Show interval",
-    "  M <ms>        Set interval",
-    "  M.BPM <bpm>   Set BPM",
-    "  M.ACT <0|1>   Start/stop",
-    "  M.SCRIPT <1-8>  Script for metro",
+    "  M             SHOW INTERVAL",
+    "  M <MS>        SET INTERVAL",
+    "  M.BPM <BPM>   SET BPM",
+    "  M.ACT <0|1>   START/STOP",
+    "  M.SCRIPT <1-8>  SCRIPT FOR METRO",
     "",
     "  SCRIPTS",
-    "  SCRIPT <1-8>  Execute stored script",
+    "  SCRIPT <1-8>  EXECUTE STORED SCRIPT",
     "",
-    "  PATTERNS (Working - P.N)",
-    "  P.N           Get working pattern",
-    "  P.N <0-3>     Set working pattern",
-    "  P.L / P.L <n> Get/set length",
-    "  P.I / P.I <n> Get/set index",
-    "  P.HERE        Value at index",
-    "  P.NEXT        Advance, get value",
-    "  P.PREV        Reverse, get value",
-    "  P <i> / P <i> <v>  Get/set at index",
+    "  PATTERNS (WORKING - P.N)",
+    "  P.N           GET WORKING PATTERN",
+    "  P.N <0-3>     SET WORKING PATTERN",
+    "  P.L / P.L <N> GET/SET LENGTH",
+    "  P.I / P.I <N> GET/SET INDEX",
+    "  P.HERE        VALUE AT INDEX",
+    "  P.NEXT        ADVANCE, GET VALUE",
+    "  P.PREV        REVERSE, GET VALUE",
+    "  P <I> / P <I> <V>  GET/SET AT INDEX",
     "",
-    "  PATTERNS (Explicit - PN)",
-    "  PN.L <p> / PN.L <p> <n>  Length",
-    "  PN.I <p> / PN.I <p> <n>  Index",
-    "  PN.HERE <p>              Value",
-    "  PN.NEXT <p>              Advance",
-    "  PN.PREV <p>              Reverse",
-    "  PN <p> <i> / PN <p> <i> <v>",
+    "  PATTERNS (EXPLICIT - PN)",
+    "  PN.L <P> / PN.L <P> <N>  LENGTH",
+    "  PN.I <P> / PN.I <P> <N>  INDEX",
+    "  PN.HERE <P>              VALUE",
+    "  PN.NEXT <P>              ADVANCE",
+    "  PN.PREV <P>              REVERSE",
+    "  PN <P> <I> / PN <P> <I> <V>",
     "",
     "  EXPRESSIONS",
-    "  All numeric args accept expressions:",
+    "  ALL NUMERIC ARGS ACCEPT EXPRESSIONS:",
     "  PF N ADD A 7",
     "  DC MUL PN.NEXT 0 100",
     "  A RRND 0 127",
     "",
 ];
 
-pub fn render_help_page(scroll: usize, height: usize) -> Paragraph<'static> {
+pub fn render_help_page(app: &super::App, height: usize) -> Paragraph<'static> {
+    let scroll = app.help_scroll;
     let visible = if height > 2 { height - 2 } else { 1 };
     let total = HELP_LINES.len();
     let start = scroll.min(total.saturating_sub(visible));
@@ -509,13 +513,18 @@ pub fn render_help_page(scroll: usize, height: usize) -> Paragraph<'static> {
         .collect();
 
     let title = if total > visible {
-        format!(" Help ({}/{}) ", start + 1, total.saturating_sub(visible) + 1)
+        format!(" HELP ({}/{}) ", start + 1, total.saturating_sub(visible) + 1)
     } else {
-        " Help ".to_string()
+        " HELP ".to_string()
     };
 
     Paragraph::new(lines)
-        .block(Block::default().borders(Borders::ALL).title(title))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(app.theme.border))
+                .title(title)
+        )
 }
 
 pub fn render_footer(app: &super::App) -> Paragraph<'static> {
@@ -531,7 +540,7 @@ pub fn render_footer(app: &super::App) -> Paragraph<'static> {
         Span::raw(before),
         Span::styled(
             cursor_char.to_string(),
-            Style::default().bg(Color::White).fg(Color::Black),
+            Style::default().bg(app.theme.highlight_bg).fg(app.theme.highlight_fg),
         ),
         Span::raw(after),
     ]);
@@ -539,12 +548,16 @@ pub fn render_footer(app: &super::App) -> Paragraph<'static> {
     let footer_text = vec![
         input_line,
         Line::from(Span::styled(
-            "[ ] pages  Alt+H help  type 'quit' to exit",
-            Style::default().fg(Color::DarkGray),
+            "[ ] PAGES  ALT+H HELP  TYPE 'QUIT' TO EXIT",
+            Style::default().fg(app.theme.secondary),
         )),
     ];
 
-    Paragraph::new(footer_text).block(Block::default().borders(Borders::ALL))
+    Paragraph::new(footer_text).block(
+        Block::default()
+            .borders(Borders::ALL)
+            .border_style(Style::default().fg(app.theme.border))
+    )
 }
 
 pub fn run_app<B: ratatui::backend::Backend>(

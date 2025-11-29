@@ -2,6 +2,7 @@ use super::App;
 
 impl App {
     pub fn insert_char(&mut self, c: char) {
+        let c = c.to_ascii_uppercase();
         let byte_pos = self
             .input
             .char_indices()
@@ -123,7 +124,7 @@ impl App {
 
             if !self.input.trim().is_empty() {
                 if let Err(e) = crate::commands::validate_script_command(&self.input) {
-                    self.script_error = Some(format!("Error: {}", e));
+                    self.script_error = Some(format!("ERROR: {}", e));
                     self.script_error_time = Some(std::time::Instant::now());
                     return;
                 }

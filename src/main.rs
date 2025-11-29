@@ -1,8 +1,10 @@
 mod app;
 mod commands;
+mod config;
 mod eval;
 mod metro;
 mod scene;
+mod theme;
 mod types;
 mod ui;
 
@@ -37,9 +39,12 @@ fn main() -> Result<()> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let mut app = App::new(metro_tx, metro_state);
-    app.add_output("MONOKIT - Teletype-style scripting for complex oscillator".to_string());
-    app.add_output("Type commands and press Enter. Use [ ] to navigate pages.".to_string());
+    let config = config::load_config().unwrap_or_default();
+    let theme = config::load_theme(&config).unwrap_or_default();
+
+    let mut app = App::new(metro_tx, metro_state, theme);
+    app.add_output("MONOKIT - TELETYPE-STYLE SCRIPTING FOR COMPLEX OSCILLATOR".to_string());
+    app.add_output("TYPE COMMANDS AND PRESS ENTER. USE [ ] TO NAVIGATE PAGES.".to_string());
 
     app.execute_script(9);
 

@@ -100,6 +100,7 @@ impl App {
             &mut self.patterns,
             &mut self.scripts,
             script_index,
+            &mut self.theme,
             cmd_to_run,
             |msg| {
                 output_messages.push(msg);

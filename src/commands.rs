@@ -33,9 +33,13 @@ where
             if parts.len() == 1 {
                 output(format!("A = {}", variables.a));
             } else {
-                let value: i16 = parts[1]
-                    .parse()
-                    .context("Failed to parse value for A")?;
+                let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+                    expr_val
+                } else {
+                    parts[1]
+                        .parse()
+                        .context("Failed to parse value for A")?
+                };
                 variables.a = value;
                 output(format!("Set A to {}", value));
             }
@@ -44,9 +48,13 @@ where
             if parts.len() == 1 {
                 output(format!("B = {}", variables.b));
             } else {
-                let value: i16 = parts[1]
-                    .parse()
-                    .context("Failed to parse value for B")?;
+                let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+                    expr_val
+                } else {
+                    parts[1]
+                        .parse()
+                        .context("Failed to parse value for B")?
+                };
                 variables.b = value;
                 output(format!("Set B to {}", value));
             }
@@ -55,9 +63,13 @@ where
             if parts.len() == 1 {
                 output(format!("C = {}", variables.c));
             } else {
-                let value: i16 = parts[1]
-                    .parse()
-                    .context("Failed to parse value for C")?;
+                let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+                    expr_val
+                } else {
+                    parts[1]
+                        .parse()
+                        .context("Failed to parse value for C")?
+                };
                 variables.c = value;
                 output(format!("Set C to {}", value));
             }
@@ -66,9 +78,13 @@ where
             if parts.len() == 1 {
                 output(format!("D = {}", variables.d));
             } else {
-                let value: i16 = parts[1]
-                    .parse()
-                    .context("Failed to parse value for D")?;
+                let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+                    expr_val
+                } else {
+                    parts[1]
+                        .parse()
+                        .context("Failed to parse value for D")?
+                };
                 variables.d = value;
                 output(format!("Set D to {}", value));
             }
@@ -88,9 +104,13 @@ where
             if parts.len() == 1 {
                 output(format!("X = {}", variables.x));
             } else {
-                let value: i16 = parts[1]
-                    .parse()
-                    .context("Failed to parse value for X")?;
+                let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+                    expr_val
+                } else {
+                    parts[1]
+                        .parse()
+                        .context("Failed to parse value for X")?
+                };
                 variables.x = value;
                 output(format!("Set X to {}", value));
             }
@@ -99,9 +119,13 @@ where
             if parts.len() == 1 {
                 output(format!("Y = {}", variables.y));
             } else {
-                let value: i16 = parts[1]
-                    .parse()
-                    .context("Failed to parse value for Y")?;
+                let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+                    expr_val
+                } else {
+                    parts[1]
+                        .parse()
+                        .context("Failed to parse value for Y")?
+                };
                 variables.y = value;
                 output(format!("Set Y to {}", value));
             }
@@ -110,9 +134,13 @@ where
             if parts.len() == 1 {
                 output(format!("Z = {}", variables.z));
             } else {
-                let value: i16 = parts[1]
-                    .parse()
-                    .context("Failed to parse value for Z")?;
+                let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+                    expr_val
+                } else {
+                    parts[1]
+                        .parse()
+                        .context("Failed to parse value for Z")?
+                };
                 variables.z = value;
                 output(format!("Set Z to {}", value));
             }
@@ -121,9 +149,13 @@ where
             if parts.len() == 1 {
                 output(format!("T = {}", variables.t));
             } else {
-                let value: i16 = parts[1]
-                    .parse()
-                    .context("Failed to parse value for T")?;
+                let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+                    expr_val
+                } else {
+                    parts[1]
+                        .parse()
+                        .context("Failed to parse value for T")?
+                };
                 variables.t = value;
                 output(format!("Set T to {}", value));
             }
@@ -136,9 +168,13 @@ where
             if parts.len() == 1 {
                 output(format!("J = {}", scripts.scripts[script_index].j));
             } else {
-                let value: i16 = parts[1]
-                    .parse()
-                    .context("Failed to parse value for J")?;
+                let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+                    expr_val
+                } else {
+                    parts[1]
+                        .parse()
+                        .context("Failed to parse value for J")?
+                };
                 scripts.scripts[script_index].j = value;
                 output(format!("Set J to {}", value));
             }
@@ -151,9 +187,13 @@ where
             if parts.len() == 1 {
                 output(format!("K = {}", scripts.scripts[script_index].k));
             } else {
-                let value: i16 = parts[1]
-                    .parse()
-                    .context("Failed to parse value for K")?;
+                let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+                    expr_val
+                } else {
+                    parts[1]
+                        .parse()
+                        .context("Failed to parse value for K")?
+                };
                 scripts.scripts[script_index].k = value;
                 output(format!("Set K to {}", value));
             }
@@ -1345,11 +1385,9 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
     let argc = parts.len() - 1; // argument count (excluding command)
 
     match command.as_str() {
-        // Variables: 0-1 args (get or set)
+        // Variables: 0+ args (get or set with expression)
+        // Expression evaluation handles the value parsing, so we allow any arg count
         "A" | "B" | "C" | "D" | "I" | "X" | "Y" | "Z" | "T" | "J" | "K" => {
-            if argc > 1 {
-                return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
-            }
             Ok(())
         }
         // Working pattern ops with no args

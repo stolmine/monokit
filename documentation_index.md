@@ -22,7 +22,7 @@ Modular Rust implementation (11 files, 4,824 total lines):
 - **src/types.rs** (230 lines) - Core data structures, enums, constants, and type definitions
 - **src/eval.rs** (482 lines) - Expression evaluation engine for nested operations, pattern access, and comparison operators
 - **src/ui.rs** (637 lines) - TUI rendering with ratatui, page-based interface
-- **src/tests.rs** (1,982 lines) - Comprehensive unit test suite (108 tests)
+- **src/tests.rs** (2,298 lines) - Comprehensive unit test suite (129 tests)
 - **src/scene.rs** (169 lines) - Scene persistence, file I/O
 - **src/app/mod.rs** (125 lines) - App struct, constructor, navigation
 - **src/app/input.rs** (131 lines) - Input handling methods
@@ -109,6 +109,7 @@ Audio output
 - `X`, `Y`, `Z`, `T` - General accumulators
 - `J`, `K` - Per-script local variables (each script has its own J and K)
 - `I` - Loop counter (scoped to L loops, read-only)
+- Variables accept expressions for their value: `A ADD 1 1`, `J RND 100`, `X PN.NEXT 0`, `B MUL A 2`
 - Variables can be used in expressions: `PF A`, `DC X`
 
 #### Patterns (Working Pattern - P.N)

@@ -65,6 +65,7 @@ impl Default for Variables {
 pub struct Counters {
     pub values: [i16; 4],
     pub max: [i16; 4],
+    pub min: [i16; 4],
 }
 
 impl Default for Counters {
@@ -72,6 +73,7 @@ impl Default for Counters {
         Self {
             values: [0; 4],
             max: [0; 4],
+            min: [0; 4],
         }
     }
 }

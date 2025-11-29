@@ -194,3 +194,101 @@ fn test_counters_in_expressions() {
     let result3 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
     assert_eq!(result3.unwrap().0, 4, "N1(2) + N2(2) = 4");
 }
+
+#[test]
+fn test_n1_with_min_and_max() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
+
+    counters.min[0] = 10;
+    counters.max[0] = 5;
+    counters.values[0] = 10;
+
+    let parts = vec!["N1"];
+
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 10);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 11);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 12);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 13);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 14);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 10, "N1 should wrap back to min (10) after 5 steps");
+}
+
+#[test]
+fn test_n2_with_min_and_max() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
+
+    counters.min[1] = 5;
+    counters.max[1] = 3;
+    counters.values[1] = 5;
+
+    let parts = vec!["N2"];
+
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 5);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 6);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 7);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 5, "N2 should wrap back to min (5) after 3 steps");
+}
+
+#[test]
+fn test_n3_with_min_and_max() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
+
+    counters.min[2] = -5;
+    counters.max[2] = 4;
+    counters.values[2] = -5;
+
+    let parts = vec!["N3"];
+
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, -5);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, -4);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, -3);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, -2);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, -5, "N3 should wrap back to min (-5) after 4 steps");
+}
+
+#[test]
+fn test_n4_with_min_and_max() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
+
+    counters.min[3] = 100;
+    counters.max[3] = 10;
+    counters.values[3] = 100;
+
+    let parts = vec!["N4"];
+
+    for i in 0..10 {
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0;
+        assert_eq!(result, 100 + i, "N4 should count from 100 to 109");
+    }
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 100, "N4 should wrap back to min (100)");
+}
+
+#[test]
+fn test_min_without_max_still_wraps() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+    let mut counters = create_test_counters();
+
+    counters.min[0] = 10;
+    counters.max[0] = 0;
+    counters.values[0] = 10;
+
+    let parts = vec!["N1"];
+
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 10);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 11);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 12);
+}

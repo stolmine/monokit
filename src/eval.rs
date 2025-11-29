@@ -424,8 +424,10 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
         }
         "N1" => {
             let current = counters.values[0];
-            counters.values[0] = if counters.max[0] > 0 {
-                (current + 1) % counters.max[0]
+            let min = counters.min[0];
+            let max = counters.max[0];
+            counters.values[0] = if max > 0 {
+                min + ((current - min + 1) % max)
             } else {
                 current.wrapping_add(1)
             };
@@ -433,8 +435,10 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
         }
         "N2" => {
             let current = counters.values[1];
-            counters.values[1] = if counters.max[1] > 0 {
-                (current + 1) % counters.max[1]
+            let min = counters.min[1];
+            let max = counters.max[1];
+            counters.values[1] = if max > 0 {
+                min + ((current - min + 1) % max)
             } else {
                 current.wrapping_add(1)
             };
@@ -442,8 +446,10 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
         }
         "N3" => {
             let current = counters.values[2];
-            counters.values[2] = if counters.max[2] > 0 {
-                (current + 1) % counters.max[2]
+            let min = counters.min[2];
+            let max = counters.max[2];
+            counters.values[2] = if max > 0 {
+                min + ((current - min + 1) % max)
             } else {
                 current.wrapping_add(1)
             };
@@ -451,8 +457,10 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
         }
         "N4" => {
             let current = counters.values[3];
-            counters.values[3] = if counters.max[3] > 0 {
-                (current + 1) % counters.max[3]
+            let min = counters.min[3];
+            let max = counters.max[3];
+            counters.values[3] = if max > 0 {
+                min + ((current - min + 1) % max)
             } else {
                 current.wrapping_add(1)
             };

@@ -474,6 +474,18 @@ where
         "N4.MAX" => {
             counters::handle_n4_max(&parts, variables, patterns, counters, scripts, script_index, output);
         }
+        "N1.MIN" => {
+            counters::handle_n1_min(&parts, variables, patterns, counters, scripts, script_index, output);
+        }
+        "N2.MIN" => {
+            counters::handle_n2_min(&parts, variables, patterns, counters, scripts, script_index, output);
+        }
+        "N3.MIN" => {
+            counters::handle_n3_min(&parts, variables, patterns, counters, scripts, script_index, output);
+        }
+        "N4.MIN" => {
+            counters::handle_n4_min(&parts, variables, patterns, counters, scripts, script_index, output);
+        }
         _ => {
             output(format!("UNKNOWN COMMAND: {}", cmd));
         }

@@ -173,6 +173,12 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
+        "N1.MIN" | "N2.MIN" | "N3.MIN" | "N4.MIN" => {
+            if argc < 1 {
+                return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
+            }
+            Ok(())
+        }
         "M" => {
             if argc > 1 {
                 return Err(anyhow::anyhow!("M takes 0-1 arguments"));

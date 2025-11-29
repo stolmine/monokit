@@ -6,7 +6,7 @@ This document captures future feature ideas for consideration. Not prioritized o
 
 ---
 
-## Randomization System
+## Randomization System [Medium Complexity]
 
 ### Voice Randomization
 - `RND.VOICE` - Randomize all oscillator/FM parameters within musical ranges
@@ -31,7 +31,7 @@ This document captures future feature ideas for consideration. Not prioritized o
 
 ---
 
-## LFO System
+## LFO System [High Complexity]
 
 ### Core LFO Parameters
 - 2-4 LFOs available (L1, L2, L3, L4)
@@ -53,7 +53,7 @@ This document captures future feature ideas for consideration. Not prioritized o
 
 ---
 
-## Slewing / Interpolation
+## Slewing / Interpolation [Medium Complexity]
 
 ### Parameter Slew
 - `SLEW <param> <ms>` - Set slew time for parameter changes
@@ -67,7 +67,7 @@ This document captures future feature ideas for consideration. Not prioritized o
 
 ---
 
-## Map / Scale Operators
+## Map / Scale Operators [Low Complexity]
 
 ### Range Mapping
 - `MAP <val> <in_min> <in_max> <out_min> <out_max>` - Map value from input range to output range
@@ -90,7 +90,7 @@ This document captures future feature ideas for consideration. Not prioritized o
 
 ---
 
-## Envelope Shaping
+## Envelope Shaping [Medium Complexity]
 
 ### Envelope Curve Control
 - `AD.CURVE <-8 to 8>` - Amp envelope curve (-8=log, 0=lin, 8=exp)
@@ -108,7 +108,7 @@ This document captures future feature ideas for consideration. Not prioritized o
 
 ---
 
-## TOG Generator
+## TOG Generator [Low Complexity]
 
 Toggle between values on each trigger:
 - `TOG <a> <b>` - Returns a, then b, then a, then b...
@@ -118,7 +118,7 @@ Toggle between values on each trigger:
 
 ---
 
-## Mini Notation / Inline Sequencing
+## Mini Notation / Inline Sequencing [High Complexity]
 
 String-based pattern notation (inspired by Tidal):
 - `SEQ "x _ x _"` - Simple trigger pattern
@@ -136,9 +136,9 @@ String-based pattern notation (inspired by Tidal):
 
 ---
 
-## Remaining Pattern Ops (from Teletype)
+## Remaining Pattern Ops (from Teletype) [Low-Medium Complexity]
 
-### Pattern Manipulation
+### Pattern Manipulation [Medium]
 - `P.PUSH <val>` - Push value, shift pattern
 - `P.POP` - Pop and return last value
 - `P.INS <idx> <val>` - Insert at index
@@ -149,7 +149,7 @@ String-based pattern notation (inspired by Tidal):
 - `P.SORT` - Sort pattern ascending
 - `P.RND` - Randomize all values
 
-### Pattern Math
+### Pattern Math [Low]
 - `P.ADD <val>` - Add to all values
 - `P.SUB <val>` - Subtract from all
 - `P.MUL <val>` - Multiply all
@@ -157,7 +157,7 @@ String-based pattern notation (inspired by Tidal):
 - `P.MOD <val>` - Modulo all
 - `P.SCALE <min> <max>` - Scale to range
 
-### Pattern Queries
+### Pattern Queries [Low]
 - `P.MIN` - Get minimum value
 - `P.MAX` - Get maximum value
 - `P.SUM` - Sum of all values
@@ -166,7 +166,7 @@ String-based pattern notation (inspired by Tidal):
 
 ---
 
-## Scale Quantization
+## Scale Quantization [Medium Complexity]
 
 ### Quantizer
 - `Q <note>` - Quantize note to current scale
@@ -190,7 +190,7 @@ String-based pattern notation (inspired by Tidal):
 
 ---
 
-## CPU / Performance Metering
+## CPU / Performance Metering [Medium Complexity]
 
 ### CPU Meter
 - `CPU` - Display current SC server CPU usage
@@ -204,7 +204,7 @@ String-based pattern notation (inspired by Tidal):
 
 ---
 
-## Live Parameter Visualization
+## Live Parameter Visualization [Medium Complexity]
 
 ### Variable Display
 - Dedicated UI area showing A, B, C, D, X, Y, Z, T values
@@ -224,7 +224,7 @@ String-based pattern notation (inspired by Tidal):
 
 ---
 
-## Auto-Incrementing Variables
+## Auto-Incrementing Variables [Low Complexity]
 
 ### Dedicated Counter Variables
 - `N1`, `N2`, `N3`, `N4` - Auto-increment on each read
@@ -239,7 +239,7 @@ String-based pattern notation (inspired by Tidal):
 
 ---
 
-## Expanded Pattern Storage
+## Expanded Pattern Storage [Low Complexity]
 
 ### More Pattern Slots
 - Increase from 4 to 8 or 16 patterns
@@ -252,7 +252,7 @@ String-based pattern notation (inspired by Tidal):
 
 ---
 
-## Visual Feedback (KO II Style)
+## Visual Feedback (KO II Style) [Medium Complexity]
 
 ### Live Screen Visualization
 - Icon grid on Live page
@@ -275,7 +275,7 @@ String-based pattern notation (inspired by Tidal):
 
 ---
 
-## DAW / MIDI Clock Sync
+## DAW / MIDI Clock Sync [High Complexity]
 
 ### MIDI Clock Input
 - `M.SYNC <0-2>` - Sync mode (0=internal, 1=MIDI clock, 2=MIDI clock + transport)
@@ -309,7 +309,7 @@ String-based pattern notation (inspired by Tidal):
 
 ## Final Boss Features
 
-### Additional Voice Types
+### Additional Voice Types [Very High Complexity]
 - Voice type selector: `VOICE <0-N>`
 - 0 = Current HD2-style complex oscillator
 - 1 = FM (DX-style 4-op)
@@ -318,7 +318,7 @@ String-based pattern notation (inspired by Tidal):
 - 4 = Physical modeling (Karplus-Strong)
 - 5 = Noise/percussion focused
 
-### Plaits Macro Voice
+### Plaits Macro Voice [Very High Complexity]
 - Import Mutable Instruments Plaits algorithms
 - `PLAITS.MODEL <0-15>` - Select model
 - `PLAITS.TIMBRE` - Timbre control
@@ -326,13 +326,13 @@ String-based pattern notation (inspired by Tidal):
 - `PLAITS.HARM` - Harmonics
 - Requires: SC Plaits UGen or port
 
-### Optional Polyphony
+### Optional Polyphony [Very High Complexity]
 - `POLY <1-8>` - Number of voices
 - Voice allocation: round-robin or lowest
 - Per-voice detuning
 - Unison mode with spread
 
-### Unified Installation
+### Unified Installation [High Complexity]
 - Single installer package
 - Bundles:
   - Rust CLI binary
@@ -348,34 +348,55 @@ String-based pattern notation (inspired by Tidal):
 
 ---
 
-## Implementation Priority Tiers
+## Implementation Phases
 
-### Tier 4 (Next)
-- LFO system
-- Slewing
-- TOG generator
-- MAP operator
-- More pattern ops
-- Variable display in UI
+### Phase 1: Core Utilities (Low-Medium Complexity)
+Quick wins that add immediate value with minimal dependencies:
+- **MAP operator** [Low] - Simple math transformations, no state management required
+- **TOG generator** [Low] - Basic state toggle with simple cycling logic
+- **Auto-increment variables** [Low] - Simple counter logic with wrap-around
+- **More pattern slots** [Low] - Just increase array size in existing pattern system
+- **Slewing/LERP** [Medium] - Needs background interpolation thread, parameter smoothing
+- **Envelope shaping** [Medium] - Extend existing envelope system with curve control and attack times
 
-### Tier 5 (Medium Term)
-- Scale quantization
-- Mini notation
-- Pattern randomization
-- Activity visualization
-- DAW/MIDI clock sync
+### Phase 2: Pattern Expansion (Low-Medium Complexity)
+Building on existing pattern infrastructure:
+- **Remaining TT pattern ops** [Medium] - Port existing Teletype logic (P.PUSH, P.REV, P.ROT, P.SHUF, P.SORT, etc.)
+- **Pattern math operations** [Low] - Simple arithmetic on pattern values (P.ADD, P.MUL, P.SCALE)
+- **Pattern queries** [Low] - Read-only stats (P.MIN, P.MAX, P.SUM, P.AVG)
+- **Randomization system** [Medium] - Random within ranges for all subsystems (RND.VOICE, RND.FX, RND.P, etc.)
 
-### Tier 6 (Long Term)
-- CPU/metering
-- Envelope shaping
-- Auto-increment variables
-- More pattern slots
+### Phase 3: Musical Features (Medium-High Complexity)
+Requires new lookup tables and parsing logic:
+- **Scale quantization** [Medium] - Scale lookup tables, note mapping logic
+- **Mini notation/sequencing** [High] - String parser needed, syntax handling, pattern compilation
+- **DAW/MIDI clock sync** [High] - External protocol handling (MIDI clock 24 PPQN, MMC, Link SDK)
 
-### Tier 7 (Aspirational)
-- Additional voice types
-- Plaits integration
-- Polyphony
-- Unified installer
+### Phase 4: Modulation System (High Complexity)
+New synthesis infrastructure with routing requirements:
+- **LFO system** [High] - New SC UGens, waveform generators, modulation routing matrix
+- Dependencies: Needs routing system for LFO → parameter mapping, phase sync to metro
+
+### Phase 5: UI/Feedback (Medium Complexity)
+Visual enhancements requiring UI layout changes:
+- **Variable display** [Medium] - Real-time UI panel for A, B, C, D, X, Y, Z, T values
+- **Parameter visualization** [Medium] - Show last-changed params, flash/highlight on change
+- **Activity indicators** [Medium] - Event tracking, icon highlighting, decay animations (KO II style)
+- **CPU/metering** [Medium] - SC server queries for CPU usage, audio level monitoring, peak hold
+
+### Phase 6: Advanced DSP (Very High Complexity)
+Major architectural changes requiring deep SC knowledge:
+- **Additional voice types** [Very High] - Multiple new SynthDefs (FM, wavetable, physical modeling, etc.)
+- **Plaits integration** [Very High] - External UGen dependency or full port of Plaits algorithms
+- **Polyphony** [Very High] - Voice allocation system, state management per voice, unison modes
+- Dependencies: Each voice type needs full DSP implementation, testing, and parameter mapping
+
+### Phase 7: Distribution (High Complexity)
+Packaging and deployment infrastructure:
+- **Unified installer** [High] - Bundle Rust binary + SC runtime + SynthDefs + config
+- Platform-specific packaging (macOS .pkg, Linux .deb/.rpm, Windows .msi)
+- Auto-start SC server, dependency management
+- Dependencies: All features must be complete and stable before packaging
 
 ---
 

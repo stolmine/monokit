@@ -2542,6 +2542,12 @@ where
         .send(MetroCommand::SendParam("br_act".to_string(), OscType::Int(clipped)))
         .context("Failed to send param to metro thread")?;
 
+    if clipped == 1 {
+        metro_tx
+            .send(MetroCommand::SendParam("br_mix".to_string(), OscType::Int(16383)))
+            .context("Failed to send br_mix to metro thread")?;
+    }
+
     let loop_length_ms = match *br_len {
         0 => metro_interval / 16,
         1 => metro_interval / 8,

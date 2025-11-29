@@ -122,6 +122,7 @@ Recording captures the SuperCollider audio output directly.
 - ✓ Effect routing system: BYPASS/INSERT/SEND modes with CUT/RING/FREEZE tail behaviors - COMPLETE
 - ✓ ModBus routing to filter cutoff - COMPLETE
 - ✓ Extended discontinuity modes (0-6: fold, tanh, softclip, hard, asym, rectify, crush) - COMPLETE
+- ✓ Phase 1 language features: MAP operator, TOG generator, N1-N4 counters - COMPLETE
 - Pattern/sequencing enhancements
 - LFO system for parameter modulation
 - Additional modulation routing (ModBus to delay time, reverb size, resonator frequency)

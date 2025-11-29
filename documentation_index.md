@@ -137,6 +137,19 @@ Audio output → Recording (optional)
 - Variables accept expressions for their value: `A ADD 1 1`, `J RND 100`, `X PN.NEXT 0`, `B MUL A 2`
 - Variables can be used in expressions: `PF A`, `DC X`
 
+#### Counters (N1-N4)
+- `N1`, `N2`, `N3`, `N4` - Read current value and auto-increment (works in expressions)
+- `N1.MIN <n>` - Set minimum value (default 0, accepts expressions)
+- `N1.MAX <n>` - Set maximum value (wraps to MIN when exceeded, 0=disabled/no wrap, accepts expressions)
+- `N1.RST` - Reset counter to MIN value
+- Same operations available for N2, N3, N4
+- Example usage:
+  ```
+  N1.MIN 10; N1.MAX 14    # Counter cycles 10,11,12,13,14,10...
+  PF N N1                 # Use counter for pitch (semitones)
+  N1.RST                  # Reset to 10
+  ```
+
 #### Patterns (Working Pattern - P.N)
 - `P.N` / `P.N <0-3>` - Get/set working pattern
 - `P.L` / `P.L <1-64>` - Get/set pattern length
@@ -332,12 +345,21 @@ Note: In SEND mode with RING or FREEZE tail modes, the effect output remains at 
 - `MUL <a> <b>` or `* <a> <b>` - Multiply two values (works as command and in expressions)
 - `DIV <a> <b>` or `/ <a> <b>` - Divide a by b (works as command and in expressions)
 - `MOD <a> <b>` or `% <a> <b>` - Modulo a by b (works as command and in expressions)
+- `MAP <val> <in_min> <in_max> <out_min> <out_max>` - Range mapping with clamping (works as command and in expressions)
+  - Maps input value from input range to output range
+  - Automatically clamps result to output range
+  - Example: `MAP 50 0 100 0 1000` maps 50 from 0-100 range to 500 in 0-1000 range
+  - Works with reversed ranges: `MAP 25 0 100 1000 0` maps and inverts
 
 #### Random Number Generation
 - `RND <max>` - Random integer from 0 to max inclusive (works as command and in expressions)
 - `RRND <min> <max>` - Random integer from min to max inclusive (works as command and in expressions)
 - `TOSS` - Random 0 or 1 (coin flip, works as command and in expressions)
 - `EITH <a> <b>` - Random choice between a and b (works as command and in expressions)
+- `TOG <a> <b>` - Alternates between a and b on each call (works as command and in expressions)
+  - State is per-script and per-line
+  - First call returns a, second returns b, third returns a, etc.
+  - Example: `PF TOG N 0 N 7` alternates between C3 and G3
 
 #### Note/Pitch Conversion
 - `N <semitones>` - Convert semitones to frequency in Hz (12-TET, works in expressions)

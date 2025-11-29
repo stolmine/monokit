@@ -4,6 +4,7 @@
 
 - **CONCEPT.md** - Project overview, architecture, MVP implementation, and roadmap
 - **PLAN.md** - UI refactor plan: Teletype-style interface with page system, script storage, patterns, and control flow
+- **DSP_TIER1_IMPLEMENTATION_PLAN.md** - Detailed implementation plan for Filter, Resonator, Delay, and Reverb DSP blocks
 - **documentation_index.md** - This file, listing all documentation and key project files
 
 ## Key Project Files
@@ -77,6 +78,7 @@ Rust TUI (src/main.rs)
     |    - Command processing
     |    - Script execution (with App context)
     |    - Pattern/variable access
+    |    - Recording management (WAV int24)
     |    |
     |    v OSC messages
     |    127.0.0.1:57120
@@ -88,7 +90,7 @@ Rust TUI (src/main.rs)
 SuperCollider Sound Engine (sc/monokit_server.scd)
     |
     v
-Audio output
+Audio output → Recording (optional)
 ```
 
 ## Command Reference
@@ -248,6 +250,14 @@ Examples:
   - N 21 = A4 (440 Hz)
   - N -12 = C2 (65 Hz)
   - Usage: `PF N 0` (set primary freq to C3), `PF N ADD A 7` (C3 + A semitones + perfect 5th)
+
+#### Recording
+- `REC` - Start recording to current working directory (timestamped WAV file)
+- `REC.STOP` - Stop recording (automatically called on quit)
+- `REC.PATH <prefix>` - Set custom recording path prefix
+- Files saved as WAV (int24) format
+- UI shows red "● REC MM:SS" indicator when recording
+- Recording auto-stops on quit to prevent file corruption
 
 #### System
 - `RST` - Reset all parameters to defaults

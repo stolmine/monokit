@@ -29,11 +29,13 @@ The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity
 - OSC client sending to 127.0.0.1:57120
 - Dedicated metro thread with absolute timing (no cumulative drift)
 - All OSC routed through single metro thread (serialized sending)
+- Recording system: WAV (int24) output with timestamped files
 - Commands (Teletype-inspired terse style):
   - **Trigger/Volume:** TR, VOL <0.0-1.0>
   - **Metro:** M, M <ms>, M.BPM <bpm>, M.ACT <0|1>, M: <script>
   - **HD2 Parameters:** PF/MF, PW/MW, DC/DM, DD, TK/MB, MP/MD/MT/MA, FM, FB/FBA/FBD, AD/PD/FD/DD, PA, FA, DA
   - **Mix Controls:** MX, MM, ME
+  - **Recording:** REC, REC.STOP, REC.PATH <prefix>
   - **System:** RST (reset to defaults), help, exit, quit
 - Envelope amounts: PA (pitch), FA (FM), DA (discontinuity) — added to base parameter via modulation amount
 - M commands execute locally; parameter updates sent via OSC `/monokit/param` protocol
@@ -89,9 +91,22 @@ The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity
 | ChucK | Audio language | CLI-native, real-time |
 | Teletype | Hardware scripting | Closest paradigm to this concept |
 
+## Recording System
+
+The CLI includes a built-in WAV recording system for capturing audio output:
+
+- **Format:** WAV int24 (24-bit integer)
+- **Timestamped files:** `monokit_YYYYMMDD_HHMMSS.wav` by default
+- **Custom paths:** Use `REC.PATH <prefix>` to set custom filename prefix
+- **UI indicator:** Red "● REC MM:SS" shows recording status and duration
+- **Auto-stop:** Recording automatically stops on quit to prevent file corruption
+- **Working directory:** Files saved to current working directory unless custom path specified
+
+Recording captures the SuperCollider audio output directly.
+
 ## Next Steps
 
-- Expand command set (pitch, envelope parameters)
-- Add pattern/sequencing capabilities
-- Enhance oscillator complexity (FM, waveshaping)
-- Implement script file execution
+- Tier 1 DSP blocks: Filter (SVF), Resonator (Comb), Delay (stereo), Reverb (plate)
+- Additional modulation routing (ModBus to DSP blocks)
+- Pattern/sequencing enhancements
+- LFO system for parameter modulation

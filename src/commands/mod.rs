@@ -198,6 +198,15 @@ where
         "DA" => {
             synth_params::handle_da(&parts, variables, patterns, scripts, script_index, metro_tx, output)?;
         }
+        "FB" => {
+            synth_params::handle_fb(&parts, variables, patterns, scripts, script_index, metro_tx, output)?;
+        }
+        "FBA" => {
+            synth_params::handle_fba(&parts, variables, patterns, scripts, script_index, metro_tx, output)?;
+        }
+        "FBD" => {
+            synth_params::handle_fbd(&parts, variables, patterns, scripts, script_index, metro_tx, output)?;
+        }
         "RST" => {
             misc::handle_rst(metro_tx, output)?;
         }

@@ -181,7 +181,7 @@ Examples:
 - `IF GT A 5: TR` - Trigger if A > 5
 - `IF A > 5: TR` - Same as above (infix syntax)
 
-#### HD2 Voice Parameters (22 total)
+#### HD2 Voice Parameters (25 total)
 
 **Primary Oscillator**
 - `PF <hz>` - Primary frequency (20-20000)
@@ -189,7 +189,12 @@ Examples:
 
 **Modulator Oscillator**
 - `MF <hz>` - Modulator frequency (20-20000)
-- `MW <0-2>` - Modulator waveform (0=sine, 1=triangle, 2=sawtooth)
+- `MW <0-3>` - Modulator waveform (0=sine, 1=triangle, 2=sawtooth, 3=feedback)
+
+**Feedback FM (Noise Generation)**
+- `FB <0-16383>` - Feedback amount (0=clean, >8191=chaotic/noise)
+- `FBA <0-16383>` - Feedback envelope amount
+- `FBD <ms>` - Feedback envelope decay time (1-10000 ms)
 
 **Discontinuity (Waveshaping)**
 - `DC <0-16383>` - Discontinuity amount (mix of modulator into shaper)

@@ -27,12 +27,15 @@ s.waitForBoot {
             mx = 0,
             mm = 0,
             me = 0,
+            fb = 0,
+            fba = 0,
+            fbd = 10,
             volume = 1,
             gate = 0;
 
         // All var declarations at top
-        var trig, pitchEnv, ampEnv, fmEnv, dcEnv;
-        var modBus, trackingAmount, fmIndex, dcAmount, mixAmount;
+        var trig, pitchEnv, ampEnv, fmEnv, dcEnv, fbEnv;
+        var modBus, trackingAmount, fmIndex, dcAmount, mixAmount, fbAmount;
         var primaryFreq, modulatorFreq, modOsc;
         var fmAmount, primaryOsc, sig, amp, discontinuity;
 
@@ -45,6 +48,7 @@ s.waitForBoot {
         ampEnv = EnvGen.kr(Env.perc(0.001, ad / 1000, 1, -4), trig);
         fmEnv = EnvGen.kr(Env.perc(0.001, fd / 1000, 1, -4), trig);
         dcEnv = EnvGen.kr(Env.perc(0.001, dd / 1000, 1, -4), trig);
+        fbEnv = EnvGen.kr(Env.perc(0.001, fbd / 1000, 1, -4), trig);
 
         // Scaled parameters
         modBus = mb / 16383;
@@ -52,6 +56,7 @@ s.waitForBoot {
         fmIndex = fm / 16383;
         dcAmount = dc / 16383;
         mixAmount = mx / 16383;
+        fbAmount = (fb / 16383) + (fbEnv * fba / 16383);  // base + (envelope * amount)
 
         // Primary frequency: base + (pitchEnv * amount) + (modBus * routing)
         primaryFreq = pf * (1 + (pitchEnv * pa) + (modBus * mp * 4));
@@ -60,11 +65,12 @@ s.waitForBoot {
         modulatorFreq = mf + (trackingAmount * mt * (pf * (1 + (pitchEnv * pa)) - pf));
         modulatorFreq = modulatorFreq * (1 + (modBus * md));
 
-        // Modulator oscillator
-        modOsc = Select.ar(mw.clip(0, 2).round, [
+        // Modulator oscillator (mw: 0=sine, 1=tri, 2=saw, 3=feedback)
+        modOsc = Select.ar(mw.clip(0, 3).round, [
             SinOsc.ar(modulatorFreq),
             LFTri.ar(modulatorFreq),
-            LFSaw.ar(modulatorFreq)
+            LFSaw.ar(modulatorFreq),
+            SinOscFB.ar(modulatorFreq, fbAmount * 2)  // *2 scales 0-1 to useful 0-2 range
         ]);
 
         // Primary oscillator with FM: base + (envelope * amount)

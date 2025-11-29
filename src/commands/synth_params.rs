@@ -120,7 +120,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: MW REQUIRES A WAVEFORM VALUE (0-2)".to_string());
+        output("ERROR: MW REQUIRES A WAVEFORM VALUE (0-3)".to_string());
         return Ok(());
     }
     let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
@@ -130,8 +130,8 @@ where
             .parse()
             .context("Failed to parse waveform value")?
     };
-    if !(0..=2).contains(&value) {
-        output("ERROR: WAVEFORM MUST BE 0 (SIN), 1 (TRI), OR 2 (SAW)".to_string());
+    if !(0..=3).contains(&value) {
+        output("ERROR: WAVEFORM MUST BE 0 (SIN), 1 (TRI), 2 (SAW), OR 3 (FEEDBACK)".to_string());
         return Ok(());
     }
     metro_tx
@@ -787,5 +787,107 @@ where
         .send(MetroCommand::SendParam("da".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
     output(format!("SET DC ENVELOPE AMOUNT TO {}", value));
+    Ok(())
+}
+
+pub fn handle_fb<F>(
+    parts: &[&str],
+    variables: &Variables,
+    patterns: &mut PatternStorage,
+    scripts: &ScriptStorage,
+    script_index: usize,
+    metro_tx: &Sender<MetroCommand>,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    if parts.len() < 2 {
+        output("ERROR: FB REQUIRES A VALUE (0-16383)".to_string());
+        return Ok(());
+    }
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+        expr_val as i32
+    } else {
+        parts[1]
+            .parse()
+            .context("Failed to parse feedback amount")?
+    };
+    if !(0..=16383).contains(&value) {
+        output("ERROR: FEEDBACK AMOUNT MUST BE BETWEEN 0 AND 16383".to_string());
+        return Ok(());
+    }
+    metro_tx
+        .send(MetroCommand::SendParam("fb".to_string(), OscType::Int(value)))
+        .context("Failed to send param to metro thread")?;
+    output(format!("SET FEEDBACK AMOUNT TO {}", value));
+    Ok(())
+}
+
+pub fn handle_fba<F>(
+    parts: &[&str],
+    variables: &Variables,
+    patterns: &mut PatternStorage,
+    scripts: &ScriptStorage,
+    script_index: usize,
+    metro_tx: &Sender<MetroCommand>,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    if parts.len() < 2 {
+        output("ERROR: FBA REQUIRES A VALUE (0-16383)".to_string());
+        return Ok(());
+    }
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+        expr_val as i32
+    } else {
+        parts[1]
+            .parse()
+            .context("Failed to parse feedback envelope amount")?
+    };
+    if !(0..=16383).contains(&value) {
+        output("ERROR: FEEDBACK ENVELOPE AMOUNT MUST BE BETWEEN 0 AND 16383".to_string());
+        return Ok(());
+    }
+    metro_tx
+        .send(MetroCommand::SendParam("fba".to_string(), OscType::Int(value)))
+        .context("Failed to send param to metro thread")?;
+    output(format!("SET FEEDBACK ENVELOPE AMOUNT TO {}", value));
+    Ok(())
+}
+
+pub fn handle_fbd<F>(
+    parts: &[&str],
+    variables: &Variables,
+    patterns: &mut PatternStorage,
+    scripts: &ScriptStorage,
+    script_index: usize,
+    metro_tx: &Sender<MetroCommand>,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    if parts.len() < 2 {
+        output("ERROR: FBD REQUIRES A TIME VALUE (1-10000 MS)".to_string());
+        return Ok(());
+    }
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+        expr_val as i32
+    } else {
+        parts[1]
+            .parse()
+            .context("Failed to parse feedback decay time")?
+    };
+    if !(1..=10000).contains(&value) {
+        output("ERROR: FEEDBACK DECAY MUST BE BETWEEN 1 AND 10000 MS".to_string());
+        return Ok(());
+    }
+    metro_tx
+        .send(MetroCommand::SendParam("fbd".to_string(), OscType::Int(value)))
+        .context("Failed to send param to metro thread")?;
+    output(format!("SET FEEDBACK DECAY TO {} MS", value));
     Ok(())
 }

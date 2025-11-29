@@ -32,7 +32,7 @@ The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity
 - Commands (Teletype-inspired terse style):
   - **Trigger/Volume:** TR, VOL <0.0-1.0>
   - **Metro:** M, M <ms>, M.BPM <bpm>, M.ACT <0|1>, M: <script>
-  - **HD2 Parameters:** PF/MF, PW/MW, DC/DM, DD, TK/MB, MP/MD/MT/MA, FM, AD/PD/FD/DD, PA, FA, DA
+  - **HD2 Parameters:** PF/MF, PW/MW, DC/DM, DD, TK/MB, MP/MD/MT/MA, FM, FB/FBA/FBD, AD/PD/FD/DD, PA, FA, DA
   - **Mix Controls:** MX, MM, ME
   - **System:** RST (reset to defaults), help, exit, quit
 - Envelope amounts: PA (pitch), FA (FM), DA (discontinuity) — added to base parameter via modulation amount
@@ -42,8 +42,9 @@ The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity
 - Runs headless scsynth with persistent HD2-style voice
 - `\monokit` SynthDef: complex oscillator with dual waveform engines, FM, discontinuity, modulation
 - Additive envelope model: output = base parameter + env * amount
-- 22 parameters (includes FA, DA envelope amounts):
-  - **Oscillators:** pf (primary freq), pw (primary waveform 0-2), mf (mod freq), mw (mod waveform 0-2)
+- 25 parameters (includes FA, DA, FBA envelope amounts):
+  - **Oscillators:** pf (primary freq), pw (primary waveform 0-2), mf (mod freq), mw (mod waveform 0-3)
+  - **Feedback FM:** fb (feedback amount 0-16383), fba (feedback env amount 0-16383), fbd (feedback decay ms)
   - **Discontinuity:** dc (amount 0-16383), dm (mode 0-2: fold/tanh/softclip), dd (discontinuity decay 0.001-10s)
   - **Tracking/Modulation:** tk (tracking 0-16383), mb (mod bus 0-16383), mp/md/mt/ma (switches 0-1)
   - **FM:** fm (index 0-16383)

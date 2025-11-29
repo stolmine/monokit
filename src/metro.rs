@@ -121,6 +121,16 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                         let _ = socket.send(&buf);
                     }
                 }
+                MetroCommand::SetParamSlew(param, time_sec) => {
+                    let msg = OscMessage {
+                        addr: "/monokit/slew/param".to_string(),
+                        args: vec![OscType::String(param), OscType::Float(time_sec)],
+                    };
+                    let packet = OscPacket::Message(msg);
+                    if let Ok(buf) = encoder::encode(&packet) {
+                        let _ = socket.send(&buf);
+                    }
+                }
                 MetroCommand::Shutdown => {
                     return; // Exit the metro thread
                 }

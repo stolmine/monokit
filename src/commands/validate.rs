@@ -215,6 +215,18 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
+        "SLEW" => {
+            if argc != 2 {
+                return Err(anyhow::anyhow!("SLEW takes exactly 2 arguments (param name and time value)"));
+            }
+            Ok(())
+        }
+        "SLEW.ALL" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("SLEW.ALL takes exactly 1 argument"));
+            }
+            Ok(())
+        }
         "D.MODE" => {
             if argc < 1 {
                 return Err(anyhow::anyhow!("D.MODE REQUIRES A VALUE (0-2)"));

@@ -167,6 +167,7 @@ pub enum MetroCommand {
     StopRecording,
     SetRecordingPath(String),  // Custom path prefix
     SetSlewTime(f32),          // Slew time in seconds
+    SetParamSlew(String, f32), // Per-parameter slew: (param_name, time_in_seconds)
     Shutdown,                  // Signal metro thread to exit
 }
 

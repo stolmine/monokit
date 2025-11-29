@@ -84,7 +84,15 @@ s.waitForBoot {
             ps_targ = 0,  // Pitch shift target (0=main, 1=repeat)
             volume = 1,
             gate = 0,
-            slew_time = 0;
+            slew_time = 0,
+            slew_pf = -1, slew_mf = -1, slew_fc = -1, slew_fm = -1,
+            slew_mx = -1, slew_dc = -1, slew_fb = -1, slew_fq = -1,
+            slew_fk = -1, slew_fe = -1, slew_rf = -1, slew_rm = -1,
+            slew_dt = -1, slew_df = -1, slew_dw = -1, slew_rv = -1,
+            slew_rw = -1, slew_volume = -1, slew_pn = -1, slew_lb = -1,
+            slew_ls = -1, slew_lm = -1, slew_rgf = -1, slew_rgm = -1,
+            slew_ct = -1, slew_cm = -1, slew_el = -1, slew_em = -1,
+            slew_eh = -1, slew_ef = -1;
 
         // All var declarations at top
         var trig, pitchEnv, ampEnv, fmEnv, dcEnv, fbEnv, filterEnv;
@@ -112,37 +120,37 @@ s.waitForBoot {
         var lbSmooth, lsSmooth, lmSmooth, rgfSmooth, rgmSmooth, ctSmooth, cmSmooth;
         var elSmooth, emSmooth, ehSmooth, efSmooth;
 
-        // Smoothed parameters using Lag.kr
-        pfSmooth = Lag.kr(pf, slew_time);
-        mfSmooth = Lag.kr(mf, slew_time);
-        fcSmooth = Lag.kr(fc, slew_time);
-        fmSmooth = Lag.kr(fm, slew_time);
-        mxSmooth = Lag.kr(mx, slew_time);
-        dcSmooth = Lag.kr(dc, slew_time);
-        fbSmooth = Lag.kr(fb, slew_time);
-        fqSmooth = Lag.kr(fq, slew_time);
-        fkSmooth = Lag.kr(fk, slew_time);
-        feSmooth = Lag.kr(fe, slew_time);
-        rfSmooth = Lag.kr(rf, slew_time);
-        rmSmooth = Lag.kr(rm, slew_time);
-        dtSmooth = Lag.kr(dt, slew_time);
-        dfSmooth = Lag.kr(df, slew_time);
-        dwSmooth = Lag.kr(dw, slew_time);
-        rvSmooth = Lag.kr(rv, slew_time);
-        rwSmooth = Lag.kr(rw, slew_time);
-        volumeSmooth = Lag.kr(volume, slew_time);
-        panSmooth = Lag.kr(pn, slew_time);
-        lbSmooth = Lag.kr(lb, slew_time);
-        lsSmooth = Lag.kr(ls, slew_time);
-        lmSmooth = Lag.kr(lm, slew_time);
-        rgfSmooth = Lag.kr(rgf, slew_time);
-        rgmSmooth = Lag.kr(rgm, slew_time);
-        ctSmooth = Lag.kr(ct, slew_time);
-        cmSmooth = Lag.kr(cm, slew_time);
-        elSmooth = Lag.kr(el, slew_time);
-        emSmooth = Lag.kr(em, slew_time);
-        ehSmooth = Lag.kr(eh, slew_time);
-        efSmooth = Lag.kr(ef, slew_time);
+        // Smoothed parameters using Lag.kr with per-parameter slew time overrides
+        pfSmooth = Lag.kr(pf, Select.kr(slew_pf >= 0, [slew_time, slew_pf]));
+        mfSmooth = Lag.kr(mf, Select.kr(slew_mf >= 0, [slew_time, slew_mf]));
+        fcSmooth = Lag.kr(fc, Select.kr(slew_fc >= 0, [slew_time, slew_fc]));
+        fmSmooth = Lag.kr(fm, Select.kr(slew_fm >= 0, [slew_time, slew_fm]));
+        mxSmooth = Lag.kr(mx, Select.kr(slew_mx >= 0, [slew_time, slew_mx]));
+        dcSmooth = Lag.kr(dc, Select.kr(slew_dc >= 0, [slew_time, slew_dc]));
+        fbSmooth = Lag.kr(fb, Select.kr(slew_fb >= 0, [slew_time, slew_fb]));
+        fqSmooth = Lag.kr(fq, Select.kr(slew_fq >= 0, [slew_time, slew_fq]));
+        fkSmooth = Lag.kr(fk, Select.kr(slew_fk >= 0, [slew_time, slew_fk]));
+        feSmooth = Lag.kr(fe, Select.kr(slew_fe >= 0, [slew_time, slew_fe]));
+        rfSmooth = Lag.kr(rf, Select.kr(slew_rf >= 0, [slew_time, slew_rf]));
+        rmSmooth = Lag.kr(rm, Select.kr(slew_rm >= 0, [slew_time, slew_rm]));
+        dtSmooth = Lag.kr(dt, Select.kr(slew_dt >= 0, [slew_time, slew_dt]));
+        dfSmooth = Lag.kr(df, Select.kr(slew_df >= 0, [slew_time, slew_df]));
+        dwSmooth = Lag.kr(dw, Select.kr(slew_dw >= 0, [slew_time, slew_dw]));
+        rvSmooth = Lag.kr(rv, Select.kr(slew_rv >= 0, [slew_time, slew_rv]));
+        rwSmooth = Lag.kr(rw, Select.kr(slew_rw >= 0, [slew_time, slew_rw]));
+        volumeSmooth = Lag.kr(volume, Select.kr(slew_volume >= 0, [slew_time, slew_volume]));
+        panSmooth = Lag.kr(pn, Select.kr(slew_pn >= 0, [slew_time, slew_pn]));
+        lbSmooth = Lag.kr(lb, Select.kr(slew_lb >= 0, [slew_time, slew_lb]));
+        lsSmooth = Lag.kr(ls, Select.kr(slew_ls >= 0, [slew_time, slew_ls]));
+        lmSmooth = Lag.kr(lm, Select.kr(slew_lm >= 0, [slew_time, slew_lm]));
+        rgfSmooth = Lag.kr(rgf, Select.kr(slew_rgf >= 0, [slew_time, slew_rgf]));
+        rgmSmooth = Lag.kr(rgm, Select.kr(slew_rgm >= 0, [slew_time, slew_rgm]));
+        ctSmooth = Lag.kr(ct, Select.kr(slew_ct >= 0, [slew_time, slew_ct]));
+        cmSmooth = Lag.kr(cm, Select.kr(slew_cm >= 0, [slew_time, slew_cm]));
+        elSmooth = Lag.kr(el, Select.kr(slew_el >= 0, [slew_time, slew_el]));
+        emSmooth = Lag.kr(em, Select.kr(slew_em >= 0, [slew_time, slew_em]));
+        ehSmooth = Lag.kr(eh, Select.kr(slew_eh >= 0, [slew_time, slew_eh]));
+        efSmooth = Lag.kr(ef, Select.kr(slew_ef >= 0, [slew_time, slew_ef]));
 
         // Envelope model: output = base + (envelope * amount)
         // Exception: ampEnv is multiplicative (0→1 gating)
@@ -520,6 +528,14 @@ s.waitForBoot {
         ~voice.set(\slew_time, slewSec);
         ("SLEW TIME SET TO" + slewMs + "MS").postln;
     }, '/monokit/slew');
+
+    OSCdef(\monokit_slew_param, { |msg|
+        var paramName = msg[1].asString;
+        var slewTime = msg[2].asFloat.clip(0, 10);
+        var slewArgName = ("slew_" ++ paramName).asSymbol;
+        ~voice.set(slewArgName, slewTime);
+        ("SLEW" + paramName.toUpper + "SET TO" + (slewTime * 1000) + "MS").postln;
+    }, '/monokit/slew/param');
 
     "monokit server ready".postln;
 };

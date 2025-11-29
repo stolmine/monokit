@@ -56,7 +56,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 ### Slewing & Interpolation [Medium]
 - [x] `SLEW.ALL <ms>` - Global slew time for all parameters ✓
 - [x] SC-side Lag.kr smoothing for 30+ parameters ✓
-- [ ] `SLEW <param> <ms>` - Per-parameter slew override (optional)
+- [x] `SLEW <param> <ms>` - Per-parameter slew override ✓
 - [ ] `LERP <var> <target> <steps>` - Interpolate variable over N ticks (optional)
 - [ ] `A.LERP <target> <ms>` - Time-based interpolation (optional)
 

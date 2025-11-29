@@ -448,6 +448,11 @@ PS.TARG 0         // Process input signal
   - Higher values = smoother transitions
   - Applies to all smoothable parameters via SC-side Lag.kr
   - Example: `SLEW.ALL 200` makes all param changes glide over 200ms
+- `SLEW <param> <0-10000>` - Set slew time for specific parameter
+  - Per-parameter slew time overrides SLEW.ALL
+  - Only affects the specified parameter
+  - Example: `SLEW PF 500` sets only PF to 500ms slew time
+  - Example: `SLEW.ALL 100; SLEW FC 1000` sets global 100ms, but FC gets 1000ms
 - Smoothed parameters: PF, MF, FC, FM, MX, DC, FB, FQ, FK, FE, RF, RM, DT, DF, DW, RV, RW, volume, pan, LB, LS, LM, RGF, RGM, CT, CM, EL, EM, EH, EF
 - NOT smoothed (discrete): PW, MW, FT, DM, mode switches, triggers
 

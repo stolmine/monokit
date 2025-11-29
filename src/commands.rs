@@ -1308,94 +1308,189 @@ where
 }
 
 pub fn validate_script_command(cmd: &str) -> Result<()> {
-    let parts: Vec<&str> = cmd.split_whitespace().collect();
+    let trimmed = cmd.trim();
+    if trimmed.is_empty() {
+        return Ok(());
+    }
+
+    if trimmed.contains(':') {
+        let colon_pos = trimmed.find(':').unwrap();
+        let prefix = trimmed[..colon_pos].trim().to_uppercase();
+        if prefix.starts_with("IF ")
+            || prefix.starts_with("ELIF ")
+            || prefix == "ELSE"
+            || prefix.starts_with("PROB ")
+            || prefix.starts_with("EV ")
+            || prefix.starts_with("SKIP ")
+            || prefix.starts_with("L ")
+        {
+            return Ok(());
+        }
+    }
+
+    if trimmed.to_uppercase().starts_with("L ") {
+        return Ok(());
+    }
+
+    if trimmed.contains(';') {
+        return Ok(());
+    }
+
+    let parts: Vec<&str> = trimmed.split_whitespace().collect();
     if parts.is_empty() {
         return Ok(());
     }
 
     let command = parts[0].to_uppercase();
+    let argc = parts.len() - 1; // argument count (excluding command)
 
     match command.as_str() {
-        "TR" | "RST" => Ok(()),
+        // Variables: 0-1 args (get or set)
+        "A" | "B" | "C" | "D" | "I" | "X" | "Y" | "Z" | "T" | "J" | "K" => {
+            if argc > 1 {
+                return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
+            }
+            Ok(())
+        }
+        // Working pattern ops with no args
+        "P.HERE" | "P.NEXT" | "P.PREV" => {
+            if argc > 0 {
+                return Err(anyhow::anyhow!("{} takes no arguments", command));
+            }
+            Ok(())
+        }
+        // Working pattern ops with 0-1 args
+        "P.N" | "P.L" | "P.I" => {
+            if argc > 1 {
+                return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
+            }
+            Ok(())
+        }
+        // P <idx> [val] - 1-2 args
+        "P" => {
+            if argc < 1 || argc > 2 {
+                return Err(anyhow::anyhow!("P takes 1-2 arguments"));
+            }
+            Ok(())
+        }
+        // Explicit pattern ops with exactly 1 arg
+        "PN.HERE" | "PN.NEXT" | "PN.PREV" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("{} takes exactly 1 argument (pattern number)", command));
+            }
+            Ok(())
+        }
+        // Explicit pattern ops with 1-2 args
+        "PN.L" | "PN.I" => {
+            if argc < 1 || argc > 2 {
+                return Err(anyhow::anyhow!("{} takes 1-2 arguments", command));
+            }
+            Ok(())
+        }
+        // PN <pat> <idx> [val] - 2-3 args
+        "PN" => {
+            if argc < 2 || argc > 3 {
+                return Err(anyhow::anyhow!("PN takes 2-3 arguments"));
+            }
+            Ok(())
+        }
+        // Math ops - exactly 2 args
+        "ADD" | "SUB" | "MUL" | "DIV" | "MOD" | "+" | "-" | "*" | "/" | "%" => {
+            if argc != 2 {
+                return Err(anyhow::anyhow!("{} takes exactly 2 arguments", command));
+            }
+            Ok(())
+        }
+        // RND - 1 arg, RRND - 2 args
+        "RND" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("RND takes exactly 1 argument"));
+            }
+            Ok(())
+        }
+        "RRND" => {
+            if argc != 2 {
+                return Err(anyhow::anyhow!("RRND takes exactly 2 arguments"));
+            }
+            Ok(())
+        }
+        // N - 1 arg
+        "N" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("N takes exactly 1 argument"));
+            }
+            Ok(())
+        }
+        // Unary comparison - 1 arg
+        "EZ" | "NZ" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+            }
+            Ok(())
+        }
+        // Binary comparison - 2 args
+        "EQ" | "NE" | "GT" | "LT" | "GTE" | "LTE" => {
+            if argc != 2 {
+                return Err(anyhow::anyhow!("{} takes exactly 2 arguments", command));
+            }
+            Ok(())
+        }
+        // SCRIPT - 1 arg
+        "SCRIPT" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("SCRIPT takes exactly 1 argument"));
+            }
+            Ok(())
+        }
+        // Scene commands
+        "SAVE" | "LOAD" | "DELETE" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+            }
+            Ok(())
+        }
+        "SCENES" => {
+            if argc > 0 {
+                return Err(anyhow::anyhow!("SCENES takes no arguments"));
+            }
+            Ok(())
+        }
+        // Metro commands
+        "M" => {
+            if argc > 1 {
+                return Err(anyhow::anyhow!("M takes 0-1 arguments"));
+            }
+            Ok(())
+        }
+        "M.BPM" | "M.ACT" | "M.SCRIPT" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+            }
+            Ok(())
+        }
+        // No-arg commands
+        "TR" | "RST" | "HELP" => {
+            if argc > 0 {
+                return Err(anyhow::anyhow!("{} takes no arguments", command));
+            }
+            Ok(())
+        }
+        // VOL - 1 arg
         "VOL" => {
-            if parts.len() < 2 {
-                return Err(anyhow::anyhow!("VOL requires a value"));
-            }
-            let _value: f32 = parts[1].parse().context("Failed to parse volume value")?;
-            Ok(())
-        }
-        "PF" | "MF" => {
-            if parts.len() < 2 {
-                return Err(anyhow::anyhow!("{} requires a frequency value", command));
-            }
-            let value: f32 = parts[1].parse().context("Failed to parse frequency")?;
-            if !(20.0..=20000.0).contains(&value) {
-                return Err(anyhow::anyhow!("Frequency must be between 20 and 20000"));
+            if argc != 1 {
+                return Err(anyhow::anyhow!("VOL takes exactly 1 argument"));
             }
             Ok(())
         }
-        "PW" | "MW" => {
-            if parts.len() < 2 {
-                return Err(anyhow::anyhow!("{} requires a waveform value", command));
-            }
-            let value: i32 = parts[1].parse().context("Failed to parse waveform")?;
-            if !(0..=2).contains(&value) {
-                return Err(anyhow::anyhow!("Waveform must be 0-2"));
-            }
-            Ok(())
-        }
-        "DC" | "TK" | "MB" | "FM" | "MX" | "FA" | "DA" => {
-            if parts.len() < 2 {
-                return Err(anyhow::anyhow!("{} requires a value", command));
-            }
-            let value: i32 = parts[1].parse().context("Failed to parse value")?;
-            if !(0..=16383).contains(&value) {
-                return Err(anyhow::anyhow!("Value must be between 0 and 16383"));
-            }
-            Ok(())
-        }
-        "DM" => {
-            if parts.len() < 2 {
-                return Err(anyhow::anyhow!("DM requires a mode value"));
-            }
-            let value: i32 = parts[1].parse().context("Failed to parse mode")?;
-            if !(0..=2).contains(&value) {
-                return Err(anyhow::anyhow!("Mode must be 0-2"));
-            }
-            Ok(())
-        }
-        "MP" | "MD" | "MT" | "MA" | "MM" | "ME" => {
-            if parts.len() < 2 {
-                return Err(anyhow::anyhow!("{} requires a value", command));
-            }
-            let value: i32 = parts[1].parse().context("Failed to parse value")?;
-            if !(0..=1).contains(&value) {
-                return Err(anyhow::anyhow!("Value must be 0 or 1"));
-            }
-            Ok(())
-        }
-        "AD" | "PD" | "FD" | "DD" => {
-            if parts.len() < 2 {
-                return Err(anyhow::anyhow!("{} requires a time value", command));
-            }
-            let value: i32 = parts[1].parse().context("Failed to parse time")?;
-            if !(1..=10000).contains(&value) {
-                return Err(anyhow::anyhow!("Time must be between 1 and 10000 ms"));
-            }
-            Ok(())
-        }
-        "PA" => {
-            if parts.len() < 2 {
-                return Err(anyhow::anyhow!("PA requires a multiplier value"));
-            }
-            let value: f32 = parts[1].parse().context("Failed to parse multiplier")?;
-            if !(0.0..=16.0).contains(&value) {
-                return Err(anyhow::anyhow!("Multiplier must be between 0 and 16"));
+        // Synth params - 1 arg
+        "PF" | "MF" | "PW" | "MW" | "DC" | "TK" | "MB" | "FM" | "MX" | "FA" | "DA" | "DM" | "MP" | "MD" | "MT" | "MA" | "MM" | "ME" | "AD" | "PD" | "FD" | "DD" | "PA" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
             }
             Ok(())
         }
         _ => {
-            return Err(anyhow::anyhow!("Unknown command in script: {}", command));
+            Err(anyhow::anyhow!("Unknown command: {}", command))
         }
     }
 }

@@ -121,9 +121,17 @@ impl App {
                 first_empty.unwrap_or(7)
             };
 
+            if !self.input.trim().is_empty() {
+                if let Err(e) = crate::commands::validate_script_command(&self.input) {
+                    self.add_output(format!("Error: {}", e));
+                    return;
+                }
+            }
+
             let script = self.scripts.get_script_mut(script_idx);
             script.lines[line_idx] = self.input.clone();
-            self.selected_line = Some(line_idx);
+            let next_line = if line_idx < 7 { line_idx + 1 } else { 0 };
+            self.selected_line = Some(next_line);
             self.input.clear();
             self.cursor_position = 0;
         }

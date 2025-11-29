@@ -177,7 +177,7 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             }
             None
         }
-        "ADD" => {
+        "ADD" | "+" => {
             if start_idx + 1 >= parts.len() {
                 return None;
             }
@@ -189,7 +189,7 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             }
             None
         }
-        "SUB" => {
+        "SUB" | "-" => {
             if start_idx + 1 >= parts.len() {
                 return None;
             }
@@ -201,7 +201,7 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             }
             None
         }
-        "MUL" => {
+        "MUL" | "*" => {
             if start_idx + 1 >= parts.len() {
                 return None;
             }
@@ -213,7 +213,7 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             }
             None
         }
-        "DIV" => {
+        "DIV" | "/" => {
             if start_idx + 1 >= parts.len() {
                 return None;
             }
@@ -229,7 +229,7 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
             }
             None
         }
-        "MOD" => {
+        "MOD" | "%" => {
             if start_idx + 1 >= parts.len() {
                 return None;
             }

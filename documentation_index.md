@@ -209,11 +209,11 @@ Examples:
 - `DA <0-16>` - Discontinuity envelope amount
 
 #### Math Operations
-- `ADD <a> <b>` - Add two values (works as command and in expressions)
-- `SUB <a> <b>` - Subtract b from a (works as command and in expressions)
-- `MUL <a> <b>` - Multiply two values (works as command and in expressions)
-- `DIV <a> <b>` - Divide a by b (works as command and in expressions)
-- `MOD <a> <b>` - Modulo a by b (works as command and in expressions)
+- `ADD <a> <b>` or `+ <a> <b>` - Add two values (works as command and in expressions)
+- `SUB <a> <b>` or `- <a> <b>` - Subtract b from a (works as command and in expressions)
+- `MUL <a> <b>` or `* <a> <b>` - Multiply two values (works as command and in expressions)
+- `DIV <a> <b>` or `/ <a> <b>` - Divide a by b (works as command and in expressions)
+- `MOD <a> <b>` or `% <a> <b>` - Modulo a by b (works as command and in expressions)
 
 #### Random Number Generation
 - `RND <max>` - Random integer from 0 to max-1 (works as command and in expressions)

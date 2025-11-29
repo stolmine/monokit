@@ -1111,6 +1111,104 @@ fn test_mod_by_zero_returns_zero() {
 }
 
 #[test]
+fn test_symbol_add() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    let parts = vec!["+", "10", "5"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 15);
+}
+
+#[test]
+fn test_symbol_sub() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    let parts = vec!["-", "10", "5"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 5);
+}
+
+#[test]
+fn test_symbol_mul() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    let parts = vec!["*", "10", "5"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 50);
+}
+
+#[test]
+fn test_symbol_div() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    let parts = vec!["/", "10", "5"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 2);
+}
+
+#[test]
+fn test_symbol_mod() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    let parts = vec!["%", "10", "3"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 1);
+}
+
+#[test]
+fn test_symbol_operators_with_variables() {
+    let mut variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    variables.a = 10;
+    variables.b = 5;
+
+    let parts = vec!["+", "A", "B"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 15);
+
+    let parts = vec!["-", "A", "B"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 5);
+
+    let parts = vec!["*", "A", "B"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 50);
+
+    let parts = vec!["/", "A", "B"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 2);
+}
+
+#[test]
+fn test_nested_symbol_operators() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    let parts = vec!["+", "+", "1", "2", "3"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 6);
+
+    let parts = vec!["*", "+", "5", "1", "2"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 12);
+}
+
+#[test]
+fn test_mixed_word_and_symbol_operators() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let scripts = create_test_scripts();
+
+    let parts = vec!["+", "MUL", "2", "3", "4"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 10);
+
+    let parts = vec!["*", "ADD", "2", "3", "DIV", "10", "5"];
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &scripts, 0).unwrap().0, 10);
+}
+
+#[test]
 fn test_triple_nested_expressions() {
     let mut variables = create_test_variables();
     let mut patterns = create_test_patterns();
@@ -1978,4 +2076,56 @@ fn test_if_lowercase_pn_here() {
 
     patterns.patterns[0].data[0] = 0;
     assert!(!eval_condition("IF pn.here 0", &variables, &mut patterns, &scripts, 0));
+}
+
+#[test]
+fn test_validate_valid_commands() {
+    use crate::commands::validate_script_command;
+
+    assert!(validate_script_command("TR").is_ok());
+    assert!(validate_script_command("PF 440").is_ok());
+    assert!(validate_script_command("A 100").is_ok());
+    assert!(validate_script_command("P.NEXT").is_ok());
+    assert!(validate_script_command("IF A > 5: TR").is_ok());
+    assert!(validate_script_command("SCRIPT 1").is_ok());
+    assert!(validate_script_command("M.ACT 1").is_ok());
+    assert!(validate_script_command("").is_ok());
+}
+
+#[test]
+fn test_validate_invalid_commands() {
+    use crate::commands::validate_script_command;
+
+    assert!(validate_script_command("INVALID_CMD").is_err());
+    assert!(validate_script_command("NOTREAL 123").is_err());
+    assert!(validate_script_command("BADCOMMAND").is_err());
+}
+
+#[test]
+fn test_validate_commands_with_missing_args() {
+    use crate::commands::validate_script_command;
+
+    assert!(validate_script_command("VOL").is_err());
+    assert!(validate_script_command("PF").is_err());
+    assert!(validate_script_command("DC").is_err());
+}
+
+#[test]
+fn test_validate_control_flow() {
+    use crate::commands::validate_script_command;
+
+    assert!(validate_script_command("IF A > 0: TR").is_ok());
+    assert!(validate_script_command("ELIF A < 10: PF 200").is_ok());
+    assert!(validate_script_command("ELSE: RST").is_ok());
+    assert!(validate_script_command("PROB 50: TR").is_ok());
+    assert!(validate_script_command("EV 4: TR").is_ok());
+    assert!(validate_script_command("SKIP 2: PF 100").is_ok());
+    assert!(validate_script_command("L 0 10: A I").is_ok());
+}
+
+#[test]
+fn test_validate_semicolon_commands() {
+    use crate::commands::validate_script_command;
+
+    assert!(validate_script_command("TR; PF 440; VOL 0.5").is_ok());
 }

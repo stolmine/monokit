@@ -89,13 +89,23 @@ where
     Ok(())
 }
 
-pub fn handle_script(parts: &[&str]) -> Result<Vec<usize>> {
+pub fn handle_script(
+    parts: &[&str],
+    variables: &Variables,
+    patterns: &mut PatternStorage,
+    scripts: &ScriptStorage,
+    script_index: usize,
+) -> Result<Vec<usize>> {
     if parts.len() < 2 {
         return Err(anyhow::anyhow!("ERROR: SCRIPT REQUIRES NUMBER 1-8"));
     }
-    let num: usize = parts[1]
-        .parse()
-        .context("Failed to parse script number")?;
+    let num: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, scripts, script_index) {
+        expr_val as usize
+    } else {
+        parts[1]
+            .parse()
+            .context("Failed to parse script number")?
+    };
     if num < 1 || num > 8 {
         return Err(anyhow::anyhow!("ERROR: SCRIPT NUMBER MUST BE 1-8"));
     }

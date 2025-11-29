@@ -114,7 +114,11 @@ Audio output → Recording (optional)
 - `M.SCRIPT <1-8>` - Set which script metro calls on each tick (default: M script)
 
 #### Scripts
-- `SCRIPT <1-8>` - Execute stored script (can be called from other scripts)
+- `SCRIPT <1-8>` - Execute stored script (can be called from other scripts, supports expressions)
+  - `SCRIPT 1` - Direct script number
+  - `SCRIPT A` - Variable reference
+  - `SCRIPT ADD 1 1` - Math expression
+  - `SCRIPT PN.NEXT 0` - Pattern operation
 - Scripts 1-8: User scripts
 - M script (index 8): Called on each metro tick
 - I script (index 9): Called on startup

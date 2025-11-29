@@ -311,7 +311,7 @@ where
             math_ops::handle_mod(&parts, variables, patterns, scripts, script_index, output);
         }
         "SCRIPT" => {
-            return misc::handle_script(&parts);
+            return misc::handle_script(&parts, variables, patterns, scripts, script_index);
         }
         "SAVE" => {
             scene_cmds::handle_save(&parts, scripts, patterns, output);

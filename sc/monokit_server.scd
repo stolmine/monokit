@@ -251,10 +251,7 @@ s.waitForBoot {
             min(brReadPos, brBufSize - brReadPos) / brWindowSize
         ).clip(0, 1).sqrt;
 
-        brRepeated = [
-            BufRd.ar(1, beatRepeatBuf, brReadPos, 0, 4),
-            BufRd.ar(1, beatRepeatBuf, brReadPos, 1, 4)
-        ];
+        brRepeated = BufRd.ar(2, beatRepeatBuf, brReadPos, 0, 4);
 
         brMix = (br_mix / 16383).clip(0, 1);
         sigL = Select.ar(brActive, [

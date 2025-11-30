@@ -99,6 +99,33 @@ where
         "P.PREV" => {
             patterns::handle_pattern_prev(patterns, output);
         }
+        "P.PUSH" => {
+            patterns::handle_pattern_push(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "P.POP" => {
+            patterns::handle_pattern_pop(patterns, output);
+        }
+        "P.INS" => {
+            patterns::handle_pattern_ins(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "P.RM" => {
+            patterns::handle_pattern_rm(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "P.REV" => {
+            patterns::handle_pattern_rev(patterns, output);
+        }
+        "P.ROT" => {
+            patterns::handle_pattern_rot(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "P.SHUF" => {
+            patterns::handle_pattern_shuf(patterns, output);
+        }
+        "P.SORT" => {
+            patterns::handle_pattern_sort(patterns, output);
+        }
+        "P.RND" => {
+            patterns::handle_pattern_rnd(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
         "P" => {
             patterns::handle_pattern(&parts, variables, patterns, counters, scripts, script_index, output)?;
         }

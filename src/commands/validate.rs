@@ -41,10 +41,25 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         "A" | "B" | "C" | "D" | "I" | "X" | "Y" | "Z" | "T" | "J" | "K" => {
             Ok(())
         }
-        "P.HERE" | "P.NEXT" | "P.PREV" => {
+        "P.HERE" | "P.NEXT" | "P.PREV" | "P.POP" | "P.REV" | "P.SHUF" | "P.SORT" => {
             if argc > 0 {
                 return Err(anyhow::anyhow!("{} takes no arguments", command));
             }
+            Ok(())
+        }
+        "P.PUSH" | "P.ROT" => {
+            if argc < 1 {
+                return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
+            }
+            Ok(())
+        }
+        "P.INS" | "P.RM" => {
+            if argc < 1 {
+                return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
+            }
+            Ok(())
+        }
+        "P.RND" => {
             Ok(())
         }
         "P.N" | "P.L" | "P.I" => {

@@ -119,16 +119,16 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 **Focus:** Building on existing pattern infrastructure with Teletype-inspired operations
 
-### Pattern Manipulation [Medium]
-- [ ] `P.PUSH <val>` - Push value, shift pattern
-- [ ] `P.POP` - Pop and return last value
-- [ ] `P.INS <idx> <val>` - Insert at index
-- [ ] `P.RM <idx>` - Remove at index
-- [ ] `P.REV` - Reverse pattern
-- [ ] `P.ROT <n>` - Rotate pattern by n positions
-- [ ] `P.SHUF` - Shuffle pattern randomly
-- [ ] `P.SORT` - Sort pattern ascending
-- [ ] `P.RND` - Randomize all values
+### Pattern Manipulation [Medium] - COMPLETE
+- [x] `P.PUSH <val>` - Push value to end, shift pattern left
+- [x] `P.POP` - Return last value in pattern
+- [x] `P.INS <idx> <val>` - Insert at index, shift rest right
+- [x] `P.RM <idx>` - Remove at index, shift rest left
+- [x] `P.REV` - Reverse pattern in place
+- [x] `P.ROT <n>` - Rotate pattern (positive=right, negative=left)
+- [x] `P.SHUF` - Shuffle pattern randomly (Fisher-Yates)
+- [x] `P.SORT` - Sort pattern ascending
+- [x] `P.RND [min] [max]` - Randomize values (default 0-127)
 
 ### Pattern Math [Low]
 - [ ] `P.ADD <val>` - Add to all values

@@ -1,4 +1,4 @@
-use crate::eval::eval_expression;
+use crate::commands::common::parse_i16_expr;
 use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables};
 
 macro_rules! define_counter_read {
@@ -47,23 +47,11 @@ macro_rules! define_counter_max {
         ) where
             F: FnMut(String),
         {
-            if parts.len() < 2 {
-                output(format!("{}.MAX REQUIRES A VALUE", $counter_name));
+            let param_name = concat!($counter_name, ".MAX");
+            let Some(value) = parse_i16_expr(
+                parts, 1, variables, patterns, counters, scripts, script_index, scale, param_name, &mut output
+            ) else {
                 return;
-            }
-
-            let value: i16 = if let Some((expr_val, _)) = eval_expression(
-                &parts, 1, variables, patterns, counters, scripts, script_index, scale
-            ) {
-                expr_val
-            } else {
-                match parts[1].parse() {
-                    Ok(v) => v,
-                    Err(_) => {
-                        output(format!("ERROR: FAILED TO PARSE VALUE FOR {}.MAX", $counter_name));
-                        return;
-                    }
-                }
             };
 
             if value > 0 && value < counters.min[$counter_idx] {
@@ -99,23 +87,11 @@ macro_rules! define_counter_min {
         ) where
             F: FnMut(String),
         {
-            if parts.len() < 2 {
-                output(format!("{}.MIN REQUIRES A VALUE", $counter_name));
+            let param_name = concat!($counter_name, ".MIN");
+            let Some(value) = parse_i16_expr(
+                parts, 1, variables, patterns, counters, scripts, script_index, scale, param_name, &mut output
+            ) else {
                 return;
-            }
-
-            let value: i16 = if let Some((expr_val, _)) = eval_expression(
-                &parts, 1, variables, patterns, counters, scripts, script_index, scale
-            ) {
-                expr_val
-            } else {
-                match parts[1].parse() {
-                    Ok(v) => v,
-                    Err(_) => {
-                        output(format!("ERROR: FAILED TO PARSE VALUE FOR {}.MIN", $counter_name));
-                        return;
-                    }
-                }
             };
 
             counters.min[$counter_idx] = value;

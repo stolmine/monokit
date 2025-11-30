@@ -1,4 +1,5 @@
 mod aliases;
+pub mod common;
 mod core;
 mod gate;
 mod patterns;

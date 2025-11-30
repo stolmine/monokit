@@ -1,6 +1,6 @@
-use crate::eval::eval_expression;
+use crate::commands::common::parse_i16_expr;
 use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables};
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 macro_rules! define_variable_handler {
     ($fn_name:ident, $var_name:literal, $var_field:ident) => {
@@ -19,18 +19,10 @@ macro_rules! define_variable_handler {
             if parts.len() == 1 {
                 output(format!("{} = {}", $var_name, variables.$var_field));
             } else {
-                let value: i16 = if let Some((expr_val, _)) = eval_expression(
-                    &parts, 1, variables, patterns, counters, scripts, script_index, scale
-                ) {
-                    expr_val
-                } else {
-                    match parts[1].parse() {
-                        Ok(v) => v,
-                        Err(_) => {
-                            output(format!("ERROR: FAILED TO PARSE VALUE FOR {}", $var_name));
-                            return;
-                        }
-                    }
+                let Some(value) = parse_i16_expr(
+                    parts, 1, variables, patterns, counters, scripts, script_index, scale, $var_name, &mut output
+                ) else {
+                    return;
                 };
                 variables.$var_field = value;
                 output(format!("SET {} TO {}", $var_name, value));
@@ -59,14 +51,12 @@ macro_rules! define_variable_handler {
             if parts.len() == 1 {
                 output(format!("{} = {}", $var_name, scripts.scripts[script_index].$var_field));
             } else {
-                let value: i16 = if let Some((expr_val, _)) = eval_expression(
-                    &parts, 1, variables, patterns, counters, scripts, script_index, scale
+                let value: i16 = if let Some(v) = parse_i16_expr(
+                    parts, 1, variables, patterns, counters, scripts, script_index, scale, $var_name, &mut output
                 ) {
-                    expr_val
+                    v
                 } else {
-                    parts[1]
-                        .parse()
-                        .context(format!("Failed to parse value for {}", $var_name))?
+                    return Ok(());
                 };
                 scripts.scripts[script_index].$var_field = value;
                 output(format!("SET {} TO {}", $var_name, value));

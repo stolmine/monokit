@@ -177,6 +177,66 @@ where
         "PN.PREV" => {
             patterns::handle_pn_prev(&parts, variables, patterns, counters, scripts, script_index, output)?;
         }
+        "PN.PUSH" => {
+            patterns::handle_pn_push(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.POP" => {
+            patterns::handle_pn_pop(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.INS" => {
+            patterns::handle_pn_ins(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.RM" => {
+            patterns::handle_pn_rm(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.REV" => {
+            patterns::handle_pn_rev(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.ROT" => {
+            patterns::handle_pn_rot(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.SHUF" => {
+            patterns::handle_pn_shuf(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.SORT" => {
+            patterns::handle_pn_sort(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.RND" => {
+            patterns::handle_pn_rnd(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.ADD" => {
+            patterns::handle_pn_add(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.SUB" => {
+            patterns::handle_pn_sub(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.MUL" => {
+            patterns::handle_pn_mul(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.DIV" => {
+            patterns::handle_pn_div(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.MOD" => {
+            patterns::handle_pn_mod(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.SCALE" => {
+            patterns::handle_pn_scale(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.MIN" => {
+            patterns::handle_pn_min(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.MAX" => {
+            patterns::handle_pn_max(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.SUM" => {
+            patterns::handle_pn_sum(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.AVG" => {
+            patterns::handle_pn_avg(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "PN.FND" => {
+            patterns::handle_pn_fnd(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
         "PN" => {
             patterns::handle_pn(&parts, variables, patterns, counters, scripts, script_index, output)?;
         }

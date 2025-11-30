@@ -6,6 +6,7 @@ mod tog_integration_test;
 mod expr_tests;
 mod condition_tests;
 mod pattern_tests;
+mod pattern_ops;
 mod variable_tests;
 mod validation_tests;
 mod math_tests;

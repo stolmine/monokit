@@ -107,11 +107,8 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - [ ] `A.DEC <n>` - Decrement variable A by n each tick
 - [ ] `A.WRAP <min> <max>` - Wrap variable within range
 
-### Pattern Storage [Low] - PARTIAL
+### Pattern Storage [Low] - COMPLETE
 - [x] Increased from 4 to 6 pattern slots (PN accepts 0-5)
-- [ ] Increase to 8 or 16 pattern slots
-- [ ] Bank system: `P.BANK <0-3>` for 4 banks of 4
-- [ ] Increase max length from 64 to 128 or 256
 
 ---
 
@@ -120,30 +117,30 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 **Focus:** Building on existing pattern infrastructure with Teletype-inspired operations
 
 ### Pattern Manipulation [Medium] - COMPLETE
-- [x] `P.PUSH <val>` - Push value to end, shift pattern left
-- [x] `P.POP` - Return last value in pattern
-- [x] `P.INS <idx> <val>` - Insert at index, shift rest right
-- [x] `P.RM <idx>` - Remove at index, shift rest left
-- [x] `P.REV` - Reverse pattern in place
-- [x] `P.ROT <n>` - Rotate pattern (positive=right, negative=left)
-- [x] `P.SHUF` - Shuffle pattern randomly (Fisher-Yates)
-- [x] `P.SORT` - Sort pattern ascending
-- [x] `P.RND [min] [max]` - Randomize values (default 0-127)
+- [x] `P.PUSH <val>` / `PN.PUSH <pat> <val>` - Push value, shift left
+- [x] `P.POP` / `PN.POP <pat>` - Return last value
+- [x] `P.INS <idx> <val>` / `PN.INS <pat> <idx> <val>` - Insert at index
+- [x] `P.RM <idx>` / `PN.RM <pat> <idx>` - Remove at index
+- [x] `P.REV` / `PN.REV <pat>` - Reverse pattern
+- [x] `P.ROT <n>` / `PN.ROT <pat> <n>` - Rotate pattern
+- [x] `P.SHUF` / `PN.SHUF <pat>` - Shuffle randomly
+- [x] `P.SORT` / `PN.SORT <pat>` - Sort ascending
+- [x] `P.RND [min] [max]` / `PN.RND <pat> [min] [max]` - Randomize values
 
 ### Pattern Math [Low] - COMPLETE
-- [x] `P.ADD <val>` - Add to all values (saturating)
-- [x] `P.SUB <val>` - Subtract from all values (saturating)
-- [x] `P.MUL <val>` - Multiply all values (saturating)
-- [x] `P.DIV <val>` - Divide all values (integer, zero-safe)
-- [x] `P.MOD <val>` - Modulo all values (zero-safe)
-- [x] `P.SCALE <min> <max>` - Scale pattern to new range
+- [x] `P.ADD <val>` / `PN.ADD <pat> <val>` - Add to all (saturating)
+- [x] `P.SUB <val>` / `PN.SUB <pat> <val>` - Subtract from all (saturating)
+- [x] `P.MUL <val>` / `PN.MUL <pat> <val>` - Multiply all (saturating)
+- [x] `P.DIV <val>` / `PN.DIV <pat> <val>` - Divide all (zero-safe)
+- [x] `P.MOD <val>` / `PN.MOD <pat> <val>` - Modulo all (zero-safe)
+- [x] `P.SCALE <min> <max>` / `PN.SCALE <pat> <min> <max>` - Scale to range
 
 ### Pattern Queries [Low] - COMPLETE
-- [x] `P.MIN` - Return minimum value
-- [x] `P.MAX` - Return maximum value
-- [x] `P.SUM` - Return sum of all values
-- [x] `P.AVG` - Return average (integer)
-- [x] `P.FND <val>` - Return index of value (-1 if not found)
+- [x] `P.MIN` / `PN.MIN <pat>` - Return minimum value
+- [x] `P.MAX` / `PN.MAX <pat>` - Return maximum value
+- [x] `P.SUM` / `PN.SUM <pat>` - Return sum of all values
+- [x] `P.AVG` / `PN.AVG <pat>` - Return average (integer)
+- [x] `P.FND <val>` / `PN.FND <pat> <val>` - Find index (-1 if not found)
 
 ### Randomization System [Medium]
 

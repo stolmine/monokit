@@ -80,7 +80,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "PN.HERE" | "PN.NEXT" | "PN.PREV" => {
+        "PN.HERE" | "PN.NEXT" | "PN.PREV" | "PN.POP" | "PN.REV" | "PN.SHUF" | "PN.SORT" | "PN.MIN" | "PN.MAX" | "PN.SUM" | "PN.AVG" => {
             if argc < 1 {
                 return Err(anyhow::anyhow!("{} requires at least 1 argument (pattern number)", command));
             }
@@ -89,6 +89,42 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         "PN.L" | "PN.I" => {
             if argc < 1 {
                 return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
+            }
+            Ok(())
+        }
+        "PN.PUSH" | "PN.ADD" | "PN.SUB" | "PN.MUL" | "PN.DIV" | "PN.MOD" | "PN.FND" => {
+            if argc < 2 {
+                return Err(anyhow::anyhow!("{} requires at least 2 arguments (pattern number and value)", command));
+            }
+            Ok(())
+        }
+        "PN.RM" => {
+            if argc < 2 {
+                return Err(anyhow::anyhow!("PN.RM requires at least 2 arguments (pattern number and index)"));
+            }
+            Ok(())
+        }
+        "PN.ROT" => {
+            if argc < 2 {
+                return Err(anyhow::anyhow!("PN.ROT requires at least 2 arguments (pattern number and rotation amount)"));
+            }
+            Ok(())
+        }
+        "PN.INS" => {
+            if argc < 3 {
+                return Err(anyhow::anyhow!("PN.INS requires at least 3 arguments (pattern number, index, and value)"));
+            }
+            Ok(())
+        }
+        "PN.SCALE" => {
+            if argc < 3 {
+                return Err(anyhow::anyhow!("PN.SCALE requires at least 3 arguments (pattern number, min, and max)"));
+            }
+            Ok(())
+        }
+        "PN.RND" => {
+            if argc < 1 {
+                return Err(anyhow::anyhow!("PN.RND requires at least 1 argument (pattern number)"));
             }
             Ok(())
         }

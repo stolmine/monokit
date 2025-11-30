@@ -1,3 +1,4 @@
+mod common;
 pub mod oscillator;
 pub mod modulation;
 pub mod discontinuity;

@@ -1,0 +1,273 @@
+use crate::eval::eval_expression;
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
+use anyhow::{Context, Result};
+use rosc::OscType;
+use std::sync::mpsc::Sender;
+
+macro_rules! define_int_param {
+    ($fn_name:ident, $osc_param:expr, $min:expr, $max:expr, $error_cmd:expr, $display_name:expr, $parse_ctx:expr) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            variables: &Variables,
+            patterns: &mut PatternStorage,
+            counters: &mut Counters,
+            scripts: &ScriptStorage,
+            script_index: usize,
+            metro_tx: &Sender<MetroCommand>,
+            debug_level: u8,
+            scale: &ScaleState,
+            mut output: F,
+        ) -> Result<()>
+        where
+            F: FnMut(String),
+        {
+            if parts.len() < 2 {
+                output(format!("ERROR: {} REQUIRES A VALUE ({}-{})", $error_cmd, $min, $max));
+                return Ok(());
+            }
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                expr_val as i32
+            } else {
+                parts[1]
+                    .parse()
+                    .context($parse_ctx)?
+            };
+            if !($min..=$max).contains(&value) {
+                output(format!("ERROR: {} MUST BE BETWEEN {} AND {}", $display_name, $min, $max));
+                return Ok(());
+            }
+            metro_tx
+                .send(MetroCommand::SendParam($osc_param.to_string(), OscType::Int(value)))
+                .context("Failed to send param to metro thread")?;
+            if debug_level >= 2 {
+                output(format!("SET {} TO {}", $display_name, value));
+            }
+            Ok(())
+        }
+    };
+}
+
+macro_rules! define_int_param_ms {
+    ($fn_name:ident, $osc_param:expr, $min:expr, $max:expr, $error_cmd:expr, $display_name:expr, $parse_ctx:expr) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            variables: &Variables,
+            patterns: &mut PatternStorage,
+            counters: &mut Counters,
+            scripts: &ScriptStorage,
+            script_index: usize,
+            metro_tx: &Sender<MetroCommand>,
+            debug_level: u8,
+            scale: &ScaleState,
+            mut output: F,
+        ) -> Result<()>
+        where
+            F: FnMut(String),
+        {
+            if parts.len() < 2 {
+                output(format!("ERROR: {} REQUIRES A TIME VALUE ({}-{} MS)", $error_cmd, $min, $max));
+                return Ok(());
+            }
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                expr_val as i32
+            } else {
+                parts[1]
+                    .parse()
+                    .context($parse_ctx)?
+            };
+            if !($min..=$max).contains(&value) {
+                output(format!("ERROR: {} MUST BE BETWEEN {} AND {} MS", $display_name, $min, $max));
+                return Ok(());
+            }
+            metro_tx
+                .send(MetroCommand::SendParam($osc_param.to_string(), OscType::Int(value)))
+                .context("Failed to send param to metro thread")?;
+            if debug_level >= 2 {
+                output(format!("SET {} TO {} MS", $display_name, value));
+            }
+            Ok(())
+        }
+    };
+}
+
+macro_rules! define_float_param {
+    ($fn_name:ident, $osc_param:expr, $min:expr, $max:expr, $error_cmd:expr, $display_name:expr, $parse_ctx:expr, $unit:expr) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            variables: &Variables,
+            patterns: &mut PatternStorage,
+            counters: &mut Counters,
+            scripts: &ScriptStorage,
+            script_index: usize,
+            metro_tx: &Sender<MetroCommand>,
+            debug_level: u8,
+            scale: &ScaleState,
+            mut output: F,
+        ) -> Result<()>
+        where
+            F: FnMut(String),
+        {
+            if parts.len() < 2 {
+                output(format!("ERROR: {} REQUIRES A {} VALUE ({}-{})", $error_cmd,
+                    if $unit.is_empty() { "VALUE" } else { $unit },
+                    $min, $max));
+                return Ok(());
+            }
+            let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                expr_val as f32
+            } else {
+                parts[1]
+                    .parse()
+                    .context($parse_ctx)?
+            };
+            if !($min..=$max).contains(&value) {
+                output(format!("ERROR: {} MUST BE BETWEEN {} AND {} {}", $display_name, $min, $max, $unit));
+                return Ok(());
+            }
+            metro_tx
+                .send(MetroCommand::SendParam($osc_param.to_string(), OscType::Float(value)))
+                .context("Failed to send param to metro thread")?;
+            if debug_level >= 2 {
+                output(format!("SET {} TO {} {}", $display_name, value, $unit));
+            }
+            Ok(())
+        }
+    };
+}
+
+macro_rules! define_bool_param {
+    ($fn_name:ident, $osc_param:expr, $error_cmd:expr, $display_name:expr, $parse_ctx:expr) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            variables: &Variables,
+            patterns: &mut PatternStorage,
+            counters: &mut Counters,
+            scripts: &ScriptStorage,
+            script_index: usize,
+            metro_tx: &Sender<MetroCommand>,
+            debug_level: u8,
+            scale: &ScaleState,
+            mut output: F,
+        ) -> Result<()>
+        where
+            F: FnMut(String),
+        {
+            if parts.len() < 2 {
+                output(format!("ERROR: {} REQUIRES A VALUE (0 OR 1)", $error_cmd));
+                return Ok(());
+            }
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                expr_val as i32
+            } else {
+                parts[1]
+                    .parse()
+                    .context($parse_ctx)?
+            };
+            if !(0..=1).contains(&value) {
+                output("ERROR: VALUE MUST BE 0 OR 1".to_string());
+                return Ok(());
+            }
+            metro_tx
+                .send(MetroCommand::SendParam($osc_param.to_string(), OscType::Int(value)))
+                .context("Failed to send param to metro thread")?;
+            if debug_level >= 2 {
+                output(format!("SET {} TO {}", $display_name, value));
+            }
+            Ok(())
+        }
+    };
+}
+
+macro_rules! define_mode_param {
+    ($fn_name:ident, $osc_param:expr, $min:expr, $max:expr, $error_cmd:expr, $error_msg:expr, $display_name:expr, $parse_ctx:expr) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            variables: &Variables,
+            patterns: &mut PatternStorage,
+            counters: &mut Counters,
+            scripts: &ScriptStorage,
+            script_index: usize,
+            metro_tx: &Sender<MetroCommand>,
+            debug_level: u8,
+            scale: &ScaleState,
+            mut output: F,
+        ) -> Result<()>
+        where
+            F: FnMut(String),
+        {
+            if parts.len() < 2 {
+                output(format!("ERROR: {} REQUIRES A VALUE ({}-{})", $error_cmd, $min, $max));
+                return Ok(());
+            }
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                expr_val as i32
+            } else {
+                parts[1]
+                    .parse()
+                    .context($parse_ctx)?
+            };
+            if !($min..=$max).contains(&value) {
+                output(format!("ERROR: {}", $error_msg));
+                return Ok(());
+            }
+            metro_tx
+                .send(MetroCommand::SendParam($osc_param.to_string(), OscType::Int(value)))
+                .context("Failed to send param to metro thread")?;
+            if debug_level >= 2 {
+                output(format!("SET {} TO {}", $display_name, value));
+            }
+            Ok(())
+        }
+    };
+}
+
+macro_rules! define_mode_param_with_names {
+    ($fn_name:ident, $osc_param:expr, $min:expr, $max:expr, $error_cmd:expr, $error_msg:expr, $display_name:expr, $parse_ctx:expr, $mode_names:expr) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            variables: &Variables,
+            patterns: &mut PatternStorage,
+            counters: &mut Counters,
+            scripts: &ScriptStorage,
+            script_index: usize,
+            metro_tx: &Sender<MetroCommand>,
+            debug_level: u8,
+            scale: &ScaleState,
+            mut output: F,
+        ) -> Result<()>
+        where
+            F: FnMut(String),
+        {
+            if parts.len() < 2 {
+                output(format!("ERROR: {} REQUIRES A VALUE ({}-{})", $error_cmd, $min, $max));
+                return Ok(());
+            }
+            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                expr_val as i32
+            } else {
+                parts[1]
+                    .parse()
+                    .context($parse_ctx)?
+            };
+            if !($min..=$max).contains(&value) {
+                output(format!("ERROR: {}", $error_msg));
+                return Ok(());
+            }
+            metro_tx
+                .send(MetroCommand::SendParam($osc_param.to_string(), OscType::Int(value)))
+                .context("Failed to send param to metro thread")?;
+            if debug_level >= 2 {
+                let mode_name = $mode_names.get(value as usize).unwrap_or(&"UNKNOWN");
+                output(format!("SET {} TO {} ({})", $display_name, value, mode_name));
+            }
+            Ok(())
+        }
+    };
+}
+
+pub(crate) use define_bool_param;
+pub(crate) use define_float_param;
+pub(crate) use define_int_param;
+pub(crate) use define_int_param_ms;
+pub(crate) use define_mode_param;
+pub(crate) use define_mode_param_with_names;

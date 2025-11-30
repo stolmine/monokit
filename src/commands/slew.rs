@@ -27,9 +27,12 @@ where
         output("ERROR: SLEW REQUIRES A PARAMETER NAME AND TIME VALUE".to_string());
         return Ok(());
     }
-    let param_name = parts[1].to_lowercase();
+    let param_input = parts[1].to_uppercase();
+    let param_alias = crate::commands::aliases::resolve_alias(&param_input);
+    let param_name = param_alias.to_lowercase();
+
     if !SMOOTHABLE_PARAMS.contains(&param_name.as_str()) {
-        output(format!("ERROR: INVALID PARAMETER '{}' FOR SLEW", param_name.to_uppercase()));
+        output(format!("ERROR: INVALID PARAMETER '{}' FOR SLEW", param_input));
         return Ok(());
     }
     let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
@@ -48,7 +51,7 @@ where
         .send(MetroCommand::SetParamSlew(param_name, time_sec))
         .context("Failed to send param slew to metro thread")?;
     if debug_level >= 1 {
-        output(format!("SET {} SLEW TIME TO {} MS", parts[1].to_uppercase(), value_ms));
+        output(format!("SET {} SLEW TIME TO {} MS", param_input, value_ms));
     }
     Ok(())
 }

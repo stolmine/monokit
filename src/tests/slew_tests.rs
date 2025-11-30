@@ -277,3 +277,36 @@ fn test_slew_various_valid_params() {
         assert!(msg.is_ok(), "Failed for param: {}", param);
     }
 }
+
+#[test]
+fn test_slew_canonical_parameter_names() {
+    let variables = create_test_variables();
+    let mut patterns = create_test_patterns();
+    let mut counters = create_test_counters();
+    let scripts = create_test_scripts();
+    let (metro_tx, metro_rx) = mpsc::channel::<MetroCommand>();
+    let mut outputs: Vec<String> = Vec::new();
+
+    let parts = vec!["SLEW", "REV.WET", "100"];
+    let result = handle_slew(
+        &parts,
+        &variables,
+        &mut patterns,
+        &mut counters,
+        &scripts,
+        0,
+        &create_test_scale(),
+        &metro_tx,
+        1,
+        |output: String| outputs.push(output),
+    );
+    assert!(result.is_ok());
+    assert!(outputs.iter().any(|s| s.contains("SET REV.WET SLEW TIME")));
+
+    let msg = metro_rx.try_recv();
+    assert!(msg.is_ok());
+    if let Ok(MetroCommand::SetParamSlew(param, time)) = msg {
+        assert_eq!(param, "rw");
+        assert_eq!(time, 0.1);
+    }
+}

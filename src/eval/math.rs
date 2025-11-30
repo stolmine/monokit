@@ -56,6 +56,9 @@ pub fn eval_math_expression(
             if let Some((a, a_consumed)) = eval_expr_fn(parts, start_idx + 1, variables, patterns, counters, scripts, script_index, scale) {
                 if let Some((b, b_consumed)) = eval_expr_fn(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index, scale) {
                     if b == 0 {
+                        // Intentional: Return 0 for division by zero in expression context.
+                        // This allows expression chains to continue without breaking.
+                        // Command-level handlers (handle_div) output explicit errors.
                         return Some((0, 1 + a_consumed + b_consumed));
                     } else {
                         let result = a / b;
@@ -72,6 +75,9 @@ pub fn eval_math_expression(
             if let Some((a, a_consumed)) = eval_expr_fn(parts, start_idx + 1, variables, patterns, counters, scripts, script_index, scale) {
                 if let Some((b, b_consumed)) = eval_expr_fn(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index, scale) {
                     if b == 0 {
+                        // Intentional: Return 0 for modulo by zero in expression context.
+                        // This allows expression chains to continue without breaking.
+                        // Command-level handlers (handle_mod) output explicit errors.
                         return Some((0, 1 + a_consumed + b_consumed));
                     } else {
                         let result = a % b;

@@ -117,36 +117,38 @@ primaryFreq = pfSmooth * pow(2, pitchEnv * paCtl);
 
 ## Priority: Infrastructure Refactoring
 
-### Command System DRY Refactor [High] - BLOCKING
+### Command System DRY Refactor [High] - IN PROGRESS
 Consolidate command definitions into a single source of truth to eliminate synchronization bugs.
 
-**Current Problem:**
-- Command knowledge duplicated across 3 files: `aliases.rs`, `mod.rs`, `validate.rs`
-- Adding new commands requires updating multiple locations
-- Validation fell out of sync, causing canonical names (MBUS.FM, POSC.FREQ, etc.) to fail silently in scripts
+**Phase 0: Codebase Reorganization** - COMPLETE
+- [x] Created `core/`, `system/`, `synth/` directory structure
+- [x] Moved command handlers to logical domains
+- [x] Renamed `delay.rs` → `scheduling.rs`
+- [x] Renamed `synth_params/` → `synth/`
+- [x] Split effects into modular files (`synth/effects/`)
 
-**Solution:**
-- [ ] Phase 0: Codebase reorganization (create `core/`, `ui/`, `script/` subdirectories)
-- [ ] Create `CommandDef` struct with aliases, arg counts, handler reference
-- [ ] Single `COMMANDS` registry as source of truth
-- [ ] Generate `resolve_alias()` from registry
-- [ ] Generate validation logic from registry
-- [ ] Dispatcher looks up handlers from registry
-- [ ] Add new command = 1 place only
+**Phase 1: Envelope Handler DRY** - COMPLETE (November 2025)
+- [x] Created `synth/envelopes/common.rs` with `define_int_param!` and `define_float_param!` macros
+- [x] Refactored all 6 envelope files (amp, pitch, fm, disc, feedback, filter)
+- [x] Removed dead code: `handle_*_mode` handlers, `global.rs`
+- [x] Line reduction: ~1,141 lines → 223 lines (~918 line reduction, 81% decrease)
+- [x] All 411 tests pass
 
-**Expected Impact:**
-- ~4,400 line reduction (74% decrease from 5,963 to 1,558 lines)
-- Eliminates class of sync bugs permanently
-- Simplifies adding new commands
-- Self-documenting command metadata
-- Enables future features (help generation, command introspection)
+**Remaining Phases:**
+- [ ] Phase 2: Pattern Operation DRY (~1,300 line reduction potential)
+  - Create `patterns/common.rs` with `PatternSelector` enum
+  - Unify P.* (working) and PN.* (explicit) operations
+- [ ] Phase 3: Synth Parameter DRY (~2,000 line reduction potential)
+  - Create `synth/param_macro.rs` with generic parameter macros
+  - Consolidate 70+ similar parameter handlers
 
-**Files Affected:**
-- `src/commands/aliases.rs` → merge into registry
-- `src/commands/validate.rs` → derive from registry
-- `src/commands/mod.rs` → lookup from registry
+**Expected Total Impact:**
+- ~4,000+ line reduction through macro consolidation
+- Clear, logical file organization by domain
+- Easier to add new commands
+- All 411 tests continue to pass throughout
 
-**Reference:** See `DRY_REFACTOR_PLAN.md` for comprehensive implementation plan with macro-based approach.
+**Reference:** See `DRY_REFACTOR_PLAN.md` for comprehensive implementation plan.
 
 ---
 

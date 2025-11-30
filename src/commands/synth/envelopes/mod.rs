@@ -1,4 +1,4 @@
-mod global;
+pub(crate) mod common;
 mod amp;
 mod pitch;
 mod fm;

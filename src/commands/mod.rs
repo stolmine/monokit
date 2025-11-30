@@ -1,19 +1,23 @@
 mod aliases;
-mod counters;
-pub mod delay;
+mod core;
 mod gate;
-mod math_ops;
-mod metro_cmds;
-mod misc;
 mod patterns;
-mod random_ops;
 pub mod randomization;
-pub mod scale;
-mod scene_cmds;
 pub mod slew;
-mod synth_params;
+mod synth;
+mod system;
 pub mod validate;
-mod variables;
+
+// Re-export from core module
+use core::{counters, math_ops, random_ops, variables};
+pub use core::scale;
+pub use core::scheduling as delay;
+
+// Re-export from system module
+use system::{metro as metro_cmds, misc, scene as scene_cmds};
+
+// Re-export from synth module
+use synth as synth_params;
 
 use crate::theme::Theme;
 use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};

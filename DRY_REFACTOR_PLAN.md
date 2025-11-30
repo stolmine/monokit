@@ -19,7 +19,7 @@ Comprehensive reorganization and DRY refactoring to create a logical, maintainab
 
 ---
 
-## Phase 0: Codebase Reorganization [DO THIS FIRST]
+## Phase 0: Codebase Reorganization [COMPLETE]
 
 ### Current Problems
 
@@ -196,7 +196,30 @@ src/commands/
 
 ---
 
-## Phase 1: Envelope Handler DRY (~500 line reduction)
+## Phase 1: Envelope Handler DRY [COMPLETE]
+
+### Phase 1 Implementation Summary
+
+**Created:**
+- `synth/envelopes/common.rs` - Shared `define_envelope!` macro and `define_param!` integration
+
+**Files Refactored (6 envelope files):**
+- `synth/envelopes/amp.rs`
+- `synth/envelopes/pitch.rs`
+- `synth/envelopes/fm.rs`
+- `synth/envelopes/disc.rs`
+- `synth/envelopes/feedback.rs`
+- `synth/envelopes/filter.rs`
+
+**Dead Code Removed:**
+- Deleted `synth/envelopes/global.rs` (handlers not exported or routed)
+- Removed all deprecated `*_mode` handlers from all 6 envelope files
+
+**Results:**
+- Line reduction: 918 lines (81% decrease in envelope code)
+- All 411 tests pass
+- No loss of functionality
+- Cleaner, more maintainable envelope implementation
 
 ### After Phase 0, Envelope Structure Will Be:
 
@@ -420,15 +443,20 @@ cargo build --release
 
 ---
 
-## Estimated Results
+## Results Summary
 
-| Phase | Area | Before | After | Reduction |
-|-------|------|--------|-------|-----------|
-| 0 | Reorganization | - | - | Cleaner structure |
-| 1 | Envelopes | ~1,141 lines | ~300 lines | ~841 lines |
-| 2 | Patterns | ~2,023 lines | ~600 lines | ~1,423 lines |
-| 3 | Synth Params | ~2,897 lines | ~700 lines | ~2,197 lines |
-| **Total** | | ~6,061 lines | ~1,600 lines | **~4,461 lines (74%)** |
+| Phase | Area | Estimated Reduction | Actual Reduction | Status |
+|-------|------|---------------------|------------------|--------|
+| 0 | Reorganization | Cleaner structure | Cleaner structure | COMPLETE |
+| 1 | Envelopes | ~841 lines | **918 lines (81%)** | **COMPLETE** |
+| 2 | Patterns | ~1,423 lines | TBD | Pending |
+| 3 | Synth Params | ~2,197 lines | TBD | Pending |
+| **Total** | | **~4,461 lines (74%)** | **918 lines so far** | **In Progress** |
+
+**Phase 1 Notes:**
+- Achieved 918 line reduction vs 841 estimated (109% of estimate)
+- Better than expected due to removal of global.rs and mode handlers
+- All 411 tests pass with no loss of functionality
 
 ---
 

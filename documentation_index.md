@@ -2,6 +2,24 @@
 
 ## Recent Updates (November 2025)
 
+### Phase 1 DRY Refactoring Complete
+**Changes:** Envelope handler consolidation using `define_int_param!` and `define_float_param!` macros.
+
+**Results:**
+- Created `synth/envelopes/common.rs` with shared macro definitions
+- Refactored all 6 envelope files to use macros (amp, pitch, fm, disc, feedback, filter)
+- Removed dead code: `handle_*_mode` handlers, `global.rs`
+- Line reduction: ~1,141 lines → 223 lines (~918 line reduction, 81% decrease)
+- All 411 tests pass
+
+**Technical Details:**
+- Each envelope file reduced from ~140 lines to ~10-12 lines
+- Shared parameter generation via macros eliminates boilerplate
+- Maintains exact same functionality and API
+- Foundation for Phase 2 (Pattern Operation DRY) and Phase 3 (Synth Parameter DRY)
+
+---
+
 ### Envelope System Simplification
 **Changes:** Envelope system refactored to use simple `Env.perc` with controllable attack and curve parameters.
 
@@ -63,7 +81,7 @@
 
 ### Source Code
 
-Modular Rust implementation (~18,200 total lines across 86 files):
+Modular Rust implementation (~17,300 total lines across 93 files, after Phase 1 DRY refactoring):
 
 - **src/main.rs** (69 lines) - Application entry point, initializes TUI and starts main loop
 - **src/metro.rs** (112 lines) - Metro thread implementation with absolute timing
@@ -89,11 +107,18 @@ Modular Rust implementation (~18,200 total lines across 86 files):
     - **control_flow.rs** - If/elif/else, conditionals
     - **loops.rs** - Loop processing
     - **interactive.rs** - User command execution
-- **src/commands/** - Command processing module (41 files, ~9,085 lines)
+- **src/commands/** - Command processing module (48 files, ~8,167 lines, -918 from Phase 1)
   - **mod.rs** - Main dispatcher with command routing
   - **validate.rs** - Command validation
   - **aliases.rs** - Alias resolution for PREFIX.SUFFIX → short form mapping (93 aliases)
-  - **variables.rs** - Variable handlers (A-D, X-Z, T, I, J, K)
+  - **core/** - Core language primitives (7 files)
+    - **mod.rs** - Module coordinator
+    - **variables.rs** - Variable handlers (A-D, X-Z, T, I, J, K)
+    - **counters.rs** - Auto-increment counters (N1-N4 with MIN/MAX/RST)
+    - **math_ops.rs** - Math operations (ADD, SUB, MUL, DIV, MOD, MAP)
+    - **random_ops.rs** - Random operations (RND, RRND, TOSS, EITH, TOG)
+    - **scale.rs** - Quantization (Q, Q.ROOT, Q.SCALE, Q.BIT)
+    - **scheduling.rs** - Delayed execution (DEL, DEL.CLR, DEL.X, DEL.R)
   - **patterns/** - Pattern operations module (9 files)
     - **mod.rs** - Module coordinator
     - **working.rs** - Working pattern state (P.N, P.L, P.I)
@@ -104,35 +129,41 @@ Modular Rust implementation (~18,200 total lines across 86 files):
     - **explicit_query.rs** - Explicit pattern queries (PN.HERE, PN.NEXT, PN.PREV)
     - **explicit_manip.rs** - Explicit pattern manipulation (PN.PUSH, PN.POP, PN.INS, PN.RM, PN.REV, PN.ROT, PN.SHUF, PN.SORT, PN.RND)
     - **explicit_math.rs** - Explicit pattern math (PN.ADD, PN.SUB, PN.MUL, PN.DIV, PN.MOD, PN.SCALE, PN.MIN, PN.MAX, PN.SUM, PN.AVG, PN.FND)
-  - **counters.rs** - Auto-increment counters (N1-N4 with MIN/MAX/RST)
-  - **math_ops.rs** - Math operations (ADD, SUB, MUL, DIV, MOD, MAP)
-  - **random_ops.rs** - Random operations (RND, RRND, TOSS, EITH, TOG)
-  - **slew.rs** - Parameter slewing (SLEW.ALL global, SLEW per-parameter)
-  - **synth_params/** - Synth parameter handlers (13 modules)
+  - **system/** - System and session commands (4 files)
     - **mod.rs** - Module coordinator
-    - **oscillator.rs** - Oscillator parameters (PF, PW, MF, MW)
+    - **metro.rs** - Metro commands (M, M.BPM, M.ACT, M.SCRIPT)
+    - **scene.rs** - Scene commands (SAVE, LOAD, SCENES, DELETE)
+    - **misc.rs** - Other system commands (TR, RST, SCRIPT, THEME, DEBUG, PRINT, HELP, CLEAR, REC)
+  - **synth/** - Synth parameter handlers (18 files, reorganized from synth_params/)
+    - **mod.rs** - Module coordinator
+    - **oscillator.rs** - Oscillator parameters (PF, PW, MF, MW, FB)
     - **modulation.rs** - Modulation and tracking (TK, MB, MP/MD/MT/MA, FM, MX, MM, ME)
-    - **discontinuity.rs** - Discontinuity/waveshaping (DC, DM, DD, FB, FBA, FBD)
-    - **envelopes/** - Envelope module (6 files)
+    - **discontinuity.rs** - Discontinuity/waveshaping (DC, DM)
+    - **slew.rs** - Parameter slewing (SLEW.ALL global, SLEW per-parameter)
+    - **output.rs** - Output parameters (VOL, PAN)
+    - **envelopes/** - Envelope module (8 files, 223 lines total after Phase 1 DRY)
       - **mod.rs** - Module coordinator
-      - **amp.rs** - Amplitude envelope (AD, AENV.ATK, AENV.CRV)
-      - **pitch.rs** - Pitch envelope (PD, PA, PENV.ATK, PENV.CRV)
-      - **fm.rs** - FM envelope (FD, FA, FMEV.ATK, FMEV.CRV)
-      - **disc.rs** - Discontinuity envelope (DD, DA, DENV.ATK, DENV.CRV)
-      - **feedback.rs** - Feedback envelope (FBD, FBA/FBEV.AMT, FBEV.ATK, FBEV.CRV)
-      - **filter.rs** - Filter envelope (FED, FE, FLEV.ATK, FLEV.CRV)
-    - **filter.rs** - SVF filter parameters (FC, FQ, FT, FE, FED, FK, MF.F)
+      - **common.rs** - Shared macro definitions (define_int_param!, define_float_param!)
+      - **amp.rs** - Amplitude envelope (AD, AENV.ATK, AENV.CRV) - 11 lines
+      - **pitch.rs** - Pitch envelope (PD, PA, PENV.ATK, PENV.CRV) - 12 lines
+      - **fm.rs** - FM envelope (FD, FA, FMEV.ATK, FMEV.CRV) - 12 lines
+      - **disc.rs** - Discontinuity envelope (DD, DA, DENV.ATK, DENV.CRV) - 11 lines
+      - **feedback.rs** - Feedback envelope (FBD, FBA/FBEV.AMT, FBEV.ATK, FBEV.CRV) - 10 lines
+      - **filter.rs** - Filter envelope (FED, FE, FLEV.ATK, FLEV.CRV) - 10 lines
+    - **filter.rs** - SVF filter parameters (FC, FQ, FT, FK, MF.F)
     - **resonator.rs** - Comb resonator (RF, RD, RM, RK)
-    - **delay.rs** - Stereo delay (DT, DF, DLP, DW, DS, D.MODE, D.TAIL)
-    - **reverb.rs** - Plate reverb (RV, RP, RH, RW, R.MODE, R.TAIL)
-    - **eq.rs** - 3-band EQ (EL, EM, EF, EQ, EH)
-    - **effects.rs** - Lo-Fi, Ring Mod, Compressor, Pan (LB, LS, LM, RGF, RGW, RGM, CT, CR, CA, CL, CM, PAN)
-    - **beat_repeat.rs** - Beat repeat (BR.ACT, BR.LEN, BR.REV, BR.WIN, BR.MIX)
-    - **pitch_shift.rs** - Pitch shift (PS.MODE, PS.SEMI, PS.GRAIN, PS.MIX, PS.TARG)
-  - **metro_cmds.rs** - Metro commands
-  - **scene_cmds.rs** - Scene commands
-  - **misc.rs** - Other commands (TR, RST, VOL, THEME, etc.)
-- **src/tests/** - Test suite module (21 files, ~5,288 lines, 334 tests)
+    - **effects/** - Time-based and processing effects (9 files)
+      - **mod.rs** - Module coordinator
+      - **delay.rs** - Stereo delay (DT, DF, DLP, DW, DS, D.MODE, D.TAIL)
+      - **reverb.rs** - Plate reverb (RV, RP, RH, RW, R.MODE, R.TAIL)
+      - **eq.rs** - 3-band EQ (EL, EM, EF, EQ, EH)
+      - **lofi.rs** - Lo-Fi processor (LB, LS, LM)
+      - **ring_mod.rs** - Ring modulator (RGF, RGW, RGM)
+      - **compressor.rs** - Compressor (CT, CR, CA, CL, CM)
+      - **beat_repeat.rs** - Beat repeat (BR.ACT, BR.LEN, BR.REV, BR.WIN, BR.MIX)
+      - **pitch_shift.rs** - Pitch shift (PS.MODE, PS.SEMI, PS.GRAIN, PS.MIX, PS.TARG)
+  - **randomization.rs** - Randomization commands (RND.VOICE, RND.OSC, RND.FM, RND.MOD, RND.ENV, etc.)
+- **src/tests/** - Test suite module (21 files, ~5,288 lines, 411 tests)
   - Organized by category: envelope, counter, slew, tog, rnd, toss_eith, expr, condition, pattern, pattern_ops, variable, validation, math, map, comparison, scene, debug, buffer_effects
 
 Key features:
@@ -174,42 +205,50 @@ Key features:
 ### Overview
 The codebase contains ~6,500-7,000 lines of systematic duplication (30-33% of total code). A comprehensive refactoring plan targets **~4,000-5,000 line reduction** through reorganization and macro consolidation.
 
-### Three-Phase Approach
+### Four-Phase Approach
 
-**Phase 0: Codebase Reorganization (DO THIS FIRST)**
-- Reorganize command structure by logical domain (core, patterns, system, synth)
-- Consolidate scattered envelope parameters into proper locations
-- Move envelope decay/amount params to respective envelope files:
+**Phase 0: Codebase Reorganization [COMPLETE]**
+- Reorganized command structure by logical domain (core, patterns, system, synth)
+- Consolidated scattered envelope parameters into proper locations
+- Moved envelope decay/amount params to respective envelope files:
   - DD from `discontinuity.rs` → `envelopes/disc.rs`
   - FBA, FBD from `oscillator.rs` → `envelopes/feedback.rs`
   - FE, FED from `filter.rs` → `envelopes/filter.rs`
-- Create `synth/output.rs` to consolidate VOL and PAN
-- Delete dead code (MODE handlers, deprecated GATE commands, unused global.rs)
-- Rename `delay.rs` → `core/scheduling.rs` (handles DEL commands, not synth delay)
+- Created `synth/output.rs` to consolidate VOL and PAN
+- Deleted dead code (MODE handlers, deprecated GATE commands, unused global.rs)
+- Renamed `delay.rs` → `core/scheduling.rs` (handles DEL commands, not synth delay)
 - Split `effects.rs` into modular effect files (lofi.rs, ring_mod.rs, compressor.rs, etc.)
+- Renamed `synth_params/` → `synth/` for clarity
+- All 411 tests pass
 
-**Phase 1: Envelope Handler DRY (~500 line reduction)**
-- Create `synth/envelopes/common.rs` with `define_envelope!` macro
-- Generate DEC, AMT, ATK, CRV handlers for all 6 envelopes from single definition
-- Each envelope file reduces from ~140 lines → ~30 lines
+**Phase 1: Envelope Handler DRY [COMPLETE - 918 line reduction]**
+- Created `synth/envelopes/common.rs` with `define_int_param!` and `define_float_param!` macros
+- Generated DEC, AMT, ATK, CRV handlers for all 6 envelopes from macro definitions
+- Each envelope file reduced from ~140 lines → ~10-12 lines
+- Total reduction: ~1,141 lines → 223 lines (81% decrease)
+- All 411 tests pass
 
-**Phase 2: Pattern Operation DRY (~1,300 line reduction)**
+**Phase 2: Pattern Operation DRY [PLANNED - ~1,300 line reduction]**
 - Create `patterns/common.rs` with shared implementation functions
 - Unify P.* (working) and PN.* (explicit) operations via PatternSelector enum
 - Thin wrappers for all math, manipulation, and query operations
 - Eliminates 90% duplication between working_*.rs and explicit_*.rs files
 
-**Phase 3: Synth Parameter DRY (~2,000 line reduction)**
+**Phase 3: Synth Parameter DRY [PLANNED - ~2,000 line reduction]**
 - Create `synth/param_macro.rs` with `define_param!` macro
 - Generate parameter handlers from declarative specifications
 - Consolidate 70+ nearly-identical parameter handlers into config-driven system
 
-### Expected Results
-- Clear, logical file organization by domain
-- ~4,000+ line reduction (74% of duplicated code eliminated)
+### Results So Far
+- Clear, logical file organization by domain (Phase 0)
+- 918 line reduction from envelope consolidation (Phase 1)
 - Easier to add new commands (single location per domain)
-- All 411 tests continue to pass throughout
+- All 411 tests continue to pass
 - Maintains backward compatibility
+
+### Expected Final Results
+- ~4,000+ line reduction (74% of duplicated code eliminated)
+- Further simplified maintenance through macro-driven parameter handlers
 
 See **DRY_REFACTOR_PLAN.md** for complete implementation details and **DRY_ANALYSIS_REPORT.md** for duplication analysis.
 

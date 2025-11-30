@@ -1,4 +1,5 @@
 use crate::types::PatternStorage;
+use rand::Rng;
 
 /// A single step in a parsed sequence
 #[derive(Debug, Clone, PartialEq)]
@@ -7,6 +8,10 @@ pub enum SeqStep {
     Value(i16),
     /// Rest (returns 0)
     Rest,
+    /// Random trigger (50% chance of 1, 50% chance of 0)
+    RandomTrigger,
+    /// Alternation - randomly choose one option
+    Alternation(Vec<SeqStep>),
 }
 
 /// Parse a note name (C3, Eb4, F#2, etc.) to semitones relative to C3
@@ -61,25 +66,140 @@ pub fn parse_note_name(s: &str) -> Option<i16> {
     Some(note + accidental + (octave - 3) * 12)
 }
 
+/// Tokenize a pattern string respecting <...> groupings
+fn tokenize_pattern(pattern: &str) -> Result<Vec<String>, String> {
+    let mut tokens = Vec::new();
+    let mut current_token = String::new();
+    let mut in_brackets = false;
+    let mut bracket_depth = 0;
+    let mut just_closed_bracket = false;
+
+    for ch in pattern.chars() {
+        match ch {
+            '<' => {
+                if in_brackets {
+                    return Err("Nested alternation <...> is not allowed".to_string());
+                }
+                in_brackets = true;
+                bracket_depth += 1;
+                current_token.push(ch);
+                just_closed_bracket = false;
+            }
+            '>' => {
+                if !in_brackets {
+                    return Err("Unexpected closing bracket >".to_string());
+                }
+                in_brackets = false;
+                bracket_depth -= 1;
+                current_token.push(ch);
+                just_closed_bracket = true;
+            }
+            c if c.is_whitespace() => {
+                if in_brackets {
+                    current_token.push(c);
+                } else {
+                    if just_closed_bracket {
+                        just_closed_bracket = false;
+                    }
+                    if !current_token.trim().is_empty() {
+                        tokens.push(current_token.trim().to_string());
+                        current_token.clear();
+                    }
+                }
+            }
+            '*' if just_closed_bracket => {
+                current_token.push(ch);
+                just_closed_bracket = false;
+            }
+            _ => {
+                if just_closed_bracket {
+                    if !current_token.trim().is_empty() {
+                        tokens.push(current_token.trim().to_string());
+                        current_token.clear();
+                    }
+                    just_closed_bracket = false;
+                }
+                current_token.push(ch);
+            }
+        }
+    }
+
+    if bracket_depth > 0 {
+        return Err("Unclosed alternation bracket <".to_string());
+    }
+
+    if !current_token.trim().is_empty() {
+        tokens.push(current_token.trim().to_string());
+    }
+
+    Ok(tokens)
+}
+
+/// Parse a single token (not including alternation brackets)
+fn parse_single_token(token: &str) -> Result<SeqStep, String> {
+    let upper = token.to_uppercase();
+    match upper.as_str() {
+        "_" | "." => Ok(SeqStep::Rest),
+        "X" => Ok(SeqStep::Value(1)),
+        "?" => Ok(SeqStep::RandomTrigger),
+        s => {
+            if let Some(semitones) = parse_note_name(s) {
+                Ok(SeqStep::Value(semitones))
+            } else if let Ok(num) = s.parse::<i16>() {
+                Ok(SeqStep::Value(num))
+            } else {
+                Err(format!("Invalid sequence token: {}", token))
+            }
+        }
+    }
+}
+
 /// Parse a sequence pattern string into steps
 pub fn parse_seq_pattern(pattern: &str) -> Result<Vec<SeqStep>, String> {
     let mut steps = Vec::new();
+    let tokens = tokenize_pattern(pattern)?;
 
-    for token in pattern.split_whitespace() {
-        let upper = token.to_uppercase();
-        match upper.as_str() {
-            "_" | "." => steps.push(SeqStep::Rest),
-            "X" => steps.push(SeqStep::Value(1)),
-            s => {
-                // Try parsing as note name first, then as number
-                if let Some(semitones) = parse_note_name(s) {
-                    steps.push(SeqStep::Value(semitones));
-                } else if let Ok(num) = s.parse::<i16>() {
-                    steps.push(SeqStep::Value(num));
-                } else {
-                    return Err(format!("Invalid sequence token: {}", token));
+    for token in tokens {
+        let (base_str, count) = if let Some(star_pos) = token.rfind('*') {
+            let base = &token[..star_pos];
+            let count_str = &token[star_pos + 1..];
+            let count: usize = count_str.parse().map_err(|_|
+                format!("Invalid repeat count: {}", count_str))?;
+            (base.to_string(), count)
+        } else {
+            (token.clone(), 1)
+        };
+
+        if count == 0 {
+            continue;
+        }
+
+        let step = if base_str.starts_with('<') && base_str.ends_with('>') {
+            let inner = &base_str[1..base_str.len()-1];
+            if inner.trim().is_empty() {
+                return Err("Empty alternation <> is not allowed".to_string());
+            }
+
+            let alt_tokens: Vec<&str> = inner.split_whitespace().collect();
+            let mut alternatives = Vec::new();
+
+            for alt_token in alt_tokens {
+                let alt_step = parse_single_token(alt_token)?;
+                match alt_step {
+                    SeqStep::Alternation(_) => {
+                        return Err("Nested alternation is not allowed".to_string());
+                    }
+                    _ => alternatives.push(alt_step),
                 }
             }
+
+            SeqStep::Alternation(alternatives)
+        } else {
+            parse_single_token(&base_str)?
+        };
+
+        for _ in 0..count {
+            steps.push(step.clone());
         }
     }
 
@@ -166,6 +286,20 @@ pub fn eval_seq_expression(
     let value = match step {
         SeqStep::Value(v) => *v,
         SeqStep::Rest => 0,
+        SeqStep::RandomTrigger => {
+            if rand::thread_rng().gen_bool(0.5) { 1 } else { 0 }
+        }
+        SeqStep::Alternation(options) => {
+            let idx = rand::thread_rng().gen_range(0..options.len());
+            match &options[idx] {
+                SeqStep::Value(v) => *v,
+                SeqStep::Rest => 0,
+                SeqStep::RandomTrigger => {
+                    if rand::thread_rng().gen_bool(0.5) { 1 } else { 0 }
+                }
+                SeqStep::Alternation(_) => unreachable!(),
+            }
+        }
     };
 
     // Advance to next step
@@ -303,5 +437,57 @@ mod tests {
     fn test_extract_quoted_string_no_quote() {
         let parts = vec!["SEQ", "C3"];
         assert!(extract_quoted_string(&parts, 1).is_none());
+    }
+
+    #[test]
+    fn test_parse_seq_pattern_repeat_basic() {
+        let steps = parse_seq_pattern("C3*4").unwrap();
+        assert_eq!(steps.len(), 4);
+        assert_eq!(steps[0], SeqStep::Value(0));
+        assert_eq!(steps[1], SeqStep::Value(0));
+        assert_eq!(steps[2], SeqStep::Value(0));
+        assert_eq!(steps[3], SeqStep::Value(0));
+    }
+
+    #[test]
+    fn test_parse_seq_pattern_repeat_multiple() {
+        let steps = parse_seq_pattern("C3*2 E3*3").unwrap();
+        assert_eq!(steps.len(), 5);
+        assert_eq!(steps[0], SeqStep::Value(0));
+        assert_eq!(steps[1], SeqStep::Value(0));
+        assert_eq!(steps[2], SeqStep::Value(4));
+        assert_eq!(steps[3], SeqStep::Value(4));
+        assert_eq!(steps[4], SeqStep::Value(4));
+    }
+
+    #[test]
+    fn test_parse_seq_pattern_repeat_zero() {
+        let steps = parse_seq_pattern("C3*0 E3").unwrap();
+        assert_eq!(steps.len(), 1);
+        assert_eq!(steps[0], SeqStep::Value(4));
+    }
+
+    #[test]
+    fn test_parse_seq_pattern_repeat_one() {
+        let steps = parse_seq_pattern("C3*1").unwrap();
+        assert_eq!(steps.len(), 1);
+        assert_eq!(steps[0], SeqStep::Value(0));
+    }
+
+    #[test]
+    fn test_parse_seq_pattern_repeat_with_triggers() {
+        let steps = parse_seq_pattern("x*2 _*2").unwrap();
+        assert_eq!(steps.len(), 4);
+        assert_eq!(steps[0], SeqStep::Value(1));
+        assert_eq!(steps[1], SeqStep::Value(1));
+        assert_eq!(steps[2], SeqStep::Rest);
+        assert_eq!(steps[3], SeqStep::Rest);
+    }
+
+    #[test]
+    fn test_parse_seq_pattern_repeat_invalid_count() {
+        let result = parse_seq_pattern("C3*abc");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Invalid repeat count"));
     }
 }

@@ -2,11 +2,11 @@
 
 ## November 2025
 
-### SEQ Mini Notation System - COMPLETE (Phase 1)
+### SEQ Mini Notation System - COMPLETE (Phase 2)
 **Date:** November 2025
-**Status:** Phase 1 Complete
+**Status:** Phase 2 Complete
 
-**Implemented:**
+**Implemented (Phase 1):**
 - `SEQ "pattern"` - Inline sequence notation operator
 - Token support:
   - `x` = trigger (returns 1)
@@ -19,19 +19,27 @@
 - Integration with N operator for Hz conversion
 - Integration with Q operator for scale quantization
 
+**Implemented (Phase 2):**
+- `*n` - Repeat modifier (e.g., `C3*4` expands to `C3 C3 C3 C3`)
+- `?` - Random trigger token (50% chance of 1, 50% chance of 0)
+- `<a b>` - Alternation/choice (randomly picks one of the options)
+- Combinable modifiers (e.g., `<C3 E3>*2` picks twice)
+
 **Usage Examples:**
 ```
 IF SEQ "x _ x _": TR           # Trigger on beats 1 and 3
 PF N SEQ "C3 E3 G3 C4"         # Arpeggiate C major
 A SEQ "0 1 2 3"                # Store in variable
-MUL SEQ "1 2 3" 100            # Use in math expression
+SEQ "C3*4 E3*2"                # Repeated notes (C3 C3 C3 C3 E3 E3)
+SEQ "<C3 E3> G3"               # Random C3 or E3, then G3
+SEQ "x ? x ?"                  # Random triggers (50% chance)
+SEQ "<C3 E3>*2"                # Two random choices
 ```
 
-**Future (Phase 2):**
-- Subdivision brackets `[a b]`
-- Alternation `<a b>`
-- Random inclusion `?`
-- Repeat `*n`
+**Future (Phase 3):**
+- Subdivision brackets `[a b]` for metric subdivisions
+- Euclidean rhythm syntax
+- Probability modifiers `@p` for per-step probabilities
 
 ---
 

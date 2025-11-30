@@ -345,3 +345,490 @@ fn test_seq_mixed_notes_and_numbers() {
     let result4 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
     assert_eq!(result4.unwrap().0, 200);
 }
+
+// ============================================================================
+// Random trigger tests
+// ============================================================================
+
+#[test]
+fn test_seq_parse_random_trigger() {
+    use crate::eval::seq::{parse_seq_pattern, SeqStep};
+
+    let steps = parse_seq_pattern("x ? x _").unwrap();
+    assert_eq!(steps.len(), 4);
+    assert_eq!(steps[0], SeqStep::Value(1));
+    assert_eq!(steps[1], SeqStep::RandomTrigger);
+    assert_eq!(steps[2], SeqStep::Value(1));
+    assert_eq!(steps[3], SeqStep::Rest);
+}
+
+#[test]
+fn test_seq_random_trigger_produces_both_values() {
+    let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
+    let parts = vec!["SEQ", "\"?\""];
+
+    let mut seen_zero = false;
+    let mut seen_one = false;
+
+    // Run enough times to be statistically confident we see both values
+    for _ in 0..100 {
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+        let value = result.unwrap().0;
+        assert!(value == 0 || value == 1, "Random trigger should only produce 0 or 1");
+
+        if value == 0 {
+            seen_zero = true;
+        }
+        if value == 1 {
+            seen_one = true;
+        }
+
+        if seen_zero && seen_one {
+            break;
+        }
+    }
+
+    assert!(seen_zero, "Should have seen 0 at least once in 100 iterations");
+    assert!(seen_one, "Should have seen 1 at least once in 100 iterations");
+}
+
+#[test]
+fn test_seq_multiple_random_triggers() {
+    let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
+    let parts = vec!["SEQ", "\"? ? ?\""];
+
+    // Each call should produce a value from the sequence
+    // Since there are 3 random triggers, we should see various combinations
+    let mut results = Vec::new();
+
+    for _ in 0..30 {
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+        let value = result.unwrap().0;
+        assert!(value == 0 || value == 1, "Each random trigger should produce 0 or 1");
+        results.push(value);
+    }
+
+    // With 30 calls over 3 positions cycling, we should see some variation
+    let unique_count = results.iter().collect::<std::collections::HashSet<_>>().len();
+    assert!(unique_count >= 2, "Should see at least both 0 and 1 values");
+}
+
+#[test]
+fn test_seq_random_trigger_combined_with_values() {
+    let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
+    let parts = vec!["SEQ", "\"100 ? 200\""];
+
+    // First value should be 100
+    let result1 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result1.unwrap().0, 100);
+
+    // Second value should be random (0 or 1)
+    let result2 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    let random_value = result2.unwrap().0;
+    assert!(random_value == 0 || random_value == 1, "Random trigger should produce 0 or 1");
+
+    // Third value should be 200
+    let result3 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result3.unwrap().0, 200);
+
+    // Fourth should wrap to 100
+    let result4 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result4.unwrap().0, 100);
+}
+
+// ============================================================================
+// Repeat syntax tests (*n)
+// ============================================================================
+
+#[test]
+fn test_seq_basic_repeat() {
+    let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
+    let parts = vec!["SEQ", "\"C3*3\""];
+
+    let result1 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result1.unwrap().0, 0, "C3 first");
+
+    let result2 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result2.unwrap().0, 0, "C3 second");
+
+    let result3 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result3.unwrap().0, 0, "C3 third");
+
+    let result4 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result4.unwrap().0, 0, "C3 wraps to first");
+}
+
+#[test]
+fn test_seq_multiple_repeats() {
+    let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
+    let parts = vec!["SEQ", "\"C3*2 E3*3\""];
+
+    let result1 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result1.unwrap().0, 0, "C3 first");
+
+    let result2 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result2.unwrap().0, 0, "C3 second");
+
+    let result3 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result3.unwrap().0, 4, "E3 first");
+
+    let result4 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result4.unwrap().0, 4, "E3 second");
+
+    let result5 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result5.unwrap().0, 4, "E3 third");
+
+    let result6 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result6.unwrap().0, 0, "Wraps to C3 first");
+}
+
+#[test]
+fn test_seq_zero_repeat() {
+    let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
+    let parts = vec!["SEQ", "\"C3*0 E3\""];
+
+    let result1 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result1.unwrap().0, 4, "C3*0 is skipped, E3 is first");
+
+    let result2 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result2.unwrap().0, 4, "Wraps to E3");
+}
+
+#[test]
+fn test_seq_repeat_with_rests() {
+    let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
+    let parts = vec!["SEQ", "\"x*2 _*2\""];
+
+    let result1 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result1.unwrap().0, 1, "x first");
+
+    let result2 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result2.unwrap().0, 1, "x second");
+
+    let result3 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result3.unwrap().0, 0, "_ first");
+
+    let result4 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result4.unwrap().0, 0, "_ second");
+
+    let result5 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result5.unwrap().0, 1, "Wraps to x first");
+}
+
+#[test]
+fn test_seq_repeat_one() {
+    let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
+    let parts = vec!["SEQ", "\"C3*1 E3\""];
+
+    let result1 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result1.unwrap().0, 0, "C3*1 is same as C3");
+
+    let result2 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result2.unwrap().0, 4, "E3");
+}
+
+#[test]
+fn test_seq_repeat_with_numbers() {
+    let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
+    let parts = vec!["SEQ", "\"100*2 200*3\""];
+
+    let result1 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result1.unwrap().0, 100);
+
+    let result2 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result2.unwrap().0, 100);
+
+    let result3 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result3.unwrap().0, 200);
+
+    let result4 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result4.unwrap().0, 200);
+
+    let result5 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result5.unwrap().0, 200);
+}
+
+#[test]
+fn test_seq_parse_pattern_invalid_repeat() {
+    use crate::eval::seq::parse_seq_pattern;
+
+    let result = parse_seq_pattern("C3*abc");
+    assert!(result.is_err(), "Invalid repeat count should error");
+    assert!(result.unwrap_err().contains("Invalid repeat count"));
+}
+
+// ============================================================================
+// Alternation syntax tests (<a b>)
+// ============================================================================
+
+#[test]
+fn test_seq_parse_alternation_basic() {
+    use crate::eval::seq::{parse_seq_pattern, SeqStep};
+
+    let steps = parse_seq_pattern("<C3 E3>").unwrap();
+    assert_eq!(steps.len(), 1);
+    match &steps[0] {
+        SeqStep::Alternation(options) => {
+            assert_eq!(options.len(), 2);
+            assert_eq!(options[0], SeqStep::Value(0));
+            assert_eq!(options[1], SeqStep::Value(4));
+        }
+        _ => panic!("Expected Alternation variant"),
+    }
+}
+
+#[test]
+fn test_seq_parse_alternation_three_options() {
+    use crate::eval::seq::{parse_seq_pattern, SeqStep};
+
+    let steps = parse_seq_pattern("<C3 E3 G3>").unwrap();
+    assert_eq!(steps.len(), 1);
+    match &steps[0] {
+        SeqStep::Alternation(options) => {
+            assert_eq!(options.len(), 3);
+            assert_eq!(options[0], SeqStep::Value(0));
+            assert_eq!(options[1], SeqStep::Value(4));
+            assert_eq!(options[2], SeqStep::Value(7));
+        }
+        _ => panic!("Expected Alternation variant"),
+    }
+}
+
+#[test]
+fn test_seq_parse_alternation_with_repeat() {
+    use crate::eval::seq::{parse_seq_pattern, SeqStep};
+
+    let steps = parse_seq_pattern("<C3 E3>*2").unwrap();
+    assert_eq!(steps.len(), 2);
+    match &steps[0] {
+        SeqStep::Alternation(options) => {
+            assert_eq!(options.len(), 2);
+        }
+        _ => panic!("Expected Alternation variant"),
+    }
+    match &steps[1] {
+        SeqStep::Alternation(options) => {
+            assert_eq!(options.len(), 2);
+        }
+        _ => panic!("Expected Alternation variant"),
+    }
+}
+
+#[test]
+fn test_seq_parse_alternation_single_option() {
+    use crate::eval::seq::{parse_seq_pattern, SeqStep};
+
+    let steps = parse_seq_pattern("<C3>").unwrap();
+    assert_eq!(steps.len(), 1);
+    match &steps[0] {
+        SeqStep::Alternation(options) => {
+            assert_eq!(options.len(), 1);
+            assert_eq!(options[0], SeqStep::Value(0));
+        }
+        _ => panic!("Expected Alternation variant"),
+    }
+}
+
+#[test]
+fn test_seq_parse_alternation_mixed_with_regular() {
+    use crate::eval::seq::{parse_seq_pattern, SeqStep};
+
+    let steps = parse_seq_pattern("C3 <E3 G3> C4").unwrap();
+    assert_eq!(steps.len(), 3);
+    assert_eq!(steps[0], SeqStep::Value(0));
+    match &steps[1] {
+        SeqStep::Alternation(options) => {
+            assert_eq!(options.len(), 2);
+        }
+        _ => panic!("Expected Alternation variant"),
+    }
+    assert_eq!(steps[2], SeqStep::Value(12));
+}
+
+#[test]
+fn test_seq_parse_alternation_with_triggers() {
+    use crate::eval::seq::{parse_seq_pattern, SeqStep};
+
+    let steps = parse_seq_pattern("<x _>").unwrap();
+    assert_eq!(steps.len(), 1);
+    match &steps[0] {
+        SeqStep::Alternation(options) => {
+            assert_eq!(options.len(), 2);
+            assert_eq!(options[0], SeqStep::Value(1));
+            assert_eq!(options[1], SeqStep::Rest);
+        }
+        _ => panic!("Expected Alternation variant"),
+    }
+}
+
+#[test]
+fn test_seq_parse_alternation_with_random_trigger() {
+    use crate::eval::seq::{parse_seq_pattern, SeqStep};
+
+    let steps = parse_seq_pattern("<C3 ?>").unwrap();
+    assert_eq!(steps.len(), 1);
+    match &steps[0] {
+        SeqStep::Alternation(options) => {
+            assert_eq!(options.len(), 2);
+            assert_eq!(options[0], SeqStep::Value(0));
+            assert_eq!(options[1], SeqStep::RandomTrigger);
+        }
+        _ => panic!("Expected Alternation variant"),
+    }
+}
+
+#[test]
+fn test_seq_parse_alternation_empty_error() {
+    use crate::eval::seq::parse_seq_pattern;
+
+    let result = parse_seq_pattern("<>");
+    assert!(result.is_err());
+    assert!(result.unwrap_err().contains("Empty alternation"));
+}
+
+#[test]
+fn test_seq_parse_alternation_unclosed_error() {
+    use crate::eval::seq::parse_seq_pattern;
+
+    let result = parse_seq_pattern("<C3 E3");
+    assert!(result.is_err());
+    assert!(result.unwrap_err().contains("Unclosed alternation"));
+}
+
+#[test]
+fn test_seq_parse_alternation_nested_error() {
+    use crate::eval::seq::parse_seq_pattern;
+
+    let result = parse_seq_pattern("<<C3 E3> G3>");
+    assert!(result.is_err());
+    assert!(result.unwrap_err().contains("Nested alternation"));
+}
+
+#[test]
+fn test_seq_alternation_produces_both_values() {
+    let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
+    let parts = vec!["SEQ", "\"<C3 E3>\""];
+
+    let mut seen_c3 = false;
+    let mut seen_e3 = false;
+
+    for _ in 0..100 {
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+        let value = result.unwrap().0;
+        assert!(value == 0 || value == 4, "Should be C3 (0) or E3 (4)");
+
+        if value == 0 {
+            seen_c3 = true;
+        }
+        if value == 4 {
+            seen_e3 = true;
+        }
+
+        if seen_c3 && seen_e3 {
+            break;
+        }
+    }
+
+    assert!(seen_c3, "Should have seen C3 (0) at least once");
+    assert!(seen_e3, "Should have seen E3 (4) at least once");
+}
+
+#[test]
+fn test_seq_alternation_three_options_produces_all() {
+    let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
+    let parts = vec!["SEQ", "\"<C3 E3 G3>\""];
+
+    let mut seen_values = std::collections::HashSet::new();
+
+    for _ in 0..200 {
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+        let value = result.unwrap().0;
+        assert!(value == 0 || value == 4 || value == 7, "Should be C3, E3, or G3");
+        seen_values.insert(value);
+
+        if seen_values.len() == 3 {
+            break;
+        }
+    }
+
+    assert!(seen_values.contains(&0), "Should have seen C3");
+    assert!(seen_values.contains(&4), "Should have seen E3");
+    assert!(seen_values.contains(&7), "Should have seen G3");
+}
+
+#[test]
+fn test_seq_alternation_with_repeat_independent() {
+    let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
+    let parts = vec!["SEQ", "\"<C3 E3>*2\""];
+
+    let result1 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    let value1 = result1.unwrap().0;
+    assert!(value1 == 0 || value1 == 4);
+
+    let result2 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    let value2 = result2.unwrap().0;
+    assert!(value2 == 0 || value2 == 4);
+
+    let result3 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    let value3 = result3.unwrap().0;
+    assert!(value3 == 0 || value3 == 4, "Should wrap to first alternation");
+}
+
+#[test]
+fn test_seq_alternation_single_option_always_same() {
+    let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
+    let parts = vec!["SEQ", "\"<C3>\""];
+
+    for _ in 0..10 {
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+        assert_eq!(result.unwrap().0, 0, "Single option should always return C3");
+    }
+}
+
+#[test]
+fn test_seq_alternation_mixed_with_regular_steps() {
+    let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
+    let parts = vec!["SEQ", "\"100 <C3 E3> 200\""];
+
+    let result1 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result1.unwrap().0, 100, "First should be 100");
+
+    let result2 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    let value2 = result2.unwrap().0;
+    assert!(value2 == 0 || value2 == 4, "Second should be alternation");
+
+    let result3 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result3.unwrap().0, 200, "Third should be 200");
+
+    let result4 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result4.unwrap().0, 100, "Should wrap to 100");
+}
+
+#[test]
+fn test_seq_alternation_with_rest_and_trigger() {
+    let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
+    let parts = vec!["SEQ", "\"<x _>\""];
+
+    let mut seen_one = false;
+    let mut seen_zero = false;
+
+    for _ in 0..100 {
+        let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+        let value = result.unwrap().0;
+        assert!(value == 0 || value == 1, "Should be 0 or 1");
+
+        if value == 0 {
+            seen_zero = true;
+        }
+        if value == 1 {
+            seen_one = true;
+        }
+
+        if seen_zero && seen_one {
+            break;
+        }
+    }
+
+    assert!(seen_zero, "Should see 0 (rest)");
+    assert!(seen_one, "Should see 1 (trigger)");
+}

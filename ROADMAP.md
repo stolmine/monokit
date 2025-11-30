@@ -300,7 +300,7 @@ Consolidated command definitions into a single source of truth to eliminate sync
 - `Q.BIT 10101` - Pentatonic (5-EDO)
 - `Q.BIT <24 bits>` - Quarter-tones (24-EDO)
 
-### Mini Notation / Inline Sequencing [High] - PHASE 1 COMPLETE
+### Mini Notation / Inline Sequencing [High] - PHASE 2 COMPLETE
 SEQ provides inline sequence notation that cycles through values on each evaluation.
 
 **Phase 1 (Complete):**
@@ -311,14 +311,24 @@ SEQ provides inline sequence notation that cycles through values on each evaluat
 - [x] Per-script, per-pattern independent state
 - [x] Works in all expression contexts: `PF N SEQ "C3 E3"`, `IF SEQ "x _": TR`
 
-**Phase 2 (Future):**
-- [ ] `[a b]` - Subdivision brackets
-- [ ] `<a b>` - Alternation
-- [ ] `?` - Random inclusion
-- [ ] `*n` - Repeat n times
+**Phase 2 (Complete):**
+- [x] `*n` - Repeat token n times (e.g., `C3*4` expands to `C3 C3 C3 C3`)
+- [x] `?` - Random trigger (50% chance of 1, 50% chance of 0)
+- [x] `<a b>` - Alternation (randomly picks one of the options)
+- [x] Combinable modifiers (e.g., `<C3 E3>*2` picks twice)
 
-**Usage Examples:**
+**Phase 3 (Future):**
+- [ ] `[a b]` - Subdivision brackets
+- [ ] Probability modifiers `@p` for per-step probabilities
+- [ ] Euclidean rhythm syntax
+
+**Phase 2 Usage Examples:**
 ```
+SEQ "C3*4 E3*2"                # Repeated notes (C3 C3 C3 C3 E3 E3)
+SEQ "<C3 E3> G3"               # Random C3 or E3, then G3
+SEQ "x ? x ?"                  # Random triggers (50% chance each)
+SEQ "<C3 E3>*2"                # Two random choices (alternation with repeat)
+
 IF SEQ "x _ x _": TR           # Trigger on beats 1 and 3
 PF N SEQ "C3 E3 G3 C4"         # Arpeggiate C major (semitones → Hz)
 PF N Q SEQ "0 3 5 7"           # Quantized to current scale

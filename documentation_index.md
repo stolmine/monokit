@@ -2,9 +2,12 @@
 
 ## Documentation
 
-- **CONCEPT.md** - Project overview, architecture, MVP implementation, and roadmap
+- **CONCEPT.md** - Project overview, architecture, MVP implementation
 - **PLAN.md** - UI refactor plan: Teletype-style interface with page system, script storage, patterns, and control flow
+- **ROADMAP.md** - Single source of truth for all future development plans and roadmap
 - **DSP_TIER1_IMPLEMENTATION_PLAN.md** - Detailed implementation plan for Filter, Resonator, Delay, and Reverb DSP blocks
+- **DSP_TIER3_BUFFER_EFFECTS_PLAN.md** - Implementation plan for Beat Repeat and Pitch Shift buffer effects
+- **EFFECT_ROUTING_DESIGN.md** - Design document for flexible effect routing system
 - **documentation_index.md** - This file, listing all documentation and key project files
 
 ## Key Project Files
@@ -16,7 +19,7 @@
 
 ### Source Code
 
-Modular Rust implementation (~15,000 total lines across 50+ files):
+Modular Rust implementation (~15,000 total lines across 57 files):
 
 - **src/main.rs** (69 lines) - Application entry point, initializes TUI and starts main loop
 - **src/metro.rs** (112 lines) - Metro thread implementation with absolute timing
@@ -30,7 +33,7 @@ Modular Rust implementation (~15,000 total lines across 50+ files):
   - **mod.rs** (146 lines) - App struct, constructor, navigation
   - **input.rs** (234 lines) - Input handling methods
   - **script_exec.rs** (481 lines) - Script/command execution
-- **src/commands/** - Command processing module (25 files, ~3,400 lines)
+- **src/commands/** - Command processing module (26 files, ~3,400 lines)
   - **mod.rs** - Main dispatcher with command routing
   - **validate.rs** - Command validation
   - **aliases.rs** - Alias resolution for PREFIX.SUFFIX → short form mapping (93 aliases)
@@ -73,11 +76,12 @@ Key features:
 - Metro thread sends script execution requests to main thread
 - OSC client sending to SuperCollider (127.0.0.1:57120)
 
-- **sc/monokit_server.scd** - SuperCollider sound engine
+- **sc/monokit_server.scd** (626 lines) - SuperCollider sound engine
   - `\monokit` SynthDef: HD2-style dual oscillator with FM, discontinuity, comprehensive DSP effects, and multi-stage processing
   - Additive envelope model: output = base + env * amount
-  - Signal chain: Osc → Discontinuity → Lo-Fi → SVF → Ring Mod → Resonator → Amp → Compressor → Pan → Beat Repeat → Pitch Shift → Delay → 3-Band EQ → Reverb → Out
+  - Signal chain: Oscillators → FM → Mix → Discontinuity → Lo-Fi → SVF Filter → Ring Mod → Comb Resonator → Amp → Compressor → Pan → Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ → Plate Reverb → Out
   - 77 synth parameters (25 oscillator/envelope + 48 DSP + 4 routing)
+  - Includes implemented Beat Repeat and Pitch Shift buffer effects
   - Global parameter slew with Lag.kr smoothing for artifact-free transitions
   - OSC responders:
     - `/monokit/trigger` - Gate trigger (no args)

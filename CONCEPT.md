@@ -35,6 +35,8 @@ The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity
   - **Metro:** M, M <ms>, M.BPM <bpm>, M.ACT <0|1>, M: <script>
   - **HD2 Parameters:** PF/MF, PW/MW, DC/DM, DD, TK/MB, MP/MD/MT/MA, FM, FB/FBA/FBD, AD/PD/FD/DD, PA, FA, DA
   - **Mix Controls:** MX, MM, ME
+  - **Beat Repeat:** BRP, BRT, BRG, BRM
+  - **Pitch Shift:** PST, PSD, PTW, PSM
   - **Recording:** REC, REC.STOP, REC.PATH <prefix>
   - **System:** RST (reset to defaults), CLEAR (clear output), DEBUG <0-2> (verbosity), PRINT (output to REPL), help, exit, quit
 - Envelope amounts: PA (pitch), FA (FM), DA (discontinuity) — added to base parameter via modulation amount
@@ -44,8 +46,8 @@ The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity
 - Runs headless scsynth with persistent HD2-style voice
 - `\monokit` SynthDef: complex oscillator with dual waveform engines, FM, discontinuity, comprehensive DSP effects, and multi-stage processing
 - Additive envelope model: output = base parameter + env * amount
-- Signal chain: Oscillators → FM → Mix → Discontinuity → Lo-Fi → SVF Filter → Ring Mod → Comb Resonator → Amp → Compressor → Pan → Stereo Delay → 3-Band EQ → Plate Reverb → Out
-- 66 parameters (25 oscillator/envelope + 37 DSP + 4 routing):
+- Signal chain: Oscillators → FM → Mix → Discontinuity → Lo-Fi → SVF Filter → Ring Mod → Comb Resonator → Amp → Compressor → Pan → Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ → Plate Reverb → Out
+- 77 parameters (25 oscillator/envelope + 48 DSP + 4 routing):
   - **Oscillators:** pf (primary freq), pw (primary waveform 0-2), mf (mod freq), mw (mod waveform 0-3)
   - **Feedback FM:** fb (feedback amount 0-16383), fba (feedback env amount 0-16383), fbd (feedback decay ms)
   - **Discontinuity:** dc (amount 0-16383), dm (mode 0-6: fold/tanh/softclip/hard/asym/rectify/crush), dd (discontinuity decay ms)
@@ -60,6 +62,8 @@ The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity
   - **Comb Resonator:** rf (freq Hz), rd (decay ms), rm (mix 0-16383), rk (key tracking)
   - **Compressor:** ct (threshold 0-16383), cr (ratio 1-20), ca (attack ms 1-500), cl (release ms 10-2000), cm (makeup gain 0-16383)
   - **Pan:** pn (position -16383 to +16383)
+  - **Beat Repeat:** brp (probability 0-16383), brt (time subdivision 0-5), brg (gate length 0-16383), brm (mix 0-16383)
+  - **Pitch Shift:** pst (transpose semitones -24 to +24), psd (dispersion 0-16383), ptw (time dispersion 0-16383), psm (mix 0-16383)
   - **Stereo Delay:** dt (time ms), df (feedback), dlp (lowpass Hz), dw (wet/send), ds (sync 0-1), dmode (routing 0-2), dtail (tail mode 0-2)
   - **3-Band EQ:** el (low shelf dB -24 to +24), em (mid peak dB -24 to +24), ef (mid freq Hz), eq (mid Q), eh (high shelf dB -24 to +24)
   - **Plate Reverb:** rv (decay), rp (pre-delay ms), rh (damping), rw (wet/send), rmode (routing 0-2), rtail (tail mode 0-2)
@@ -119,10 +123,12 @@ Recording captures the SuperCollider audio output directly.
 
 - ✓ Tier 1 DSP blocks: Filter (SVF), Resonator (Comb), Delay (stereo), Reverb (plate) - COMPLETE
 - ✓ Tier 2 DSP blocks: Lo-Fi, Ring Modulator, Compressor, 3-Band EQ, Pan - COMPLETE
+- ✓ Tier 3 DSP blocks: Beat Repeat, Pitch Shift - COMPLETE
 - ✓ Effect routing system: BYPASS/INSERT/SEND modes with CUT/RING/FREEZE tail behaviors - COMPLETE
 - ✓ ModBus routing to filter cutoff - COMPLETE
 - ✓ Extended discontinuity modes (0-6: fold, tanh, softclip, hard, asym, rectify, crush) - COMPLETE
 - ✓ Phase 1 language features: MAP operator, TOG generator, N1-N4 counters - COMPLETE
+- ✓ All DSP processing complete - COMPLETE
 - Pattern/sequencing enhancements
 - LFO system for parameter modulation
 - Additional modulation routing (ModBus to delay time, reverb size, resonator frequency)

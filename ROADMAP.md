@@ -9,69 +9,109 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ---
 
-## ✅ Completed Features
+## Completed Features
 
 ### Core Voice & DSP
-- **HD2-style dual oscillator** with FM, discontinuity, and complex modulation
-- **Full DSP signal chain:** Oscillators → FM → Mix → Discontinuity → Lo-Fi → SVF Filter → Ring Mod → Comb Resonator → Amp → Compressor → Pan → Stereo Delay → 3-Band EQ → Plate Reverb
-- **Extended discontinuity modes** (0-6: fold, tanh, softclip, hard, asym, rectify, crush)
-- **66 real-time parameters** controlling all aspects of voice and FX
+- [x] HD2-style dual oscillator with FM, discontinuity, and complex modulation
+- [x] Full DSP signal chain: Oscillators → FM → Mix → Discontinuity → Lo-Fi → SVF Filter → Ring Mod → Comb Resonator → Amp → Compressor → Pan → Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ → Plate Reverb
+- [x] Extended discontinuity modes (0-6: fold, tanh, softclip, hard, asym, rectify, crush)
+- [x] 77 real-time parameters controlling all aspects of voice and FX
 
 ### Effects System
-- **Tier 1 DSP blocks:** SVF Filter, Comb Resonator, Stereo Delay, Plate Reverb
-- **Tier 2 DSP blocks:** Lo-Fi, Ring Modulator, Compressor, 3-Band EQ, Pan
-- **Effect routing modes:** BYPASS/INSERT/SEND with CUT/RING/FREEZE tail behaviors
+- [x] Tier 1 DSP blocks: SVF Filter, Comb Resonator, Stereo Delay, Plate Reverb
+- [x] Tier 2 DSP blocks: Lo-Fi, Ring Modulator, Compressor, 3-Band EQ, Pan
+- [x] Beat Repeat with buffer freeze and stereo operation
+- [x] Pitch Shift with normal and granular modes
+- [x] Effect routing modes: BYPASS/INSERT/SEND with CUT/RING/FREEZE tail behaviors
 
-### Language & Scripting (PLAN.md - All Phases Complete)
-- **Page-based interface:** LIVE, SCRIPT 1-8, Metro (M), Init (I), Pattern (P), Help
-- **Script storage:** 8 lines per script with local J, K variables
-- **Pattern system:** 6 patterns × 64 steps with comprehensive operations (P, PN, P.L, P.I, P.N, P.NEXT, P.PREV, P.HERE)
-- **Variables:** A, B, C, D, X, Y, Z, T (global), I (loop), J, K (per-script)
-- **Control flow:** IF/ELIF/ELSE, L (loop), PROB, EVERY, SKIP with PRE separator (`:`)
-- **Comparison operators:** EQ, NE, GT, LT, GTE, LTE, EZ, NZ (both prefix and infix)
-- **Sub-command separator:** `;` for multiple commands per line
-- **Scene persistence:** SAVE/LOAD system for scripts + patterns
-- **MAP operator:** Range mapping with clamping
-- **TOG generator:** Toggle between values on each trigger
-- **N1-N4 counters:** Auto-increment variables with MIN/MAX/RST control
+### Language & Scripting
+- [x] Page-based interface: LIVE, SCRIPT 1-8, Metro (M), Init (I), Pattern (P), Help
+- [x] Script storage: 8 lines per script with local J, K variables
+- [x] Pattern system: 6 patterns × 64 steps with comprehensive operations (P, PN, P.L, P.I, P.N, P.NEXT, P.PREV, P.HERE)
+- [x] Variables: A, B, C, D, X, Y, Z, T (global), I (loop), J, K (per-script)
+- [x] Control flow: IF/ELIF/ELSE, L (loop), PROB, EVERY, SKIP with PRE separator (`:`)
+- [x] Comparison operators: EQ, NE, GT, LT, GTE, LTE, EZ, NZ (both prefix and infix)
+- [x] Sub-command separator: `;` for multiple commands per line
+- [x] Scene persistence: SAVE/LOAD system for scripts + patterns
+- [x] MAP operator: Range mapping with clamping
+- [x] TOG generator: Toggle between two values on each trigger
+- [x] N1-N4 counters: Auto-increment variables with MIN/MAX/RST control
 
 ### Modulation & Routing
-- **ModBus routing** to filter cutoff (MF_F parameter)
-- **Envelope system:** PA (pitch), FA (FM), DA (discontinuity) amounts with dedicated decay times
-- **Tracking system:** TK (key tracking), MB (mod bus), MP/MD/MT/MA (routing switches)
-- **Global parameter slew** via SLEW.ALL with SC-side Lag.kr smoothing
+- [x] ModBus routing to filter cutoff (MF_F parameter)
+- [x] Envelope system with PREFIX.SUFFIX naming (AENV, PENV, FMEV, DENV, FBEV, FLEV)
+- [x] Per-envelope control: ATK, DEC, CRV, MODE, GATE for each envelope type
+- [x] Global envelope controls: ENV.ATK, ENV.DEC, ENV.CRV, ENV.MODE, GATE
+- [x] Envelope amounts: PA (pitch), FA (FM), DA (discontinuity)
+- [x] Tracking system: TK (key tracking), MB (mod bus), MP/MD/MT/MA (routing switches)
+- [x] Global parameter slew: SLEW.ALL with SC-side Lag.kr smoothing
+- [x] Per-parameter slew: SLEW <param> <ms> for individual control
 
 ### Infrastructure
-- **Dedicated metro thread** with absolute timing (no cumulative drift)
-- **Recording system:** WAV int24 output with timestamped files
-- **OSC protocol:** CLI → SuperCollider communication
-- **Theme system:** RGB color support with dark/light variants and system detection
+- [x] Dedicated metro thread with absolute timing (no cumulative drift)
+- [x] Recording system: WAV int24 output with timestamped files
+- [x] OSC protocol: CLI → SuperCollider communication
+- [x] Theme system: Named themes with RGB colors, 30+ pre-defined themes
+- [x] Command alias system: 93 aliases mapping PREFIX.SUFFIX to terse forms
 
 ---
 
-## Phase 1: Core Utilities
+## Phase 1: Core Utilities [COMPLETE]
 
 **Focus:** Quick wins that add immediate value with minimal dependencies
 
-### Slewing & Interpolation [Medium]
-- [x] `SLEW.ALL <ms>` - Global slew time for all parameters ✓
-- [x] SC-side Lag.kr smoothing for 30+ parameters ✓
-- [x] `SLEW <param> <ms>` - Per-parameter slew override ✓
-- [ ] `LERP <var> <target> <steps>` - Interpolate variable over N ticks (optional)
-- [ ] `A.LERP <target> <ms>` - Time-based interpolation (optional)
+### Slewing & Interpolation [Medium] - COMPLETE
+- [x] `SLEW.ALL <ms>` - Global slew time for all parameters
+- [x] `SLEW <param> <ms>` - Per-parameter slew override
+- [x] SC-side Lag.kr smoothing for 30+ parameters
 
-### Envelope Shaping [Medium]
-- [x] `ENV.ATK <ms>` - Global attack time ✓
-- [x] `ENV.DEC <ms>` - Global decay time ✓
-- [x] `ENV.CRV <-8 to 8>` - Global envelope curve control (log/linear/exp) ✓
-- [x] `ENV.MODE <0-2>` - Global envelope modes (0=AD, 1=ASR, 2=ADSR) ✓
-- [x] `GATE <ms>` - Global gate duration ✓
-- [x] Per-envelope overrides: `AENV.ATK/DEC/CRV/MODE/GATE` ✓
-- [x] Per-envelope overrides: `PENV.ATK/DEC/CRV/MODE/GATE` ✓
-- [x] Per-envelope overrides: `FMEV.ATK/DEC/CRV/MODE/GATE` ✓
-- [x] Per-envelope overrides: `DENV.ATK/DEC/CRV/MODE/GATE` ✓
-- [x] Per-envelope overrides: `FBEV.ATK/DEC/CRV/MODE/GATE` ✓
-- [x] Per-envelope overrides: `FLEV.ATK/DEC/CRV/MODE/GATE` ✓
+**Future Extensions:**
+- [ ] `LERP <var> <target> <steps>` - Interpolate variable over N ticks
+- [ ] `A.LERP <target> <ms>` - Time-based interpolation (runs in background, updates each metro tick)
+
+### Envelope Shaping [Medium] - COMPLETE
+- [x] `ENV.ATK <ms>` - Global attack time
+- [x] `ENV.DEC <ms>` - Global decay time
+- [x] `ENV.CRV <-8 to 8>` - Global envelope curve control (log/linear/exp)
+- [x] `ENV.MODE <0-2>` - Global envelope modes (0=AD, 1=ASR, 2=ADSR)
+- [x] `GATE <ms>` - Global gate duration
+- [x] Per-envelope overrides for all 6 envelope types (AENV, PENV, FMEV, DENV, FBEV, FLEV)
+
+### MAP Operator [Low] - COMPLETE
+- [x] `MAP <val> <in_min> <in_max> <out_min> <out_max>` - Range mapping with clamping
+
+**Future Extensions:**
+- [ ] `MAPU` - Unclamped mapping (allows extrapolation beyond output range)
+- [ ] `MAP01 <val> <out_min> <out_max>` - Map from 0-1 range (normalized inputs)
+- [ ] `MAP7 <val> <out_min> <out_max>` - Map from 0-127 range (MIDI values)
+- [ ] `MAP14 <val> <out_min> <out_max>` - Map from 0-16383 range (14-bit)
+- [ ] `MAPC <val> <in_min> <in_max> <out_min> <out_max> <curve>` - Map with curve (-8 to 8)
+
+### TOG Generator [Low] - COMPLETE
+- [x] `TOG <a> <b>` - Toggle between two values on each trigger
+- [x] State is per-script and per-line
+
+**Future Extensions:**
+- [ ] `TOG <a> <b> <c>` - Cycle through 3+ values
+- [ ] `TOG.RST` - Reset toggle state
+
+### Auto-Increment Counters [Low] - COMPLETE
+- [x] `N1`, `N2`, `N3`, `N4` - Auto-increment on each read
+- [x] `N1.MIN <n>` - Set minimum value (default 0)
+- [x] `N1.MAX <n>` - Set maximum value (wraps to MIN, 0=disabled)
+- [x] `N1.RST` - Reset counter to MIN value
+
+**Future Extensions:**
+- [ ] `N1.STEP <n>` - Set increment amount (currently always 1)
+- [ ] `A.INC <n>` - Increment variable A by n each tick
+- [ ] `A.DEC <n>` - Decrement variable A by n each tick
+- [ ] `A.WRAP <min> <max>` - Wrap variable within range
+
+### Pattern Storage [Low] - PARTIAL
+- [x] Increased from 4 to 6 pattern slots (PN accepts 0-5)
+- [ ] Increase to 8 or 16 pattern slots
+- [ ] Bank system: `P.BANK <0-3>` for 4 banks of 4
+- [ ] Increase max length from 64 to 128 or 256
 
 ---
 
@@ -88,6 +128,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - [ ] `P.ROT <n>` - Rotate pattern by n positions
 - [ ] `P.SHUF` - Shuffle pattern randomly
 - [ ] `P.SORT` - Sort pattern ascending
+- [ ] `P.RND` - Randomize all values
 
 ### Pattern Math [Low]
 - [ ] `P.ADD <val>` - Add to all values
@@ -104,23 +145,28 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - [ ] `P.AVG` - Average of all values
 - [ ] `P.FND <val>` - Find index of value
 
-### Pattern Storage Expansion [Low]
-- [x] Increase from 4 to 6 pattern slots ✓
-- [ ] Increase to 8 or 16 pattern slots (optional)
-- [ ] Optional: Bank system `P.BANK <0-3>` for 4 banks of 4
-- [ ] Optional: Increase max length from 64 to 128 or 256
-
 ### Randomization System [Medium]
-- [ ] `RND.VOICE` - Randomize oscillator/FM parameters within musical ranges
-- [ ] `RND.OSC` - Randomize oscillator params only
-- [ ] `RND.FM` - Randomize FM-related params
-- [ ] `RND.MOD` - Randomize modulation routing
+
+**Voice Randomization:**
+- [ ] `RND.VOICE` - Randomize all oscillator/FM parameters within musical ranges
+- [ ] `RND.OSC` - Randomize oscillator params only (PF, PW, MF, MW)
+- [ ] `RND.FM` - Randomize FM-related params (FM, FB, FBA, FBD)
+
+**Modulation Randomization:**
+- [ ] `RND.MOD` - Randomize modulation routing (MB, TK, MP, MD, MT, MA)
 - [ ] `RND.ENV` - Randomize envelope times and amounts
+
+**FX Randomization:**
 - [ ] `RND.FX` - Randomize all effect parameters
-- [ ] `RND.FILT`, `RND.DLY`, `RND.VERB` - Per-effect randomization
+- [ ] `RND.FILT` - Randomize filter (FC, FQ, FT, FE)
+- [ ] `RND.DLY` - Randomize delay (DT, DF, DLP, DW)
+- [ ] `RND.VERB` - Randomize reverb (RV, RP, RH, RW)
+
+**Pattern Randomization:**
 - [ ] `RND.P` - Randomize working pattern values
 - [ ] `RND.P <min> <max>` - Randomize within range
-- [ ] `RND.PN <n>`, `RND.PALL` - Specific or all patterns
+- [ ] `RND.PN <n>` - Randomize specific pattern
+- [ ] `RND.PALL` - Randomize all patterns
 
 ---
 
@@ -130,35 +176,58 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ### Scale Quantization [Medium]
 - [ ] `Q <note>` - Quantize note to current scale
-- [ ] `Q.SCALE <0-11>` - Set scale (major, minor, dorian, etc.)
+- [ ] `Q.SCALE <0-11>` - Set scale type
 - [ ] `Q.ROOT <0-11>` - Set root note (C=0, C#=1, etc.)
 - [ ] `PF N Q A` - Quantize variable to scale, convert to frequency
-- [ ] 12 scale types: Chromatic, Major, Minor, Dorian, Phrygian, Lydian, Mixolydian, Pentatonic Major/Minor, Blues, Whole Tone, Diminished
+
+**Scale Types:**
+- 0=Chromatic, 1=Major, 2=Minor, 3=Dorian, 4=Phrygian, 5=Lydian
+- 6=Mixolydian, 7=Pentatonic Major, 8=Pentatonic Minor
+- 9=Blues, 10=Whole Tone, 11=Diminished
 
 ### Mini Notation / Inline Sequencing [High]
 - [ ] `SEQ "x _ x _"` - Simple trigger pattern notation
 - [ ] `SEQ "200 400 300 _"` - Value sequence notation
 - [ ] `PF SEQ "C3 E3 G3 C4"` - Note name support
 - [ ] `TR SEQ "x _ [x x] _"` - Subdivision brackets
-- [ ] Pattern syntax: `x` (trigger), `_` (rest), `[a b]` (subdivision), `<a b>` (alternation), `?` (random), `*n` (repeat)
+
+**Pattern Syntax:**
+- `x` = trigger/value
+- `_` or `.` = rest
+- `[a b]` = subdivision
+- `<a b>` = alternation
+- `?` = random inclusion
+- `*n` = repeat n times
 
 ### DAW / MIDI Clock Sync [High]
+
+**MIDI Clock Input:**
 - [ ] `M.SYNC <0-2>` - Sync mode (0=internal, 1=MIDI clock, 2=MIDI clock + transport)
 - [ ] Auto-detect MIDI clock from connected devices
 - [ ] Follow external tempo (24 PPQN standard)
 - [ ] Start/stop follows MIDI transport commands
+
+**MIDI Clock Output:**
 - [ ] `M.SEND <0|1>` - Send MIDI clock out
+- [ ] Send start/stop/continue messages
+
+**Clock Division/Multiplication:**
 - [ ] `M.DIV <1-16>` - Divide incoming clock
 - [ ] `M.MUL <1-4>` - Multiply incoming clock
-- [ ] `PLAY`, `STOP`, `PAUSE`, `RST.POS` - Transport control
-- [ ] Optional: `LINK <0|1>` - Ableton Link support
 
-### Additional ModBus Routing (from CONCEPT.md) [Medium]
+**Transport Control:**
+- [ ] `PLAY`, `STOP`, `PAUSE` - Playback control
+- [ ] `RST.POS` - Reset to beginning
+
+**Optional:**
+- [ ] `LINK <0|1>` - Ableton Link support (requires Link SDK)
+
+### Additional ModBus Routing [Medium]
 - [ ] ModBus → delay time routing
 - [ ] ModBus → reverb size routing
 - [ ] ModBus → resonator frequency routing
 
-### Tempo-Synced Delay (from CONCEPT.md) [Low]
+### Tempo-Synced Delay [Low]
 - [ ] `DS` parameter - Delay time sync to metro (divisions: 1/4, 1/8, 1/16, etc.)
 
 ---
@@ -178,6 +247,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - [ ] `L1.AMT <0-16383>` - Modulation amount
 - [ ] `L1.SLEW <ms>` - Slew/lag on LFO output
 - [ ] `L1.QUANT <steps>` - Quantize LFO to N steps
+- [ ] Multiple destinations per LFO (optional)
 - [ ] SC implementation: New UGens, routing matrix, phase sync
 
 ---
@@ -199,7 +269,6 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 ### Help Page Styling [Low]
 - [ ] Add explicit header marker (e.g., `#` prefix) to HELP_LINES section headers
 - [ ] Replace heuristic-based styling with marker-based detection
-- [ ] Current heuristic is fragile and catches false positives
 
 ### Activity Indicators (KO II Style) [Medium]
 - [ ] Page icon highlighting when script executes
@@ -216,7 +285,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - [ ] Peak hold display
 - [ ] Clip indicator
 
-### Optional: Waveform Preview [Medium]
+### Waveform Preview [Medium] (Optional)
 - [ ] Mini oscilloscope on Live page
 - [ ] Real-time output waveform display
 - [ ] Optional: Spectrum analyzer
@@ -305,4 +374,4 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ## Contributing
 
-Feature requests and suggestions should be added to `future_ideas.md` for consideration. All contributions should maintain the project's terse command syntax and CLI-native philosophy.
+Feature requests and suggestions welcome. All contributions should maintain the project's terse command syntax and CLI-native philosophy.

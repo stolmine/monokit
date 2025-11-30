@@ -6,7 +6,7 @@ Refactor monokit's TUI to follow teletype's sparse, page-based design with scrip
 
 ## Pre-Implementation Tasks
 
-- [ ] Add `.gitignore` with `teletype-main/` and `target/`
+- [x] Add `.gitignore` with `teletype-main/` and `target/`
 
 ## Key Teletype Concepts to Adopt
 

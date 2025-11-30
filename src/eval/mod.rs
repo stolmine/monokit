@@ -1,6 +1,7 @@
 mod patterns;
 mod math;
 mod logic;
+pub mod seq;
 
 use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables};
 use rand::Rng;
@@ -60,6 +61,11 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
     }
 
     if let Some(result) = logic::eval_counter_expression(&expr, counters) {
+        return Some(result);
+    }
+
+    // Check for SEQ expression
+    if let Some(result) = seq::eval_seq_expression(&expr, parts, start_idx, patterns, script_index) {
         return Some(result);
     }
 

@@ -2,3 +2,4 @@
 - agents should endeavor to keep the help system updated as they work
 - always do your best to stay DRY, agents should stay DRY as well. We want a clean, efficient, and well-organized codebase
 - always try to ensure you are not duplicating work or functionality. be sure to to check for and make use of reusable code that already exists.
+- agents should always keep our conventions for DRY in mind when implementing new features and updating old ones

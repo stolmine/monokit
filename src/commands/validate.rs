@@ -219,6 +219,30 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
+        "PSET" => {
+            if argc < 2 {
+                return Err(anyhow::anyhow!("PSET requires script number and preset name"));
+            }
+            Ok(())
+        }
+        "PSET.SAVE" => {
+            if argc < 2 {
+                return Err(anyhow::anyhow!("PSET.SAVE requires script number and preset name"));
+            }
+            Ok(())
+        }
+        "PSET.DEL" => {
+            if argc < 1 {
+                return Err(anyhow::anyhow!("PSET.DEL requires preset name"));
+            }
+            Ok(())
+        }
+        "PSETS" => {
+            if argc > 0 {
+                return Err(anyhow::anyhow!("PSETS takes no arguments"));
+            }
+            Ok(())
+        }
         "THEME" | "DEBUG" => {
             if argc > 1 {
                 return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));

@@ -3,6 +3,7 @@ mod commands;
 mod config;
 mod eval;
 mod metro;
+mod preset;
 mod scene;
 mod theme;
 mod types;

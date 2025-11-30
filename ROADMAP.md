@@ -300,19 +300,54 @@ Consolidated command definitions into a single source of truth to eliminate sync
 - `Q.BIT 10101` - Pentatonic (5-EDO)
 - `Q.BIT <24 bits>` - Quarter-tones (24-EDO)
 
-### Mini Notation / Inline Sequencing [High]
-- [ ] `SEQ "x _ x _"` - Simple trigger pattern notation
-- [ ] `SEQ "200 400 300 _"` - Value sequence notation
-- [ ] `PF SEQ "C3 E3 G3 C4"` - Note name support
-- [ ] `TR SEQ "x _ [x x] _"` - Subdivision brackets
+### Mini Notation / Inline Sequencing [High] - PHASE 1 COMPLETE
+SEQ provides inline sequence notation that cycles through values on each evaluation.
 
-**Pattern Syntax:**
-- `x` = trigger/value
-- `_` or `.` = rest
-- `[a b]` = subdivision
-- `<a b>` = alternation
-- `?` = random inclusion
-- `*n` = repeat n times
+**Phase 1 (Complete):**
+- [x] `SEQ "x _ x _"` - Trigger pattern notation (x=1, _=0)
+- [x] `SEQ "200 400 300 _"` - Numeric value sequences
+- [x] `SEQ "C3 E3 G3 C4"` - Note names (returns semitones, use with N)
+- [x] Note accidentals: sharps (#) and flats (b) - `C#3`, `Bb4`, `F#2`
+- [x] Per-script, per-pattern independent state
+- [x] Works in all expression contexts: `PF N SEQ "C3 E3"`, `IF SEQ "x _": TR`
+
+**Phase 2 (Future):**
+- [ ] `[a b]` - Subdivision brackets
+- [ ] `<a b>` - Alternation
+- [ ] `?` - Random inclusion
+- [ ] `*n` - Repeat n times
+
+**Usage Examples:**
+```
+IF SEQ "x _ x _": TR           # Trigger on beats 1 and 3
+PF N SEQ "C3 E3 G3 C4"         # Arpeggiate C major (semitones → Hz)
+PF N Q SEQ "0 3 5 7"           # Quantized to current scale
+A SEQ "0 1 2 3"                # Store sequence value in variable
+```
+
+### Preset System [Medium] - COMPLETE
+Save and load parameter configurations into script slots.
+
+- [x] `PSET <script> <name>` - Load preset into script 1-8
+- [x] `PSET.SAVE <script> <name>` - Save script as user preset
+- [x] `PSET.DEL <name>` - Delete user preset
+- [x] `PSETS` - List all presets ([F] factory, [U] user)
+- [x] 22 factory presets (drums, bass, lead, percussion, FX)
+- [x] User presets stored in `~/.monokit/presets/`
+
+**Factory Presets:**
+- Drums: 808-kick, punch-kick, sub-kick, basic-snare, snap-snare, hat-closed, hat-open, fm-hat, clap, rim
+- Bass: sub-bass, saw-bass, fm-bass
+- Lead: saw-lead, fm-lead, pluck-lead
+- Percussion: metal-hit, conga, tom
+- FX: noise, zap, rise
+
+**Usage:**
+```
+PSET 1 808-kick              # Load kick preset into script 1
+PSET.SAVE 2 my-bass          # Save script 2 as user preset
+PSETS                        # List all presets
+```
 
 ### DAW / MIDI Clock Sync [High]
 
@@ -447,6 +482,14 @@ Dedicated envelopes for synth/FX parameters currently lacking envelope control.
 - [ ] Live screen event visualization (trigger, metro, pattern, script icons)
 - [ ] Decay/fade animations
 - [ ] Per-parameter activity dots with brightness/color coding
+
+### Live Sequence State Highlighting [Medium]
+- [ ] Highlight current SEQ step in script display (show which value is active)
+- [ ] Highlight current TOG state (show which of the two values is next)
+- [ ] Highlight EITH outcomes (show last selected value)
+- [ ] Visual indication for N1-N4 counter current values
+- [ ] Per-line state annotations for any sequential/stateful operators
+- [ ] Subtle color coding or underline for active sequence positions
 
 ### CPU & Audio Metering [Medium]
 - [ ] `CPU` - Display SuperCollider server CPU usage

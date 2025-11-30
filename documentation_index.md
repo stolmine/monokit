@@ -2,6 +2,23 @@
 
 ## Recent Updates (November 2025)
 
+### REPL Scrolling and UI Enhancements
+
+**REPL Output Scrolling (Live Page):**
+- Ctrl+Up/Down scrolls through REPL output history
+- Shows scroll indicator [↑N] in title when scrolled up from bottom
+- Auto-resets to bottom when new output arrives
+- Smooth navigation through command history and output
+
+**Help System Updates:**
+- Added SEQ inline sequence documentation
+- Added PSET preset system documentation
+- Added REPL scrolling keybinding documentation
+- Comprehensive coverage of all system features
+
+**Roadmap Updates:**
+- "Live Sequence State Highlighting" feature added to Phase 5 (UI enhancements)
+
 ### DRY Refactoring Complete (All Phases)
 
 **Total lines removed: ~5,942 lines**
@@ -920,7 +937,11 @@ PS.TARG 0         // Process input signal
 
 #### Input
 - `Enter` - Execute command
-- `Up/Down` - Command history (on non-Help pages)
+- `Up/Down` - Command history (on non-Help pages) / REPL scroll (Live page with Ctrl modifier)
+- `Ctrl+Up/Down` - Scroll REPL output (Live page only)
+  - Scrolls through command output history
+  - Shows [↑N] indicator in title when scrolled
+  - Auto-resets to bottom on new output
 - `Left/Right` - Cursor movement
 - `Ctrl+Left/Right` - Word-by-word cursor movement
 - `Ctrl+D` - Duplicate line (script pages)

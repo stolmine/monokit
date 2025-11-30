@@ -17,6 +17,7 @@ pub struct App {
     pub history: Vec<String>,
     pub history_index: Option<usize>,
     pub output: Vec<String>,
+    pub output_scroll: usize,
     pub help_scroll: usize,
     pub help_page: usize,
     pub metro_state: Arc<Mutex<MetroState>>,
@@ -53,6 +54,7 @@ impl App {
             history: Vec::new(),
             history_index: None,
             output: Vec::new(),
+            output_scroll: 0,
             help_scroll: 0,
             help_page: 0,
             metro_state,
@@ -160,6 +162,8 @@ impl App {
         if self.output.len() > 100 {
             self.output.remove(0);
         }
+        // Reset scroll to bottom when new output is added
+        self.output_scroll = 0;
     }
 
     pub fn execute_script(&mut self, script_index: usize) {

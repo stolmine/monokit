@@ -15,7 +15,7 @@ pub use core::scale;
 pub use core::scheduling as delay;
 
 // Re-export from system module
-use system::{metro as metro_cmds, misc, scene as scene_cmds};
+use system::{metro as metro_cmds, misc, preset as preset_cmds, scene as scene_cmds};
 
 // Re-export from synth module
 use synth as synth_params;
@@ -631,6 +631,18 @@ where
         }
         "DELETE" => {
             scene_cmds::handle_delete(&parts, output);
+        }
+        "PSET" => {
+            preset_cmds::handle_pset(&parts, scripts, output);
+        }
+        "PSET.SAVE" => {
+            preset_cmds::handle_pset_save(&parts, scripts, output);
+        }
+        "PSET.DEL" => {
+            preset_cmds::handle_pset_del(&parts, output);
+        }
+        "PSETS" => {
+            preset_cmds::handle_psets(output);
         }
         "THEME" => {
             misc::handle_theme(&parts, theme, output);

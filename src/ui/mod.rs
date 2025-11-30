@@ -305,6 +305,13 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     KeyCode::Right if !is_help && app.current_page != Page::Pattern => {
                         app.move_cursor_right();
                     }
+                    // REPL output scrolling with Ctrl+Up/Down
+                    KeyCode::Up if !is_help && app.current_page == Page::Live && key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        app.output_scroll = app.output_scroll.saturating_add(1);
+                    }
+                    KeyCode::Down if !is_help && app.current_page == Page::Live && key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        app.output_scroll = app.output_scroll.saturating_sub(1);
+                    }
                     KeyCode::Up if !is_help && app.current_page != Page::Pattern => {
                         app.history_prev();
                     }

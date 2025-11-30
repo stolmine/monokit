@@ -127,6 +127,11 @@ pub fn handle_n1_max<F>(
         }
     };
 
+    if value > 0 && value < counters.min[0] {
+        output(format!("ERROR: MAX ({}) MUST BE >= MIN ({})", value, counters.min[0]));
+        return;
+    }
+
     counters.max[0] = value;
     if value == 0 {
         output("N1.MAX DISABLED (NO WRAP)".to_string());
@@ -163,6 +168,11 @@ pub fn handle_n2_max<F>(
             }
         }
     };
+
+    if value > 0 && value < counters.min[1] {
+        output(format!("ERROR: MAX ({}) MUST BE >= MIN ({})", value, counters.min[1]));
+        return;
+    }
 
     counters.max[1] = value;
     if value == 0 {
@@ -201,6 +211,11 @@ pub fn handle_n3_max<F>(
         }
     };
 
+    if value > 0 && value < counters.min[2] {
+        output(format!("ERROR: MAX ({}) MUST BE >= MIN ({})", value, counters.min[2]));
+        return;
+    }
+
     counters.max[2] = value;
     if value == 0 {
         output("N3.MAX DISABLED (NO WRAP)".to_string());
@@ -237,6 +252,11 @@ pub fn handle_n4_max<F>(
             }
         }
     };
+
+    if value > 0 && value < counters.min[3] {
+        output(format!("ERROR: MAX ({}) MUST BE >= MIN ({})", value, counters.min[3]));
+        return;
+    }
 
     counters.max[3] = value;
     if value == 0 {

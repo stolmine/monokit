@@ -29,6 +29,10 @@ where
             .context("Failed to parse push value")?
     };
     let pattern = &mut patterns.patterns[patterns.working];
+    if pattern.length == 0 {
+        output("ERROR: CANNOT OPERATE ON EMPTY PATTERN".to_string());
+        return Ok(());
+    }
     for i in 0..pattern.length - 1 {
         pattern.data[i] = pattern.data[i + 1];
     }
@@ -201,6 +205,10 @@ pub fn handle_pattern_shuf<F>(
     F: FnMut(String),
 {
     let pattern = &mut patterns.patterns[patterns.working];
+    if pattern.length == 0 {
+        output("ERROR: CANNOT OPERATE ON EMPTY PATTERN".to_string());
+        return;
+    }
     let len = pattern.length;
     let mut rng = rand::thread_rng();
     pattern.data[..len].shuffle(&mut rng);

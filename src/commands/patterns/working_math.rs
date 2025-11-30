@@ -201,6 +201,10 @@ where
             .parse()
             .context("Failed to parse new max value")?
     };
+    if new_min == new_max {
+        output("ERROR: SCALE MIN AND MAX CANNOT BE EQUAL".to_string());
+        return Ok(());
+    }
     let pattern = &mut patterns.patterns[patterns.working];
     if pattern.length == 0 {
         output("ERROR: PATTERN LENGTH IS ZERO".to_string());

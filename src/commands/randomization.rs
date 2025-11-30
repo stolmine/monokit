@@ -180,7 +180,7 @@ pub fn handle_rnd_p<F>(
 where
     F: FnMut(String),
 {
-    let (min, max) = if parts.len() >= 3 {
+    let (mut min, mut max) = if parts.len() >= 3 {
         let min_val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
         } else {
@@ -199,6 +199,9 @@ where
     } else {
         (0, 127)
     };
+    if min > max {
+        std::mem::swap(&mut min, &mut max);
+    }
     let pattern = &mut patterns.patterns[patterns.working];
     let mut rng = rand::thread_rng();
     for i in 0..pattern.length {
@@ -236,7 +239,7 @@ where
         output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
         return Ok(());
     }
-    let (min, max) = if parts.len() >= 4 {
+    let (mut min, mut max) = if parts.len() >= 4 {
         let min_val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
         } else {
@@ -255,6 +258,9 @@ where
     } else {
         (0, 127)
     };
+    if min > max {
+        std::mem::swap(&mut min, &mut max);
+    }
     let pattern = &mut patterns.patterns[pat];
     let mut rng = rand::thread_rng();
     for i in 0..pattern.length {
@@ -277,7 +283,7 @@ pub fn handle_rnd_pall<F>(
 where
     F: FnMut(String),
 {
-    let (min, max) = if parts.len() >= 3 {
+    let (mut min, mut max) = if parts.len() >= 3 {
         let min_val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
         } else {
@@ -296,6 +302,9 @@ where
     } else {
         (0, 127)
     };
+    if min > max {
+        std::mem::swap(&mut min, &mut max);
+    }
     let mut rng = rand::thread_rng();
     for pat_idx in 0..6 {
         let pattern = &mut patterns.patterns[pat_idx];

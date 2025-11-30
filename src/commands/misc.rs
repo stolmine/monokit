@@ -40,7 +40,8 @@ where
         .parse()
         .context("Failed to parse volume value as float")?;
     if !(0.0..=1.0).contains(&value) {
-        output("WARNING: VOLUME SHOULD BE BETWEEN 0.0 AND 1.0".to_string());
+        output("ERROR: VOLUME MUST BE BETWEEN 0.0 AND 1.0".to_string());
+        return Ok(());
     }
     metro_tx
         .send(MetroCommand::SendVolume(value))

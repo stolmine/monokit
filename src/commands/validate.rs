@@ -1,5 +1,7 @@
 use anyhow::Result;
 
+use super::resolve_alias;
+
 pub fn validate_script_command(cmd: &str) -> Result<()> {
     let trimmed = cmd.trim();
     if trimmed.is_empty() {
@@ -37,7 +39,8 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         return Ok(());
     }
 
-    let command = parts[0].to_uppercase();
+    // Resolve canonical names to aliases before validation
+    let command = resolve_alias(&parts[0].to_uppercase());
     let argc = parts.len() - 1;
 
     match command.as_str() {
@@ -191,7 +194,8 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "EQ" | "NE" | "GT" | "LT" | "GTE" | "LTE" => {
+        // Note: EQ comparison is handled in eval, not here. "EQ" command is for EQ mid-Q parameter
+        "NE" | "GT" | "LT" | "GTE" | "LTE" => {
             if argc < 2 {
                 return Err(anyhow::anyhow!("{} requires at least 2 arguments", command));
             }
@@ -323,7 +327,34 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "PF" | "MF" | "PW" | "MW" | "DC" | "TK" | "MB" | "FM" | "MX" | "FA" | "DA" | "DM" | "MP" | "MD" | "MT" | "MA" | "MM" | "ME" | "AD" | "PD" | "FD" | "DD" | "PA" | "FB" | "FBA" | "FBD" | "RF" | "RD" | "RM" | "RK" | "DT" | "DF" | "DLP" | "DW" | "DS" | "RV" | "RP" | "RH" | "RW" | "FC" | "FQ" | "FT" | "FE" | "FED" | "FK" | "MF.F" | "BR.ACT" | "BR.LEN" | "BR.REV" | "BR.WIN" | "BR.MIX" | "PS.MODE" | "PS.SEMI" | "PS.GRAIN" | "PS.MIX" | "PS.TARG" => {
+        // Oscillator, FM, Discontinuity
+        "PF" | "MF" | "PW" | "MW" | "DC" | "DM" | "FB" | "FBA" | "FBD" |
+        // Modulation bus & routing
+        "TK" | "MB" | "FM" | "MX" | "MM" | "ME" | "MP" | "MD" | "MT" | "MA" | "MF.F" |
+        // Envelopes (amounts and decays)
+        "AD" | "PD" | "FD" | "DD" | "PA" | "FA" | "DA" |
+        // Filter
+        "FC" | "FQ" | "FT" | "FE" | "FED" | "FK" |
+        // Resonator
+        "RF" | "RD" | "RM" | "RK" |
+        // Delay
+        "DT" | "DF" | "DLP" | "DW" | "DS" |
+        // Reverb
+        "RV" | "RP" | "RH" | "RW" |
+        // Lo-Fi
+        "LB" | "LS" | "LM" |
+        // Ring Mod
+        "RGF" | "RGW" | "RGM" |
+        // Compressor
+        "CT" | "CR" | "CA" | "CL" | "CM" |
+        // EQ (EL=low, EM=mid, EH=high, EF=freq, EQ=Q bandwidth)
+        "EL" | "EM" | "EH" | "EF" | "EQ" |
+        // Pan
+        "PAN" |
+        // Beat Repeat
+        "BR.ACT" | "BR.LEN" | "BR.REV" | "BR.WIN" | "BR.MIX" |
+        // Pitch Shift
+        "PS.MODE" | "PS.SEMI" | "PS.GRAIN" | "PS.MIX" | "PS.TARG" => {
             if argc < 1 {
                 return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
             }

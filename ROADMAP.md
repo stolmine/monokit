@@ -56,6 +56,39 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ---
 
+## Priority: Infrastructure Refactoring
+
+### Command System DRY Refactor [High] - BLOCKING
+Consolidate command definitions into a single source of truth to eliminate synchronization bugs.
+
+**Current Problem:**
+- Command knowledge duplicated across 3 files: `aliases.rs`, `mod.rs`, `validate.rs`
+- Adding new commands requires updating multiple locations
+- Validation fell out of sync, causing canonical names (MBUS.FM, POSC.FREQ, etc.) to fail silently in scripts
+
+**Solution:**
+- [ ] Create `CommandDef` struct with aliases, arg counts, handler reference
+- [ ] Single `COMMANDS` registry as source of truth
+- [ ] Generate `resolve_alias()` from registry
+- [ ] Generate validation logic from registry
+- [ ] Dispatcher looks up handlers from registry
+- [ ] Add new command = 1 place only
+
+**Benefits:**
+- Eliminates class of sync bugs permanently
+- Simplifies adding new commands
+- Self-documenting command metadata
+- Enables future features (help generation, command introspection)
+
+**Files Affected:**
+- `src/commands/aliases.rs` → merge into registry
+- `src/commands/validate.rs` → derive from registry
+- `src/commands/mod.rs` → lookup from registry
+
+**Reference:** See `DRY_REFACTOR_ANALYSIS.md` for detailed implementation plan.
+
+---
+
 ## Phase 1: Core Utilities [COMPLETE]
 
 **Focus:** Quick wins that add immediate value with minimal dependencies

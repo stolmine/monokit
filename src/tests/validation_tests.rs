@@ -73,3 +73,34 @@ fn test_validate_comparison_ops_with_expressions() {
     assert!(validate_script_command("EQ ADD 1 2 3").is_ok());
     assert!(validate_script_command("GT MUL A 2 10").is_ok());
 }
+
+#[test]
+fn test_validate_canonical_names() {
+    // All canonical forms should be resolved to aliases and validated
+    assert!(validate_script_command("POSC.FREQ 440").is_ok());
+    assert!(validate_script_command("MOSC.FREQ 880").is_ok());
+    assert!(validate_script_command("MBUS.FM 8192").is_ok());
+    assert!(validate_script_command("MBUS.AMT 1000").is_ok());
+    assert!(validate_script_command("MBUS.TRK 500").is_ok());
+    assert!(validate_script_command("FILT.CUT 2000").is_ok());
+    assert!(validate_script_command("FILT.RES 8000").is_ok());
+    assert!(validate_script_command("DLY.TIME 500").is_ok());
+    assert!(validate_script_command("DLY.WET 8192").is_ok());
+    assert!(validate_script_command("REV.WET 4096").is_ok());
+    assert!(validate_script_command("REV.DEC 12000").is_ok());
+    assert!(validate_script_command("DISC.AMT 5000").is_ok());
+    assert!(validate_script_command("DISC.MODE 2").is_ok());
+    assert!(validate_script_command("LOFI.BIT 8").is_ok());
+    assert!(validate_script_command("RING.FRQ 440").is_ok());
+    assert!(validate_script_command("COMP.THR 8000").is_ok());
+    assert!(validate_script_command("EQ.LOW 3").is_ok());
+    assert!(validate_script_command("EQ 2").is_ok()); // EQ (mid Q bandwidth) as command, not comparison
+    assert!(validate_script_command("RESO.FRQ 200").is_ok());
+    assert!(validate_script_command("OUT.VOL 1").is_ok());
+    assert!(validate_script_command("OUT.PAN 0").is_ok());
+    assert!(validate_script_command("AENV.DEC 500").is_ok());
+    assert!(validate_script_command("PENV.AMT 4").is_ok());
+    assert!(validate_script_command("FMEV.AMT 2").is_ok());
+    assert!(validate_script_command("ROUT.MP 1").is_ok());
+    assert!(validate_script_command("ROUT.MF 1").is_ok());
+}

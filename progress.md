@@ -1,0 +1,155 @@
+# Monokit Development Progress
+
+## November 2025
+
+### SEQ Mini Notation System - COMPLETE (Phase 1)
+**Date:** November 2025
+**Status:** Phase 1 Complete
+
+**Implemented:**
+- `SEQ "pattern"` - Inline sequence notation operator
+- Token support:
+  - `x` = trigger (returns 1)
+  - `_` or `.` = rest (returns 0)
+  - Numbers: `100`, `-12`, `0`
+  - Note names: `C3`, `E3`, `F#4`, `Bb2` (returns semitones relative to C3)
+  - Accidentals: sharps (#) and flats (b)
+- Per-script, per-pattern independent state tracking
+- Works in all expression contexts
+- Integration with N operator for Hz conversion
+- Integration with Q operator for scale quantization
+
+**Usage Examples:**
+```
+IF SEQ "x _ x _": TR           # Trigger on beats 1 and 3
+PF N SEQ "C3 E3 G3 C4"         # Arpeggiate C major
+A SEQ "0 1 2 3"                # Store in variable
+MUL SEQ "1 2 3" 100            # Use in math expression
+```
+
+**Future (Phase 2):**
+- Subdivision brackets `[a b]`
+- Alternation `<a b>`
+- Random inclusion `?`
+- Repeat `*n`
+
+---
+
+### PSET Preset System - COMPLETE
+**Date:** November 2025
+**Status:** Complete
+
+**Implemented:**
+- `PSET <script> <name>` - Load preset into script slot
+- `PSET.SAVE <script> <name>` - Save script as user preset
+- `PSET.DEL <name>` - Delete user preset
+- `PSETS` - List all available presets with [F] factory and [U] user markers
+- 22 factory presets organized by category
+- User preset storage in `~/.monokit/presets/`
+
+**Factory Presets (22 total):**
+- **Drums (10):** 808-kick, punch-kick, sub-kick, basic-snare, snap-snare, hat-closed, hat-open, fm-hat, clap, rim
+- **Bass (3):** sub-bass, saw-bass, fm-bass
+- **Lead (3):** saw-lead, fm-lead, pluck-lead
+- **Percussion (3):** metal-hit, conga, tom
+- **FX (3):** noise, zap, rise
+
+**Usage:**
+```
+PSET 1 808-kick              # Load kick into script 1
+PSET.SAVE 2 my-bass          # Save script 2 as preset
+PSET.DEL old-sound           # Delete user preset
+PSETS                        # List all presets
+```
+
+---
+
+### DRY Refactoring Program - COMPLETE
+**Date:** November 2025
+**Status:** All Phases Complete
+
+**Total Line Reduction: ~5,942 lines (28% of original codebase)**
+
+**Phase 0: Codebase Reorganization** - COMPLETE
+- Created `core/`, `system/`, `synth/` directory structure
+- Moved command handlers to logical domains
+- Split effects into modular files
+
+**Phase 1: Envelope Handler DRY** - COMPLETE
+- Created macro system for envelope parameters
+- Reduced envelope code from ~1,141 lines → 223 lines
+- **Line reduction: 918 lines (81% decrease)**
+
+**Phase 2: Pattern Operation DRY** - COMPLETE
+- Created unified pattern operation system
+- Reduced wrapper code from 2,023 → 450 lines
+- **Line reduction: 1,573 lines (78% decrease)**
+
+**Phase 3: Synth Parameter DRY** - COMPLETE
+- Consolidated 70+ parameter handlers
+- **Line reduction: ~2,325 lines**
+
+**Phase 4: Variables, Counters, Test Fixtures** - COMPLETE
+- Phase 4A: Variable/Counter macros - 489 lines
+- Phase 4B: Expression helpers - Infrastructure
+- Phase 4C: Test fixture optimization - 637 lines
+- **Total Phase 4: ~1,126 lines**
+
+**Results:**
+- All 411 tests pass
+- Easier to add new commands
+- Significantly reduced maintenance burden
+- Clear, logical file organization
+
+---
+
+## Previous Features
+
+### Envelope System Simplification - COMPLETE
+**Date:** November 2025
+- Removed gate-based envelope triggering
+- Simplified to single percussive envelope type per parameter
+- Each envelope has: decay time, attack time, curve, and amount
+- Fixed pitch envelope parameter routing
+
+### Scale Quantization System - COMPLETE
+- `Q <note>` - Quantize to current scale
+- `Q.ROOT <0-11>` - Set scale root
+- `Q.SCALE <0-11>` - Set scale type (12 presets)
+- `Q.BIT <binary>` - Custom scale mask for microtonal systems
+
+### Counter System - COMPLETE
+- `N1`, `N2`, `N3`, `N4` - Auto-increment counters
+- `N1.MIN <n>`, `N1.MAX <n>`, `N1.RST` - Counter control
+
+### Delayed Execution - COMPLETE
+- `DEL <ms>: <cmd>` - Execute after delay
+- `DEL.X <count> <ms>: <cmd>` - Queue N times
+- `DEL.R <count> <ms>: <cmd>` - Execute then repeat
+- `DEL.CLR` - Clear pending commands
+
+### Parameter Slewing - COMPLETE
+- `SLEW.ALL <ms>` - Global slew time
+- `SLEW <param> <ms>` - Per-parameter slew
+
+### Buffer Effects - COMPLETE
+- Beat Repeat with buffer freeze
+- Pitch Shift with normal and granular modes
+- Effect routing: BYPASS/INSERT/SEND modes
+- Tail behaviors: CUT/RING/FREEZE
+
+---
+
+## Active Development
+
+No features currently in active development.
+
+---
+
+## Upcoming (Roadmap)
+
+See ROADMAP.md for planned features organized by phase:
+- Phase 4: Modulation System (LFO, Aux Envelopes)
+- Phase 5: UI/Feedback (Visual enhancements, activity indicators)
+- Phase 6: Advanced DSP (Additional voice types, sample playback)
+- Phase 7: Distribution (Unified installer, packaging)

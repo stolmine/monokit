@@ -482,8 +482,50 @@ All numeric arguments accept nested expressions, including:
 - Math operations: `PF ADD A 100`, `DC MUL X 2`
 - Pattern operations: `PF PN.NEXT 0`, `DC SUB PN.HERE 0 PN.HERE 1`
 - Random operations: `PF RND 1000`, `A RRND 0 127`
+- Sequence operations: `PF N SEQ "C3 E3 G3"`, `IF SEQ "x _": TR`
 - Variables: `PF A`, `DC X`, `MF J`
 - Nested combinations: `PF ADD PN.NEXT 0 RND 100`
+
+#### Inline Sequences (SEQ)
+- `SEQ "<pattern>"` - Cycle through values on each evaluation
+  - `x` = trigger (returns 1)
+  - `_` or `.` = rest (returns 0)
+  - Numbers: `100`, `-12`, `0`
+  - Note names: `C3`, `E3`, `F#4`, `Bb2` (returns semitones relative to C3)
+- State persists per-script and per-pattern (independent counters)
+- Use with N operator for Hz: `PF N SEQ "C3 E3 G3"`
+- Use with Q for quantization: `PF N Q SEQ "0 3 5 7"`
+
+Examples:
+```
+IF SEQ "x _ x _": TR           # Trigger on beats 1 and 3
+PF N SEQ "C3 E3 G3 C4"         # Arpeggiate C major
+A SEQ "0 1 2 3"                # Store in variable
+MUL SEQ "1 2 3" 100            # Use in math expression
+```
+
+#### Preset System (PSET)
+- `PSET <script> <name>` - Load preset into script 1-8
+- `PSET.SAVE <script> <name>` - Save script as user preset
+- `PSET.DEL <name>` - Delete user preset
+- `PSETS` - List all presets ([F] factory, [U] user)
+
+Factory Presets (22 total):
+- **Drums (10):** 808-kick, punch-kick, sub-kick, basic-snare, snap-snare, hat-closed, hat-open, fm-hat, clap, rim
+- **Bass (3):** sub-bass, saw-bass, fm-bass
+- **Lead (3):** saw-lead, fm-lead, pluck-lead
+- **Percussion (3):** metal-hit, conga, tom
+- **FX (3):** noise, zap, rise
+
+User presets stored in `~/.monokit/presets/`
+
+Examples:
+```
+PSET 1 808-kick              # Load kick preset into script 1
+PSET.SAVE 2 my-bass          # Save script 2 as user preset
+PSET.DEL old-sound           # Delete user preset
+PSETS                        # List all available presets
+```
 
 #### Control Flow (PRE separator)
 - `IF <expr>: <cmd>` - Execute cmd if expr != 0 (truthy). Example: `IF PN.HERE 0: TR`

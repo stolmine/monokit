@@ -18,6 +18,6 @@ mod debug_level;
 mod buffer_effects_tests;
 mod slew_tests;
 mod envelope_tests;
-mod randomization_tests;
+mod randomization;
 mod fx_randomization_tests;
 mod scale_tests;

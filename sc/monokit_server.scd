@@ -92,7 +92,10 @@ s.waitForBoot {
             slew_rw = -1, slew_volume = -1, slew_pn = -1, slew_lb = -1,
             slew_ls = -1, slew_lm = -1, slew_rgf = -1, slew_rgm = -1,
             slew_ct = -1, slew_cm = -1, slew_el = -1, slew_em = -1,
-            slew_eh = -1, slew_ef = -1;
+            slew_eh = -1, slew_ef = -1,
+            env_atk = 1, env_crv = -4,
+            aenv_atk = -1, penv_atk = -1, fmev_atk = -1, denv_atk = -1, fbev_atk = -1, flev_atk = -1,
+            aenv_crv = -100, penv_crv = -100, fmev_crv = -100, denv_crv = -100, fbev_crv = -100, flev_crv = -100;
 
         // All var declarations at top
         var trig, pitchEnv, ampEnv, fmEnv, dcEnv, fbEnv, filterEnv;
@@ -121,6 +124,7 @@ s.waitForBoot {
         var elSmooth, emSmooth, ehSmooth, efSmooth;
         // Envelope amount controls - captured early to ensure consistent reading
         var paCtl, faCtl, daCtl, fbaCtl;
+        var aAtk, aCrv, pAtk, pCrv, fmAtk, fmCrv, dAtk, dCrv, fbAtk, fbCrv, flAtk, flCrv;
 
         // Capture envelope amounts - use Lag.kr(0) to force proper signal evaluation
         paCtl = Lag.kr(pa, 0);
@@ -160,17 +164,33 @@ s.waitForBoot {
         ehSmooth = Lag.kr(eh, Select.kr(slew_eh >= 0, [slew_time, slew_eh]));
         efSmooth = Lag.kr(ef, Select.kr(slew_ef >= 0, [slew_time, slew_ef]));
 
+        // Resolve per-envelope attack times (ms -> seconds, with global fallback)
+        aAtk = Select.kr(aenv_atk >= 0, [env_atk, aenv_atk]) / 1000;
+        pAtk = Select.kr(penv_atk >= 0, [env_atk, penv_atk]) / 1000;
+        fmAtk = Select.kr(fmev_atk >= 0, [env_atk, fmev_atk]) / 1000;
+        dAtk = Select.kr(denv_atk >= 0, [env_atk, denv_atk]) / 1000;
+        fbAtk = Select.kr(fbev_atk >= 0, [env_atk, fbev_atk]) / 1000;
+        flAtk = Select.kr(flev_atk >= 0, [env_atk, flev_atk]) / 1000;
+
+        // Resolve per-envelope curves (with global fallback)
+        aCrv = Select.kr(aenv_crv > -100, [env_crv, aenv_crv]);
+        pCrv = Select.kr(penv_crv > -100, [env_crv, penv_crv]);
+        fmCrv = Select.kr(fmev_crv > -100, [env_crv, fmev_crv]);
+        dCrv = Select.kr(denv_crv > -100, [env_crv, denv_crv]);
+        fbCrv = Select.kr(fbev_crv > -100, [env_crv, fbev_crv]);
+        flCrv = Select.kr(flev_crv > -100, [env_crv, flev_crv]);
+
         // Envelope model: output = base + (envelope * amount)
         // Exception: ampEnv is multiplicative (0→1 gating)
 
         // Trigger and envelopes
         trig = Trig1.kr(gate, 0.001);
-        pitchEnv = EnvGen.kr(Env.perc(0.001, pd / 1000, 1, -4), trig);
-        ampEnv = EnvGen.kr(Env.perc(0.001, ad / 1000, 1, -4), trig);
-        fmEnv = EnvGen.kr(Env.perc(0.001, fd / 1000, 1, -4), trig);
-        dcEnv = EnvGen.kr(Env.perc(0.001, dd / 1000, 1, -4), trig);
-        fbEnv = EnvGen.kr(Env.perc(0.001, fbd / 1000, 1, -4), trig);
-        filterEnv = EnvGen.kr(Env.perc(0.001, fed / 1000, 1, -4), trig);
+        pitchEnv = EnvGen.kr(Env.perc(pAtk, pd / 1000, 1, pCrv), trig);
+        ampEnv = EnvGen.kr(Env.perc(aAtk, ad / 1000, 1, aCrv), trig);
+        fmEnv = EnvGen.kr(Env.perc(fmAtk, fd / 1000, 1, fmCrv), trig);
+        dcEnv = EnvGen.kr(Env.perc(dAtk, dd / 1000, 1, dCrv), trig);
+        fbEnv = EnvGen.kr(Env.perc(fbAtk, fbd / 1000, 1, fbCrv), trig);
+        filterEnv = EnvGen.kr(Env.perc(flAtk, fed / 1000, 1, flCrv), trig);
 
         // Scaled parameters
         modBus = mb / 16383;

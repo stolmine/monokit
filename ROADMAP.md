@@ -9,41 +9,61 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ---
 
-## Recent Bug Fixes (November 2025)
+## Recent Updates (November 2025)
 
-### Pitch Envelope Parameter Fix
-**Problem:** Pitch envelope parameters (PA, PD, PENV.ATK, etc.) were not affecting audio output.
+### Envelope System Simplification
+**Changes:** Envelope system refactored to use simple `Env.perc` with controllable attack and curve parameters.
 
-**Root Cause:** SuperCollider UGen graph optimization was causing the `pa` parameter to evaluate differently at different points in the SynthDef. The optimizer created multiple distinct control rate signals from the same named parameter, leading to inconsistent values when used in different calculations.
+**What Changed:**
+- Removed gate-based envelope triggering (no gate parameter, no mode switching)
+- Simplified to single percussive envelope type per parameter
+- Each envelope has: decay time, attack time, curve, and amount
+- Fixed pitch envelope parameter routing with `Lag.kr` control capture
 
-**Solution:**
-- Added envelope amount control variables: `paCtl`, `faCtl`, `daCtl`, `fbaCtl`
-- Captured parameters early using `Lag.kr(param, 0)` to force consistent signal evaluation
-- Updated all envelope amount calculations to use captured controls instead of raw parameters
-- This prevents the optimizer from creating multiple readings of the same control
+**Removed Commands:**
+- `ENV.ATK`, `ENV.DEC`, `ENV.CRV`, `ENV.MODE` - Global envelope controls
+- `GATE` - Global gate duration
+- `*.MODE`, `*.GATE` - Per-envelope mode and gate overrides (AENV.MODE, PENV.GATE, etc.)
+
+**Added Commands:**
+- `FBEV.AMT` - Alias for FBA (feedback envelope amount)
+
+**Current Envelope Commands:**
+
+| Envelope | Decay | Amount | Attack | Curve |
+|----------|-------|--------|--------|-------|
+| Amp | AD | - | AENV.ATK | AENV.CRV |
+| Pitch | PD | PA | PENV.ATK | PENV.CRV |
+| FM | FD | FA | FMEV.ATK | FMEV.CRV |
+| Disc | DD | DA | DENV.ATK | DENV.CRV |
+| Feedback | FBD | FBA/FBEV.AMT | FBEV.ATK | FBEV.CRV |
+| Filter | FED | FE | FLEV.ATK | FLEV.CRV |
+
+**Technical Details:**
+- Exponential pitch envelope scaling: `pow(2, pitchEnv * pa)` for proper octave behavior
+- PA parameter represents octaves (PA=4 = 4 octaves of pitch sweep)
+- Control capture using `Lag.kr(param, 0)` prevents UGen graph optimization issues
+- All envelopes trigger on each `TR` command
+- Simple percussive envelopes (Env.perc) for predictable behavior
 
 **Code Changes (sc/monokit_server.scd):**
 ```supercollider
-// Variable declarations (lines 122-129)
+// Control captures prevent optimizer issues
 var paCtl, faCtl, daCtl, fbaCtl;
 
-paCtl = Lag.kr(pa, 0);    // Pitch envelope amount
-faCtl = Lag.kr(fa, 0);    // FM envelope amount
-daCtl = Lag.kr(da, 0);    // Discontinuity envelope amount
-fbaCtl = Lag.kr(fba, 0);  // Feedback envelope amount
+paCtl = Lag.kr(pa, 0);
+faCtl = Lag.kr(fa, 0);
+daCtl = Lag.kr(da, 0);
+fbaCtl = Lag.kr(fba, 0);
 
-// Usage points now use captured controls (lines 181-212)
-fbAmount = (fbSmooth / 16383) + (fbEnv * fbaCtl / 16383);
-primaryFreq = pfSmooth * pow(2, pitchEnv * paCtl) * (1 + (modBus * mp * 4));
-fmAmount = (fmIndex + (fmEnv * faCtl / 16383)) * 1000;
-discontinuity = dcAmount + (dcEnv * daCtl / 16383);
+// Envelope generation using Env.perc
+ampEnv = EnvGen.kr(Env.perc(aenvAtk/1000, ad/1000, 1, aenvCrv), gate);
+pitchEnv = EnvGen.kr(Env.perc(penvAtk/1000, pd/1000, 1, penvCrv), gate);
+// ... etc for all envelopes
+
+// Additive application with exponential pitch scaling
+primaryFreq = pfSmooth * pow(2, pitchEnv * paCtl);
 ```
-
-**Additional Improvements:**
-- Changed pitch envelope from linear `(1 + pitchEnv * pa)` to exponential `pow(2, pitchEnv * pa)` for proper octave scaling
-- PA parameter now correctly represents octaves (PA=4 gives 4 octaves instead of ~2.3)
-- Synced envelope parameter naming between CLI and SuperCollider (fmev_*, fbev_*, flev_*)
-- Added missing `/monokit/gate/env` OSC handler for per-envelope gate control
 
 ---
 
@@ -78,9 +98,10 @@ discontinuity = dcAmount + (dcEnv * daCtl / 16383);
 ### Modulation & Routing
 - [x] ModBus routing to filter cutoff (MF_F parameter)
 - [x] Envelope system with PREFIX.SUFFIX naming (AENV, PENV, FMEV, DENV, FBEV, FLEV)
-- [x] Per-envelope control: ATK, DEC, CRV, MODE, GATE for each envelope type
-- [x] Global envelope controls: ENV.ATK, ENV.DEC, ENV.CRV, ENV.MODE, GATE
-- [x] Envelope amounts: PA (pitch), FA (FM), DA (discontinuity)
+- [x] Per-envelope control: ATK, CRV for each envelope type
+- [x] Envelope decay times: AD, PD, FD, DD, FBD, FED
+- [x] Envelope amounts: PA (pitch, octaves), FA (FM), DA (discontinuity), FBA (feedback), FE (filter)
+- [x] Simple percussive envelopes (Env.perc) triggered on TR command
 - [x] Tracking system: TK (key tracking), MB (mod bus), MP/MD/MT/MA (routing switches)
 - [x] Global parameter slew: SLEW.ALL with SC-side Lag.kr smoothing
 - [x] Per-parameter slew: SLEW <param> <ms> for individual control
@@ -141,12 +162,13 @@ Consolidate command definitions into a single source of truth to eliminate synch
 - [ ] `A.LERP <target> <ms>` - Time-based interpolation (runs in background, updates each metro tick)
 
 ### Envelope Shaping [Medium] - COMPLETE
-- [x] `ENV.ATK <ms>` - Global attack time
-- [x] `ENV.DEC <ms>` - Global decay time
-- [x] `ENV.CRV <-8 to 8>` - Global envelope curve control (log/linear/exp)
-- [x] `ENV.MODE <0-2>` - Global envelope modes (0=AD, 1=ASR, 2=ADSR)
-- [x] `GATE <ms>` - Global gate duration
-- [x] Per-envelope overrides for all 6 envelope types (AENV, PENV, FMEV, DENV, FBEV, FLEV)
+- [x] Per-envelope attack time (*.ATK) for all 6 envelope types
+- [x] Per-envelope curve control (*.CRV, -8 to 8, log/linear/exp)
+- [x] Decay time controls: AD, PD, FD, DD, FBD, FED
+- [x] Envelope amounts: PA, FA, DA, FBA (FBEV.AMT), FE
+- [x] Simple percussive envelopes (Env.perc) with controllable attack and curve
+- [x] Exponential pitch envelope scaling for proper octave behavior
+- [x] Removed: Global envelope controls, gate parameters, mode switching
 
 ### MAP Operator [Low] - COMPLETE
 - [x] `MAP <val> <in_min> <in_max> <out_min> <out_max>` - Range mapping with clamping

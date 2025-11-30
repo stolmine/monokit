@@ -16,13 +16,12 @@ pub use discontinuity::{handle_dc, handle_dm, handle_dd};
 pub use modulation::{handle_tk, handle_mb, handle_mp, handle_md, handle_mt, handle_ma, handle_fm, handle_mx, handle_mm, handle_me};
 pub use envelopes::{
     handle_ad, handle_pd, handle_fd, handle_pa, handle_fa, handle_da,
-    handle_env_atk, handle_env_dec, handle_env_crv, handle_env_mode,
-    handle_aenv_atk, handle_aenv_crv, handle_aenv_mode,
-    handle_penv_atk, handle_penv_crv, handle_penv_mode,
-    handle_fmev_atk, handle_fmev_crv, handle_fmev_mode,
-    handle_denv_atk, handle_denv_crv, handle_denv_mode,
-    handle_fbev_atk, handle_fbev_crv, handle_fbev_mode,
-    handle_flev_atk, handle_flev_crv, handle_flev_mode,
+    handle_aenv_atk, handle_aenv_crv,
+    handle_penv_atk, handle_penv_crv,
+    handle_fmev_atk, handle_fmev_crv,
+    handle_denv_atk, handle_denv_crv,
+    handle_fbev_atk, handle_fbev_crv,
+    handle_flev_atk, handle_flev_crv,
 };
 pub use filter::{handle_fc, handle_fq, handle_ft, handle_fe, handle_fed, handle_fk, handle_mf_f};
 pub use effects::{handle_lb, handle_ls, handle_lm, handle_rgf, handle_rgw, handle_rgm, handle_ct, handle_cr, handle_ca, handle_cl, handle_cm, handle_pan};

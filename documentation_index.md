@@ -1,22 +1,44 @@
 # Monokit Documentation Index
 
-## Recent Bug Fixes (November 2025)
+## Recent Updates (November 2025)
 
-### Pitch Envelope (PENV) Parameter Fix
-**Problem:** Pitch envelope parameters (PA, PD, PENV.ATK, etc.) were not affecting audio output.
+### Envelope System Simplification
+**Changes:** Envelope system refactored to use simple `Env.perc` with controllable attack and curve parameters.
 
-**Root Cause:** SuperCollider UGen graph optimization caused the `pa` parameter to evaluate differently at different points in the SynthDef, creating multiple distinct control rate signals from the same named parameter.
+**What Changed:**
+- Removed gate-based envelope triggering (no gate parameter, no mode switching)
+- Simplified to single percussive envelope type per parameter
+- Each envelope has: decay time, attack time, curve, and amount
+- Fixed pitch envelope parameter routing with `Lag.kr` control capture
 
-**Solution:** Added early capture variables (`paCtl`, `faCtl`, `daCtl`, `fbaCtl`) using `Lag.kr(param, 0)` to force consistent signal evaluation throughout the graph. All envelope amount calculations now use captured control values.
+**Removed Commands:**
+- `ENV.ATK`, `ENV.DEC`, `ENV.CRV`, `ENV.MODE` - Global envelope controls
+- `GATE` - Global gate duration
+- `*.MODE`, `*.GATE` - Per-envelope mode and gate overrides (AENV.MODE, PENV.GATE, etc.)
 
-**Additional Improvements:**
+**Added Commands:**
+- `FBEV.AMT` - Alias for FBA (feedback envelope amount)
+
+**Current Envelope Commands:**
+
+| Envelope | Decay | Amount | Attack | Curve |
+|----------|-------|--------|--------|-------|
+| Amp | AD | - | AENV.ATK | AENV.CRV |
+| Pitch | PD | PA | PENV.ATK | PENV.CRV |
+| FM | FD | FA | FMEV.ATK | FMEV.CRV |
+| Disc | DD | DA | DENV.ATK | DENV.CRV |
+| Feedback | FBD | FBA/FBEV.AMT | FBEV.ATK | FBEV.CRV |
+| Filter | FED | FE | FLEV.ATK | FLEV.CRV |
+
+**Technical Details:**
 - Exponential pitch envelope scaling: `pow(2, pitchEnv * pa)` for proper octave behavior
-- PA parameter now correctly represents octaves (PA=4 = 4 octaves)
-- Synced envelope parameter naming between CLI and SuperCollider
-- Added missing per-envelope gate OSC handler
+- PA parameter represents octaves (PA=4 = 4 octaves of pitch sweep)
+- Control capture using `Lag.kr(param, 0)` prevents UGen graph optimization issues
+- All envelopes trigger on each `TR` command
 
 **Files Changed:**
-- `sc/monokit_server.scd` - Lines 122-129 (control captures), 181-212 (usage)
+- `sc/monokit_server.scd` - Envelope implementation and control captures
+- `src/commands/synth_params/envelopes/*.rs` - Envelope command handlers
 
 ---
 
@@ -83,22 +105,20 @@ Modular Rust implementation (~18,200 total lines across 86 files):
   - **counters.rs** - Auto-increment counters (N1-N4 with MIN/MAX/RST)
   - **math_ops.rs** - Math operations (ADD, SUB, MUL, DIV, MOD, MAP)
   - **random_ops.rs** - Random operations (RND, RRND, TOSS, EITH, TOG)
-  - **gate.rs** - Global and per-envelope gate timing (GATE, AENV.GATE, etc.)
   - **slew.rs** - Parameter slewing (SLEW.ALL global, SLEW per-parameter)
   - **synth_params/** - Synth parameter handlers (13 modules)
     - **mod.rs** - Module coordinator
     - **oscillator.rs** - Oscillator parameters (PF, PW, MF, MW)
     - **modulation.rs** - Modulation and tracking (TK, MB, MP/MD/MT/MA, FM, MX, MM, ME)
     - **discontinuity.rs** - Discontinuity/waveshaping (DC, DM, DD, FB, FBA, FBD)
-    - **envelopes/** - Envelope module (8 files)
+    - **envelopes/** - Envelope module (6 files)
       - **mod.rs** - Module coordinator
-      - **global.rs** - Global envelope parameters (ENV.ATK, ENV.DEC, ENV.CRV, ENV.MODE)
-      - **amp.rs** - Amplitude envelope (AENV.ATK, AENV.DEC/AD, AENV.CRV, AENV.MODE, AENV.GATE, PA)
-      - **pitch.rs** - Pitch envelope (PENV.ATK, PENV.DEC/PD, PENV.CRV, PENV.MODE, PENV.GATE, PA)
-      - **fm.rs** - FM envelope (FMEV.ATK, FMEV.DEC/FD, FMEV.CRV, FMEV.MODE, FMEV.GATE, FA)
-      - **disc.rs** - Discontinuity envelope (DENV.ATK, DENV.DEC/DD, DENV.CRV, DENV.MODE, DENV.GATE, DA)
-      - **feedback.rs** - Feedback envelope (FBEV.ATK, FBEV.DEC/FBD, FBEV.CRV, FBEV.MODE, FBEV.GATE, FBA)
-      - **filter.rs** - Filter envelope (FLEV.ATK, FLEV.DEC/FED, FLEV.CRV, FLEV.MODE, FLEV.GATE, FE)
+      - **amp.rs** - Amplitude envelope (AD, AENV.ATK, AENV.CRV)
+      - **pitch.rs** - Pitch envelope (PD, PA, PENV.ATK, PENV.CRV)
+      - **fm.rs** - FM envelope (FD, FA, FMEV.ATK, FMEV.CRV)
+      - **disc.rs** - Discontinuity envelope (DD, DA, DENV.ATK, DENV.CRV)
+      - **feedback.rs** - Feedback envelope (FBD, FBA/FBEV.AMT, FBEV.ATK, FBEV.CRV)
+      - **filter.rs** - Filter envelope (FED, FE, FLEV.ATK, FLEV.CRV)
     - **filter.rs** - SVF filter parameters (FC, FQ, FT, FE, FED, FK, MF.F)
     - **resonator.rs** - Comb resonator (RF, RD, RM, RK)
     - **delay.rs** - Stereo delay (DT, DF, DLP, DW, DS, D.MODE, D.TAIL)
@@ -191,13 +211,12 @@ Monokit uses a **PREFIX.SUFFIX** naming convention for canonical command forms:
 - `MBUS` - Modulation Bus (MBUS.AMT → MB, MBUS.TRK → TK, MBUS.FM → FM)
 - `ROUT` - Routing Matrix (ROUT.MP → MP, ROUT.MD → MD, ROUT.MF → MF.F)
 - `OUT` - Output (OUT.VOL → VOL, OUT.PAN → PAN)
-- `ENV` - Global Envelope (ENV.ATK, ENV.DEC, ENV.CRV, ENV.MODE)
-- `AENV` - Amplitude Envelope (AENV.ATK, AENV.DEC → AD, AENV.CRV, AENV.MODE, AENV.GATE)
-- `PENV` - Pitch Envelope (PENV.ATK, PENV.DEC → PD, PENV.CRV, PENV.MODE, PENV.GATE)
-- `FMEV` - FM Envelope (FMEV.ATK, FMEV.DEC → FD, FMEV.CRV, FMEV.MODE, FMEV.GATE)
-- `DENV` - Discontinuity Envelope (DENV.ATK, DENV.DEC → DD, DENV.CRV, DENV.MODE, DENV.GATE)
-- `FBEV` - Feedback Envelope (FBEV.ATK, FBEV.DEC → FBD, FBEV.CRV, FBEV.MODE, FBEV.GATE)
-- `FLEV` - Filter Envelope (FLEV.ATK, FLEV.DEC → FED, FLEV.CRV, FLEV.MODE, FLEV.GATE)
+- `AENV` - Amplitude Envelope (AENV.ATK, AENV.CRV, decay → AD)
+- `PENV` - Pitch Envelope (PENV.ATK, PENV.CRV, decay → PD, amount → PA)
+- `FMEV` - FM Envelope (FMEV.ATK, FMEV.CRV, decay → FD, amount → FA)
+- `DENV` - Discontinuity Envelope (DENV.ATK, DENV.CRV, decay → DD, amount → DA)
+- `FBEV` - Feedback Envelope (FBEV.ATK, FBEV.CRV, FBEV.AMT → FBA, decay → FBD)
+- `FLEV` - Filter Envelope (FLEV.ATK, FLEV.CRV, decay → FED, amount → FE)
 
 **Alias System:**
 - Current short forms (PF, FC, AD, etc.) remain as **aliases** to canonical forms
@@ -415,20 +434,12 @@ Examples:
 - `MM <0-16383>` - Mix modulation amount (depth of mod bus modulation on mix)
 - `ME <0|1>` - Mix modulation enable (route mod bus to mix amount)
 
-**Global Envelope Controls**
-- `ENV.ATK <ms>` - Global attack time (1-10000 ms, affects all envelopes)
-- `ENV.DEC <ms>` - Global decay time (1-10000 ms, affects all envelopes)
-- `ENV.CRV <-8 to 8>` - Global envelope curve (-8=log, 0=linear, 8=exp)
-- `ENV.MODE <0-2>` - Global envelope mode (0=AD, 1=ASR, 2=ADSR)
-- `GATE <ms>` - Global gate duration (0-10000 ms, 0=instant trigger)
-
-**Per-Envelope Overrides**
-All envelopes support individual control with these suffixes:
+**Envelope Controls**
+All envelopes support individual control with these parameters:
 - `.ATK` - Attack time (1-10000 ms)
-- `.DEC` - Decay time (1-10000 ms) [legacy short forms: AD, PD, FD, DD]
-- `.CRV` - Curve shape (-8.0 to 8.0)
-- `.MODE` - Envelope mode (0=AD, 1=ASR, 2=ADSR)
-- `.GATE` - Gate duration (0-10000 ms)
+- `.CRV` - Curve shape (-8.0 to 8.0, -8=log, 0=linear, 8=exp)
+- Decay time via short form (AD, PD, FD, DD, FBD, FED)
+- Amount parameter (PA, FA, DA, FBA/FBEV.AMT, FE)
 
 Available envelope prefixes:
 - `AENV` - Amplitude envelope
@@ -441,20 +452,24 @@ Available envelope prefixes:
 Examples:
 - `AENV.ATK 50` - Set amp envelope attack to 50ms
 - `PENV.CRV -4` - Set pitch envelope to logarithmic curve
-- `FMEV.MODE 1` - Set FM envelope to ASR mode
-- `GATE 100` - Set global gate to 100ms
-- `AENV.GATE 200` - Override amp envelope gate to 200ms
+- `AD 500` - Set amplitude decay to 500ms
+- `PA 4` - Set pitch envelope to 4 octaves
+- `FBEV.AMT 8000` - Set feedback envelope amount (alias for FBA)
 
-**Legacy Short Forms (Aliases)**
-- `AD <ms>` - Amplitude decay time (alias for AENV.DEC)
-- `PD <ms>` - Pitch decay time (alias for PENV.DEC)
-- `FD <ms>` - FM decay time (alias for FMEV.DEC)
-- `DD <ms>` - Discontinuity decay time (alias for DENV.DEC)
+**Decay Time Short Forms (Aliases)**
+- `AD <ms>` - Amplitude decay time (1-10000 ms)
+- `PD <ms>` - Pitch decay time (1-10000 ms)
+- `FD <ms>` - FM decay time (1-10000 ms)
+- `DD <ms>` - Discontinuity decay time (1-10000 ms)
+- `FBD <ms>` - Feedback decay time (1-10000 ms)
+- `FED <ms>` - Filter decay time (1-10000 ms)
 
 **Envelope Amounts (Additive Model: output = base + env*amount)**
-- `PA <0-16>` - Pitch envelope amount
+- `PA <0-16>` - Pitch envelope amount (in octaves)
 - `FA <0-16>` - FM envelope amount
 - `DA <0-16>` - Discontinuity envelope amount
+- `FBA <0-16383>` - Feedback envelope amount (alias: FBEV.AMT)
+- `FE <0-16383>` - Filter envelope amount
 
 **SVF Multi-Mode Filter**
 - `FC <hz>` - Filter cutoff frequency (20-20000)

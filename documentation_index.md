@@ -16,7 +16,7 @@
 
 ### Source Code
 
-Modular Rust implementation (~7,000 total lines across 30+ files):
+Modular Rust implementation (~15,000 total lines across 50+ files):
 
 - **src/main.rs** (69 lines) - Application entry point, initializes TUI and starts main loop
 - **src/metro.rs** (112 lines) - Metro thread implementation with absolute timing
@@ -30,13 +30,17 @@ Modular Rust implementation (~7,000 total lines across 30+ files):
   - **mod.rs** (146 lines) - App struct, constructor, navigation
   - **input.rs** (234 lines) - Input handling methods
   - **script_exec.rs** (481 lines) - Script/command execution
-- **src/commands/** - Command processing module (22 files, ~2,600 lines)
-  - **mod.rs** - Main dispatcher
+- **src/commands/** - Command processing module (25 files, ~3,400 lines)
+  - **mod.rs** - Main dispatcher with command routing
   - **validate.rs** - Command validation
-  - **variables.rs** - Variable handlers (A-K)
+  - **aliases.rs** - Alias resolution for PREFIX.SUFFIX → short form mapping (93 aliases)
+  - **variables.rs** - Variable handlers (A-D, X-Z, T, I, J, K)
   - **patterns.rs** - Pattern operations (P.*, PN.*)
-  - **math_ops.rs** - Math operations (ADD, SUB, MUL, DIV, MOD)
-  - **random_ops.rs** - Random operations (RND, RRND, TOSS, EITH)
+  - **counters.rs** - Auto-increment counters (N1-N4 with MIN/MAX/RST)
+  - **math_ops.rs** - Math operations (ADD, SUB, MUL, DIV, MOD, MAP)
+  - **random_ops.rs** - Random operations (RND, RRND, TOSS, EITH, TOG)
+  - **gate.rs** - Global and per-envelope gate timing (GATE, AENV.GATE, etc.)
+  - **slew.rs** - Parameter slewing (SLEW.ALL global, SLEW per-parameter)
   - **synth_params/** - Synth parameter handlers (13 modules)
     - **mod.rs** - Module coordinator
     - **oscillator.rs** - Oscillator parameters (PF, PW, MF, MW)
@@ -53,10 +57,9 @@ Modular Rust implementation (~7,000 total lines across 30+ files):
     - **pitch_shift.rs** - Pitch shift (PS.MODE, PS.SEMI, PS.GRAIN, PS.MIX, PS.TARG)
   - **metro_cmds.rs** - Metro commands
   - **scene_cmds.rs** - Scene commands
-  - **slew.rs** - Global slew control (SLEW.ALL)
   - **misc.rs** - Other commands (TR, RST, VOL, THEME, etc.)
-- **src/tests/** - Test suite module (12 files, ~2,400 lines, 138 tests)
-  - Organized by category: rnd, toss_eith, expr, condition, pattern, variable, validation, math, comparison, scene
+- **src/tests/** - Test suite module (20 files, ~4,400 lines, 282 tests)
+  - Organized by category: envelope, counter, slew, tog, rnd, toss_eith, expr, condition, pattern, variable, validation, math, comparison, scene, debug, buffer_effects
 
 Key features:
 - Page-based interface: Live, Script 1-8, Metro (M), Init (I), Pattern (P), Help

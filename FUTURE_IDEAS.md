@@ -53,14 +53,14 @@ This document captures future feature ideas for consideration. Not prioritized o
 
 ---
 
-## Slewing / Interpolation [Medium Complexity]
+## ✅ DONE: Slewing / Interpolation [Medium Complexity]
 
 ### Parameter Slew
-- `SLEW <param> <ms>` - Set slew time for parameter changes
-- `SLEW.ALL <ms>` - Global slew time
-- Applied to any parameter change (instant → smooth)
+- ✅ **IMPLEMENTED:** `SLEW <param> <ms>` - Set slew time for parameter changes
+- ✅ **IMPLEMENTED:** `SLEW.ALL <ms>` - Global slew time
+- ✅ **IMPLEMENTED:** Applied via SC-side Lag.kr smoothing for 30+ parameters
 
-### Variable Lerp
+### Variable Lerp (Not Implemented)
 - `LERP <var> <target> <steps>` - Interpolate variable over N ticks
 - `A.LERP <target> <ms>` - Interpolate A to target over time
 - Runs in background, updates each metro tick
@@ -83,21 +83,24 @@ This document captures future feature ideas for consideration. Not prioritized o
 
 ---
 
-## Envelope Shaping [Medium Complexity]
+## ✅ DONE: Envelope Shaping [Medium Complexity]
 
 ### Envelope Curve Control
-- `AD.CURVE <-8 to 8>` - Amp envelope curve (-8=log, 0=lin, 8=exp)
-- `PD.CURVE` - Pitch envelope curve
-- `FD.CURVE` - FM envelope curve
-- `DD.CURVE` - Discontinuity envelope curve
+- ✅ **IMPLEMENTED:** `ENV.CRV <-8 to 8>` - Global envelope curve (-8=log, 0=lin, 8=exp)
+- ✅ **IMPLEMENTED:** Per-envelope override: `AENV.CRV`, `PENV.CRV`, `FMEV.CRV`, `DENV.CRV`, `FBEV.CRV`, `FLEV.CRV`
 
 ### Attack Times
-- `AA <ms>` - Amp attack time
-- `PAT <ms>` - Pitch attack time
-- Convert from decay-only to full ADSR?
+- ✅ **IMPLEMENTED:** `ENV.ATK <ms>` - Global attack time (1-10000 ms)
+- ✅ **IMPLEMENTED:** Per-envelope override: `AENV.ATK`, `PENV.ATK`, `FMEV.ATK`, `DENV.ATK`, `FBEV.ATK`, `FLEV.ATK`
+- ✅ **IMPLEMENTED:** Converted from decay-only to full ADSR support
 
 ### Envelope Modes
-- `ENV.MODE <0-2>` - 0=perc (AD), 1=ASR (gate), 2=ADSR
+- ✅ **IMPLEMENTED:** `ENV.MODE <0-2>` - 0=AD, 1=ASR (gate), 2=ADSR
+- ✅ **IMPLEMENTED:** Per-envelope override via `AENV.MODE`, `PENV.MODE`, etc.
+
+### Gate Duration
+- ✅ **IMPLEMENTED:** `GATE <ms>` - Global gate duration (0-10000 ms, 0=instant trigger)
+- ✅ **IMPLEMENTED:** Per-envelope override: `AENV.GATE`, `PENV.GATE`, `FMEV.GATE`, `DENV.GATE`, `FBEV.GATE`, `FLEV.GATE`
 
 ---
 
@@ -349,14 +352,14 @@ String-based pattern notation (inspired by Tidal):
 
 ## Implementation Phases
 
-### Phase 1: Core Utilities (Low-Medium Complexity)
+### ✅ Phase 1: Core Utilities (Low-Medium Complexity) - COMPLETE
 Quick wins that add immediate value with minimal dependencies:
-- **MAP operator** [Low] - Simple math transformations, no state management required
-- **TOG generator** [Low] - Basic state toggle with simple cycling logic
-- **Auto-increment variables** [Low] - Simple counter logic with wrap-around
-- **More pattern slots** [Low] - Just increase array size in existing pattern system
-- **Slewing/LERP** [Medium] - Needs background interpolation thread, parameter smoothing
-- **Envelope shaping** [Medium] - Extend existing envelope system with curve control and attack times
+- ✅ **MAP operator** [Low] - Simple math transformations, no state management required
+- ✅ **TOG generator** [Low] - Basic state toggle with simple cycling logic
+- ✅ **Auto-increment variables** [Low] - Simple counter logic with wrap-around
+- ✅ **More pattern slots** [Low] - Just increase array size in existing pattern system
+- ✅ **Slewing/LERP** [Medium] - Needs background interpolation thread, parameter smoothing
+- ✅ **Envelope shaping** [Medium] - Extend existing envelope system with curve control and attack times
 
 ### Phase 2: Pattern Expansion (Low-Medium Complexity)
 Building on existing pattern infrastructure:

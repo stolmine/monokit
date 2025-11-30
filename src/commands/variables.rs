@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 
 pub fn handle_variable_a<F>(
@@ -9,6 +9,7 @@ pub fn handle_variable_a<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -16,7 +17,7 @@ pub fn handle_variable_a<F>(
     if parts.len() == 1 {
         output(format!("A = {}", variables.a));
     } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
         } else {
             match parts[1].parse() {
@@ -39,6 +40,7 @@ pub fn handle_variable_b<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -46,7 +48,7 @@ pub fn handle_variable_b<F>(
     if parts.len() == 1 {
         output(format!("B = {}", variables.b));
     } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
         } else {
             match parts[1].parse() {
@@ -69,6 +71,7 @@ pub fn handle_variable_c<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -76,7 +79,7 @@ pub fn handle_variable_c<F>(
     if parts.len() == 1 {
         output(format!("C = {}", variables.c));
     } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
         } else {
             match parts[1].parse() {
@@ -99,6 +102,7 @@ pub fn handle_variable_d<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -106,7 +110,7 @@ pub fn handle_variable_d<F>(
     if parts.len() == 1 {
         output(format!("D = {}", variables.d));
     } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
         } else {
             match parts[1].parse() {
@@ -151,6 +155,7 @@ pub fn handle_variable_x<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -158,7 +163,7 @@ pub fn handle_variable_x<F>(
     if parts.len() == 1 {
         output(format!("X = {}", variables.x));
     } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
         } else {
             match parts[1].parse() {
@@ -181,6 +186,7 @@ pub fn handle_variable_y<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -188,7 +194,7 @@ pub fn handle_variable_y<F>(
     if parts.len() == 1 {
         output(format!("Y = {}", variables.y));
     } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
         } else {
             match parts[1].parse() {
@@ -211,6 +217,7 @@ pub fn handle_variable_z<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -218,7 +225,7 @@ pub fn handle_variable_z<F>(
     if parts.len() == 1 {
         output(format!("Z = {}", variables.z));
     } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
         } else {
             match parts[1].parse() {
@@ -241,6 +248,7 @@ pub fn handle_variable_t<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -248,7 +256,7 @@ pub fn handle_variable_t<F>(
     if parts.len() == 1 {
         output(format!("T = {}", variables.t));
     } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
         } else {
             match parts[1].parse() {
@@ -271,6 +279,7 @@ pub fn handle_variable_j<F>(
     counters: &mut Counters,
     scripts: &mut ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -283,7 +292,7 @@ where
     if parts.len() == 1 {
         output(format!("J = {}", scripts.scripts[script_index].j));
     } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
         } else {
             parts[1]
@@ -303,6 +312,7 @@ pub fn handle_variable_k<F>(
     counters: &mut Counters,
     scripts: &mut ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -315,7 +325,7 @@ where
     if parts.len() == 1 {
         output(format!("K = {}", scripts.scripts[script_index].k));
     } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
         } else {
             parts[1]

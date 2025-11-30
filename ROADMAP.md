@@ -171,16 +171,23 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 **Focus:** Musical utilities and external sync capabilities
 
-### Scale Quantization [Medium]
-- [ ] `Q <note>` - Quantize note to current scale
-- [ ] `Q.SCALE <0-11>` - Set scale type
-- [ ] `Q.ROOT <0-11>` - Set root note (C=0, C#=1, etc.)
-- [ ] `PF N Q A` - Quantize variable to scale, convert to frequency
+### Scale Quantization [Medium] - COMPLETE
+- [x] `Q <note>` - Quantize note to current scale (expression operator)
+- [x] `Q.SCALE <0-11>` - Set scale type (12 presets)
+- [x] `Q.ROOT <0-11>` - Set root note (C=0, C#=1, etc.)
+- [x] `Q.BIT <binary>` - Custom scale mask (arbitrary length for microtonal)
+- [x] `PF N Q A` - Quantize variable to scale, convert to frequency
+- [x] N operator adapts to scale.divisions (supports non-12-TET)
 
 **Scale Types:**
 - 0=Chromatic, 1=Major, 2=Minor, 3=Dorian, 4=Phrygian, 5=Lydian
 - 6=Mixolydian, 7=Pentatonic Major, 8=Pentatonic Minor
 - 9=Blues, 10=Whole Tone, 11=Diminished
+
+**Q.BIT Examples:**
+- `Q.BIT 101010110101` - Major scale (12-TET)
+- `Q.BIT 10101` - Pentatonic (5-EDO)
+- `Q.BIT <24 bits>` - Quarter-tones (24-EDO)
 
 ### Mini Notation / Inline Sequencing [High]
 - [ ] `SEQ "x _ x _"` - Simple trigger pattern notation

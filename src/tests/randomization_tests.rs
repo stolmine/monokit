@@ -3,7 +3,7 @@ use crate::commands::validate_script_command;
 use crate::types::MetroCommand;
 use rosc::OscType;
 use std::sync::mpsc;
-use super::common::{create_test_variables, create_test_patterns, create_test_scripts, create_test_counters};
+use super::common::{create_test_variables, create_test_patterns, create_test_scripts, create_test_counters, create_test_scale};
 
 #[test]
 fn test_rnd_voice_valid_commands() {
@@ -498,7 +498,7 @@ fn test_rnd_p_default_range() {
     patterns.working = 0;
 
     let parts = vec!["RND.P"];
-    let result = handle_rnd_p(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, |output: String| outputs.push(output));
+    let result = handle_rnd_p(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale(), |output: String| outputs.push(output));
     assert!(result.is_ok());
     assert_eq!(outputs.len(), 1);
     assert!(outputs[0].contains("RANDOMIZED PATTERN 0"));
@@ -521,7 +521,7 @@ fn test_rnd_p_custom_range() {
     patterns.working = 0;
 
     let parts = vec!["RND.P", "10", "50"];
-    let result = handle_rnd_p(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, |output: String| outputs.push(output));
+    let result = handle_rnd_p(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale(), |output: String| outputs.push(output));
     assert!(result.is_ok());
     assert_eq!(outputs.len(), 1);
     assert!(outputs[0].contains("RANDOMIZED PATTERN 0"));
@@ -543,7 +543,7 @@ fn test_rnd_pn_default_range() {
     patterns.patterns[2].length = 8;
 
     let parts = vec!["RND.PN", "2"];
-    let result = handle_rnd_pn(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, |output: String| outputs.push(output));
+    let result = handle_rnd_pn(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale(), |output: String| outputs.push(output));
     assert!(result.is_ok());
     assert_eq!(outputs.len(), 1);
     assert!(outputs[0].contains("RANDOMIZED PATTERN 2"));
@@ -565,7 +565,7 @@ fn test_rnd_pn_custom_range() {
     patterns.patterns[3].length = 8;
 
     let parts = vec!["RND.PN", "3", "-50", "50"];
-    let result = handle_rnd_pn(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, |output: String| outputs.push(output));
+    let result = handle_rnd_pn(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale(), |output: String| outputs.push(output));
     assert!(result.is_ok());
     assert_eq!(outputs.len(), 1);
     assert!(outputs[0].contains("RANDOMIZED PATTERN 3"));
@@ -585,7 +585,7 @@ fn test_rnd_pn_invalid_pattern() {
     let mut outputs: Vec<String> = Vec::new();
 
     let parts = vec!["RND.PN", "6"];
-    let result = handle_rnd_pn(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, |output: String| outputs.push(output));
+    let result = handle_rnd_pn(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale(), |output: String| outputs.push(output));
     assert!(result.is_ok());
     assert_eq!(outputs.len(), 1);
     assert!(outputs[0].contains("ERROR"));
@@ -601,7 +601,7 @@ fn test_rnd_pn_missing_pattern_number() {
     let mut outputs: Vec<String> = Vec::new();
 
     let parts = vec!["RND.PN"];
-    let result = handle_rnd_pn(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, |output: String| outputs.push(output));
+    let result = handle_rnd_pn(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale(), |output: String| outputs.push(output));
     assert!(result.is_ok());
     assert_eq!(outputs.len(), 1);
     assert!(outputs[0].contains("ERROR"));
@@ -621,7 +621,7 @@ fn test_rnd_pall_default_range() {
     }
 
     let parts = vec!["RND.PALL"];
-    let result = handle_rnd_pall(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, |output: String| outputs.push(output));
+    let result = handle_rnd_pall(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale(), |output: String| outputs.push(output));
     assert!(result.is_ok());
     assert_eq!(outputs.len(), 1);
     assert!(outputs[0].contains("RANDOMIZED ALL PATTERNS"));
@@ -647,7 +647,7 @@ fn test_rnd_pall_custom_range() {
     }
 
     let parts = vec!["RND.PALL", "0", "10"];
-    let result = handle_rnd_pall(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, |output: String| outputs.push(output));
+    let result = handle_rnd_pall(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale(), |output: String| outputs.push(output));
     assert!(result.is_ok());
     assert_eq!(outputs.len(), 1);
     assert!(outputs[0].contains("RANDOMIZED ALL PATTERNS"));
@@ -674,7 +674,7 @@ fn test_rnd_p_with_expression() {
     patterns.working = 0;
 
     let parts = vec!["RND.P", "A", "B"];
-    let result = handle_rnd_p(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, |output: String| outputs.push(output));
+    let result = handle_rnd_p(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale(), |output: String| outputs.push(output));
     assert!(result.is_ok());
     assert_eq!(outputs.len(), 1);
     assert!(outputs[0].contains("RANDOMIZED PATTERN 0"));
@@ -699,7 +699,7 @@ fn test_rnd_pn_with_expression() {
     patterns.patterns[1].length = 8;
 
     let parts = vec!["RND.PN", "A", "B", "C"];
-    let result = handle_rnd_pn(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, |output: String| outputs.push(output));
+    let result = handle_rnd_pn(&parts, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale(), |output: String| outputs.push(output));
     assert!(result.is_ok());
     assert_eq!(outputs.len(), 1);
     assert!(outputs[0].contains("RANDOMIZED PATTERN 1"));

@@ -78,6 +78,25 @@ impl Default for Counters {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct ScaleState {
+    pub root: u8,
+    pub scale_preset: Option<u8>,
+    pub mask: Vec<bool>,
+    pub divisions: u8,
+}
+
+impl Default for ScaleState {
+    fn default() -> Self {
+        Self {
+            root: 0,
+            scale_preset: Some(1),
+            mask: vec![true,false,true,false,true,true,false,true,false,true,false,true],
+            divisions: 12,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Pattern {
     #[serde(with = "BigArray")]

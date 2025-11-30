@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
@@ -16,6 +16,7 @@ pub fn handle_br_act<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -25,7 +26,7 @@ where
         output("ERROR: BR.ACT REQUIRES A VALUE (0-1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -75,6 +76,7 @@ pub fn handle_br_len<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -84,7 +86,7 @@ where
         output("ERROR: BR.LEN REQUIRES A VALUE (0-7)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -127,6 +129,7 @@ pub fn handle_br_rev<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -136,7 +139,7 @@ where
         output("ERROR: BR.REV REQUIRES A VALUE (0-1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -162,6 +165,7 @@ pub fn handle_br_win<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -171,7 +175,7 @@ where
         output("ERROR: BR.WIN REQUIRES A VALUE (1-50)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -197,6 +201,7 @@ pub fn handle_br_mix<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -206,7 +211,7 @@ where
         output("ERROR: BR.MIX REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]

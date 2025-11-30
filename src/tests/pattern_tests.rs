@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use super::common::{create_test_variables, create_test_patterns, create_test_scripts, create_test_counters};
+use super::common::{create_test_variables, create_test_patterns, create_test_scripts, create_test_counters, create_test_scale};
 
 #[test]
 fn test_pattern_operations_with_expressions() {
@@ -15,21 +15,21 @@ fn test_pattern_operations_with_expressions() {
     patterns.patterns[0].index = 0;
 
     let parts = vec!["PN", "0"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 100);
     assert_eq!(consumed, 2);
 
     let parts = vec!["PN.I", "0"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 0);
     assert_eq!(consumed, 2);
 
     let parts = vec!["PN.L", "0"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 3);
@@ -51,19 +51,19 @@ fn test_pattern_next_operation() {
     patterns.working = 0;
 
     let parts = vec!["P.NEXT"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert!(result.is_some());
     let (value, _) = result.unwrap();
     assert_eq!(value, 20);
     assert_eq!(patterns.patterns[0].index, 1);
 
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert!(result.is_some());
     let (value, _) = result.unwrap();
     assert_eq!(value, 30);
     assert_eq!(patterns.patterns[0].index, 2);
 
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert!(result.is_some());
     let (value, _) = result.unwrap();
     assert_eq!(value, 10);
@@ -85,13 +85,13 @@ fn test_pattern_prev_operation() {
     patterns.working = 0;
 
     let parts = vec!["P.PREV"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert!(result.is_some());
     let (value, _) = result.unwrap();
     assert_eq!(value, 30);
     assert_eq!(patterns.patterns[0].index, 2);
 
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert!(result.is_some());
     let (value, _) = result.unwrap();
     assert_eq!(value, 20);
@@ -113,7 +113,7 @@ fn test_pattern_here_operation() {
     patterns.working = 0;
 
     let parts = vec!["P.HERE"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 20);
@@ -134,7 +134,7 @@ fn test_pn_next_with_pattern_number() {
     patterns.patterns[1].index = 0;
 
     let parts = vec!["PN.NEXT", "1"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 200);
@@ -156,7 +156,7 @@ fn test_pn_prev_with_pattern_number() {
     patterns.patterns[2].index = 0;
 
     let parts = vec!["PN.PREV", "2"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 70);
@@ -178,19 +178,19 @@ fn test_pattern_operations_with_variable_indices() {
 
     variables.i = 0;
     let parts = vec!["PN", "0"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result.unwrap().0, 100);
 
     let parts = vec!["PN", "1"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result.unwrap().0, 200);
 
     let parts = vec!["PN", "2"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result.unwrap().0, 300);
 
     let parts = vec!["PN", "3"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result.unwrap().0, 400);
 }
 
@@ -209,7 +209,7 @@ fn test_pattern_length_wrapping() {
     patterns.working = 0;
 
     let parts = vec!["P.NEXT"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result.unwrap().0, 1);
     assert_eq!(patterns.patterns[0].index, 0);
 }
@@ -229,7 +229,7 @@ fn test_pattern_prev_wrapping() {
     patterns.working = 0;
 
     let parts = vec!["P.PREV"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result.unwrap().0, 3);
     assert_eq!(patterns.patterns[0].index, 2);
 }
@@ -266,7 +266,7 @@ fn test_pattern_next_with_expression_index() {
     patterns.patterns[0].index = 0;
 
     let parts = vec!["PN.NEXT", "ADD", "0", "0"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 200);
@@ -289,7 +289,7 @@ fn test_pattern_with_expression_pattern_and_index() {
     patterns.patterns[1].index = 2;
 
     let parts = vec!["PN", "ADD", "0", "1"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 300);
@@ -314,7 +314,7 @@ fn test_nested_pattern_operations() {
     patterns.patterns[1].index = 1;
 
     let parts = vec!["ADD", "PN", "0", "PN", "1"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert!(result.is_some());
     let (value, consumed) = result.unwrap();
     assert_eq!(value, 21);
@@ -329,11 +329,11 @@ fn test_pattern_operations_bounds() {
     let mut counters = create_test_counters();
 
     let parts = vec!["PN", "6"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert!(result.is_none());
 
     let parts = vec!["PN.NEXT", "7"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert!(result.is_none());
 }
 
@@ -366,7 +366,7 @@ fn test_deeply_nested_pattern_and_math() {
     variables.a = 5;
 
     let parts = vec!["ADD", "MUL", "PN.HERE", "0", "A", "10"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result.unwrap().0, 510);
 }
 
@@ -385,11 +385,11 @@ fn test_pattern_p_next_advances_index() {
     patterns.working = 0;
 
     let parts = vec!["P.NEXT"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result.unwrap().0, 200);
     assert_eq!(patterns.patterns[0].index, 1);
 
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result.unwrap().0, 300);
     assert_eq!(patterns.patterns[0].index, 2);
 }
@@ -407,7 +407,7 @@ fn test_pattern_pn_next_with_index() {
     patterns.patterns[1].index = 0;
 
     let parts = vec!["PN.NEXT", "1"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result.unwrap().0, 75);
     assert_eq!(patterns.patterns[1].index, 1);
 }
@@ -426,11 +426,11 @@ fn test_pattern_here_doesnt_change_index() {
     patterns.working = 0;
 
     let parts = vec!["P.HERE"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result.unwrap().0, 20);
     assert_eq!(patterns.patterns[0].index, 1);
 
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result.unwrap().0, 20);
     assert_eq!(patterns.patterns[0].index, 1);
 }
@@ -449,22 +449,22 @@ fn test_all_pattern_operations() {
     patterns.patterns[1].index = 1;
 
     let parts = vec!["PN", "1"];
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 200);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale()).unwrap().0, 200);
 
     let parts = vec!["PN.HERE", "1"];
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 200);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale()).unwrap().0, 200);
 
     let parts = vec!["PN.L", "1"];
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 3);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale()).unwrap().0, 3);
 
     let parts = vec!["PN.I", "1"];
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 1);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale()).unwrap().0, 1);
 
     let parts = vec!["PN.NEXT", "1"];
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 300);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale()).unwrap().0, 300);
 
     let parts = vec!["PN.PREV", "1"];
-    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0).unwrap().0, 200);
+    assert_eq!(eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale()).unwrap().0, 200);
 }
 
 #[test]
@@ -479,6 +479,6 @@ fn test_complex_nested_pattern_and_math() {
     variables.a = 2;
 
     let parts = vec!["ADD", "MUL", "PN", "0", "A", "DIV", "PN", "1", "2"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result.unwrap().0, 15);
 }

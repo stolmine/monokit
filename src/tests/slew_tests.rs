@@ -1,7 +1,7 @@
 use crate::commands::validate_script_command;
 use crate::commands::slew::{handle_slew, handle_slew_all};
 use crate::types::MetroCommand;
-use super::common::{create_test_variables, create_test_patterns, create_test_scripts, create_test_counters};
+use super::common::{create_test_variables, create_test_patterns, create_test_scripts, create_test_counters, create_test_scale};
 use std::sync::mpsc;
 
 #[test]
@@ -79,6 +79,7 @@ fn test_slew_valid_parameter_names() {
         &mut counters,
         &scripts,
         0,
+        &create_test_scale(),
         &metro_tx,
         1,
         |output: String| outputs.push(output),
@@ -111,6 +112,7 @@ fn test_slew_invalid_parameter_name() {
         &mut counters,
         &scripts,
         0,
+        &create_test_scale(),
         &metro_tx,
         1,
         |output: String| outputs.push(output),
@@ -136,6 +138,7 @@ fn test_slew_time_range_validation() {
         &mut counters,
         &scripts,
         0,
+        &create_test_scale(),
         &metro_tx,
         1,
         |output: String| outputs.push(output),
@@ -153,6 +156,7 @@ fn test_slew_time_range_validation() {
         &mut counters,
         &scripts,
         0,
+        &create_test_scale(),
         &metro_tx,
         1,
         |output: String| outputs.push(output),
@@ -170,6 +174,7 @@ fn test_slew_time_range_validation() {
         &mut counters,
         &scripts,
         0,
+        &create_test_scale(),
         &metro_tx,
         1,
         |output: String| outputs.push(output),
@@ -186,6 +191,7 @@ fn test_slew_time_range_validation() {
         &mut counters,
         &scripts,
         0,
+        &create_test_scale(),
         &metro_tx,
         1,
         |output: String| outputs.push(output),
@@ -211,6 +217,7 @@ fn test_slew_all_time_range_validation() {
         &mut counters,
         &scripts,
         0,
+        &create_test_scale(),
         &metro_tx,
         1,
         |output: String| outputs.push(output),
@@ -232,6 +239,7 @@ fn test_slew_all_time_range_validation() {
         &mut counters,
         &scripts,
         0,
+        &create_test_scale(),
         &metro_tx,
         1,
         |output: String| outputs.push(output),
@@ -258,7 +266,8 @@ fn test_slew_various_valid_params() {
             &mut patterns,
             &mut counters,
             &scripts,
-            0,
+        0,
+        &create_test_scale(),
             &metro_tx,
             0,
             |_| {},

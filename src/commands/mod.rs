@@ -7,6 +7,7 @@ mod misc;
 mod patterns;
 mod random_ops;
 pub mod randomization;
+pub mod scale;
 mod scene_cmds;
 pub mod slew;
 mod synth_params;
@@ -14,7 +15,7 @@ pub mod validate;
 mod variables;
 
 use crate::theme::Theme;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
 use anyhow::Result;
 use std::sync::mpsc::Sender;
 
@@ -30,6 +31,7 @@ pub fn process_command<F>(
     counters: &mut Counters,
     scripts: &mut ScriptStorage,
     script_index: usize,
+    scale: &mut ScaleState,
     theme: &mut Theme,
     debug_level: &mut u8,
     input: &str,
@@ -50,37 +52,37 @@ where
 
     match cmd.as_str() {
         "A" => {
-            variables::handle_variable_a(&parts, variables, patterns, counters, scripts, script_index, output);
+            variables::handle_variable_a(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "B" => {
-            variables::handle_variable_b(&parts, variables, patterns, counters, scripts, script_index, output);
+            variables::handle_variable_b(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "C" => {
-            variables::handle_variable_c(&parts, variables, patterns, counters, scripts, script_index, output);
+            variables::handle_variable_c(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "D" => {
-            variables::handle_variable_d(&parts, variables, patterns, counters, scripts, script_index, output);
+            variables::handle_variable_d(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "I" => {
             variables::handle_variable_i(&parts, variables, output);
         }
         "X" => {
-            variables::handle_variable_x(&parts, variables, patterns, counters, scripts, script_index, output);
+            variables::handle_variable_x(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "Y" => {
-            variables::handle_variable_y(&parts, variables, patterns, counters, scripts, script_index, output);
+            variables::handle_variable_y(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "Z" => {
-            variables::handle_variable_z(&parts, variables, patterns, counters, scripts, script_index, output);
+            variables::handle_variable_z(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "T" => {
-            variables::handle_variable_t(&parts, variables, patterns, counters, scripts, script_index, output);
+            variables::handle_variable_t(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "J" => {
-            variables::handle_variable_j(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            variables::handle_variable_j(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "K" => {
-            variables::handle_variable_k(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            variables::handle_variable_k(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "P.N" => {
             patterns::handle_pattern_n(&parts, patterns, output);
@@ -101,22 +103,22 @@ where
             patterns::handle_pattern_prev(patterns, output);
         }
         "P.PUSH" => {
-            patterns::handle_pattern_push(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pattern_push(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "P.POP" => {
             patterns::handle_pattern_pop(patterns, output);
         }
         "P.INS" => {
-            patterns::handle_pattern_ins(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pattern_ins(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "P.RM" => {
-            patterns::handle_pattern_rm(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pattern_rm(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "P.REV" => {
             patterns::handle_pattern_rev(patterns, output);
         }
         "P.ROT" => {
-            patterns::handle_pattern_rot(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pattern_rot(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "P.SHUF" => {
             patterns::handle_pattern_shuf(patterns, output);
@@ -125,25 +127,25 @@ where
             patterns::handle_pattern_sort(patterns, output);
         }
         "P.RND" => {
-            patterns::handle_pattern_rnd(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pattern_rnd(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "P.ADD" => {
-            patterns::handle_pattern_add(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pattern_add(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "P.SUB" => {
-            patterns::handle_pattern_sub(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pattern_sub(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "P.MUL" => {
-            patterns::handle_pattern_mul(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pattern_mul(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "P.DIV" => {
-            patterns::handle_pattern_div(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pattern_div(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "P.MOD" => {
-            patterns::handle_pattern_mod(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pattern_mod(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "P.SCALE" => {
-            patterns::handle_pattern_scale(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pattern_scale(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "P.MIN" => {
             patterns::handle_pattern_min(patterns, output);
@@ -158,88 +160,88 @@ where
             patterns::handle_pattern_avg(patterns, output);
         }
         "P.FND" => {
-            patterns::handle_pattern_fnd(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pattern_fnd(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "P" => {
-            patterns::handle_pattern(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pattern(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.L" => {
-            patterns::handle_pn_l(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_l(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.I" => {
-            patterns::handle_pn_i(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_i(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.HERE" => {
-            patterns::handle_pn_here(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_here(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.NEXT" => {
-            patterns::handle_pn_next(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_next(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.PREV" => {
-            patterns::handle_pn_prev(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_prev(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.PUSH" => {
-            patterns::handle_pn_push(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_push(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.POP" => {
-            patterns::handle_pn_pop(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_pop(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.INS" => {
-            patterns::handle_pn_ins(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_ins(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.RM" => {
-            patterns::handle_pn_rm(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_rm(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.REV" => {
-            patterns::handle_pn_rev(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_rev(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.ROT" => {
-            patterns::handle_pn_rot(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_rot(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.SHUF" => {
-            patterns::handle_pn_shuf(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_shuf(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.SORT" => {
-            patterns::handle_pn_sort(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_sort(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.RND" => {
-            patterns::handle_pn_rnd(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_rnd(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.ADD" => {
-            patterns::handle_pn_add(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_add(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.SUB" => {
-            patterns::handle_pn_sub(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_sub(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.MUL" => {
-            patterns::handle_pn_mul(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_mul(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.DIV" => {
-            patterns::handle_pn_div(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_div(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.MOD" => {
-            patterns::handle_pn_mod(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_mod(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.SCALE" => {
-            patterns::handle_pn_scale(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_scale(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.MIN" => {
-            patterns::handle_pn_min(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_min(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.MAX" => {
-            patterns::handle_pn_max(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_max(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.SUM" => {
-            patterns::handle_pn_sum(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_sum(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.AVG" => {
-            patterns::handle_pn_avg(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_avg(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN.FND" => {
-            patterns::handle_pn_fnd(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn_fnd(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "PN" => {
-            patterns::handle_pn(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            patterns::handle_pn(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "TR" => {
             misc::handle_tr(metro_tx, *debug_level, output)?;
@@ -260,328 +262,328 @@ where
             metro_cmds::handle_m_script(&parts, metro_tx, *debug_level, output)?;
         }
         "PF" => {
-            synth_params::handle_pf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_pf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "PW" => {
-            synth_params::handle_pw(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_pw(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "MF" => {
-            synth_params::handle_mf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_mf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "MW" => {
-            synth_params::handle_mw(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_mw(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "DC" => {
-            synth_params::handle_dc(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_dc(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "DM" => {
-            synth_params::handle_dm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_dm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "TK" => {
-            synth_params::handle_tk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_tk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "MB" => {
-            synth_params::handle_mb(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_mb(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "MP" => {
-            synth_params::handle_mp(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_mp(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "MD" => {
-            synth_params::handle_md(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_md(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "MT" => {
-            synth_params::handle_mt(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_mt(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "MA" => {
-            synth_params::handle_ma(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_ma(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FM" => {
-            synth_params::handle_fm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_fm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "AD" => {
-            synth_params::handle_ad(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_ad(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "PD" => {
-            synth_params::handle_pd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_pd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FD" => {
-            synth_params::handle_fd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_fd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "PA" => {
-            synth_params::handle_pa(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_pa(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "DD" => {
-            synth_params::handle_dd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_dd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "MX" => {
-            synth_params::handle_mx(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_mx(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "MM" => {
-            synth_params::handle_mm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_mm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "ME" => {
-            synth_params::handle_me(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_me(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FA" => {
-            synth_params::handle_fa(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_fa(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "DA" => {
-            synth_params::handle_da(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_da(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FB" => {
-            synth_params::handle_fb(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_fb(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FBA" => {
-            synth_params::handle_fba(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_fba(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FBD" => {
-            synth_params::handle_fbd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_fbd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "RF" => {
-            synth_params::handle_rf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_rf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "RD" => {
-            synth_params::handle_rd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_rd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "RM" => {
-            synth_params::handle_rm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_rm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "RK" => {
-            synth_params::handle_rk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_rk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "DT" => {
-            synth_params::handle_dt(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_dt(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "DF" => {
-            synth_params::handle_df(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_df(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "DLP" => {
-            synth_params::handle_dlp(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_dlp(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "DW" => {
-            synth_params::handle_dw(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_dw(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "DS" => {
-            synth_params::handle_ds(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_ds(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "RV" => {
-            synth_params::handle_rv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_rv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "RP" => {
-            synth_params::handle_rp(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_rp(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "RH" => {
-            synth_params::handle_rh(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_rh(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "RW" => {
-            synth_params::handle_rw(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_rw(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "D.MODE" => {
-            synth_params::handle_d_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_d_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "D.TAIL" => {
-            synth_params::handle_d_tail(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_d_tail(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "R.MODE" => {
-            synth_params::handle_r_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_r_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "R.TAIL" => {
-            synth_params::handle_r_tail(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_r_tail(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FC" => {
-            synth_params::handle_fc(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_fc(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FQ" => {
-            synth_params::handle_fq(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_fq(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FT" => {
-            synth_params::handle_ft(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_ft(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FE" => {
-            synth_params::handle_fe(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_fe(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FED" => {
-            synth_params::handle_fed(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_fed(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FK" => {
-            synth_params::handle_fk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_fk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "MF.F" => {
-            synth_params::handle_mf_f(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_mf_f(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "LB" => {
-            synth_params::handle_lb(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_lb(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "LS" => {
-            synth_params::handle_ls(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_ls(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "LM" => {
-            synth_params::handle_lm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_lm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "RGF" => {
-            synth_params::handle_rgf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_rgf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "RGW" => {
-            synth_params::handle_rgw(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_rgw(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "RGM" => {
-            synth_params::handle_rgm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_rgm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "CT" => {
-            synth_params::handle_ct(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_ct(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "CR" => {
-            synth_params::handle_cr(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_cr(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "CA" => {
-            synth_params::handle_ca(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_ca(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "CL" => {
-            synth_params::handle_cl(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_cl(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "CM" => {
-            synth_params::handle_cm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_cm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "EL" => {
-            synth_params::handle_el(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_el(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "EM" => {
-            synth_params::handle_em(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_em(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "EF" => {
-            synth_params::handle_ef(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_ef(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "EQ" => {
-            synth_params::handle_eq_param(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_eq_param(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "EH" => {
-            synth_params::handle_eh(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_eh(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "PAN" => {
-            synth_params::handle_pan(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_pan(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "BR.ACT" => {
-            synth_params::handle_br_act(&parts, *metro_interval, br_len, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_br_act(&parts, *metro_interval, br_len, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "BR.LEN" => {
-            synth_params::handle_br_len(&parts, *metro_interval, br_len, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_br_len(&parts, *metro_interval, br_len, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "BR.REV" => {
-            synth_params::handle_br_rev(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_br_rev(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "BR.WIN" => {
-            synth_params::handle_br_win(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_br_win(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "BR.MIX" => {
-            synth_params::handle_br_mix(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_br_mix(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "PS.MODE" => {
-            synth_params::handle_ps_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_ps_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "PS.SEMI" => {
-            synth_params::handle_ps_semi(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_ps_semi(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "PS.GRAIN" => {
-            synth_params::handle_ps_grain(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_ps_grain(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "PS.MIX" => {
-            synth_params::handle_ps_mix(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_ps_mix(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "PS.TARG" => {
-            synth_params::handle_ps_targ(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_ps_targ(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "SLEW" => {
-            slew::handle_slew(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            slew::handle_slew(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
         }
         "SLEW.ALL" => {
-            slew::handle_slew_all(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            slew::handle_slew_all(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
         }
         "ENV.ATK" => {
-            synth_params::handle_env_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_env_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "ENV.DEC" => {
-            synth_params::handle_env_dec(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_env_dec(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "ENV.CRV" => {
-            synth_params::handle_env_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_env_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "ENV.MODE" => {
-            synth_params::handle_env_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_env_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "AENV.ATK" => {
-            synth_params::handle_aenv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_aenv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "AENV.CRV" => {
-            synth_params::handle_aenv_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_aenv_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "AENV.MODE" => {
-            synth_params::handle_aenv_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_aenv_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "AENV.GATE" => {
-            gate::handle_aenv_gate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            gate::handle_aenv_gate(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
         }
         "PENV.ATK" => {
-            synth_params::handle_penv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_penv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "PENV.CRV" => {
-            synth_params::handle_penv_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_penv_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "PENV.MODE" => {
-            synth_params::handle_penv_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_penv_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "PENV.GATE" => {
-            gate::handle_penv_gate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            gate::handle_penv_gate(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
         }
         "FMEV.ATK" => {
-            synth_params::handle_fmev_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_fmev_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FMEV.CRV" => {
-            synth_params::handle_fmev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_fmev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FMEV.MODE" => {
-            synth_params::handle_fmev_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_fmev_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FMEV.GATE" => {
-            gate::handle_fmev_gate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            gate::handle_fmev_gate(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
         }
         "DENV.ATK" => {
-            synth_params::handle_denv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_denv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "DENV.CRV" => {
-            synth_params::handle_denv_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_denv_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "DENV.MODE" => {
-            synth_params::handle_denv_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_denv_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "DENV.GATE" => {
-            gate::handle_denv_gate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            gate::handle_denv_gate(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
         }
         "FBEV.ATK" => {
-            synth_params::handle_fbev_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_fbev_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FBEV.CRV" => {
-            synth_params::handle_fbev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_fbev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FBEV.MODE" => {
-            synth_params::handle_fbev_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_fbev_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FBEV.GATE" => {
-            gate::handle_fbev_gate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            gate::handle_fbev_gate(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
         }
         "FLEV.ATK" => {
-            synth_params::handle_flev_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_flev_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FLEV.CRV" => {
-            synth_params::handle_flev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_flev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FLEV.MODE" => {
-            synth_params::handle_flev_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            synth_params::handle_flev_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FLEV.GATE" => {
-            gate::handle_flev_gate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            gate::handle_flev_gate(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
         }
         "GATE" => {
-            gate::handle_gate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+            gate::handle_gate(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
         }
         "RST" => {
             misc::handle_rst(metro_tx, *debug_level, output)?;
@@ -596,10 +598,10 @@ where
             random_ops::handle_toss(output);
         }
         "EITH" => {
-            random_ops::handle_eith(&parts, variables, patterns, counters, scripts, script_index, output);
+            random_ops::handle_eith(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "TOG" => {
-            random_ops::handle_tog(&parts, variables, patterns, counters, scripts, script_index, output);
+            random_ops::handle_tog(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "RND.VOICE" => {
             randomization::handle_rnd_voice(metro_tx, *debug_level, output)?;
@@ -617,13 +619,13 @@ where
             randomization::handle_rnd_env(metro_tx, *debug_level, output)?;
         }
         "RND.P" => {
-            randomization::handle_rnd_p(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            randomization::handle_rnd_p(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "RND.PN" => {
-            randomization::handle_rnd_pn(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            randomization::handle_rnd_pn(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "RND.PALL" => {
-            randomization::handle_rnd_pall(&parts, variables, patterns, counters, scripts, script_index, output)?;
+            randomization::handle_rnd_pall(&parts, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "RND.FX" => {
             randomization::handle_rnd_fx(metro_tx, *debug_level, output)?;
@@ -638,25 +640,25 @@ where
             randomization::handle_rnd_verb(metro_tx, *debug_level, output)?;
         }
         "ADD" | "+" => {
-            math_ops::handle_add(&parts, variables, patterns, counters, scripts, script_index, output);
+            math_ops::handle_add(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "SUB" | "-" => {
-            math_ops::handle_sub(&parts, variables, patterns, counters, scripts, script_index, output);
+            math_ops::handle_sub(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "MUL" | "*" => {
-            math_ops::handle_mul(&parts, variables, patterns, counters, scripts, script_index, output);
+            math_ops::handle_mul(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "DIV" | "/" => {
-            math_ops::handle_div(&parts, variables, patterns, counters, scripts, script_index, output);
+            math_ops::handle_div(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "MOD" | "%" => {
-            math_ops::handle_mod(&parts, variables, patterns, counters, scripts, script_index, output);
+            math_ops::handle_mod(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "MAP" => {
-            math_ops::handle_map(&parts, variables, patterns, counters, scripts, script_index, output);
+            math_ops::handle_map(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "SCRIPT" => {
-            return misc::handle_script(&parts, variables, patterns, counters, scripts, script_index);
+            return misc::handle_script(&parts, variables, patterns, counters, scripts, script_index, scale);
         }
         "SAVE" => {
             scene_cmds::handle_save(&parts, scripts, patterns, output);
@@ -688,7 +690,7 @@ where
             misc::handle_rec_path(&parts, metro_tx, *debug_level, output)?;
         }
         "PRINT" => {
-            misc::handle_print(&parts, variables, patterns, counters, scripts, script_index, *debug_level, output);
+            misc::handle_print(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, output);
         }
         "DEBUG" => {
             misc::handle_debug(&parts, debug_level, output);
@@ -718,28 +720,37 @@ where
             counters::handle_n4_rst(counters, output);
         }
         "N1.MAX" => {
-            counters::handle_n1_max(&parts, variables, patterns, counters, scripts, script_index, output);
+            counters::handle_n1_max(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "N2.MAX" => {
-            counters::handle_n2_max(&parts, variables, patterns, counters, scripts, script_index, output);
+            counters::handle_n2_max(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "N3.MAX" => {
-            counters::handle_n3_max(&parts, variables, patterns, counters, scripts, script_index, output);
+            counters::handle_n3_max(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "N4.MAX" => {
-            counters::handle_n4_max(&parts, variables, patterns, counters, scripts, script_index, output);
+            counters::handle_n4_max(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "N1.MIN" => {
-            counters::handle_n1_min(&parts, variables, patterns, counters, scripts, script_index, output);
+            counters::handle_n1_min(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "N2.MIN" => {
-            counters::handle_n2_min(&parts, variables, patterns, counters, scripts, script_index, output);
+            counters::handle_n2_min(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "N3.MIN" => {
-            counters::handle_n3_min(&parts, variables, patterns, counters, scripts, script_index, output);
+            counters::handle_n3_min(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "N4.MIN" => {
-            counters::handle_n4_min(&parts, variables, patterns, counters, scripts, script_index, output);
+            counters::handle_n4_min(&parts, variables, patterns, counters, scripts, script_index, scale, output);
+        }
+        "Q.ROOT" => {
+            scale::handle_q_root(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, output);
+        }
+        "Q.SCALE" => {
+            scale::handle_q_scale(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, output);
+        }
+        "Q.BIT" => {
+            scale::handle_q_bit(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, output);
         }
         _ => {
             output(format!("UNKNOWN COMMAND: {}", cmd));

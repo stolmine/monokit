@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 use rand::seq::SliceRandom;
 use rand::Rng;
@@ -11,6 +11,7 @@ pub fn handle_pn_push<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -20,7 +21,7 @@ where
         output("ERROR: PN.PUSH REQUIRES PATTERN NUMBER AND VALUE".to_string());
         return Ok(());
     }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as usize
     } else {
         parts[1]
@@ -31,7 +32,7 @@ where
         output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
         return Ok(());
     }
-    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index) {
+    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         parts[2]
@@ -54,6 +55,7 @@ pub fn handle_pn_pop<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -63,7 +65,7 @@ where
         output("ERROR: PN.POP REQUIRES PATTERN NUMBER (0-5)".to_string());
         return Ok(());
     }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as usize
     } else {
         parts[1]
@@ -91,6 +93,7 @@ pub fn handle_pn_ins<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -100,7 +103,7 @@ where
         output("ERROR: PN.INS REQUIRES PATTERN NUMBER, INDEX, AND VALUE".to_string());
         return Ok(());
     }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as usize
     } else {
         parts[1]
@@ -111,14 +114,14 @@ where
         output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
         return Ok(());
     }
-    let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index) {
+    let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as usize
     } else {
         parts[2]
             .parse()
             .context("Failed to parse insert index")?
     };
-    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 3, variables, patterns, counters, scripts, script_index) {
+    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 3, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         parts[3]
@@ -145,6 +148,7 @@ pub fn handle_pn_rm<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -154,7 +158,7 @@ where
         output("ERROR: PN.RM REQUIRES PATTERN NUMBER AND INDEX".to_string());
         return Ok(());
     }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as usize
     } else {
         parts[1]
@@ -165,7 +169,7 @@ where
         output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
         return Ok(());
     }
-    let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index) {
+    let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as usize
     } else {
         parts[2]
@@ -193,6 +197,7 @@ pub fn handle_pn_rev<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -202,7 +207,7 @@ where
         output("ERROR: PN.REV REQUIRES PATTERN NUMBER (0-5)".to_string());
         return Ok(());
     }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as usize
     } else {
         parts[1]
@@ -229,6 +234,7 @@ pub fn handle_pn_rot<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -238,7 +244,7 @@ where
         output("ERROR: PN.ROT REQUIRES PATTERN NUMBER AND ROTATION AMOUNT".to_string());
         return Ok(());
     }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as usize
     } else {
         parts[1]
@@ -249,7 +255,7 @@ where
         output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
         return Ok(());
     }
-    let n: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index) {
+    let n: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         parts[2]
@@ -285,6 +291,7 @@ pub fn handle_pn_shuf<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -294,7 +301,7 @@ where
         output("ERROR: PN.SHUF REQUIRES PATTERN NUMBER (0-5)".to_string());
         return Ok(());
     }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as usize
     } else {
         parts[1]
@@ -320,6 +327,7 @@ pub fn handle_pn_sort<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -329,7 +337,7 @@ where
         output("ERROR: PN.SORT REQUIRES PATTERN NUMBER (0-5)".to_string());
         return Ok(());
     }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as usize
     } else {
         parts[1]
@@ -354,6 +362,7 @@ pub fn handle_pn_rnd<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -363,7 +372,7 @@ where
         output("ERROR: PN.RND REQUIRES PATTERN NUMBER (0-5)".to_string());
         return Ok(());
     }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as usize
     } else {
         parts[1]
@@ -375,14 +384,14 @@ where
         return Ok(());
     }
     let (min, max) = if parts.len() >= 4 {
-        let min_val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index) {
+        let min_val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
         } else {
             parts[2]
                 .parse()
                 .context("Failed to parse min value")?
         };
-        let max_val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 3, variables, patterns, counters, scripts, script_index) {
+        let max_val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 3, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
         } else {
             parts[3]

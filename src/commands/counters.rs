@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables};
 
 // Standalone counter read commands - returns value and increments
 pub fn handle_n1<F>(counters: &mut Counters, mut output: F)
@@ -105,6 +105,7 @@ pub fn handle_n1_max<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -114,7 +115,7 @@ pub fn handle_n1_max<F>(
         return;
     }
 
-    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         match parts[1].parse() {
@@ -141,6 +142,7 @@ pub fn handle_n2_max<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -150,7 +152,7 @@ pub fn handle_n2_max<F>(
         return;
     }
 
-    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         match parts[1].parse() {
@@ -177,6 +179,7 @@ pub fn handle_n3_max<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -186,7 +189,7 @@ pub fn handle_n3_max<F>(
         return;
     }
 
-    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         match parts[1].parse() {
@@ -213,6 +216,7 @@ pub fn handle_n4_max<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -222,7 +226,7 @@ pub fn handle_n4_max<F>(
         return;
     }
 
-    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         match parts[1].parse() {
@@ -249,6 +253,7 @@ pub fn handle_n1_min<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -258,7 +263,7 @@ pub fn handle_n1_min<F>(
         return;
     }
 
-    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         match parts[1].parse() {
@@ -281,6 +286,7 @@ pub fn handle_n2_min<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -290,7 +296,7 @@ pub fn handle_n2_min<F>(
         return;
     }
 
-    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         match parts[1].parse() {
@@ -313,6 +319,7 @@ pub fn handle_n3_min<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -322,7 +329,7 @@ pub fn handle_n3_min<F>(
         return;
     }
 
-    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         match parts[1].parse() {
@@ -345,6 +352,7 @@ pub fn handle_n4_min<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -354,7 +362,7 @@ pub fn handle_n4_min<F>(
         return;
     }
 
-    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         match parts[1].parse() {

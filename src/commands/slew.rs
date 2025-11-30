@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 use std::sync::mpsc::Sender;
 
@@ -15,6 +15,7 @@ pub fn handle_slew<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     mut output: F,
@@ -31,7 +32,7 @@ where
         output(format!("ERROR: INVALID PARAMETER '{}' FOR SLEW", param_name.to_uppercase()));
         return Ok(());
     }
-    let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index) {
+    let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as f32
     } else {
         parts[2]
@@ -59,6 +60,7 @@ pub fn handle_slew_all<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     mut output: F,
@@ -70,7 +72,7 @@ where
         output("ERROR: SLEW.ALL REQUIRES A TIME VALUE (0-10000 MS)".to_string());
         return Ok(());
     }
-    let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as f32
     } else {
         parts[1]

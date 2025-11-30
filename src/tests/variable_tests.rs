@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use super::common::{create_test_variables, create_test_patterns, create_test_scripts, create_test_counters};
+use super::common::{create_test_variables, create_test_patterns, create_test_scripts, create_test_counters, create_test_scale};
 
 #[test]
 fn test_variable_setter_with_expression_add() {
@@ -11,7 +11,7 @@ fn test_variable_setter_with_expression_add() {
     variables.a = 10;
 
     let parts = vec!["A", "+", "1", "A"];
-    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0) {
+    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale()) {
         expr_val
     } else {
         parts[1].parse().unwrap()
@@ -29,7 +29,7 @@ fn test_variable_setter_with_rnd() {
 
     let parts = vec!["J", "RND", "100"];
     for _ in 0..20 {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0) {
+        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale()) {
             expr_val
         } else {
             parts[1].parse().unwrap()
@@ -52,7 +52,7 @@ fn test_variable_setter_with_pattern_next() {
     patterns.patterns[0].index = 0;
 
     let parts = vec!["X", "PN.NEXT", "0"];
-    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0) {
+    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale()) {
         expr_val
     } else {
         parts[1].parse().unwrap()
@@ -72,7 +72,7 @@ fn test_variable_setter_with_mul_expression() {
     variables.a = 5;
 
     let parts = vec!["B", "MUL", "A", "2"];
-    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0) {
+    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale()) {
         expr_val
     } else {
         parts[1].parse().unwrap()
@@ -92,7 +92,7 @@ fn test_variable_setter_with_nested_expression() {
     variables.b = 5;
 
     let parts = vec!["C", "ADD", "MUL", "A", "2", "B"];
-    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0) {
+    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale()) {
         expr_val
     } else {
         parts[1].parse().unwrap()
@@ -109,7 +109,7 @@ fn test_variable_setter_literal_still_works() {
     let mut counters = create_test_counters();
 
     let parts = vec!["A", "100"];
-    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0) {
+    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale()) {
         expr_val
     } else {
         parts[1].parse().unwrap()
@@ -139,7 +139,7 @@ fn test_all_variables_support_expressions() {
     ];
 
     for (parts, expected) in test_cases {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0) {
+        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale()) {
             expr_val
         } else {
             parts[1].parse().unwrap()
@@ -160,7 +160,7 @@ fn test_j_k_variables_support_expressions() {
     scripts.scripts[0].k = 20;
 
     let parts = vec!["J", "ADD", "J", "5"];
-    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0) {
+    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale()) {
         expr_val
     } else {
         parts[1].parse().unwrap()
@@ -168,7 +168,7 @@ fn test_j_k_variables_support_expressions() {
     assert_eq!(value, 15);
 
     let parts = vec!["K", "MUL", "K", "2"];
-    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0) {
+    let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale()) {
         expr_val
     } else {
         parts[1].parse().unwrap()

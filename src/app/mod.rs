@@ -1,6 +1,6 @@
 use crate::theme::Theme;
 use crate::types::{
-    Counters, MetroCommand, MetroState, Page, PatternStorage, ScriptStorage, Variables,
+    Counters, MetroCommand, MetroState, Page, PatternStorage, ScaleState, ScriptStorage, Variables,
 };
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -40,6 +40,7 @@ pub struct App {
     pub debug_level: u8,
     pub br_len: usize,
     pub slew_time_ms: f32,
+    pub scale: ScaleState,
 }
 
 impl App {
@@ -75,6 +76,7 @@ impl App {
             debug_level: 2,
             br_len: 2,
             slew_time_ms: 0.0,
+            scale: ScaleState::default(),
         }
     }
 

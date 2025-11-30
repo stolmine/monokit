@@ -374,6 +374,18 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
+        "Q.ROOT" | "Q.SCALE" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+            }
+            Ok(())
+        }
+        "Q.BIT" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("Q.BIT takes exactly 1 argument (binary string)"));
+            }
+            Ok(())
+        }
         _ => {
             Err(anyhow::anyhow!("Unknown command: {}", command))
         }

@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
@@ -14,6 +14,7 @@ pub fn handle_lb<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -23,7 +24,7 @@ where
         output("ERROR: LB REQUIRES A VALUE (1-16)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -52,6 +53,7 @@ pub fn handle_ls<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -61,7 +63,7 @@ where
         output("ERROR: LS REQUIRES A VALUE (100-48000)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -90,6 +92,7 @@ pub fn handle_lm<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -99,7 +102,7 @@ where
         output("ERROR: LM REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -128,6 +131,7 @@ pub fn handle_rgf<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -137,7 +141,7 @@ where
         output("ERROR: RGF REQUIRES A FREQUENCY VALUE (20-2000)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as f32
     } else {
         parts[1]
@@ -166,6 +170,7 @@ pub fn handle_rgw<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -175,7 +180,7 @@ where
         output("ERROR: RGW REQUIRES A VALUE (0-3)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -204,6 +209,7 @@ pub fn handle_rgm<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -213,7 +219,7 @@ where
         output("ERROR: RGM REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -242,6 +248,7 @@ pub fn handle_ct<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -251,7 +258,7 @@ where
         output("ERROR: CT REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -280,6 +287,7 @@ pub fn handle_cr<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -289,7 +297,7 @@ where
         output("ERROR: CR REQUIRES A VALUE (1-20)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as f32
     } else {
         parts[1]
@@ -318,6 +326,7 @@ pub fn handle_ca<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -327,7 +336,7 @@ where
         output("ERROR: CA REQUIRES A VALUE (1-500)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -356,6 +365,7 @@ pub fn handle_cl<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -365,7 +375,7 @@ where
         output("ERROR: CL REQUIRES A VALUE (10-2000)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -394,6 +404,7 @@ pub fn handle_cm<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -403,7 +414,7 @@ where
         output("ERROR: CM REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -432,6 +443,7 @@ pub fn handle_pan<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -441,7 +453,7 @@ where
         output("ERROR: PAN REQUIRES A VALUE (-16383 TO 16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]

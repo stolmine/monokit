@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 
 pub fn handle_pattern_min<F>(
@@ -66,6 +66,7 @@ pub fn handle_pattern_fnd<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -75,7 +76,7 @@ where
         output("ERROR: P.FND REQUIRES A VALUE".to_string());
         return Ok(());
     }
-    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         parts[1]

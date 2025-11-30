@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 
 pub fn handle_pattern_add<F>(
@@ -9,6 +9,7 @@ pub fn handle_pattern_add<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -18,7 +19,7 @@ where
         output("ERROR: P.ADD REQUIRES A VALUE".to_string());
         return Ok(());
     }
-    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         parts[1]
@@ -40,6 +41,7 @@ pub fn handle_pattern_sub<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -49,7 +51,7 @@ where
         output("ERROR: P.SUB REQUIRES A VALUE".to_string());
         return Ok(());
     }
-    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         parts[1]
@@ -71,6 +73,7 @@ pub fn handle_pattern_mul<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -80,7 +83,7 @@ where
         output("ERROR: P.MUL REQUIRES A VALUE".to_string());
         return Ok(());
     }
-    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         parts[1]
@@ -102,6 +105,7 @@ pub fn handle_pattern_div<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -111,7 +115,7 @@ where
         output("ERROR: P.DIV REQUIRES A VALUE".to_string());
         return Ok(());
     }
-    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         parts[1]
@@ -137,6 +141,7 @@ pub fn handle_pattern_mod<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -146,7 +151,7 @@ where
         output("ERROR: P.MOD REQUIRES A VALUE".to_string());
         return Ok(());
     }
-    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         parts[1]
@@ -172,6 +177,7 @@ pub fn handle_pattern_scale<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -181,14 +187,14 @@ where
         output("ERROR: P.SCALE REQUIRES MIN AND MAX VALUES".to_string());
         return Ok(());
     }
-    let new_min: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let new_min: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         parts[1]
             .parse()
             .context("Failed to parse new min value")?
     };
-    let new_max: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index) {
+    let new_max: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         parts[2]

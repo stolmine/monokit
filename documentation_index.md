@@ -551,6 +551,42 @@ Note: In SEND mode with RING or FREEZE tail modes, the effect output remains at 
   - N -12 = C2 (65 Hz)
   - Usage: `PF N 0` (set primary freq to C3), `PF N ADD A 7` (C3 + A semitones + perfect 5th)
 
+#### Scale Quantization
+- `Q <note>` - Quantize note (semitone value) to current scale (works in expressions)
+  - Returns nearest note in scale as semitone value
+  - Use with N operator to convert to Hz: `PF N Q A`
+  - Works with pattern data: `PF N Q P.NEXT`
+- `Q.ROOT <0-11>` - Set scale root note (C=0, C#=1, D=2, ..., B=11)
+- `Q.SCALE <0-11>` - Set scale type
+  - 0 = Chromatic (all notes)
+  - 1 = Major
+  - 2 = Minor (natural)
+  - 3 = Dorian
+  - 4 = Phrygian
+  - 5 = Lydian
+  - 6 = Mixolydian
+  - 7 = Pentatonic Major
+  - 8 = Pentatonic Minor
+  - 9 = Blues
+  - 10 = Whole Tone
+  - 11 = Diminished
+- `Q.BIT <binary>` - Set custom scale mask as binary string
+  - Each bit represents a semitone (1=in scale, 0=not in scale)
+  - Examples:
+    - `Q.BIT 101010110101` - Major scale (12-TET)
+    - `Q.BIT 10101` - Pentatonic (5-EDO)
+    - `Q.BIT <24 bits>` - Quarter-tone systems
+  - Allows arbitrary microtonal scales and EDO systems
+
+Example usage:
+```
+Q.ROOT 0          // Set root to C
+Q.SCALE 1         // Set to Major scale
+PF N Q A          // Quantize variable A to C Major, convert to Hz
+PF N Q P.NEXT     // Quantize pattern value to scale
+Q.BIT 10101       // Custom 5-note scale
+```
+
 #### Recording
 - `REC` - Start recording to current working directory (timestamped WAV file)
 - `REC.STOP` - Stop recording (automatically called on quit)

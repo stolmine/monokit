@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 use std::sync::mpsc::Sender;
 
@@ -10,6 +10,7 @@ pub fn handle_gate<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     mut output: F,
@@ -21,7 +22,7 @@ where
         output("ERROR: GATE REQUIRES A TIME VALUE (0-10000 MS)".to_string());
         return Ok(());
     }
-    let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as f32
     } else {
         parts[1]
@@ -49,6 +50,7 @@ pub fn handle_aenv_gate<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     mut output: F,
@@ -60,7 +62,7 @@ where
         output("ERROR: AENV.GATE REQUIRES A TIME VALUE (0-10000 MS)".to_string());
         return Ok(());
     }
-    let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as f32
     } else {
         parts[1]
@@ -88,6 +90,7 @@ pub fn handle_penv_gate<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     mut output: F,
@@ -99,7 +102,7 @@ where
         output("ERROR: PENV.GATE REQUIRES A TIME VALUE (0-10000 MS)".to_string());
         return Ok(());
     }
-    let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as f32
     } else {
         parts[1]
@@ -127,6 +130,7 @@ pub fn handle_fmev_gate<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     mut output: F,
@@ -138,7 +142,7 @@ where
         output("ERROR: FMEV.GATE REQUIRES A TIME VALUE (0-10000 MS)".to_string());
         return Ok(());
     }
-    let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as f32
     } else {
         parts[1]
@@ -166,6 +170,7 @@ pub fn handle_denv_gate<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     mut output: F,
@@ -177,7 +182,7 @@ where
         output("ERROR: DENV.GATE REQUIRES A TIME VALUE (0-10000 MS)".to_string());
         return Ok(());
     }
-    let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as f32
     } else {
         parts[1]
@@ -205,6 +210,7 @@ pub fn handle_fbev_gate<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     mut output: F,
@@ -216,7 +222,7 @@ where
         output("ERROR: FBEV.GATE REQUIRES A TIME VALUE (0-10000 MS)".to_string());
         return Ok(());
     }
-    let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as f32
     } else {
         parts[1]
@@ -244,6 +250,7 @@ pub fn handle_flev_gate<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     mut output: F,
@@ -255,7 +262,7 @@ where
         output("ERROR: FLEV.GATE REQUIRES A TIME VALUE (0-10000 MS)".to_string());
         return Ok(());
     }
-    let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as f32
     } else {
         parts[1]

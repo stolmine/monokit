@@ -1,7 +1,7 @@
 use crate::config;
 use crate::eval::eval_expression;
 use crate::theme::Theme;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
@@ -96,11 +96,12 @@ pub fn handle_script(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
 ) -> Result<Vec<usize>> {
     if parts.len() < 2 {
         return Err(anyhow::anyhow!("ERROR: SCRIPT REQUIRES NUMBER 1-8"));
     }
-    let num: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let num: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as usize
     } else {
         parts[1]
@@ -303,6 +304,7 @@ pub fn handle_print<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     debug_level: u8,
     mut output: F,
 ) where
@@ -326,7 +328,7 @@ pub fn handle_print<F>(
             output("ERROR: UNTERMINATED STRING LITERAL".to_string());
         }
     } else {
-        if let Some((result, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index) {
+        if let Some((result, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             if debug_level >= 1 {
                 output(format!("{}", result));
             }

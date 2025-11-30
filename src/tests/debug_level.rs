@@ -3,7 +3,7 @@ use crate::theme::Theme;
 use crate::types::{Counters, MetroCommand, MetroState};
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
-use super::common::{create_test_patterns, create_test_scripts, create_test_variables, create_test_counters};
+use super::common::{create_test_patterns, create_test_scale, create_test_scripts, create_test_variables, create_test_counters};
 
 fn create_test_metro() -> (mpsc::Sender<MetroCommand>, mpsc::Receiver<MetroCommand>, Arc<Mutex<MetroState>>) {
     let (tx, rx) = mpsc::channel();
@@ -21,6 +21,7 @@ fn test_debug_level_0_blocks_param_output() {
     let mut patterns = create_test_patterns();
     let mut scripts = create_test_scripts();
     let mut counters = create_test_counters();
+    let mut scale = create_test_scale();
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
     let mut br_len = 2usize;
@@ -38,6 +39,7 @@ fn test_debug_level_0_blocks_param_output() {
         &mut counters,
         &mut scripts,
         0,
+        &mut scale,
         &mut theme,
         &mut debug_level,
         "PF 440",
@@ -56,6 +58,7 @@ fn test_debug_level_0_blocks_trigger_output() {
     let mut patterns = create_test_patterns();
     let mut scripts = create_test_scripts();
     let mut counters = create_test_counters();
+    let mut scale = create_test_scale();
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
     let mut br_len = 2usize;
@@ -72,6 +75,7 @@ fn test_debug_level_0_blocks_trigger_output() {
         &mut counters,
         &mut scripts,
         0,
+        &mut scale,
         &mut theme,
         &mut debug_level,
         "TR",
@@ -90,6 +94,7 @@ fn test_debug_level_0_blocks_print() {
     let mut patterns = create_test_patterns();
     let mut scripts = create_test_scripts();
     let mut counters = create_test_counters();
+    let mut scale = create_test_scale();
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
     let mut br_len = 2usize;
@@ -106,6 +111,7 @@ fn test_debug_level_0_blocks_print() {
         &mut counters,
         &mut scripts,
         0,
+        &mut scale,
         &mut theme,
         &mut debug_level,
         "PRINT 42",
@@ -124,6 +130,7 @@ fn test_debug_level_1_allows_print() {
     let mut patterns = create_test_patterns();
     let mut scripts = create_test_scripts();
     let mut counters = create_test_counters();
+    let mut scale = create_test_scale();
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
     let mut br_len = 2usize;
@@ -140,6 +147,7 @@ fn test_debug_level_1_allows_print() {
         &mut counters,
         &mut scripts,
         0,
+        &mut scale,
         &mut theme,
         &mut debug_level,
         "PRINT 42",
@@ -159,6 +167,7 @@ fn test_debug_level_1_blocks_params() {
     let mut patterns = create_test_patterns();
     let mut scripts = create_test_scripts();
     let mut counters = create_test_counters();
+    let mut scale = create_test_scale();
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
     let mut br_len = 2usize;
@@ -175,6 +184,7 @@ fn test_debug_level_1_blocks_params() {
         &mut counters,
         &mut scripts,
         0,
+        &mut scale,
         &mut theme,
         &mut debug_level,
         "PF 440",
@@ -193,6 +203,7 @@ fn test_debug_level_1_allows_metro_status() {
     let mut patterns = create_test_patterns();
     let mut scripts = create_test_scripts();
     let mut counters = create_test_counters();
+    let mut scale = create_test_scale();
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
     let mut br_len = 2usize;
@@ -209,6 +220,7 @@ fn test_debug_level_1_allows_metro_status() {
         &mut counters,
         &mut scripts,
         0,
+        &mut scale,
         &mut theme,
         &mut debug_level,
         "M",
@@ -228,6 +240,7 @@ fn test_debug_level_2_allows_all() {
     let mut patterns = create_test_patterns();
     let mut scripts = create_test_scripts();
     let mut counters = create_test_counters();
+    let mut scale = create_test_scale();
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
     let mut br_len = 2usize;
@@ -244,6 +257,7 @@ fn test_debug_level_2_allows_all() {
         &mut counters,
         &mut scripts,
         0,
+        &mut scale,
         &mut theme,
         &mut debug_level,
         "PF 440",
@@ -267,6 +281,7 @@ fn test_debug_level_2_allows_all() {
         &mut counters,
         &mut scripts,
         0,
+        &mut scale,
         &mut theme,
         &mut debug_level,
         "PRINT 42",
@@ -290,6 +305,7 @@ fn test_debug_level_2_allows_all() {
         &mut counters,
         &mut scripts,
         0,
+        &mut scale,
         &mut theme,
         &mut debug_level,
         "M",

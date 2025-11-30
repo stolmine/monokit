@@ -1,4 +1,4 @@
-use crate::types::{Counters, MetroCommand, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
 use std::sync::mpsc::{self, Receiver, Sender};
 
 pub fn create_test_variables() -> Variables {
@@ -25,6 +25,10 @@ pub fn create_test_scripts() -> ScriptStorage {
 
 pub fn create_test_counters() -> Counters {
     Counters::default()
+}
+
+pub fn create_test_scale() -> ScaleState {
+    ScaleState::default()
 }
 
 pub fn create_test_metro_tx() -> (Sender<MetroCommand>, Receiver<MetroCommand>) {

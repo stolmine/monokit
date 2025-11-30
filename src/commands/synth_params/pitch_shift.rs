@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
@@ -14,6 +14,7 @@ pub fn handle_ps_mode<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -23,7 +24,7 @@ where
         output("ERROR: PS.MODE REQUIRES A VALUE (0-1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -54,6 +55,7 @@ pub fn handle_ps_semi<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -63,7 +65,7 @@ where
         output("ERROR: PS.SEMI REQUIRES A VALUE (-24 TO 24)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -89,6 +91,7 @@ pub fn handle_ps_grain<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -98,7 +101,7 @@ where
         output("ERROR: PS.GRAIN REQUIRES A VALUE (5-100)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -124,6 +127,7 @@ pub fn handle_ps_mix<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -133,7 +137,7 @@ where
         output("ERROR: PS.MIX REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -159,6 +163,7 @@ pub fn handle_ps_targ<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -168,7 +173,7 @@ where
         output("ERROR: PS.TARG REQUIRES A VALUE (0-1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]

@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 
 pub fn handle_pattern_n<F>(
@@ -128,6 +128,7 @@ pub fn handle_pattern<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -137,7 +138,7 @@ where
         output("ERROR: P REQUIRES AN INDEX".to_string());
         return Ok(());
     }
-    let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as usize
     } else {
         parts[1]
@@ -152,7 +153,7 @@ where
         let pattern = &patterns.patterns[patterns.working];
         output(format!("P {} = {}", idx, pattern.data[idx]));
     } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index) {
+        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
         } else {
             parts[2]

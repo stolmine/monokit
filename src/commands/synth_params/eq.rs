@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
@@ -14,6 +14,7 @@ pub fn handle_el<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -23,7 +24,7 @@ where
         output("ERROR: EL REQUIRES A VALUE (-24 TO 24)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as f32
     } else {
         parts[1]
@@ -52,6 +53,7 @@ pub fn handle_em<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -61,7 +63,7 @@ where
         output("ERROR: EM REQUIRES A VALUE (-24 TO 24)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as f32
     } else {
         parts[1]
@@ -90,6 +92,7 @@ pub fn handle_ef<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -99,7 +102,7 @@ where
         output("ERROR: EF REQUIRES A FREQUENCY VALUE (200-8000)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as f32
     } else {
         parts[1]
@@ -128,6 +131,7 @@ pub fn handle_eq_param<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -137,7 +141,7 @@ where
         output("ERROR: EQ REQUIRES A VALUE (0.1-10)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as f32
     } else {
         parts[1]
@@ -166,6 +170,7 @@ pub fn handle_eh<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -175,7 +180,7 @@ where
         output("ERROR: EH REQUIRES A VALUE (-24 TO 24)".to_string());
         return Ok(());
     }
-    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as f32
     } else {
         parts[1]

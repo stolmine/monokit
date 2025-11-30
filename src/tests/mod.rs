@@ -20,3 +20,4 @@ mod slew_tests;
 mod envelope_tests;
 mod randomization_tests;
 mod fx_randomization_tests;
+mod scale_tests;

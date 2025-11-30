@@ -1,5 +1,5 @@
 use crate::commands::process_command;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
 use std::sync::mpsc;
 
 #[test]
@@ -11,6 +11,7 @@ fn test_tog_command_integration() {
     let mut patterns = PatternStorage::default();
     let mut counters = Counters::default();
     let mut scripts = ScriptStorage::default();
+    let mut scale = ScaleState::default();
     let mut theme = crate::theme::Theme::default();
     let mut debug_level = 0u8;
     let script_index = 0;
@@ -29,6 +30,7 @@ fn test_tog_command_integration() {
         &mut counters,
         &mut scripts,
         script_index,
+        &mut scale,
         &mut theme,
         &mut debug_level,
         "TOG 100 200",
@@ -49,6 +51,7 @@ fn test_tog_command_integration() {
         &mut counters,
         &mut scripts,
         script_index,
+        &mut scale,
         &mut theme,
         &mut debug_level,
         "TOG 100 200",
@@ -69,6 +72,7 @@ fn test_tog_command_integration() {
         &mut counters,
         &mut scripts,
         script_index,
+        &mut scale,
         &mut theme,
         &mut debug_level,
         "TOG 100 200",
@@ -86,6 +90,7 @@ fn test_tog_with_variable_assignment() {
     let mut patterns = PatternStorage::default();
     let mut counters = Counters::default();
     let mut scripts = ScriptStorage::default();
+    let mut scale = ScaleState::default();
     let mut theme = crate::theme::Theme::default();
     let mut debug_level = 0u8;
     let script_index = 0;
@@ -104,6 +109,7 @@ fn test_tog_with_variable_assignment() {
         &mut counters,
         &mut scripts,
         script_index,
+        &mut scale,
         &mut theme,
         &mut debug_level,
         "A TOG 0 1",
@@ -123,6 +129,7 @@ fn test_tog_with_variable_assignment() {
         &mut counters,
         &mut scripts,
         script_index,
+        &mut scale,
         &mut theme,
         &mut debug_level,
         "A TOG 0 1",
@@ -142,6 +149,7 @@ fn test_tog_with_variable_assignment() {
         &mut counters,
         &mut scripts,
         script_index,
+        &mut scale,
         &mut theme,
         &mut debug_level,
         "A TOG 0 1",

@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 use rand::seq::SliceRandom;
 use rand::Rng;
@@ -11,6 +11,7 @@ pub fn handle_pattern_push<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -20,7 +21,7 @@ where
         output("ERROR: P.PUSH REQUIRES A VALUE".to_string());
         return Ok(());
     }
-    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         parts[1]
@@ -58,6 +59,7 @@ pub fn handle_pattern_ins<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -67,14 +69,14 @@ where
         output("ERROR: P.INS REQUIRES INDEX AND VALUE".to_string());
         return Ok(());
     }
-    let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as usize
     } else {
         parts[1]
             .parse()
             .context("Failed to parse insert index")?
     };
-    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index) {
+    let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         parts[2]
@@ -101,6 +103,7 @@ pub fn handle_pattern_rm<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -110,7 +113,7 @@ where
         output("ERROR: P.RM REQUIRES AN INDEX".to_string());
         return Ok(());
     }
-    let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as usize
     } else {
         parts[1]
@@ -152,6 +155,7 @@ pub fn handle_pattern_rot<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -161,7 +165,7 @@ where
         output("ERROR: P.ROT REQUIRES A ROTATION AMOUNT".to_string());
         return Ok(());
     }
-    let n: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let n: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val
     } else {
         parts[1]
@@ -222,20 +226,21 @@ pub fn handle_pattern_rnd<F>(
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
     F: FnMut(String),
 {
     let (min, max) = if parts.len() >= 3 {
-        let min_val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+        let min_val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
         } else {
             parts[1]
                 .parse()
                 .context("Failed to parse min value")?
         };
-        let max_val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index) {
+        let max_val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
         } else {
             parts[2]

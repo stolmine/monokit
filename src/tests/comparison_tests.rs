@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use super::common::{create_test_variables, create_test_patterns, create_test_scripts, create_test_counters};
+use super::common::{create_test_variables, create_test_patterns, create_test_scripts, create_test_counters, create_test_scale};
 
 #[test]
 fn test_ez_equals_zero() {
@@ -9,11 +9,11 @@ fn test_ez_equals_zero() {
     let mut counters = create_test_counters();
 
     let parts = vec!["EZ", "0"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((1, 2)));
 
     let parts = vec!["EZ", "5"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((0, 2)));
 }
 
@@ -25,15 +25,15 @@ fn test_nz_not_zero() {
     let mut counters = create_test_counters();
 
     let parts = vec!["NZ", "0"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((0, 2)));
 
     let parts = vec!["NZ", "5"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((1, 2)));
 
     let parts = vec!["NZ", "-5"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((1, 2)));
 }
 
@@ -45,11 +45,11 @@ fn test_eq_equals() {
     let mut counters = create_test_counters();
 
     let parts = vec!["EQ", "5", "5"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((1, 3)));
 
     let parts = vec!["EQ", "5", "3"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((0, 3)));
 }
 
@@ -61,11 +61,11 @@ fn test_ne_not_equals() {
     let mut counters = create_test_counters();
 
     let parts = vec!["NE", "5", "3"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((1, 3)));
 
     let parts = vec!["NE", "5", "5"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((0, 3)));
 }
 
@@ -77,15 +77,15 @@ fn test_gt_greater_than() {
     let mut counters = create_test_counters();
 
     let parts = vec!["GT", "5", "3"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((1, 3)));
 
     let parts = vec!["GT", "3", "5"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((0, 3)));
 
     let parts = vec!["GT", "5", "5"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((0, 3)));
 }
 
@@ -97,11 +97,11 @@ fn test_lt_less_than() {
     let mut counters = create_test_counters();
 
     let parts = vec!["LT", "3", "5"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((1, 3)));
 
     let parts = vec!["LT", "5", "3"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((0, 3)));
 }
 
@@ -113,15 +113,15 @@ fn test_gte_greater_than_or_equal() {
     let mut counters = create_test_counters();
 
     let parts = vec!["GTE", "5", "3"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((1, 3)));
 
     let parts = vec!["GTE", "5", "5"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((1, 3)));
 
     let parts = vec!["GTE", "3", "5"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((0, 3)));
 }
 
@@ -133,15 +133,15 @@ fn test_lte_less_than_or_equal() {
     let mut counters = create_test_counters();
 
     let parts = vec!["LTE", "3", "5"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((1, 3)));
 
     let parts = vec!["LTE", "5", "5"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((1, 3)));
 
     let parts = vec!["LTE", "5", "3"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((0, 3)));
 }
 
@@ -155,11 +155,11 @@ fn test_comparison_with_variables() {
     variables.b = 5;
 
     let parts = vec!["GT", "A", "B"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((1, 3)));
 
     let parts = vec!["EZ", "A"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((0, 2)));
 }
 
@@ -173,16 +173,16 @@ fn test_comparison_with_pattern_ops() {
     patterns.patterns[0].data[1] = 0;
 
     let parts = vec!["NZ", "PN.HERE", "0"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((1, 3)));
 
     patterns.patterns[0].index = 1;
 
     let parts = vec!["NZ", "PN.HERE", "0"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((0, 3)));
 
     let parts = vec!["EZ", "PN.HERE", "0"];
-    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0);
+    let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &create_test_scale());
     assert_eq!(result, Some((1, 3)));
 }

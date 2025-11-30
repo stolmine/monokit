@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
@@ -14,6 +14,7 @@ pub fn handle_tk<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -23,7 +24,7 @@ where
         output("ERROR: TK REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -52,6 +53,7 @@ pub fn handle_mb<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -61,7 +63,7 @@ where
         output("ERROR: MB REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -90,6 +92,7 @@ pub fn handle_mp<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -99,7 +102,7 @@ where
         output("ERROR: MP REQUIRES A VALUE (0 OR 1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -128,6 +131,7 @@ pub fn handle_md<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -137,7 +141,7 @@ where
         output("ERROR: MD REQUIRES A VALUE (0 OR 1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -166,6 +170,7 @@ pub fn handle_mt<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -175,7 +180,7 @@ where
         output("ERROR: MT REQUIRES A VALUE (0 OR 1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -204,6 +209,7 @@ pub fn handle_ma<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -213,7 +219,7 @@ where
         output("ERROR: MA REQUIRES A VALUE (0 OR 1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -242,6 +248,7 @@ pub fn handle_fm<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -251,7 +258,7 @@ where
         output("ERROR: FM REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -280,6 +287,7 @@ pub fn handle_mx<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -289,7 +297,7 @@ where
         output("ERROR: MX REQUIRES A VALUE (0-16383)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -318,6 +326,7 @@ pub fn handle_mm<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -327,7 +336,7 @@ where
         output("ERROR: MM REQUIRES A VALUE (0 OR 1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]
@@ -356,6 +365,7 @@ pub fn handle_me<F>(
     script_index: usize,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    scale: &ScaleState,
     mut output: F,
 ) -> Result<()>
 where
@@ -365,7 +375,7 @@ where
         output("ERROR: ME REQUIRES A VALUE (0 OR 1)".to_string());
         return Ok(());
     }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index) {
+    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         expr_val as i32
     } else {
         parts[1]

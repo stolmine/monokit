@@ -29,6 +29,7 @@ impl App {
                 &mut self.counters,
                 &self.scripts,
                 script_index,
+                &self.scale,
             ) {
                 self.if_else_condition = true;
                 self.execute_and_update_metro(cmd_to_run, script_index, metro_interval, depth);
@@ -67,6 +68,7 @@ impl App {
                     &mut self.counters,
                     &self.scripts,
                     script_index,
+                    &self.scale,
                 ) {
                     self.if_else_condition = true;
                 } else {
@@ -79,6 +81,7 @@ impl App {
                 &mut self.counters,
                 &self.scripts,
                 script_index,
+                &self.scale,
             ) {
                 return false;
             }
@@ -105,6 +108,7 @@ impl App {
             &mut self.counters,
             &mut self.scripts,
             script_index,
+            &mut self.scale,
             &mut self.theme,
             &mut self.debug_level,
             cmd_to_run,
@@ -152,6 +156,7 @@ impl App {
                     &mut self.counters,
                     &self.scripts,
                     script_index,
+                    &self.scale,
                 ) {
                     state.active = val != 0;
                 }
@@ -169,6 +174,7 @@ impl App {
                     &mut self.counters,
                     &self.scripts,
                     script_index,
+                    &self.scale,
                 ) {
                     let idx = idx as usize;
                     if idx >= 1 && idx <= 8 {
@@ -262,6 +268,7 @@ impl App {
                     &mut self.counters,
                     &self.scripts,
                     script_index,
+                    &self.scale,
                 ) {
                     val
                 } else {
@@ -276,6 +283,7 @@ impl App {
                     &mut self.counters,
                     &self.scripts,
                     script_index,
+                    &self.scale,
                 ) {
                     val
                 } else {
@@ -323,6 +331,7 @@ impl App {
                     &mut self.counters,
                     &self.scripts,
                     script_index,
+                    &self.scale,
                 ) {
                     if divisor > 0 {
                         let divisor = divisor as u32;
@@ -346,6 +355,7 @@ impl App {
                     &mut self.counters,
                     &self.scripts,
                     script_index,
+                    &self.scale,
                 ) {
                     if divisor > 0 {
                         let divisor = divisor as u32;
@@ -475,6 +485,7 @@ impl App {
                     &mut self.counters,
                     &self.scripts,
                     10,
+                    &self.scale,
                 ) {
                     if divisor > 0 {
                         self.add_output("Warning: EV in interactive mode - counters not persisted".to_string());
@@ -496,6 +507,7 @@ impl App {
                     &mut self.counters,
                     &self.scripts,
                     10,
+                    &self.scale,
                 ) {
                     if divisor > 0 {
                         self.add_output("Warning: SKIP in interactive mode - counters not persisted".to_string());

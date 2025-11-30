@@ -1,12 +1,9 @@
 use crate::eval::eval_expression;
-use crate::tests::common::{create_test_variables, create_test_patterns, create_test_scripts, create_test_counters};
+use crate::test_setup;
 
 #[test]
 fn test_p_min_basic() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [5, 2, 8, 1, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 5;
@@ -21,10 +18,7 @@ fn test_p_min_basic() {
 
 #[test]
 fn test_p_min_with_negatives() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [5, -10, 8, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 5;
@@ -39,10 +33,7 @@ fn test_p_min_with_negatives() {
 
 #[test]
 fn test_p_max_basic() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [5, 2, 8, 1, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 5;
@@ -57,10 +48,7 @@ fn test_p_max_basic() {
 
 #[test]
 fn test_p_max_with_negatives() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [5, -10, 8, 0, -3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 5;
@@ -75,10 +63,7 @@ fn test_p_max_with_negatives() {
 
 #[test]
 fn test_p_sum_basic() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [10, 20, 30, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 4;
@@ -92,10 +77,7 @@ fn test_p_sum_basic() {
 
 #[test]
 fn test_p_sum_with_negatives() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [10, -5, 20, -10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 4;
@@ -109,10 +91,7 @@ fn test_p_sum_with_negatives() {
 
 #[test]
 fn test_p_avg_basic() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [10, 20, 30, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 4;
@@ -126,10 +105,7 @@ fn test_p_avg_basic() {
 
 #[test]
 fn test_p_avg_with_negatives() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [10, -10, 20, -20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 4;
@@ -143,10 +119,7 @@ fn test_p_avg_with_negatives() {
 
 #[test]
 fn test_p_fnd_basic() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [10, 20, 30, 40, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 5;
@@ -161,10 +134,7 @@ fn test_p_fnd_basic() {
 
 #[test]
 fn test_p_fnd_not_found() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [10, 20, 30, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 4;
@@ -178,10 +148,7 @@ fn test_p_fnd_not_found() {
 
 #[test]
 fn test_p_fnd_with_expression() {
-    let mut variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (mut variables, mut patterns, scripts, mut counters, _scale) = test_setup!(mut);
 
     variables.t = 30;
     patterns.patterns[0].data = [10, 20, 30, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -196,10 +163,7 @@ fn test_p_fnd_with_expression() {
 
 #[test]
 fn test_p_operations_with_empty_pattern() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].length = 1;
     patterns.working = 0;
@@ -209,10 +173,7 @@ fn test_p_operations_with_empty_pattern() {
 
 #[test]
 fn test_p_operations_with_single_element() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data[0] = 42;
     patterns.patterns[0].length = 1;
@@ -224,10 +185,7 @@ fn test_p_operations_with_single_element() {
 
 #[test]
 fn test_p_operations_with_full_pattern() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     for i in 0..64 {
         patterns.patterns[0].data[i] = i as i16;
@@ -242,10 +200,7 @@ fn test_p_operations_with_full_pattern() {
 
 #[test]
 fn test_p_operations_boundary_index_0() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [100, 200, 300, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 3;
@@ -258,10 +213,7 @@ fn test_p_operations_boundary_index_0() {
 
 #[test]
 fn test_p_operations_boundary_last_index() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [100, 200, 300, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 3;
@@ -274,10 +226,7 @@ fn test_p_operations_boundary_last_index() {
 
 #[test]
 fn test_p_operations_different_working_patterns() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data[0] = 100;
     patterns.patterns[1].data[0] = 200;
@@ -307,10 +256,7 @@ fn test_p_operations_different_working_patterns() {
 
 #[test]
 fn test_chained_pattern_operations() {
-    let mut variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (mut variables, mut patterns, scripts, mut counters, _scale) = test_setup!(mut);
 
     patterns.patterns[0].data = [1, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 5;

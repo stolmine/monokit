@@ -1,7 +1,8 @@
 use crate::commands::validate_script_command;
 use crate::commands::slew::{handle_slew, handle_slew_all};
 use crate::types::MetroCommand;
-use super::common::{create_test_variables, create_test_patterns, create_test_scripts, create_test_counters, create_test_scale};
+use crate::test_setup;
+use super::common::{create_test_scale, create_test_variables, create_test_patterns, create_test_scripts, create_test_counters};
 use std::sync::mpsc;
 
 #[test]

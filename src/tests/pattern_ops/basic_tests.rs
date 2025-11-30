@@ -1,12 +1,9 @@
 use crate::eval::eval_expression;
-use crate::tests::common::{create_test_variables, create_test_patterns, create_test_scripts, create_test_counters};
+use crate::test_setup;
 
 #[test]
 fn test_p_push_basic() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 4;
@@ -20,10 +17,7 @@ fn test_p_push_basic() {
 
 #[test]
 fn test_p_push_with_expression() {
-    let mut variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (mut variables, mut patterns, scripts, mut counters, _scale) = test_setup!(mut);
 
     variables.a = 50;
     patterns.patterns[0].data = [1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -37,10 +31,7 @@ fn test_p_push_with_expression() {
 
 #[test]
 fn test_p_pop_basic() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [10, 20, 30, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 4;
@@ -51,10 +42,7 @@ fn test_p_pop_basic() {
 
 #[test]
 fn test_p_ins_basic() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 4;
@@ -67,10 +55,7 @@ fn test_p_ins_basic() {
 
 #[test]
 fn test_p_ins_with_expression() {
-    let mut variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (mut variables, mut patterns, scripts, mut counters, _scale) = test_setup!(mut);
 
     variables.a = 1;
     variables.b = 99;
@@ -85,10 +70,7 @@ fn test_p_ins_with_expression() {
 
 #[test]
 fn test_p_rm_basic() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [10, 20, 30, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 4;
@@ -102,10 +84,7 @@ fn test_p_rm_basic() {
 
 #[test]
 fn test_p_rm_with_expression() {
-    let mut variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (mut variables, mut patterns, scripts, mut counters, _scale) = test_setup!(mut);
 
     variables.a = 2;
     patterns.patterns[0].data = [10, 20, 30, 40, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];

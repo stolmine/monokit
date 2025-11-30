@@ -1,14 +1,12 @@
 use crate::eval::eval_expression;
 use crate::commands::scale::get_preset_mask;
-use super::common::{create_test_variables, create_test_patterns, create_test_scripts, create_test_counters, create_test_scale};
+use crate::test_setup;
+use super::common::{create_test_scale, create_test_variables, create_test_patterns, create_test_scripts, create_test_counters};
 use crate::types::ScaleState;
 
 #[test]
 fn test_q_quantizes_to_major_scale() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let mut scale = create_test_scale();
 
     let parts = vec!["Q", "1"];
@@ -21,10 +19,7 @@ fn test_q_quantizes_to_major_scale() {
 
 #[test]
 fn test_q_quantizes_to_minor_scale() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let mut scale = ScaleState {
         root: 0,
         scale_preset: Some(2),
@@ -42,10 +37,7 @@ fn test_q_quantizes_to_minor_scale() {
 
 #[test]
 fn test_q_preserves_scale_degree() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let scale = create_test_scale();
 
     let parts_0 = vec!["Q", "0"];
@@ -79,10 +71,7 @@ fn test_q_preserves_scale_degree() {
 
 #[test]
 fn test_q_octave_wrapping() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let scale = create_test_scale();
 
     let parts_13 = vec!["Q", "13"];
@@ -106,10 +95,7 @@ fn test_q_octave_wrapping() {
 
 #[test]
 fn test_q_tie_break_toward_root() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let scale = create_test_scale();
 
     let parts = vec!["Q", "1"];
@@ -121,10 +107,7 @@ fn test_q_tie_break_toward_root() {
 
 #[test]
 fn test_q_root_changes_quantization() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let mut scale = create_test_scale();
 
     let parts_default = vec!["Q", "1"];
@@ -148,10 +131,7 @@ fn test_q_root_changes_quantization() {
 
 #[test]
 fn test_q_root_validation() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let mut scale = create_test_scale();
 
     scale.root = 11;
@@ -240,10 +220,7 @@ fn test_q_bit_microtonal() {
 
 #[test]
 fn test_n_uses_scale_divisions() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     let mut scale_12 = create_test_scale();
     scale_12.divisions = 12;
@@ -266,10 +243,7 @@ fn test_n_uses_scale_divisions() {
 
 #[test]
 fn test_n_quarter_tones() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     let mut scale = create_test_scale();
     scale.divisions = 24;
@@ -295,11 +269,7 @@ fn test_n_quarter_tones() {
 
 #[test]
 fn test_q_in_expression() {
-    let mut variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
-    let scale = create_test_scale();
+    let (mut variables, mut patterns, scripts, mut counters, scale) = test_setup!(mut);
 
     variables.a = 1;
     variables.b = 1;
@@ -314,10 +284,7 @@ fn test_q_in_expression() {
 
 #[test]
 fn test_pf_n_q_chain() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let scale = create_test_scale();
 
     let parts_nq = vec!["N", "Q", "3"];
@@ -337,10 +304,7 @@ fn test_pf_n_q_chain() {
 
 #[test]
 fn test_q_with_negative_notes() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let scale = create_test_scale();
 
     let parts = vec!["Q", "-5"];
@@ -352,10 +316,7 @@ fn test_q_with_negative_notes() {
 
 #[test]
 fn test_q_with_chromatic_scale() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let mut scale = ScaleState {
         root: 0,
         scale_preset: Some(0),
@@ -378,10 +339,7 @@ fn test_q_with_chromatic_scale() {
 
 #[test]
 fn test_multiple_q_operations() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let scale = create_test_scale();
 
     let parts = vec!["Q", "Q", "1"];
@@ -412,10 +370,7 @@ fn test_scale_presets_have_correct_note_counts() {
 
 #[test]
 fn test_n_produces_correct_c3_frequency() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let scale = create_test_scale();
 
     let parts = vec!["N", "0"];

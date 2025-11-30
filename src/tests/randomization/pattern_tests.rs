@@ -1,6 +1,7 @@
 use crate::commands::randomization::{handle_rnd_p, handle_rnd_pn, handle_rnd_pall};
 use crate::commands::validate_script_command;
-use crate::tests::common::{create_test_variables, create_test_patterns, create_test_scripts, create_test_counters, create_test_scale};
+use crate::test_setup;
+use crate::tests::common::{create_test_scale, create_test_variables, create_test_patterns, create_test_scripts, create_test_counters};
 
 #[test]
 fn test_rnd_p_valid_commands() {
@@ -22,10 +23,7 @@ fn test_rnd_pall_valid_commands() {
 
 #[test]
 fn test_rnd_p_default_range() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let mut outputs: Vec<String> = Vec::new();
 
     patterns.patterns[0].length = 8;
@@ -45,10 +43,7 @@ fn test_rnd_p_default_range() {
 
 #[test]
 fn test_rnd_p_custom_range() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let mut outputs: Vec<String> = Vec::new();
 
     patterns.patterns[0].length = 8;
@@ -68,10 +63,7 @@ fn test_rnd_p_custom_range() {
 
 #[test]
 fn test_rnd_pn_default_range() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let mut outputs: Vec<String> = Vec::new();
 
     patterns.patterns[2].length = 8;
@@ -90,10 +82,7 @@ fn test_rnd_pn_default_range() {
 
 #[test]
 fn test_rnd_pn_custom_range() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let mut outputs: Vec<String> = Vec::new();
 
     patterns.patterns[3].length = 8;
@@ -112,10 +101,7 @@ fn test_rnd_pn_custom_range() {
 
 #[test]
 fn test_rnd_pn_invalid_pattern() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let mut outputs: Vec<String> = Vec::new();
 
     let parts = vec!["RND.PN", "6"];
@@ -128,10 +114,7 @@ fn test_rnd_pn_invalid_pattern() {
 
 #[test]
 fn test_rnd_pn_missing_pattern_number() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let mut outputs: Vec<String> = Vec::new();
 
     let parts = vec!["RND.PN"];
@@ -144,10 +127,7 @@ fn test_rnd_pn_missing_pattern_number() {
 
 #[test]
 fn test_rnd_pall_default_range() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let mut outputs: Vec<String> = Vec::new();
 
     for i in 0..6 {
@@ -170,10 +150,7 @@ fn test_rnd_pall_default_range() {
 
 #[test]
 fn test_rnd_pall_custom_range() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
     let mut outputs: Vec<String> = Vec::new();
 
     for i in 0..6 {

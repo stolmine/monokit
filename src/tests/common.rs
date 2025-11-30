@@ -34,3 +34,23 @@ pub fn create_test_scale() -> ScaleState {
 pub fn create_test_metro_tx() -> (Sender<MetroCommand>, Receiver<MetroCommand>) {
     mpsc::channel::<MetroCommand>()
 }
+
+#[macro_export]
+macro_rules! test_setup {
+    () => {{
+        let variables = $crate::tests::common::create_test_variables();
+        let mut patterns = $crate::tests::common::create_test_patterns();
+        let scripts = $crate::tests::common::create_test_scripts();
+        let mut counters = $crate::tests::common::create_test_counters();
+        let scale = $crate::tests::common::create_test_scale();
+        (variables, patterns, scripts, counters, scale)
+    }};
+    (mut) => {{
+        let mut variables = $crate::tests::common::create_test_variables();
+        let mut patterns = $crate::tests::common::create_test_patterns();
+        let scripts = $crate::tests::common::create_test_scripts();
+        let mut counters = $crate::tests::common::create_test_counters();
+        let scale = $crate::tests::common::create_test_scale();
+        (variables, patterns, scripts, counters, scale)
+    }};
+}

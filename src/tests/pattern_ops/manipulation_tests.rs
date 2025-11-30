@@ -1,12 +1,9 @@
 use crate::eval::eval_expression;
-use crate::tests::common::{create_test_variables, create_test_patterns, create_test_scripts, create_test_counters};
+use crate::test_setup;
 
 #[test]
 fn test_p_rev_basic() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [1, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 5;
@@ -21,10 +18,7 @@ fn test_p_rev_basic() {
 
 #[test]
 fn test_p_rev_single_element() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data[0] = 42;
     patterns.patterns[0].length = 1;
@@ -35,10 +29,7 @@ fn test_p_rev_single_element() {
 
 #[test]
 fn test_p_rot_basic() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [1, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 5;
@@ -53,10 +44,7 @@ fn test_p_rot_basic() {
 
 #[test]
 fn test_p_rot_negative() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [1, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 5;
@@ -71,10 +59,7 @@ fn test_p_rot_negative() {
 
 #[test]
 fn test_p_rot_with_expression() {
-    let mut variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (mut variables, mut patterns, scripts, mut counters, _scale) = test_setup!(mut);
 
     variables.a = 2;
     patterns.patterns[0].data = [1, 2, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -89,10 +74,7 @@ fn test_p_rot_with_expression() {
 
 #[test]
 fn test_p_shuf_maintains_elements() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [1, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 5;
@@ -112,10 +94,7 @@ fn test_p_shuf_maintains_elements() {
 
 #[test]
 fn test_p_sort_basic() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [5, 2, 8, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 5;
@@ -130,10 +109,7 @@ fn test_p_sort_basic() {
 
 #[test]
 fn test_p_sort_with_negatives() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].data = [5, -2, 8, -10, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     patterns.patterns[0].length = 5;
@@ -148,10 +124,7 @@ fn test_p_sort_with_negatives() {
 
 #[test]
 fn test_p_rnd_basic() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].length = 10;
     patterns.working = 0;
@@ -164,10 +137,7 @@ fn test_p_rnd_basic() {
 
 #[test]
 fn test_p_rnd_with_range() {
-    let variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (variables, mut patterns, scripts, mut counters, _scale) = test_setup!();
 
     patterns.patterns[0].length = 10;
     patterns.working = 0;
@@ -180,10 +150,7 @@ fn test_p_rnd_with_range() {
 
 #[test]
 fn test_p_rnd_with_expression() {
-    let mut variables = create_test_variables();
-    let mut patterns = create_test_patterns();
-    let scripts = create_test_scripts();
-    let mut counters = create_test_counters();
+    let (mut variables, mut patterns, scripts, mut counters, _scale) = test_setup!(mut);
 
     variables.a = 10;
     variables.b = 20;

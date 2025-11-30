@@ -2,129 +2,90 @@ use crate::eval::eval_expression;
 use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 
-pub fn handle_variable_a<F>(
-    parts: &[&str],
-    variables: &mut Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &ScriptStorage,
-    script_index: usize,
-    scale: &ScaleState,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("A = {}", variables.a));
-    } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-            expr_val
-        } else {
-            match parts[1].parse() {
-                Ok(v) => v,
-                Err(_) => {
-                    output("ERROR: FAILED TO PARSE VALUE FOR A".to_string());
-                    return;
-                }
+macro_rules! define_variable_handler {
+    ($fn_name:ident, $var_name:literal, $var_field:ident) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            variables: &mut Variables,
+            patterns: &mut PatternStorage,
+            counters: &mut Counters,
+            scripts: &ScriptStorage,
+            script_index: usize,
+            scale: &ScaleState,
+            mut output: F,
+        ) where
+            F: FnMut(String),
+        {
+            if parts.len() == 1 {
+                output(format!("{} = {}", $var_name, variables.$var_field));
+            } else {
+                let value: i16 = if let Some((expr_val, _)) = eval_expression(
+                    &parts, 1, variables, patterns, counters, scripts, script_index, scale
+                ) {
+                    expr_val
+                } else {
+                    match parts[1].parse() {
+                        Ok(v) => v,
+                        Err(_) => {
+                            output(format!("ERROR: FAILED TO PARSE VALUE FOR {}", $var_name));
+                            return;
+                        }
+                    }
+                };
+                variables.$var_field = value;
+                output(format!("SET {} TO {}", $var_name, value));
             }
-        };
-        variables.a = value;
-        output(format!("SET A TO {}", value));
-    }
+        }
+    };
+
+    (script, $fn_name:ident, $var_name:literal, $var_field:ident) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            variables: &Variables,
+            patterns: &mut PatternStorage,
+            counters: &mut Counters,
+            scripts: &mut ScriptStorage,
+            script_index: usize,
+            scale: &ScaleState,
+            mut output: F,
+        ) -> Result<()>
+        where
+            F: FnMut(String),
+        {
+            if script_index >= 10 {
+                output(format!("ERROR: {} REQUIRES SCRIPT CONTEXT", $var_name));
+                return Ok(());
+            }
+            if parts.len() == 1 {
+                output(format!("{} = {}", $var_name, scripts.scripts[script_index].$var_field));
+            } else {
+                let value: i16 = if let Some((expr_val, _)) = eval_expression(
+                    &parts, 1, variables, patterns, counters, scripts, script_index, scale
+                ) {
+                    expr_val
+                } else {
+                    parts[1]
+                        .parse()
+                        .context(format!("Failed to parse value for {}", $var_name))?
+                };
+                scripts.scripts[script_index].$var_field = value;
+                output(format!("SET {} TO {}", $var_name, value));
+            }
+            Ok(())
+        }
+    };
 }
 
-pub fn handle_variable_b<F>(
-    parts: &[&str],
-    variables: &mut Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &ScriptStorage,
-    script_index: usize,
-    scale: &ScaleState,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("B = {}", variables.b));
-    } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-            expr_val
-        } else {
-            match parts[1].parse() {
-                Ok(v) => v,
-                Err(_) => {
-                    output("ERROR: FAILED TO PARSE VALUE FOR B".to_string());
-                    return;
-                }
-            }
-        };
-        variables.b = value;
-        output(format!("SET B TO {}", value));
-    }
-}
-
-pub fn handle_variable_c<F>(
-    parts: &[&str],
-    variables: &mut Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &ScriptStorage,
-    script_index: usize,
-    scale: &ScaleState,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("C = {}", variables.c));
-    } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-            expr_val
-        } else {
-            match parts[1].parse() {
-                Ok(v) => v,
-                Err(_) => {
-                    output("ERROR: FAILED TO PARSE VALUE FOR C".to_string());
-                    return;
-                }
-            }
-        };
-        variables.c = value;
-        output(format!("SET C TO {}", value));
-    }
-}
-
-pub fn handle_variable_d<F>(
-    parts: &[&str],
-    variables: &mut Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &ScriptStorage,
-    script_index: usize,
-    scale: &ScaleState,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("D = {}", variables.d));
-    } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-            expr_val
-        } else {
-            match parts[1].parse() {
-                Ok(v) => v,
-                Err(_) => {
-                    output("ERROR: FAILED TO PARSE VALUE FOR D".to_string());
-                    return;
-                }
-            }
-        };
-        variables.d = value;
-        output(format!("SET D TO {}", value));
-    }
-}
+define_variable_handler!(handle_variable_a, "A", a);
+define_variable_handler!(handle_variable_b, "B", b);
+define_variable_handler!(handle_variable_c, "C", c);
+define_variable_handler!(handle_variable_d, "D", d);
+define_variable_handler!(handle_variable_x, "X", x);
+define_variable_handler!(handle_variable_y, "Y", y);
+define_variable_handler!(handle_variable_z, "Z", z);
+define_variable_handler!(handle_variable_t, "T", t);
+define_variable_handler!(script, handle_variable_j, "J", j);
+define_variable_handler!(script, handle_variable_k, "K", k);
 
 pub fn handle_variable_i<F>(
     parts: &[&str],
@@ -146,194 +107,4 @@ pub fn handle_variable_i<F>(
         variables.i = value;
         output(format!("SET I TO {}", value));
     }
-}
-
-pub fn handle_variable_x<F>(
-    parts: &[&str],
-    variables: &mut Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &ScriptStorage,
-    script_index: usize,
-    scale: &ScaleState,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("X = {}", variables.x));
-    } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-            expr_val
-        } else {
-            match parts[1].parse() {
-                Ok(v) => v,
-                Err(_) => {
-                    output("ERROR: FAILED TO PARSE VALUE FOR X".to_string());
-                    return;
-                }
-            }
-        };
-        variables.x = value;
-        output(format!("SET X TO {}", value));
-    }
-}
-
-pub fn handle_variable_y<F>(
-    parts: &[&str],
-    variables: &mut Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &ScriptStorage,
-    script_index: usize,
-    scale: &ScaleState,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("Y = {}", variables.y));
-    } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-            expr_val
-        } else {
-            match parts[1].parse() {
-                Ok(v) => v,
-                Err(_) => {
-                    output("ERROR: FAILED TO PARSE VALUE FOR Y".to_string());
-                    return;
-                }
-            }
-        };
-        variables.y = value;
-        output(format!("SET Y TO {}", value));
-    }
-}
-
-pub fn handle_variable_z<F>(
-    parts: &[&str],
-    variables: &mut Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &ScriptStorage,
-    script_index: usize,
-    scale: &ScaleState,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("Z = {}", variables.z));
-    } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-            expr_val
-        } else {
-            match parts[1].parse() {
-                Ok(v) => v,
-                Err(_) => {
-                    output("ERROR: FAILED TO PARSE VALUE FOR Z".to_string());
-                    return;
-                }
-            }
-        };
-        variables.z = value;
-        output(format!("SET Z TO {}", value));
-    }
-}
-
-pub fn handle_variable_t<F>(
-    parts: &[&str],
-    variables: &mut Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &ScriptStorage,
-    script_index: usize,
-    scale: &ScaleState,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("T = {}", variables.t));
-    } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-            expr_val
-        } else {
-            match parts[1].parse() {
-                Ok(v) => v,
-                Err(_) => {
-                    output("ERROR: FAILED TO PARSE VALUE FOR T".to_string());
-                    return;
-                }
-            }
-        };
-        variables.t = value;
-        output(format!("SET T TO {}", value));
-    }
-}
-
-pub fn handle_variable_j<F>(
-    parts: &[&str],
-    variables: &Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &mut ScriptStorage,
-    script_index: usize,
-    scale: &ScaleState,
-    mut output: F,
-) -> Result<()>
-where
-    F: FnMut(String),
-{
-    if script_index >= 10 {
-        output("ERROR: J REQUIRES SCRIPT CONTEXT".to_string());
-        return Ok(());
-    }
-    if parts.len() == 1 {
-        output(format!("J = {}", scripts.scripts[script_index].j));
-    } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-            expr_val
-        } else {
-            parts[1]
-                .parse()
-                .context("Failed to parse value for J")?
-        };
-        scripts.scripts[script_index].j = value;
-        output(format!("SET J TO {}", value));
-    }
-    Ok(())
-}
-
-pub fn handle_variable_k<F>(
-    parts: &[&str],
-    variables: &Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &mut ScriptStorage,
-    script_index: usize,
-    scale: &ScaleState,
-    mut output: F,
-) -> Result<()>
-where
-    F: FnMut(String),
-{
-    if script_index >= 10 {
-        output("ERROR: K REQUIRES SCRIPT CONTEXT".to_string());
-        return Ok(());
-    }
-    if parts.len() == 1 {
-        output(format!("K = {}", scripts.scripts[script_index].k));
-    } else {
-        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-            expr_val
-        } else {
-            parts[1]
-                .parse()
-                .context("Failed to parse value for K")?
-        };
-        scripts.scripts[script_index].k = value;
-        output(format!("SET K TO {}", value));
-    }
-    Ok(())
 }

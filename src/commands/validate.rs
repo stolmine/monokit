@@ -257,6 +257,54 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
+        "ENV.ATK" | "ENV.DEC" | "ENV.CRV" | "ENV.MODE" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+            }
+            Ok(())
+        }
+        "AENV.ATK" | "AENV.CRV" | "AENV.MODE" | "AENV.GATE" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+            }
+            Ok(())
+        }
+        "PENV.ATK" | "PENV.CRV" | "PENV.MODE" | "PENV.GATE" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+            }
+            Ok(())
+        }
+        "FMEV.ATK" | "FMEV.CRV" | "FMEV.MODE" | "FMEV.GATE" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+            }
+            Ok(())
+        }
+        "DENV.ATK" | "DENV.CRV" | "DENV.MODE" | "DENV.GATE" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+            }
+            Ok(())
+        }
+        "FBEV.ATK" | "FBEV.CRV" | "FBEV.MODE" | "FBEV.GATE" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+            }
+            Ok(())
+        }
+        "FLEV.ATK" | "FLEV.CRV" | "FLEV.MODE" | "FLEV.GATE" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+            }
+            Ok(())
+        }
+        "GATE" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("GATE takes exactly 1 argument"));
+            }
+            Ok(())
+        }
         _ => {
             Err(anyhow::anyhow!("Unknown command: {}", command))
         }

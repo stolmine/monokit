@@ -92,7 +92,13 @@ s.waitForBoot {
             slew_rw = -1, slew_volume = -1, slew_pn = -1, slew_lb = -1,
             slew_ls = -1, slew_lm = -1, slew_rgf = -1, slew_rgm = -1,
             slew_ct = -1, slew_cm = -1, slew_el = -1, slew_em = -1,
-            slew_eh = -1, slew_ef = -1;
+            slew_eh = -1, slew_ef = -1,
+            env_atk = 1, env_dec = 100, env_crv = -4, env_mode = 0,
+            aenv_atk = -1, penv_atk = -1, fmenv_atk = -1, denv_atk = -1, fbenv_atk = -1, flenv_atk = -1,
+            aenv_crv = -100, penv_crv = -100, fmenv_crv = -100, denv_crv = -100, fbenv_crv = -100, flenv_crv = -100,
+            aenv_mode = -1, penv_mode = -1, fmenv_mode = -1, denv_mode = -1, fbenv_mode = -1, flenv_mode = -1,
+            aenv_gate = -1, penv_gate = -1, fmenv_gate = -1, denv_gate = -1, fbenv_gate = -1, flenv_gate = -1,
+            gate_dur = 0;
 
         // All var declarations at top
         var trig, pitchEnv, ampEnv, fmEnv, dcEnv, fbEnv, filterEnv;
@@ -119,6 +125,12 @@ s.waitForBoot {
         var rfSmooth, rmSmooth, dtSmooth, dfSmooth, dwSmooth, rvSmooth, rwSmooth, volumeSmooth, panSmooth;
         var lbSmooth, lsSmooth, lmSmooth, rgfSmooth, rgmSmooth, ctSmooth, cmSmooth;
         var elSmooth, emSmooth, ehSmooth, efSmooth;
+        var aAtk, aCrv, aMode, aGateDur, aGate;
+        var pAtk, pCrv, pMode, pGateDur, pGate;
+        var fmAtk, fmCrv, fmMode, fmGateDur, fmGate;
+        var dAtk, dCrv, dMode, dGateDur, dGate;
+        var fbAtk, fbCrv, fbMode, fbGateDur, fbGate;
+        var flAtk, flCrv, flMode, flGateDur, flGate;
 
         // Smoothed parameters using Lag.kr with per-parameter slew time overrides
         pfSmooth = Lag.kr(pf, Select.kr(slew_pf >= 0, [slew_time, slew_pf]));
@@ -155,14 +167,80 @@ s.waitForBoot {
         // Envelope model: output = base + (envelope * amount)
         // Exception: ampEnv is multiplicative (0→1 gating)
 
-        // Trigger and envelopes
+        // Trigger for instant envelopes
         trig = Trig1.kr(gate, 0.001);
-        pitchEnv = EnvGen.kr(Env.perc(0.001, pd / 1000, 1, -4), trig);
-        ampEnv = EnvGen.kr(Env.perc(0.001, ad / 1000, 1, -4), trig);
-        fmEnv = EnvGen.kr(Env.perc(0.001, fd / 1000, 1, -4), trig);
-        dcEnv = EnvGen.kr(Env.perc(0.001, dd / 1000, 1, -4), trig);
-        fbEnv = EnvGen.kr(Env.perc(0.001, fbd / 1000, 1, -4), trig);
-        filterEnv = EnvGen.kr(Env.perc(0.001, fed / 1000, 1, -4), trig);
+
+        // Amp envelope resolution
+        aAtk = Select.kr(aenv_atk >= 0, [env_atk, aenv_atk]) / 1000;
+        aCrv = Select.kr(aenv_crv > -100, [env_crv, aenv_crv]);
+        aMode = Select.kr(aenv_mode >= 0, [env_mode, aenv_mode]);
+        aGateDur = Select.kr(aenv_gate >= 0, [gate_dur, aenv_gate]);
+        aGate = Trig1.kr(gate, aGateDur.max(0.01));
+        ampEnv = Select.kr(aMode.clip(0, 2).round, [
+            EnvGen.kr(Env.perc(aAtk, ad / 1000, 1, aCrv), trig),
+            EnvGen.kr(Env.asr(aAtk, 1, ad / 1000, aCrv), aGate),
+            EnvGen.kr(Env.adsr(aAtk, ad / 2000, 0.7, ad / 1000, 1, aCrv), aGate)
+        ]);
+
+        // Pitch envelope resolution
+        pAtk = Select.kr(penv_atk >= 0, [env_atk, penv_atk]) / 1000;
+        pCrv = Select.kr(penv_crv > -100, [env_crv, penv_crv]);
+        pMode = Select.kr(penv_mode >= 0, [env_mode, penv_mode]);
+        pGateDur = Select.kr(penv_gate >= 0, [gate_dur, penv_gate]);
+        pGate = Trig1.kr(gate, pGateDur.max(0.01));
+        pitchEnv = Select.kr(pMode.clip(0, 2).round, [
+            EnvGen.kr(Env.perc(pAtk, pd / 1000, 1, pCrv), trig),
+            EnvGen.kr(Env.asr(pAtk, 1, pd / 1000, pCrv), pGate),
+            EnvGen.kr(Env.adsr(pAtk, pd / 2000, 0.7, pd / 1000, 1, pCrv), pGate)
+        ]);
+
+        // FM envelope resolution
+        fmAtk = Select.kr(fmenv_atk >= 0, [env_atk, fmenv_atk]) / 1000;
+        fmCrv = Select.kr(fmenv_crv > -100, [env_crv, fmenv_crv]);
+        fmMode = Select.kr(fmenv_mode >= 0, [env_mode, fmenv_mode]);
+        fmGateDur = Select.kr(fmenv_gate >= 0, [gate_dur, fmenv_gate]);
+        fmGate = Trig1.kr(gate, fmGateDur.max(0.01));
+        fmEnv = Select.kr(fmMode.clip(0, 2).round, [
+            EnvGen.kr(Env.perc(fmAtk, fd / 1000, 1, fmCrv), trig),
+            EnvGen.kr(Env.asr(fmAtk, 1, fd / 1000, fmCrv), fmGate),
+            EnvGen.kr(Env.adsr(fmAtk, fd / 2000, 0.7, fd / 1000, 1, fmCrv), fmGate)
+        ]);
+
+        // DC envelope resolution
+        dAtk = Select.kr(denv_atk >= 0, [env_atk, denv_atk]) / 1000;
+        dCrv = Select.kr(denv_crv > -100, [env_crv, denv_crv]);
+        dMode = Select.kr(denv_mode >= 0, [env_mode, denv_mode]);
+        dGateDur = Select.kr(denv_gate >= 0, [gate_dur, denv_gate]);
+        dGate = Trig1.kr(gate, dGateDur.max(0.01));
+        dcEnv = Select.kr(dMode.clip(0, 2).round, [
+            EnvGen.kr(Env.perc(dAtk, dd / 1000, 1, dCrv), trig),
+            EnvGen.kr(Env.asr(dAtk, 1, dd / 1000, dCrv), dGate),
+            EnvGen.kr(Env.adsr(dAtk, dd / 2000, 0.7, dd / 1000, 1, dCrv), dGate)
+        ]);
+
+        // FB envelope resolution
+        fbAtk = Select.kr(fbenv_atk >= 0, [env_atk, fbenv_atk]) / 1000;
+        fbCrv = Select.kr(fbenv_crv > -100, [env_crv, fbenv_crv]);
+        fbMode = Select.kr(fbenv_mode >= 0, [env_mode, fbenv_mode]);
+        fbGateDur = Select.kr(fbenv_gate >= 0, [gate_dur, fbenv_gate]);
+        fbGate = Trig1.kr(gate, fbGateDur.max(0.01));
+        fbEnv = Select.kr(fbMode.clip(0, 2).round, [
+            EnvGen.kr(Env.perc(fbAtk, fbd / 1000, 1, fbCrv), trig),
+            EnvGen.kr(Env.asr(fbAtk, 1, fbd / 1000, fbCrv), fbGate),
+            EnvGen.kr(Env.adsr(fbAtk, fbd / 2000, 0.7, fbd / 1000, 1, fbCrv), fbGate)
+        ]);
+
+        // Filter envelope resolution
+        flAtk = Select.kr(flenv_atk >= 0, [env_atk, flenv_atk]) / 1000;
+        flCrv = Select.kr(flenv_crv > -100, [env_crv, flenv_crv]);
+        flMode = Select.kr(flenv_mode >= 0, [env_mode, flenv_mode]);
+        flGateDur = Select.kr(flenv_gate >= 0, [gate_dur, flenv_gate]);
+        flGate = Trig1.kr(gate, flGateDur.max(0.01));
+        filterEnv = Select.kr(flMode.clip(0, 2).round, [
+            EnvGen.kr(Env.perc(flAtk, fed / 1000, 1, flCrv), trig),
+            EnvGen.kr(Env.asr(flAtk, 1, fed / 1000, flCrv), flGate),
+            EnvGen.kr(Env.adsr(flAtk, fed / 2000, 0.7, fed / 1000, 1, flCrv), flGate)
+        ]);
 
         // Scaled parameters
         modBus = mb / 16383;
@@ -536,6 +614,12 @@ s.waitForBoot {
         ~voice.set(slewArgName, slewTime);
         ("SLEW" + paramName.toUpper + "SET TO" + (slewTime * 1000) + "MS").postln;
     }, '/monokit/slew/param');
+
+    OSCdef(\monokit_gate, { |msg|
+        var gateDur = msg[1].asFloat.clip(0, 10);
+        ~voice.set(\gate_dur, gateDur);
+        ("GATE DURATION SET TO" + gateDur + "SEC").postln;
+    }, '/monokit/gate');
 
     "monokit server ready".postln;
 };

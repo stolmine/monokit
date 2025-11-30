@@ -823,6 +823,7 @@ dependencies = [
  "dark-light",
  "dirs 5.0.1",
  "nom",
+ "once_cell",
  "rand",
  "ratatui",
  "rosc",

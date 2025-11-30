@@ -1,4 +1,6 @@
+mod aliases;
 mod counters;
+mod gate;
 mod math_ops;
 mod metro_cmds;
 mod misc;
@@ -15,6 +17,7 @@ use crate::types::{Counters, MetroCommand, PatternStorage, ScriptStorage, Variab
 use anyhow::Result;
 use std::sync::mpsc::Sender;
 
+pub use aliases::resolve_alias;
 pub use validate::validate_script_command;
 
 pub fn process_command<F>(
@@ -42,6 +45,7 @@ where
 
     let parts: Vec<&str> = trimmed.split_whitespace().collect();
     let cmd = parts[0].to_uppercase();
+    let cmd = resolve_alias(&cmd);
 
     match cmd.as_str() {
         "A" => {
@@ -370,6 +374,93 @@ where
         }
         "SLEW.ALL" => {
             slew::handle_slew_all(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "ENV.ATK" => {
+            synth_params::handle_env_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "ENV.DEC" => {
+            synth_params::handle_env_dec(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "ENV.CRV" => {
+            synth_params::handle_env_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "ENV.MODE" => {
+            synth_params::handle_env_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "AENV.ATK" => {
+            synth_params::handle_aenv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "AENV.CRV" => {
+            synth_params::handle_aenv_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "AENV.MODE" => {
+            synth_params::handle_aenv_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "AENV.GATE" => {
+            gate::handle_aenv_gate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "PENV.ATK" => {
+            synth_params::handle_penv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "PENV.CRV" => {
+            synth_params::handle_penv_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "PENV.MODE" => {
+            synth_params::handle_penv_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "PENV.GATE" => {
+            gate::handle_penv_gate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "FMEV.ATK" => {
+            synth_params::handle_fmev_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "FMEV.CRV" => {
+            synth_params::handle_fmev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "FMEV.MODE" => {
+            synth_params::handle_fmev_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "FMEV.GATE" => {
+            gate::handle_fmev_gate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "DENV.ATK" => {
+            synth_params::handle_denv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "DENV.CRV" => {
+            synth_params::handle_denv_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "DENV.MODE" => {
+            synth_params::handle_denv_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "DENV.GATE" => {
+            gate::handle_denv_gate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "FBEV.ATK" => {
+            synth_params::handle_fbev_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "FBEV.CRV" => {
+            synth_params::handle_fbev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "FBEV.MODE" => {
+            synth_params::handle_fbev_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "FBEV.GATE" => {
+            gate::handle_fbev_gate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "FLEV.ATK" => {
+            synth_params::handle_flev_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "FLEV.CRV" => {
+            synth_params::handle_flev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "FLEV.MODE" => {
+            synth_params::handle_flev_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "FLEV.GATE" => {
+            gate::handle_flev_gate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
+        }
+        "GATE" => {
+            gate::handle_gate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, output)?;
         }
         "RST" => {
             misc::handle_rst(metro_tx, *debug_level, output)?;

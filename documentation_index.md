@@ -116,6 +116,39 @@ Audio output → Recording (optional)
 
 ## Command Reference
 
+### Naming Convention
+
+Monokit uses a **PREFIX.SUFFIX** naming convention for canonical command forms:
+
+**Category Prefixes:**
+- `POSC` - Primary Oscillator (POSC.FREQ → PF, POSC.WAVE → PW)
+- `MOSC` - Modulator Oscillator (MOSC.FREQ → MF, MOSC.WAVE → MW, MOSC.FB → FB)
+- `DISC` - Discontinuity/Waveshaping (DISC.AMT → DC, DISC.MODE → DM)
+- `FILT` - SVF Filter (FILT.CUT → FC, FILT.RES → FQ, FILT.TYP → FT)
+- `RESO` - Comb Resonator (RESO.FRQ → RF, RESO.DEC → RD, RESO.MIX → RM)
+- `DLY` - Stereo Delay (DLY.TIME → DT, DLY.FB → DF, DLY.WET → DW)
+- `REV` - Plate Reverb (REV.DEC → RV, REV.PRE → RP, REV.WET → RW)
+- `LOFI` - Lo-Fi Processor (LOFI.BIT → LB, LOFI.SMP → LS, LOFI.MIX → LM)
+- `RING` - Ring Modulator (RING.FRQ → RGF, RING.WAV → RGW, RING.MIX → RGM)
+- `COMP` - Compressor (COMP.THR → CT, COMP.RAT → CR, COMP.ATK → CA)
+- `EQ` - 3-Band EQ (EQ.LOW → EL, EQ.MID → EM, EQ.HI → EH)
+- `MBUS` - Modulation Bus (MBUS.AMT → MB, MBUS.TRK → TK, MBUS.FM → FM)
+- `ROUT` - Routing Matrix (ROUT.MP → MP, ROUT.MD → MD, ROUT.MF → MF.F)
+- `OUT` - Output (OUT.VOL → VOL, OUT.PAN → PAN)
+- `ENV` - Global Envelope (ENV.ATK, ENV.DEC, ENV.CRV, ENV.MODE)
+- `AENV` - Amplitude Envelope (AENV.ATK, AENV.DEC → AD, AENV.CRV, AENV.MODE, AENV.GATE)
+- `PENV` - Pitch Envelope (PENV.ATK, PENV.DEC → PD, PENV.CRV, PENV.MODE, PENV.GATE)
+- `FMEV` - FM Envelope (FMEV.ATK, FMEV.DEC → FD, FMEV.CRV, FMEV.MODE, FMEV.GATE)
+- `DENV` - Discontinuity Envelope (DENV.ATK, DENV.DEC → DD, DENV.CRV, DENV.MODE, DENV.GATE)
+- `FBEV` - Feedback Envelope (FBEV.ATK, FBEV.DEC → FBD, FBEV.CRV, FBEV.MODE, FBEV.GATE)
+- `FLEV` - Filter Envelope (FLEV.ATK, FLEV.DEC → FED, FLEV.CRV, FLEV.MODE, FLEV.GATE)
+
+**Alias System:**
+- Current short forms (PF, FC, AD, etc.) remain as **aliases** to canonical forms
+- You can use either form: `PF 440` or `POSC.FREQ 440` (both work identically)
+- Legacy commands in existing scenes continue to work
+- Use whichever form you prefer (terse aliases or explicit canonical names)
+
 ### Current Commands (v0.1.0)
 
 #### Trigger & Volume
@@ -262,11 +295,41 @@ Examples:
 - `MM <0-16383>` - Mix modulation amount (depth of mod bus modulation on mix)
 - `ME <0|1>` - Mix modulation enable (route mod bus to mix amount)
 
-**Envelopes (all in milliseconds, 1-10000 range)**
-- `AD <ms>` - Amplitude decay time
-- `PD <ms>` - Pitch decay time
-- `FD <ms>` - FM decay time
-- `DD <ms>` - Discontinuity decay time
+**Global Envelope Controls**
+- `ENV.ATK <ms>` - Global attack time (1-10000 ms, affects all envelopes)
+- `ENV.DEC <ms>` - Global decay time (1-10000 ms, affects all envelopes)
+- `ENV.CRV <-8 to 8>` - Global envelope curve (-8=log, 0=linear, 8=exp)
+- `ENV.MODE <0-2>` - Global envelope mode (0=AD, 1=ASR, 2=ADSR)
+- `GATE <ms>` - Global gate duration (0-10000 ms, 0=instant trigger)
+
+**Per-Envelope Overrides**
+All envelopes support individual control with these suffixes:
+- `.ATK` - Attack time (1-10000 ms)
+- `.DEC` - Decay time (1-10000 ms) [legacy short forms: AD, PD, FD, DD]
+- `.CRV` - Curve shape (-8.0 to 8.0)
+- `.MODE` - Envelope mode (0=AD, 1=ASR, 2=ADSR)
+- `.GATE` - Gate duration (0-10000 ms)
+
+Available envelope prefixes:
+- `AENV` - Amplitude envelope
+- `PENV` - Pitch envelope
+- `FMEV` - FM envelope
+- `DENV` - Discontinuity envelope
+- `FBEV` - Feedback envelope
+- `FLEV` - Filter envelope
+
+Examples:
+- `AENV.ATK 50` - Set amp envelope attack to 50ms
+- `PENV.CRV -4` - Set pitch envelope to logarithmic curve
+- `FMEV.MODE 1` - Set FM envelope to ASR mode
+- `GATE 100` - Set global gate to 100ms
+- `AENV.GATE 200` - Override amp envelope gate to 200ms
+
+**Legacy Short Forms (Aliases)**
+- `AD <ms>` - Amplitude decay time (alias for AENV.DEC)
+- `PD <ms>` - Pitch decay time (alias for PENV.DEC)
+- `FD <ms>` - FM decay time (alias for FMEV.DEC)
+- `DD <ms>` - Discontinuity decay time (alias for DENV.DEC)
 
 **Envelope Amounts (Additive Model: output = base + env*amount)**
 - `PA <0-16>` - Pitch envelope amount

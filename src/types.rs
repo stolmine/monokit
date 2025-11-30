@@ -168,6 +168,8 @@ pub enum MetroCommand {
     SetRecordingPath(String),  // Custom path prefix
     SetSlewTime(f32),          // Slew time in seconds
     SetParamSlew(String, f32), // Per-parameter slew: (param_name, time_in_seconds)
+    SetGate(f32),              // Global gate duration in seconds
+    SetEnvGate(String, f32),   // Per-envelope gate (env_name, duration)
     Shutdown,                  // Signal metro thread to exit
 }
 

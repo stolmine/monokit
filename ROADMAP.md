@@ -61,11 +61,17 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - [ ] `A.LERP <target> <ms>` - Time-based interpolation (optional)
 
 ### Envelope Shaping [Medium]
-- [ ] `AD.CURVE <-8 to 8>` - Amp envelope curve control (log/linear/exp)
-- [ ] `PD.CURVE`, `FD.CURVE`, `DD.CURVE` - Per-envelope curve shaping
-- [ ] `AA <ms>` - Amp attack time
-- [ ] `PAT <ms>` - Pitch attack time
-- [ ] `ENV.MODE <0-2>` - Envelope modes (0=perc/AD, 1=ASR, 2=ADSR)
+- [x] `ENV.ATK <ms>` - Global attack time ✓
+- [x] `ENV.DEC <ms>` - Global decay time ✓
+- [x] `ENV.CRV <-8 to 8>` - Global envelope curve control (log/linear/exp) ✓
+- [x] `ENV.MODE <0-2>` - Global envelope modes (0=AD, 1=ASR, 2=ADSR) ✓
+- [x] `GATE <ms>` - Global gate duration ✓
+- [x] Per-envelope overrides: `AENV.ATK/DEC/CRV/MODE/GATE` ✓
+- [x] Per-envelope overrides: `PENV.ATK/DEC/CRV/MODE/GATE` ✓
+- [x] Per-envelope overrides: `FMEV.ATK/DEC/CRV/MODE/GATE` ✓
+- [x] Per-envelope overrides: `DENV.ATK/DEC/CRV/MODE/GATE` ✓
+- [x] Per-envelope overrides: `FBEV.ATK/DEC/CRV/MODE/GATE` ✓
+- [x] Per-envelope overrides: `FLEV.ATK/DEC/CRV/MODE/GATE` ✓
 
 ---
 

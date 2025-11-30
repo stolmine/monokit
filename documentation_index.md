@@ -2,10 +2,9 @@
 
 ## Recent Updates (November 2025)
 
-### DRY Refactoring Status
+### DRY Refactoring Complete (All Phases)
 
-**Phases 0-3 Complete:** ~4,816 lines removed
-**Phase 4 Planned:** ~800-850 additional lines (see `DRY_PHASE4_PLAN.md`)
+**Total lines removed: ~5,942 lines**
 
 | Phase | Target | Reduction | Status |
 |-------|--------|-----------|--------|
@@ -13,16 +12,20 @@
 | Phase 1 | Envelopes | 918 lines (81%) | ✓ Complete |
 | Phase 2 | Patterns | 1,573 lines (78%) | ✓ Complete |
 | Phase 3 | Synth Params | 2,325 lines (80%) | ✓ Complete |
-| Phase 4A | Variable/Counter Macros | ~400-460 lines | Planned |
-| Phase 4B | Expression Helpers | ~80-120 lines | Planned |
-| Phase 4C | Test Fixtures | ~300 lines | Planned |
+| Phase 4A | Variable/Counter Macros | 489 lines (66%) | ✓ Complete |
+| Phase 4B | Expression Helpers | +39 lines (infra) | ✓ Complete |
+| Phase 4C | Test Fixtures | 637 lines | ✓ Complete |
 
 **Macro Systems Created:**
 - `synth/envelopes/common.rs` - Envelope parameter macros
 - `patterns/common.rs` - Pattern operation macros
 - `synth/common.rs` - Synth parameter macros (6 types)
+- `core/variables.rs` - Variable handler macros
+- `core/counters.rs` - Counter handler macros
+- `commands/common.rs` - Expression parsing helpers
+- `tests/common.rs` - Test setup macro
 
-**Total projected reduction:** ~5,600-5,700 lines (26-27% of original codebase)
+All 411 tests pass. Codebase reduced by ~28% while maintaining full functionality.
 
 ---
 

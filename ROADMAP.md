@@ -266,9 +266,9 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - [ ] Flash/highlight on parameter change
 - [ ] Optional: Parameter history log
 
-### Help Page Styling [Low]
-- [ ] Add explicit header marker (e.g., `#` prefix) to HELP_LINES section headers
-- [ ] Replace heuristic-based styling with marker-based detection
+### Help Page Styling [Low] - COMPLETE
+- [x] Add explicit `#` prefix marker to HELP_LINES section headers
+- [x] Replace heuristic-based styling with marker-based detection
 
 ### Activity Indicators (KO II Style) [Medium]
 - [ ] Page icon highlighting when script executes

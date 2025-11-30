@@ -648,10 +648,6 @@ where
         "DEBUG" => {
             misc::handle_debug(&parts, debug_level, output);
         }
-        "DEBUG.PENV" => {
-            let _ = metro_tx.send(MetroCommand::DebugPenv);
-            output("SENT DEBUG.PENV QUERY TO SC - CHECK SC POST WINDOW".to_string());
-        }
         "N1" => {
             counters::handle_n1(counters, output);
         }

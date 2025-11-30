@@ -522,6 +522,27 @@ Note: In SEND mode with RING or FREEZE tail modes, the effect output remains at 
   - First call returns a, second returns b, third returns a, etc.
   - Example: `PF TOG N 0 N 7` alternates between C3 and G3
 
+#### Randomization Commands
+**Voice Randomization:**
+- `RND.VOICE` - Randomize all oscillator/FM parameters within musical ranges
+- `RND.OSC` - Randomize oscillator params only (PF, PW, MF, MW)
+- `RND.FM` - Randomize FM-related params (FM, FB, FBA, FBD)
+
+**Modulation Randomization:**
+- `RND.MOD` - Randomize modulation routing (MB, TK, MP, MD, MT, MA)
+- `RND.ENV` - Randomize envelope times and amounts (ATK, DEC, CRV, MODE, PA, FA, DA)
+
+**FX Randomization:**
+- `RND.FX` - Randomize all effect parameters (filter + delay + reverb)
+- `RND.FILT` - Randomize filter (FC, FQ, FT, FE)
+- `RND.DLY` - Randomize delay (DT, DF, DLP, DW)
+- `RND.VERB` - Randomize reverb (RV, RP, RH, RW)
+
+**Pattern Randomization:**
+- `RND.P [min] [max]` - Randomize working pattern values (default: 0-127)
+- `RND.PN <n> [min] [max]` - Randomize specific pattern n
+- `RND.PALL [min] [max]` - Randomize all patterns
+
 #### Note/Pitch Conversion
 - `N <semitones>` - Convert semitones to frequency in Hz (12-TET, works in expressions)
   - N 0 = C3 (131 Hz) - matches Teletype reference pitch

@@ -145,25 +145,25 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 ### Randomization System [Medium]
 
 **Voice Randomization:**
-- [ ] `RND.VOICE` - Randomize all oscillator/FM parameters within musical ranges
-- [ ] `RND.OSC` - Randomize oscillator params only (PF, PW, MF, MW)
-- [ ] `RND.FM` - Randomize FM-related params (FM, FB, FBA, FBD)
+- [x] `RND.VOICE` - Randomize all oscillator/FM parameters within musical ranges
+- [x] `RND.OSC` - Randomize oscillator params only (PF, PW, MF, MW)
+- [x] `RND.FM` - Randomize FM-related params (FM, FB, FBA, FBD)
 
 **Modulation Randomization:**
-- [ ] `RND.MOD` - Randomize modulation routing (MB, TK, MP, MD, MT, MA)
-- [ ] `RND.ENV` - Randomize envelope times and amounts
+- [x] `RND.MOD` - Randomize modulation routing (MB, TK, MP, MD, MT, MA)
+- [x] `RND.ENV` - Randomize envelope times and amounts
 
 **FX Randomization:**
-- [ ] `RND.FX` - Randomize all effect parameters
-- [ ] `RND.FILT` - Randomize filter (FC, FQ, FT, FE)
-- [ ] `RND.DLY` - Randomize delay (DT, DF, DLP, DW)
-- [ ] `RND.VERB` - Randomize reverb (RV, RP, RH, RW)
+- [x] `RND.FX` - Randomize all effect parameters
+- [x] `RND.FILT` - Randomize filter (FC, FQ, FT, FE)
+- [x] `RND.DLY` - Randomize delay (DT, DF, DLP, DW)
+- [x] `RND.VERB` - Randomize reverb (RV, RP, RH, RW)
 
 **Pattern Randomization:**
-- [ ] `RND.P` - Randomize working pattern values
-- [ ] `RND.P <min> <max>` - Randomize within range
-- [ ] `RND.PN <n>` - Randomize specific pattern
-- [ ] `RND.PALL` - Randomize all patterns
+- [x] `RND.P` - Randomize working pattern values
+- [x] `RND.P <min> <max>` - Randomize within range
+- [x] `RND.PN <n>` - Randomize specific pattern
+- [x] `RND.PALL` - Randomize all patterns
 
 ---
 

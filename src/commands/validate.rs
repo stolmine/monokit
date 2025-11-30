@@ -248,9 +248,21 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "TR" | "RST" | "HELP" | "REC" | "REC.STOP" | "CLEAR" => {
+        "TR" | "RST" | "HELP" | "REC" | "REC.STOP" | "CLEAR" | "RND.VOICE" | "RND.OSC" | "RND.FM" | "RND.MOD" | "RND.ENV" | "RND.FX" | "RND.FILT" | "RND.DLY" | "RND.VERB" => {
             if argc > 0 {
                 return Err(anyhow::anyhow!("{} takes no arguments", command));
+            }
+            Ok(())
+        }
+        "RND.P" | "RND.PALL" => {
+            if argc != 0 && argc != 2 {
+                return Err(anyhow::anyhow!("{} takes 0 or 2 arguments (min and max)", command));
+            }
+            Ok(())
+        }
+        "RND.PN" => {
+            if argc != 1 && argc != 3 {
+                return Err(anyhow::anyhow!("RND.PN takes 1 argument (pattern number) or 3 arguments (pattern number, min, max)"));
             }
             Ok(())
         }

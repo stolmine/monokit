@@ -1,1 +1,2 @@
 - always update roadmap when agents complete features
+- agents should endeavor to keep the help system updated as they work

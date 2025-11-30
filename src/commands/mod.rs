@@ -6,6 +6,7 @@ mod metro_cmds;
 mod misc;
 mod patterns;
 mod random_ops;
+pub mod randomization;
 mod scene_cmds;
 pub mod slew;
 mod synth_params;
@@ -599,6 +600,42 @@ where
         }
         "TOG" => {
             random_ops::handle_tog(&parts, variables, patterns, counters, scripts, script_index, output);
+        }
+        "RND.VOICE" => {
+            randomization::handle_rnd_voice(metro_tx, *debug_level, output)?;
+        }
+        "RND.OSC" => {
+            randomization::handle_rnd_osc(metro_tx, *debug_level, output)?;
+        }
+        "RND.FM" => {
+            randomization::handle_rnd_fm(metro_tx, *debug_level, output)?;
+        }
+        "RND.MOD" => {
+            randomization::handle_rnd_mod(metro_tx, *debug_level, output)?;
+        }
+        "RND.ENV" => {
+            randomization::handle_rnd_env(metro_tx, *debug_level, output)?;
+        }
+        "RND.P" => {
+            randomization::handle_rnd_p(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "RND.PN" => {
+            randomization::handle_rnd_pn(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "RND.PALL" => {
+            randomization::handle_rnd_pall(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "RND.FX" => {
+            randomization::handle_rnd_fx(metro_tx, *debug_level, output)?;
+        }
+        "RND.FILT" => {
+            randomization::handle_rnd_filt(metro_tx, *debug_level, output)?;
+        }
+        "RND.DLY" => {
+            randomization::handle_rnd_dly(metro_tx, *debug_level, output)?;
+        }
+        "RND.VERB" => {
+            randomization::handle_rnd_verb(metro_tx, *debug_level, output)?;
         }
         "ADD" | "+" => {
             math_ops::handle_add(&parts, variables, patterns, counters, scripts, script_index, output);

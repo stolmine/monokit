@@ -2,135 +2,278 @@
 
 ## Overview
 
-Refactor three major areas of code duplication to reduce ~4,500 lines to ~1,500 lines (~67% reduction).
+Comprehensive reorganization and DRY refactoring to create a logical, maintainable command structure.
 
-**Decisions:**
-- Use declarative macros for code generation
-- Keep individual handler functions (thin wrappers) for incremental migration
-- Order: Envelopes → Patterns → Synth Params
+**Goals:**
+1. Organize commands by logical domain (Phase 0)
+2. Consolidate scattered parameters into proper locations (Phase 0)
+3. Apply DRY macros to eliminate boilerplate (Phases 1-3)
+
+**Expected Results:**
+- Clear, logical file organization
+- ~4,000+ line reduction through macro consolidation
+- Easier to add new commands (single location per domain)
+- No loss of functionality (411 tests must pass throughout)
+
+**Last Updated:** 2025-11-30
 
 ---
 
-## Phase 1: Envelope Handlers (~650 line reduction) [START HERE]
+## Phase 0: Codebase Reorganization [DO THIS FIRST]
 
-### Current State
-- 7 envelope types × 3 handlers each (ATK, CRV, MODE) = 21 functions
-- 100% identical logic, only strings differ
-- Additional handlers: AD, PD, FD, PA, FA, DA (envelope-specific, keep as-is)
+### Current Problems
 
-### Approach: Macro-Generated Handlers
+1. **Scattered envelope parameters:**
+   - FBA, FBD in `oscillator.rs` (should be in `envelopes/feedback.rs`)
+   - FE, FED in `filter.rs` (should be in `envelopes/filter.rs`)
+   - DD in `discontinuity.rs` (should be in `envelopes/disc.rs`)
 
-**Create `src/commands/synth_params/envelopes/common.rs`:**
+2. **Naming confusion:**
+   - `delay.rs` handles command scheduling (DEL), not synth delay
+   - `synth_params/delay.rs` has actual delay parameters
+
+3. **Fragmented effects:**
+   - EQ in separate `eq.rs` instead of with other effects
+   - VOL in `misc.rs` instead of with output params
+   - PAN in `effects.rs` separate from VOL
+
+4. **Dead code:**
+   - `envelopes/global.rs` - handlers not exported or routed
+   - MODE handlers in all envelope files - deprecated, not exported
+   - GATE handlers in `gate.rs` - not routed in dispatcher
+
+5. **Flat structure in synth_params:**
+   - 13 files at same level, hard to navigate
+   - Related effects not grouped together
+
+### Target Directory Structure
+
+```
+src/commands/
+├── mod.rs                      # Main dispatcher
+├── aliases.rs                  # Alias resolution
+├── validate.rs                 # Validation helpers
+│
+├── core/                       # Language primitives
+│   ├── mod.rs
+│   ├── variables.rs            # A-D, X-Z, T, I, J, K
+│   ├── counters.rs             # N1-N4 with MIN/MAX/RST
+│   ├── math_ops.rs             # ADD, SUB, MUL, DIV, MOD, MAP
+│   ├── random_ops.rs           # RND, RRND, TOSS, EITH, TOG
+│   ├── scale.rs                # Q, Q.ROOT, Q.SCALE, Q.BIT
+│   └── scheduling.rs           # DEL, DEL.CLR, DEL.X, DEL.R (renamed from delay.rs)
+│
+├── patterns/                   # Pattern operations (already well-organized)
+│   ├── mod.rs
+│   ├── common.rs               # NEW: shared impl functions
+│   ├── working.rs              # P.N, P.L, P.I, P.HERE, P.NEXT, P.PREV
+│   ├── working_math.rs         # P.ADD, P.SUB, P.MUL, P.DIV, P.MOD, P.SCALE
+│   ├── working_manip.rs        # P.PUSH, P.POP, P.INS, P.RM, P.REV, P.ROT, P.SHUF, P.SORT, P.RND
+│   ├── working_query.rs        # P.MIN, P.MAX, P.SUM, P.AVG, P.FND
+│   ├── explicit.rs             # PN.N, PN.L, PN.I, PN.HERE, PN.NEXT, PN.PREV
+│   ├── explicit_math.rs        # PN.ADD, PN.SUB, etc.
+│   ├── explicit_manip.rs       # PN.PUSH, PN.POP, etc.
+│   └── explicit_query.rs       # PN.MIN, PN.MAX, etc.
+│
+├── system/                     # System/session commands
+│   ├── mod.rs
+│   ├── metro.rs                # M, M.BPM, M.ACT, M.SCRIPT
+│   ├── scene.rs                # SAVE, LOAD, SCENES, DELETE
+│   ├── recording.rs            # REC, REC.STOP, REC.PATH (extract from misc.rs)
+│   └── misc.rs                 # TR, RST, SCRIPT, THEME, DEBUG, PRINT, HELP, CLEAR
+│
+├── synth/                      # Synth parameters (renamed from synth_params)
+│   ├── mod.rs
+│   ├── param_macro.rs          # NEW: DRY macro for param handlers
+│   │
+│   ├── oscillator.rs           # PF, PW, MF, MW, FB (core oscillator only)
+│   ├── discontinuity.rs        # DC, DM (amount and mode only)
+│   ├── modulation.rs           # TK, MB, MP, MD, MT, MA, FM, MX, MM, ME
+│   ├── filter.rs               # FC, FQ, FT, FK, MF.F (core filter only)
+│   ├── resonator.rs            # RF, RD, RM, RK
+│   ├── output.rs               # NEW: VOL, PAN (consolidated)
+│   ├── slew.rs                 # SLEW, SLEW.ALL
+│   │
+│   ├── envelopes/              # ALL envelope params consolidated
+│   │   ├── mod.rs
+│   │   ├── common.rs           # NEW: shared macro for DEC, AMT, ATK, CRV
+│   │   ├── amp.rs              # AD, AENV.ATK, AENV.CRV
+│   │   ├── pitch.rs            # PD, PA, PENV.ATK, PENV.CRV
+│   │   ├── fm.rs               # FD, FA, FMEV.ATK, FMEV.CRV
+│   │   ├── disc.rs             # DD, DA, DENV.ATK, DENV.CRV (DD moved from discontinuity.rs)
+│   │   ├── feedback.rs         # FBD, FBA, FBEV.ATK, FBEV.CRV (FBD/FBA moved from oscillator.rs)
+│   │   └── filter.rs           # FED, FE, FLEV.ATK, FLEV.CRV (FED/FE moved from filter.rs)
+│   │
+│   └── effects/                # Time-based and processing effects
+│       ├── mod.rs
+│       ├── common.rs           # NEW: shared macro for effect params
+│       ├── delay.rs            # DT, DF, DLP, DW, DS, D.MODE, D.TAIL
+│       ├── reverb.rs           # RV, RP, RH, RW, R.MODE, R.TAIL
+│       ├── lofi.rs             # LB, LS, LM (extract from effects.rs)
+│       ├── ring_mod.rs         # RGF, RGW, RGM (extract from effects.rs)
+│       ├── compressor.rs       # CT, CR, CA, CL, CM (extract from effects.rs)
+│       ├── eq.rs               # EL, EM, EF, EQ, EH
+│       ├── beat_repeat.rs      # BR.ACT, BR.LEN, BR.REV, BR.WIN, BR.MIX
+│       └── pitch_shift.rs      # PS.MODE, PS.SEMI, PS.GRAIN, PS.MIX, PS.TARG
+│
+└── randomization.rs            # RND.VOICE, RND.OSC, RND.FM, RND.MOD, RND.ENV, etc.
+```
+
+### Parameter Consolidation Map
+
+**Move TO `synth/envelopes/disc.rs`:**
+| Command | FROM | OSC Param |
+|---------|------|-----------|
+| DD | discontinuity.rs | dd |
+
+**Move TO `synth/envelopes/feedback.rs`:**
+| Command | FROM | OSC Param |
+|---------|------|-----------|
+| FBA | oscillator.rs | fba |
+| FBD | oscillator.rs | fbd |
+| FBEV.AMT | (alias for FBA) | fba |
+
+**Move TO `synth/envelopes/filter.rs`:**
+| Command | FROM | OSC Param |
+|---------|------|-----------|
+| FE | filter.rs | fe |
+| FED | filter.rs | fed |
+
+**Move TO `synth/output.rs` (NEW FILE):**
+| Command | FROM | OSC Param |
+|---------|------|-----------|
+| VOL | misc.rs | volume |
+| PAN | effects.rs | pan |
+
+### Files to Delete
+
+| File | Reason |
+|------|--------|
+| `synth_params/envelopes/global.rs` | Dead code - handlers not exported or routed |
+| `gate.rs` | Deprecated - GATE commands removed in envelope simplification |
+
+### Files to Rename
+
+| Current | New | Reason |
+|---------|-----|--------|
+| `delay.rs` | `core/scheduling.rs` | Handles DEL command scheduling, not synth delay |
+| `synth_params/` | `synth/` | Shorter, clearer |
+| `synth_params/effects.rs` | Split into `synth/effects/*.rs` | One file per effect type |
+
+### Phase 0 Migration Steps
+
+1. **Create new directory structure:**
+   ```bash
+   mkdir -p src/commands/core
+   mkdir -p src/commands/system
+   mkdir -p src/commands/synth/effects
+   ```
+
+2. **Move and rename files (no code changes yet):**
+   - `delay.rs` → `core/scheduling.rs`
+   - `synth_params/*` → `synth/*`
+   - Create `synth/effects/` and split `effects.rs`
+
+3. **Consolidate envelope params:**
+   - Move DD handler from `discontinuity.rs` → `envelopes/disc.rs`
+   - Move FBA, FBD handlers from `oscillator.rs` → `envelopes/feedback.rs`
+   - Move FE, FED handlers from `filter.rs` → `envelopes/filter.rs`
+
+4. **Create output.rs:**
+   - Move VOL from `misc.rs`
+   - Move PAN from `effects.rs`
+
+5. **Delete dead code:**
+   - Delete `envelopes/global.rs`
+   - Delete `gate.rs`
+   - Delete MODE handlers from all envelope files
+
+6. **Update mod.rs files:**
+   - Update all module declarations
+   - Update dispatcher routing
+
+7. **Run tests:** `cargo test` (all 411 must pass)
+
+---
+
+## Phase 1: Envelope Handler DRY (~500 line reduction)
+
+### After Phase 0, Envelope Structure Will Be:
+
+| Envelope | File | Commands |
+|----------|------|----------|
+| Amp | `envelopes/amp.rs` | AD, AENV.ATK, AENV.CRV |
+| Pitch | `envelopes/pitch.rs` | PD, PA, PENV.ATK, PENV.CRV |
+| FM | `envelopes/fm.rs` | FD, FA, FMEV.ATK, FMEV.CRV |
+| Disc | `envelopes/disc.rs` | DD, DA, DENV.ATK, DENV.CRV |
+| Feedback | `envelopes/feedback.rs` | FBD, FBA, FBEV.ATK, FBEV.CRV |
+| Filter | `envelopes/filter.rs` | FED, FE, FLEV.ATK, FLEV.CRV |
+
+**Each file has 4 handlers with identical patterns:**
+- Decay (DEC): int, 1-10000 ms
+- Amount (AMT): float, 0-16 (varies by envelope)
+- Attack (ATK): int, 1-10000 ms
+- Curve (CRV): float, -8.0 to 8.0
+
+### Create `synth/envelopes/common.rs`
 
 ```rust
 use crate::eval::eval_expression;
-// ... other imports
+use crate::types::*;
+use anyhow::{Context, Result};
+use rosc::OscType;
+use std::sync::mpsc::Sender;
 
-/// Generic envelope attack handler
-pub fn handle_envelope_atk_impl<F>(
-    prefix: &str,       // "aenv", "penv", etc.
-    label: &str,        // "AMP ENV", "PITCH ENV", etc.
-    cmd_prefix: &str,   // "AENV", "PENV", etc.
-    parts: &[&str],
-    variables: &Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &ScriptStorage,
-    script_index: usize,
-    metro_tx: &Sender<MetroCommand>,
-    debug_level: u8,
-    scale: &ScaleState,
-    mut output: F,
-) -> Result<()>
-where
-    F: FnMut(String),
-{
-    if parts.len() < 2 {
-        output(format!("ERROR: {}.ATK REQUIRES A TIME VALUE (1-10000 MS)", cmd_prefix));
-        return Ok(());
-    }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-        expr_val as i32
-    } else {
-        parts[1].parse().context(format!("Failed to parse {} attack time", label))?
+/// Macro to generate all 4 envelope handlers for a given envelope type
+macro_rules! define_envelope {
+    (
+        $prefix:literal,           // "aenv", "penv", etc.
+        $label:literal,            // "AMP", "PITCH", etc.
+        $dec_fn:ident,             // handle_ad, handle_pd, etc.
+        $amt_fn:ident,             // handle_pa, handle_fa, etc. (or none for amp)
+        $atk_fn:ident,             // handle_aenv_atk, etc.
+        $crv_fn:ident,             // handle_aenv_crv, etc.
+        $amt_max:expr              // 16.0 for most, 16383 for filter
+    ) => {
+        // Generate decay handler
+        define_param!($dec_fn, concat!($prefix, "_dec"), int, 1, 10000, "MS",
+                      concat!($label, " DECAY"));
+
+        // Generate amount handler (if not amp envelope)
+        define_param!($amt_fn, concat!($prefix, "_amt"), float, 0.0, $amt_max, "",
+                      concat!($label, " ENV AMOUNT"));
+
+        // Generate attack handler
+        define_param!($atk_fn, concat!($prefix, "_atk"), int, 1, 10000, "MS",
+                      concat!($label, " ENV ATTACK"));
+
+        // Generate curve handler
+        define_param!($crv_fn, concat!($prefix, "_crv"), float, -8.0, 8.0, "",
+                      concat!($label, " ENV CURVE"));
     };
-    if !(1..=10000).contains(&value) {
-        output(format!("ERROR: {} ATTACK MUST BE BETWEEN 1 AND 10000 MS", label));
-        return Ok(());
-    }
-    metro_tx.send(MetroCommand::SendParam(format!("{}_atk", prefix), OscType::Int(value)))?;
-    if debug_level >= 2 {
-        output(format!("SET {} ATTACK TO {} MS", label, value));
-    }
-    Ok(())
 }
 
-// Similar for handle_envelope_crv_impl, handle_envelope_mode_impl
+pub(crate) use define_envelope;
 ```
 
-**Macro for generating wrapper functions:**
+### Usage in Each Envelope File
 
 ```rust
-macro_rules! envelope_handlers {
-    ($prefix:literal, $label:literal, $cmd_prefix:literal, $atk:ident, $crv:ident, $mode:ident) => {
-        pub fn $atk<F>(
-            parts: &[&str],
-            variables: &Variables,
-            patterns: &mut PatternStorage,
-            counters: &mut Counters,
-            scripts: &ScriptStorage,
-            script_index: usize,
-            metro_tx: &Sender<MetroCommand>,
-            debug_level: u8,
-            scale: &ScaleState,
-            output: F,
-        ) -> Result<()>
-        where
-            F: FnMut(String),
-        {
-            handle_envelope_atk_impl($prefix, $label, $cmd_prefix, parts, variables, patterns,
-                                     counters, scripts, script_index, metro_tx, debug_level, scale, output)
-        }
+// envelopes/pitch.rs
+use super::common::define_envelope;
 
-        // Similar for $crv, $mode
-    };
-}
-
-// Usage in each file:
-envelope_handlers!("aenv", "AMP ENV", "AENV", handle_aenv_atk, handle_aenv_crv, handle_aenv_mode);
+define_envelope!(
+    "penv", "PITCH",
+    handle_pd, handle_pa, handle_penv_atk, handle_penv_crv,
+    16.0
+);
 ```
-
-### Files to Modify
-1. Create: `src/commands/synth_params/envelopes/common.rs` (~120 lines)
-2. Refactor each envelope file to use macro:
-   - `amp.rs`: Keep handle_ad, macro-generate ATK/CRV/MODE
-   - `pitch.rs`: Keep handle_pd, handle_pa, macro-generate ATK/CRV/MODE
-   - `fm.rs`: Keep handle_fd, handle_fa, macro-generate ATK/CRV/MODE
-   - `disc.rs`: Keep handle_da, macro-generate ATK/CRV/MODE
-   - `feedback.rs`: macro-generate all (no special handlers)
-   - `filter.rs`: macro-generate all (no special handlers)
-   - `global.rs`: Keep handle_env_dec, macro-generate ATK/CRV/MODE
-3. Update `mod.rs` to export from common
-
-### Migration Steps
-1. Create common.rs with impl functions
-2. Add macro definition
-3. Migrate one envelope file at a time
-4. Run `cargo test` after each file
-5. Commit when all envelope files done
 
 ---
 
-## Phase 2: Pattern Operations (~850 line reduction)
+## Phase 2: Pattern Operation DRY (~1,300 line reduction)
 
-### Current State
-- 16 operation pairs: P.* (working) vs PN.* (explicit)
-- 90% identical code, only pattern selection differs
-- P.* uses `patterns.working`, PN.* parses pattern number from args
-
-### Approach: PatternSelector Enum + Shared Implementations
-
-**Create `src/commands/patterns/common.rs`:**
+### Create `patterns/common.rs`
 
 ```rust
 pub enum PatternSelector {
@@ -139,7 +282,14 @@ pub enum PatternSelector {
 }
 
 impl PatternSelector {
-    pub fn get_index(&self, patterns: &PatternStorage) -> usize {
+    pub fn get_mut<'a>(&self, patterns: &'a mut PatternStorage) -> &'a mut Pattern {
+        match self {
+            PatternSelector::Working => &mut patterns.patterns[patterns.working],
+            PatternSelector::Explicit(idx) => &mut patterns.patterns[*idx],
+        }
+    }
+
+    pub fn index(&self, patterns: &PatternStorage) -> usize {
         match self {
             PatternSelector::Working => patterns.working,
             PatternSelector::Explicit(idx) => *idx,
@@ -147,108 +297,51 @@ impl PatternSelector {
     }
 }
 
-/// Parse pattern number with expression evaluation
-pub fn parse_pattern_number(
-    parts: &[&str],
-    idx: usize,
-    variables: &Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &ScriptStorage,
-    script_index: usize,
-    scale: &ScaleState,
-) -> Result<usize> {
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(parts, idx, variables, patterns, counters, scripts, script_index, scale) {
-        expr_val as usize
-    } else {
-        parts[idx].parse().context("Failed to parse pattern number")?
-    };
-    if pat > 5 {
-        anyhow::bail!("Pattern number must be 0-5");
-    }
-    Ok(pat)
-}
-
-/// Core ADD implementation
-pub fn pattern_add_impl<F>(
-    selector: PatternSelector,
-    val: i16,
-    patterns: &mut PatternStorage,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    let idx = selector.get_index(patterns);
-    let pattern = &mut patterns.patterns[idx];
+// Shared implementations
+pub fn pattern_add_impl(selector: PatternSelector, val: i16, patterns: &mut PatternStorage) {
+    let pattern = selector.get_mut(patterns);
     for i in 0..pattern.length {
         pattern.data[i] = pattern.data[i].saturating_add(val);
     }
-    output(format!("ADDED {} TO PATTERN {}", val, idx));
 }
 
-// Similar for: pattern_sub_impl, pattern_mul_impl, pattern_div_impl, pattern_mod_impl,
-// pattern_scale_impl, pattern_push_impl, pattern_pop_impl, pattern_ins_impl,
-// pattern_rm_impl, pattern_rev_impl, pattern_rot_impl, pattern_shuf_impl,
-// pattern_sort_impl, pattern_rnd_impl, pattern_min_impl, pattern_max_impl,
-// pattern_sum_impl, pattern_avg_impl, pattern_fnd_impl
+// ... similar for SUB, MUL, DIV, MOD, SCALE, PUSH, POP, INS, RM, REV, ROT, SHUF, SORT, RND
+// ... and MIN, MAX, SUM, AVG, FND
 ```
 
-**Wrapper functions become thin:**
+### Thin Wrappers
 
 ```rust
-// working_math.rs
-pub fn handle_pattern_add<F>(/* full signature */) -> Result<()> {
-    let val = parse_i16_expr(parts, 1, /* ... */)?;
-    pattern_add_impl(PatternSelector::Working, val, patterns, output);
+// working_math.rs - becomes ~30 lines total
+pub fn handle_pattern_add<F>(...) -> Result<()> {
+    let val = parse_i16_expr(parts, 1, ...)?;
+    common::pattern_add_impl(PatternSelector::Working, val, patterns);
+    output(format!("ADDED {} TO PATTERN {}", val, patterns.working));
     Ok(())
 }
 
-// explicit_math.rs
-pub fn handle_pn_add<F>(/* full signature */) -> Result<()> {
-    let pat = parse_pattern_number(parts, 1, /* ... */)?;
-    let val = parse_i16_expr(parts, 2, /* ... */)?;
-    pattern_add_impl(PatternSelector::Explicit(pat), val, patterns, output);
+// explicit_math.rs - becomes ~40 lines total
+pub fn handle_pn_add<F>(...) -> Result<()> {
+    let pat = parse_pattern_number(parts, 1, ...)?;
+    let val = parse_i16_expr(parts, 2, ...)?;
+    common::pattern_add_impl(PatternSelector::Explicit(pat), val, patterns);
+    output(format!("ADDED {} TO PATTERN {}", val, pat));
     Ok(())
 }
 ```
-
-### Files to Modify
-1. Create: `src/commands/patterns/common.rs` (~300 lines)
-2. Refactor:
-   - `working_math.rs`: 6 operations → thin wrappers
-   - `explicit_math.rs`: 6 operations → thin wrappers
-   - `working_manip.rs`: 9 operations → thin wrappers
-   - `explicit_manip.rs`: 9 operations → thin wrappers
-   - `working_query.rs`: 5 operations → thin wrappers (if exists)
-   - `explicit_query.rs`: 5 operations → thin wrappers (if exists)
-3. Update `mod.rs` exports
-
-### Migration Steps
-1. Create common.rs with PatternSelector and helper functions
-2. Add one impl function at a time
-3. Migrate corresponding P.* and PN.* wrappers together
-4. Run tests after each operation pair
-5. Commit when all pattern ops done
 
 ---
 
-## Phase 3: Synth Parameter Handlers (~2,000 line reduction)
+## Phase 3: Synth Parameter DRY (~2,000 line reduction)
 
-### Current State
-- 50+ handlers across 12 files in `src/commands/synth_params/`
-- Each handler: 25-40 lines of nearly identical code
-- Only differences: param name, type (i32/f32), range, OSC name, error messages
-
-### Approach: Declarative Macro for Parameter Definitions
-
-**Create `src/commands/synth_params/param_macro.rs`:**
+### Create `synth/param_macro.rs`
 
 ```rust
-/// Macro to define a synth parameter handler
+/// Core macro for simple synth parameters
 macro_rules! define_param {
     // Integer parameter
-    ($fn_name:ident, $osc_name:literal, int, $min:expr, $max:expr, $unit:literal, $desc:literal) => {
-        pub fn $fn_name<F>(
+    ($fn:ident, $osc:literal, int, $min:expr, $max:expr, $unit:literal, $desc:literal) => {
+        pub fn $fn<F>(
             parts: &[&str],
             variables: &Variables,
             patterns: &mut PatternStorage,
@@ -263,83 +356,67 @@ macro_rules! define_param {
         where
             F: FnMut(String),
         {
-            if parts.len() < 2 {
-                output(format!("ERROR: {} REQUIRES A VALUE ({}-{}{})",
-                    stringify!($fn_name).to_uppercase().trim_start_matches("HANDLE_"),
-                    $min, $max, if $unit.is_empty() { "" } else { concat!(" ", $unit) }));
-                return Ok(());
-            }
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-                expr_val as i32
-            } else {
-                parts[1].parse().context(concat!("Failed to parse ", $desc))?
-            };
-            if !($min..=$max).contains(&value) {
-                output(format!("ERROR: {} MUST BE BETWEEN {} AND {}{}",
-                    $desc.to_uppercase(), $min, $max,
-                    if $unit.is_empty() { "".to_string() } else { format!(" {}", $unit) }));
-                return Ok(());
-            }
-            metro_tx.send(MetroCommand::SendParam($osc_name.to_string(), OscType::Int(value)))?;
-            if debug_level >= 2 {
-                output(format!("SET {} TO {}{}", $desc.to_uppercase(), value,
-                    if $unit.is_empty() { "".to_string() } else { format!(" {}", $unit) }));
-            }
-            Ok(())
+            param_impl_int(parts, variables, patterns, counters, scripts,
+                          script_index, metro_tx, debug_level, scale, &mut output,
+                          $osc, $min, $max, $unit, $desc)
         }
     };
 
-    // Float parameter - similar structure
-    ($fn_name:ident, $osc_name:literal, float, $min:expr, $max:expr, $unit:literal, $desc:literal) => {
-        // ... similar but with f32
+    // Float parameter
+    ($fn:ident, $osc:literal, float, $min:expr, $max:expr, $unit:literal, $desc:literal) => {
+        // Similar with f32
     };
+}
+
+fn param_impl_int<F>(..., osc: &str, min: i32, max: i32, unit: &str, desc: &str) -> Result<()> {
+    // Single implementation used by all int params
 }
 
 pub(crate) use define_param;
 ```
 
-**Usage in each module:**
+### Usage in Effect Files
 
 ```rust
-// filter.rs
-use super::param_macro::define_param;
+// synth/effects/delay.rs
+use super::super::param_macro::define_param;
 
-define_param!(handle_fc, "fc", float, 20.0, 20000.0, "HZ", "filter cutoff");
-define_param!(handle_fq, "fq", int, 0, 16383, "", "filter resonance");
-define_param!(handle_ft, "ft", int, 0, 3, "", "filter type");
-define_param!(handle_fe, "fe", int, 0, 16383, "", "filter envelope amount");
-define_param!(handle_fed, "fed", int, 1, 10000, "MS", "filter envelope decay");
-define_param!(handle_fk, "fk", int, 0, 16383, "", "filter key tracking");
-define_param!(handle_mf_f, "mf_f", int, 0, 1, "", "modbus to filter routing");
+define_param!(handle_dt, "dt", int, 1, 2000, "MS", "DELAY TIME");
+define_param!(handle_df, "df", int, 0, 16383, "", "DELAY FEEDBACK");
+define_param!(handle_dlp, "dlp", int, 100, 20000, "HZ", "DELAY LP CUTOFF");
+define_param!(handle_dw, "dw", int, 0, 16383, "", "DELAY WET");
+define_param!(handle_ds, "ds", int, 0, 1, "", "DELAY SYNC");
+
+// Keep manual for mode handlers that need string output
+pub fn handle_d_mode<F>(...) -> Result<()> {
+    // Manual implementation with mode names
+}
 ```
-
-### Exceptions (Keep Manual)
-- `beat_repeat.rs` - extra parameters (metro_interval, br_len state)
-- Handlers with enum mode descriptions (d_mode, pw, mw) - add macro variant with mode_names
-
-### Files to Modify
-1. Create: `src/commands/synth_params/param_macro.rs` (~100 lines)
-2. Refactor each module:
-   - `filter.rs`: 7 handlers → 7 macro calls
-   - `effects.rs`: 12 handlers → 12 macro calls
-   - `delay.rs`: 5 handlers → 5 macro calls (keep d_mode, d_tail manual)
-   - `reverb.rs`: 4 handlers → 4 macro calls (keep r_mode, r_tail manual)
-   - `oscillator.rs`: ~7 handlers → macro calls
-   - `modulation.rs`: ~10 handlers → macro calls
-   - `discontinuity.rs`: 3 handlers → macro calls
-   - `resonator.rs`: 4 handlers → macro calls
-   - `eq.rs`: 5 handlers → macro calls
-   - `pitch_shift.rs`: 5 handlers → macro calls
-3. Keep as-is: `beat_repeat.rs`
 
 ---
 
 ## Testing Strategy
 
-- All 334 existing tests must pass after each phase
-- Run `cargo test` after each module migration
-- Run `cargo clippy` to catch any issues
-- Manual smoke test with SC server after each phase complete
+### Before Each Phase
+```bash
+cargo test           # All 411 tests must pass
+cargo clippy         # No warnings
+cargo build --release
+```
+
+### Test Coverage by Area
+- Envelope tests: 74 tests
+- Pattern tests: 73 tests
+- Buffer effects: 16 tests
+- FX randomization: 10 tests
+- Math/expression: 42 tests
+- Variables/counters: 22 tests
+
+### Incremental Validation
+- Move ONE file at a time
+- Run `cargo test` after each move
+- Commit after each successful migration
+- Tag commits for easy rollback
 
 ---
 
@@ -347,26 +424,31 @@ define_param!(handle_mf_f, "mf_f", int, 0, 1, "", "modbus to filter routing");
 
 | Phase | Area | Before | After | Reduction |
 |-------|------|--------|-------|-----------|
-| 1 | Envelopes | ~1,142 lines | ~450 lines | ~692 lines |
-| 2 | Patterns | ~1,215 lines | ~500 lines | ~715 lines |
-| 3 | Synth Params | ~2,930 lines | ~800 lines | ~2,130 lines |
-| **Total** | | ~5,287 lines | ~1,750 lines | **~3,537 lines (67%)** |
+| 0 | Reorganization | - | - | Cleaner structure |
+| 1 | Envelopes | ~1,141 lines | ~300 lines | ~841 lines |
+| 2 | Patterns | ~2,023 lines | ~600 lines | ~1,423 lines |
+| 3 | Synth Params | ~2,897 lines | ~700 lines | ~2,197 lines |
+| **Total** | | ~6,061 lines | ~1,600 lines | **~4,461 lines (74%)** |
 
 ---
 
-## Critical Files to Read Before Implementation
+## Rollback Plan
 
-### Phase 1 (Envelopes)
-- `src/commands/synth_params/envelopes/amp.rs` - reference implementation
-- `src/commands/synth_params/envelopes/mod.rs` - module structure
-- `src/tests/envelope_tests.rs` - test coverage
+- Each phase is a separate branch
+- Merge to main only after full test pass
+- Keep old file paths as git history
+- Tag releases before major changes
 
-### Phase 2 (Patterns)
-- `src/commands/patterns/working_math.rs` - P.* reference
-- `src/commands/patterns/explicit_math.rs` - PN.* reference
-- `src/tests/pattern_ops_tests.rs` - test coverage
+---
 
-### Phase 3 (Synth Params)
-- `src/commands/synth_params/filter.rs` - typical param handlers
-- `src/commands/synth_params/beat_repeat.rs` - exception case
-- `src/commands/mod.rs` - dispatch routing
+## Implementation Order
+
+1. **Phase 0A:** Create directory structure, move files (no code changes)
+2. **Phase 0B:** Consolidate envelope params (move handlers between files)
+3. **Phase 0C:** Create output.rs, delete dead code
+4. **Phase 0D:** Update all mod.rs and dispatcher
+5. **Phase 1:** Apply envelope macros
+6. **Phase 2:** Apply pattern common.rs
+7. **Phase 3:** Apply synth param macros
+
+Each step: test → commit → proceed

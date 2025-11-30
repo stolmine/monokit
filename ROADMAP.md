@@ -126,6 +126,7 @@ Consolidate command definitions into a single source of truth to eliminate synch
 - Validation fell out of sync, causing canonical names (MBUS.FM, POSC.FREQ, etc.) to fail silently in scripts
 
 **Solution:**
+- [ ] Phase 0: Codebase reorganization (create `core/`, `ui/`, `script/` subdirectories)
 - [ ] Create `CommandDef` struct with aliases, arg counts, handler reference
 - [ ] Single `COMMANDS` registry as source of truth
 - [ ] Generate `resolve_alias()` from registry
@@ -133,7 +134,8 @@ Consolidate command definitions into a single source of truth to eliminate synch
 - [ ] Dispatcher looks up handlers from registry
 - [ ] Add new command = 1 place only
 
-**Benefits:**
+**Expected Impact:**
+- ~4,400 line reduction (74% decrease from 5,963 to 1,558 lines)
 - Eliminates class of sync bugs permanently
 - Simplifies adding new commands
 - Self-documenting command metadata
@@ -144,7 +146,7 @@ Consolidate command definitions into a single source of truth to eliminate synch
 - `src/commands/validate.rs` → derive from registry
 - `src/commands/mod.rs` → lookup from registry
 
-**Reference:** See `DRY_REFACTOR_ANALYSIS.md` for detailed implementation plan.
+**Reference:** See `DRY_REFACTOR_PLAN.md` for comprehensive implementation plan with macro-based approach.
 
 ---
 

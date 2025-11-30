@@ -50,6 +50,8 @@
 - **DSP_TIER1_IMPLEMENTATION_PLAN.md** - Detailed implementation plan for Filter, Resonator, Delay, and Reverb DSP blocks
 - **DSP_TIER3_BUFFER_EFFECTS_PLAN.md** - Implementation plan for Beat Repeat and Pitch Shift buffer effects
 - **EFFECT_ROUTING_DESIGN.md** - Design document for flexible effect routing system
+- **DRY_REFACTOR_PLAN.md** - Comprehensive refactoring plan for codebase reorganization and DRY consolidation
+- **DRY_ANALYSIS_REPORT.md** - Detailed analysis of code duplication and refactoring opportunities (~4,000-5,000 line reduction potential)
 - **documentation_index.md** - This file, listing all documentation and key project files
 
 ## Key Project Files
@@ -164,6 +166,54 @@ Key features:
 ### Build Artifacts
 
 - **target/** - Rust build output (ignored by git)
+
+---
+
+## DRY Refactoring Plan
+
+### Overview
+The codebase contains ~6,500-7,000 lines of systematic duplication (30-33% of total code). A comprehensive refactoring plan targets **~4,000-5,000 line reduction** through reorganization and macro consolidation.
+
+### Three-Phase Approach
+
+**Phase 0: Codebase Reorganization (DO THIS FIRST)**
+- Reorganize command structure by logical domain (core, patterns, system, synth)
+- Consolidate scattered envelope parameters into proper locations
+- Move envelope decay/amount params to respective envelope files:
+  - DD from `discontinuity.rs` → `envelopes/disc.rs`
+  - FBA, FBD from `oscillator.rs` → `envelopes/feedback.rs`
+  - FE, FED from `filter.rs` → `envelopes/filter.rs`
+- Create `synth/output.rs` to consolidate VOL and PAN
+- Delete dead code (MODE handlers, deprecated GATE commands, unused global.rs)
+- Rename `delay.rs` → `core/scheduling.rs` (handles DEL commands, not synth delay)
+- Split `effects.rs` into modular effect files (lofi.rs, ring_mod.rs, compressor.rs, etc.)
+
+**Phase 1: Envelope Handler DRY (~500 line reduction)**
+- Create `synth/envelopes/common.rs` with `define_envelope!` macro
+- Generate DEC, AMT, ATK, CRV handlers for all 6 envelopes from single definition
+- Each envelope file reduces from ~140 lines → ~30 lines
+
+**Phase 2: Pattern Operation DRY (~1,300 line reduction)**
+- Create `patterns/common.rs` with shared implementation functions
+- Unify P.* (working) and PN.* (explicit) operations via PatternSelector enum
+- Thin wrappers for all math, manipulation, and query operations
+- Eliminates 90% duplication between working_*.rs and explicit_*.rs files
+
+**Phase 3: Synth Parameter DRY (~2,000 line reduction)**
+- Create `synth/param_macro.rs` with `define_param!` macro
+- Generate parameter handlers from declarative specifications
+- Consolidate 70+ nearly-identical parameter handlers into config-driven system
+
+### Expected Results
+- Clear, logical file organization by domain
+- ~4,000+ line reduction (74% of duplicated code eliminated)
+- Easier to add new commands (single location per domain)
+- All 411 tests continue to pass throughout
+- Maintains backward compatibility
+
+See **DRY_REFACTOR_PLAN.md** for complete implementation details and **DRY_ANALYSIS_REPORT.md** for duplication analysis.
+
+---
 
 ## Architecture Overview
 
@@ -583,7 +633,7 @@ Note: In SEND mode with RING or FREEZE tail modes, the effect output remains at 
 
 **Modulation Randomization:**
 - `RND.MOD` - Randomize modulation routing (MB, TK, MP, MD, MT, MA)
-- `RND.ENV` - Randomize envelope times and amounts (ATK, DEC, CRV, MODE, PA, FA, DA)
+- `RND.ENV` - Randomize envelope times and amounts (ATK, DEC, CRV, PA, FA, DA)
 
 **FX Randomization:**
 - `RND.FX` - Randomize all effect parameters (filter + delay + reverb)

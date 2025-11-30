@@ -555,41 +555,41 @@ Examples:
 - `ME <0|1>` - Mix modulation enable (route mod bus to mix amount)
 
 **Envelope Controls**
-All envelopes support individual control with these parameters:
-- `.ATK` - Attack time (1-10000 ms)
-- `.CRV` - Curve shape (-8.0 to 8.0, -8=log, 0=linear, 8=exp)
-- Decay time via short form (AD, PD, FD, DD, FBD, FED)
-- Amount parameter (PA, FA, DA, FBA/FBEV.AMT, FE)
+All envelopes use consistent *ENV prefix naming:
+- `*.DEC` - Decay time (1-10000 ms) - short forms: AD, PD, FD, DD, FBD, FED
+- `*.ATK` - Attack time (1-10000 ms)
+- `*.CRV` - Curve shape (-8.0 to 8.0, -8=log, 0=linear, 8=exp)
+- `*.AMT` - Envelope amount (where applicable) - short forms: PA, FA, DA, FBA, FE
 
 Available envelope prefixes:
-- `AENV` - Amplitude envelope
-- `PENV` - Pitch envelope
-- `FMEV` - FM envelope
-- `DENV` - Discontinuity envelope
-- `FBEV` - Feedback envelope
-- `FLEV` - Filter envelope
+- `AENV` - Amplitude envelope (AENV.DEC→AD, AENV.ATK, AENV.CRV)
+- `PENV` - Pitch envelope (PENV.DEC→PD, PENV.AMT→PA, PENV.ATK, PENV.CRV)
+- `FMEV` - FM envelope (FMEV.DEC→FD, FMEV.AMT→FA, FMEV.ATK, FMEV.CRV)
+- `DENV` - Discontinuity envelope (DENV.DEC→DD, DENV.AMT→DA, DENV.ATK, DENV.CRV)
+- `FBEV` - Feedback envelope (FBEV.DEC→FBD, FBEV.AMT, FBEV.ATK, FBEV.CRV)
+- `FLEV` - Filter envelope (FLEV.DEC→FED, FLEV.AMT→FE, FLEV.ATK, FLEV.CRV)
 
 Examples:
 - `AENV.ATK 50` - Set amp envelope attack to 50ms
 - `PENV.CRV -4` - Set pitch envelope to logarithmic curve
-- `AD 500` - Set amplitude decay to 500ms
-- `PA 4` - Set pitch envelope to 4 octaves
-- `FBEV.AMT 8000` - Set feedback envelope amount (alias for FBA)
+- `AD 500` or `AENV.DEC 500` - Set amplitude decay to 500ms
+- `PA 4` or `PENV.AMT 4` - Set pitch envelope to 4 octaves
+- `FE 8000` or `FLEV.AMT 8000` - Set filter envelope amount
 
-**Decay Time Short Forms (Aliases)**
-- `AD <ms>` - Amplitude decay time (1-10000 ms)
-- `PD <ms>` - Pitch decay time (1-10000 ms)
-- `FD <ms>` - FM decay time (1-10000 ms)
-- `DD <ms>` - Discontinuity decay time (1-10000 ms)
-- `FBD <ms>` - Feedback decay time (1-10000 ms)
-- `FED <ms>` - Filter decay time (1-10000 ms)
+**Decay Time Short Forms**
+- `AD <ms>` - Amplitude decay (AENV.DEC)
+- `PD <ms>` - Pitch decay (PENV.DEC)
+- `FD <ms>` - FM decay (FMEV.DEC)
+- `DD <ms>` - Discontinuity decay (DENV.DEC)
+- `FBD <ms>` - Feedback decay (FBEV.DEC)
+- `FED <ms>` - Filter decay (FLEV.DEC)
 
 **Envelope Amounts (Additive Model: output = base + env*amount)**
-- `PA <0-16>` - Pitch envelope amount (in octaves)
-- `FA <0-16>` - FM envelope amount
-- `DA <0-16>` - Discontinuity envelope amount
-- `FBA <0-16383>` - Feedback envelope amount (alias: FBEV.AMT)
-- `FE <0-16383>` - Filter envelope amount
+- `PA <0-16>` - Pitch envelope amount in octaves (PENV.AMT)
+- `FA <0-16>` - FM envelope amount (FMEV.AMT)
+- `DA <0-16>` - Discontinuity envelope amount (DENV.AMT)
+- `FBA <0-16383>` - Feedback envelope amount (FBEV.AMT)
+- `FE <0-16383>` - Filter envelope amount (FLEV.AMT)
 
 **SVF Multi-Mode Filter**
 - `FC <hz>` - Filter cutoff frequency (20-20000)

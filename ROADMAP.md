@@ -373,7 +373,33 @@ Scheduled command execution with delay buffer (inspired by Teletype).
 
 ## Phase 4: Modulation System
 
-**Focus:** New synthesis infrastructure with LFO routing matrix
+**Focus:** New synthesis infrastructure with LFO routing matrix and extended envelope coverage
+
+### Aux Envelope System [High]
+Flexible auxiliary envelope that can be routed to any synth parameter.
+
+- [ ] `XENV.DEC <ms>` - Aux envelope decay time
+- [ ] `XENV.ATK <ms>` - Aux envelope attack time
+- [ ] `XENV.CRV <-8 to 8>` - Aux envelope curve
+- [ ] `XENV.AMT <0-16383>` - Aux envelope amount
+- [ ] `XENV.DEST <param>` - Set destination parameter (e.g., `XENV.DEST FC`)
+- [ ] Multiple destinations support (optional)
+- [ ] SC implementation: New envelope with routing matrix
+
+### Extended Envelope Coverage [Medium]
+Dedicated envelopes for synth/FX parameters currently lacking envelope control.
+
+**Lo-Fi Effect:**
+- [ ] `LOEV.DEC <ms>` - Lo-Fi envelope decay
+- [ ] `LOEV.ATK <ms>` - Lo-Fi envelope attack
+- [ ] `LOEV.CRV <-8 to 8>` - Lo-Fi envelope curve
+- [ ] `LOEV.AMT <0-16383>` - Lo-Fi envelope amount (modulates LM mix)
+
+**Other candidates (to be evaluated):**
+- [ ] Ring mod envelope (RGM mix)
+- [ ] Resonator envelope (RM mix)
+- [ ] Delay envelope (DW wet)
+- [ ] Reverb envelope (RW wet)
 
 ### LFO System [High]
 - [ ] 2-4 LFO units (L1, L2, L3, L4)

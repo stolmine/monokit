@@ -11,18 +11,15 @@ static CANONICAL_TO_ALIAS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new
     m.insert("MOSC.WAVE", "MW");
     m.insert("MOSC.FB", "FB");
     m.insert("MOSC.FBA", "FBA");
-    m.insert("MOSC.FBD", "FBD");
 
     m.insert("DISC.AMT", "DC");
     m.insert("DISC.MODE", "DM");
-    m.insert("DISC.DEC", "DD");
 
     m.insert("FILT.CUT", "FC");
     m.insert("FILT.RES", "FQ");
     m.insert("FILT.TYP", "FT");
     m.insert("FILT.KEY", "FK");
-    m.insert("FILT.ENV", "FE");
-    m.insert("FILT.EDC", "FED");
+    m.insert("FLEV.AMT", "FE");
 
     m.insert("RESO.FRQ", "RF");
     m.insert("RESO.DEC", "RD");

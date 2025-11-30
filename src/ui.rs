@@ -685,7 +685,14 @@ pub fn render_help_page(app: &super::App, height: usize) -> Paragraph<'static> {
         .skip(start)
         .take(visible)
         .map(|&s| {
-            if s.starts_with("  ") && s.chars().nth(2).map_or(false, |c| c.is_uppercase()) && !s.contains('<') && !s.contains("0-") {
+            // Section headers: start with 2 spaces, ALL CAPS, no lowercase or special syntax
+            let is_section_header = s.starts_with("  ")
+                && s.len() > 2
+                && s.chars().skip(2).filter(|c| c.is_alphabetic()).all(|c| c.is_uppercase())
+                && !s.contains('<')
+                && !s.contains('/')
+                && !s.chars().skip(2).take(10).any(|c| c.is_ascii_digit());
+            if is_section_header {
                 Line::from(Span::styled(s, Style::default().fg(label).add_modifier(Modifier::BOLD)))
             } else {
                 Line::from(Span::styled(s, Style::default().fg(fg)))

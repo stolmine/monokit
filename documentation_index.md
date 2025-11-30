@@ -24,7 +24,11 @@ Modular Rust implementation (~18,200 total lines across 86 files):
 - **src/main.rs** (69 lines) - Application entry point, initializes TUI and starts main loop
 - **src/metro.rs** (112 lines) - Metro thread implementation with absolute timing
 - **src/types.rs** (233 lines) - Core data structures, enums, constants, and type definitions
-- **src/eval.rs** (498 lines) - Expression evaluation engine for nested operations, pattern access, and comparison operators
+- **src/eval/** - Expression evaluation module (~720 lines across 4 files)
+  - **mod.rs** - Core dispatch, resolve_value, quantize_note, eval_condition
+  - **patterns.rs** - Pattern expression handling (PN.*, P.*)
+  - **math.rs** - Math operators (ADD, SUB, MUL, DIV, MOD, Q, N)
+  - **logic.rs** - Comparisons, RND, TOG, MAP, counters
 - **src/ui/** - TUI rendering module (~1,370 lines across 10 files)
   - **mod.rs** - Module coordinator
   - **header.rs** - Header rendering
@@ -33,10 +37,14 @@ Modular Rust implementation (~18,200 total lines across 86 files):
 - **src/scene.rs** (169 lines) - Scene persistence, file I/O
 - **src/theme.rs** (67 lines) - Theme struct and built-in themes (dark, light, system)
 - **src/config.rs** (170 lines) - Configuration loading, named theme support
-- **src/app/** - Application module
-  - **mod.rs** (146 lines) - App struct, constructor, navigation
-  - **input.rs** (234 lines) - Input handling methods
-  - **script_exec.rs** (481 lines) - Script/command execution
+- **src/app/** - Application module (~750 lines across 6 files)
+  - **mod.rs** - App struct, constructor, navigation
+  - **input.rs** - Input handling methods
+  - **script_exec/** - Script/command execution module (4 files)
+    - **mod.rs** - Core execution, metro updates
+    - **control_flow.rs** - If/elif/else, conditionals
+    - **loops.rs** - Loop processing
+    - **interactive.rs** - User command execution
 - **src/commands/** - Command processing module (41 files, ~9,085 lines)
   - **mod.rs** - Main dispatcher with command routing
   - **validate.rs** - Command validation

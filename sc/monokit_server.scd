@@ -92,13 +92,7 @@ s.waitForBoot {
             slew_rw = -1, slew_volume = -1, slew_pn = -1, slew_lb = -1,
             slew_ls = -1, slew_lm = -1, slew_rgf = -1, slew_rgm = -1,
             slew_ct = -1, slew_cm = -1, slew_el = -1, slew_em = -1,
-            slew_eh = -1, slew_ef = -1,
-            env_atk = 1, env_dec = 100, env_crv = -4, env_mode = 0,
-            aenv_atk = -1, penv_atk = -1, fmev_atk = -1, denv_atk = -1, fbev_atk = -1, flev_atk = -1,
-            aenv_crv = -100, penv_crv = -100, fmev_crv = -100, denv_crv = -100, fbev_crv = -100, flev_crv = -100,
-            aenv_mode = -1, penv_mode = -1, fmev_mode = -1, denv_mode = -1, fbev_mode = -1, flev_mode = -1,
-            aenv_gate = -1, penv_gate = -1, fmev_gate = -1, denv_gate = -1, fbev_gate = -1, flev_gate = -1,
-            gate_dur = 0;
+            slew_eh = -1, slew_ef = -1;
 
         // All var declarations at top
         var trig, pitchEnv, ampEnv, fmEnv, dcEnv, fbEnv, filterEnv;
@@ -125,12 +119,14 @@ s.waitForBoot {
         var rfSmooth, rmSmooth, dtSmooth, dfSmooth, dwSmooth, rvSmooth, rwSmooth, volumeSmooth, panSmooth;
         var lbSmooth, lsSmooth, lmSmooth, rgfSmooth, rgmSmooth, ctSmooth, cmSmooth;
         var elSmooth, emSmooth, ehSmooth, efSmooth;
-        var aAtk, aCrv, aMode, aGateDur, aGate;
-        var pAtk, pCrv, pMode, pGateDur, pGate;
-        var fmAtk, fmCrv, fmMode, fmGateDur, fmGate;
-        var dAtk, dCrv, dMode, dGateDur, dGate;
-        var fbAtk, fbCrv, fbMode, fbGateDur, fbGate;
-        var flAtk, flCrv, flMode, flGateDur, flGate;
+        // Envelope amount controls - captured early to ensure consistent reading
+        var paCtl, faCtl, daCtl, fbaCtl;
+
+        // Capture envelope amounts - use Lag.kr(0) to force proper signal evaluation
+        paCtl = Lag.kr(pa, 0);
+        faCtl = Lag.kr(fa, 0);
+        daCtl = Lag.kr(da, 0);
+        fbaCtl = Lag.kr(fba, 0);
 
         // Smoothed parameters using Lag.kr with per-parameter slew time overrides
         pfSmooth = Lag.kr(pf, Select.kr(slew_pf >= 0, [slew_time, slew_pf]));
@@ -167,80 +163,14 @@ s.waitForBoot {
         // Envelope model: output = base + (envelope * amount)
         // Exception: ampEnv is multiplicative (0→1 gating)
 
-        // Trigger for instant envelopes
+        // Trigger and envelopes
         trig = Trig1.kr(gate, 0.001);
-
-        // Amp envelope resolution
-        aAtk = Select.kr(aenv_atk >= 0, [env_atk, aenv_atk]) / 1000;
-        aCrv = Select.kr(aenv_crv > -100, [env_crv, aenv_crv]);
-        aMode = Select.kr(aenv_mode >= 0, [env_mode, aenv_mode]);
-        aGateDur = Select.kr(aenv_gate >= 0, [gate_dur, aenv_gate]);
-        aGate = Trig1.kr(gate, aGateDur.max(0.01));
-        ampEnv = Select.kr(aMode.clip(0, 2).round, [
-            EnvGen.kr(Env.perc(aAtk, ad / 1000, 1, aCrv), trig),
-            EnvGen.kr(Env.asr(aAtk, 1, ad / 1000, aCrv), aGate),
-            EnvGen.kr(Env.adsr(aAtk, ad / 2000, 0.7, ad / 1000, 1, aCrv), aGate)
-        ]);
-
-        // Pitch envelope resolution
-        pAtk = Select.kr(penv_atk >= 0, [env_atk, penv_atk]) / 1000;
-        pCrv = Select.kr(penv_crv > -100, [env_crv, penv_crv]);
-        pMode = Select.kr(penv_mode >= 0, [env_mode, penv_mode]);
-        pGateDur = Select.kr(penv_gate >= 0, [gate_dur, penv_gate]);
-        pGate = Trig1.kr(gate, pGateDur.max(0.01));
-        pitchEnv = Select.kr(pMode.clip(0, 2).round, [
-            EnvGen.kr(Env.perc(pAtk, pd / 1000, 1, pCrv), trig),
-            EnvGen.kr(Env.asr(pAtk, 1, pd / 1000, pCrv), pGate),
-            EnvGen.kr(Env.adsr(pAtk, pd / 2000, 0.7, pd / 1000, 1, pCrv), pGate)
-        ]);
-
-        // FM envelope resolution
-        fmAtk = Select.kr(fmev_atk >= 0, [env_atk, fmev_atk]) / 1000;
-        fmCrv = Select.kr(fmev_crv > -100, [env_crv, fmev_crv]);
-        fmMode = Select.kr(fmev_mode >= 0, [env_mode, fmev_mode]);
-        fmGateDur = Select.kr(fmev_gate >= 0, [gate_dur, fmev_gate]);
-        fmGate = Trig1.kr(gate, fmGateDur.max(0.01));
-        fmEnv = Select.kr(fmMode.clip(0, 2).round, [
-            EnvGen.kr(Env.perc(fmAtk, fd / 1000, 1, fmCrv), trig),
-            EnvGen.kr(Env.asr(fmAtk, 1, fd / 1000, fmCrv), fmGate),
-            EnvGen.kr(Env.adsr(fmAtk, fd / 2000, 0.7, fd / 1000, 1, fmCrv), fmGate)
-        ]);
-
-        // DC envelope resolution
-        dAtk = Select.kr(denv_atk >= 0, [env_atk, denv_atk]) / 1000;
-        dCrv = Select.kr(denv_crv > -100, [env_crv, denv_crv]);
-        dMode = Select.kr(denv_mode >= 0, [env_mode, denv_mode]);
-        dGateDur = Select.kr(denv_gate >= 0, [gate_dur, denv_gate]);
-        dGate = Trig1.kr(gate, dGateDur.max(0.01));
-        dcEnv = Select.kr(dMode.clip(0, 2).round, [
-            EnvGen.kr(Env.perc(dAtk, dd / 1000, 1, dCrv), trig),
-            EnvGen.kr(Env.asr(dAtk, 1, dd / 1000, dCrv), dGate),
-            EnvGen.kr(Env.adsr(dAtk, dd / 2000, 0.7, dd / 1000, 1, dCrv), dGate)
-        ]);
-
-        // FB envelope resolution
-        fbAtk = Select.kr(fbev_atk >= 0, [env_atk, fbev_atk]) / 1000;
-        fbCrv = Select.kr(fbev_crv > -100, [env_crv, fbev_crv]);
-        fbMode = Select.kr(fbev_mode >= 0, [env_mode, fbev_mode]);
-        fbGateDur = Select.kr(fbev_gate >= 0, [gate_dur, fbev_gate]);
-        fbGate = Trig1.kr(gate, fbGateDur.max(0.01));
-        fbEnv = Select.kr(fbMode.clip(0, 2).round, [
-            EnvGen.kr(Env.perc(fbAtk, fbd / 1000, 1, fbCrv), trig),
-            EnvGen.kr(Env.asr(fbAtk, 1, fbd / 1000, fbCrv), fbGate),
-            EnvGen.kr(Env.adsr(fbAtk, fbd / 2000, 0.7, fbd / 1000, 1, fbCrv), fbGate)
-        ]);
-
-        // Filter envelope resolution
-        flAtk = Select.kr(flev_atk >= 0, [env_atk, flev_atk]) / 1000;
-        flCrv = Select.kr(flev_crv > -100, [env_crv, flev_crv]);
-        flMode = Select.kr(flev_mode >= 0, [env_mode, flev_mode]);
-        flGateDur = Select.kr(flev_gate >= 0, [gate_dur, flev_gate]);
-        flGate = Trig1.kr(gate, flGateDur.max(0.01));
-        filterEnv = Select.kr(flMode.clip(0, 2).round, [
-            EnvGen.kr(Env.perc(flAtk, fed / 1000, 1, flCrv), trig),
-            EnvGen.kr(Env.asr(flAtk, 1, fed / 1000, flCrv), flGate),
-            EnvGen.kr(Env.adsr(flAtk, fed / 2000, 0.7, fed / 1000, 1, flCrv), flGate)
-        ]);
+        pitchEnv = EnvGen.kr(Env.perc(0.001, pd / 1000, 1, -4), trig);
+        ampEnv = EnvGen.kr(Env.perc(0.001, ad / 1000, 1, -4), trig);
+        fmEnv = EnvGen.kr(Env.perc(0.001, fd / 1000, 1, -4), trig);
+        dcEnv = EnvGen.kr(Env.perc(0.001, dd / 1000, 1, -4), trig);
+        fbEnv = EnvGen.kr(Env.perc(0.001, fbd / 1000, 1, -4), trig);
+        filterEnv = EnvGen.kr(Env.perc(0.001, fed / 1000, 1, -4), trig);
 
         // Scaled parameters
         modBus = mb / 16383;
@@ -248,14 +178,13 @@ s.waitForBoot {
         fmIndex = fmSmooth / 16383;
         dcAmount = dcSmooth / 16383;
         mixAmount = mxSmooth / 16383;
-        fbAmount = (fbSmooth / 16383) + (fbEnv * fba / 16383);  // base + (envelope * amount)
+        fbAmount = (fbSmooth / 16383) + (fbEnv * fbaCtl / 16383);  // base + (envelope * amount)
 
-        // Primary frequency: base * 2^(pitchEnv * octaves) + modBus routing
-        // pa is in octaves (0-16), pitchEnv is 0-1, so pitchEnv*pa gives octave offset
-        primaryFreq = pfSmooth * pow(2, pitchEnv * pa) * (1 + (modBus * mp * 4));
+        // Primary frequency: base + (pitchEnv * amount) + (modBus * routing)
+        primaryFreq = pfSmooth * (1 + (pitchEnv * paCtl) + (modBus * mp * 4));
 
-        // Modulator frequency: base + (tracking * pitch envelope effect) + modBus routing
-        modulatorFreq = mfSmooth + (trackingAmount * mt * (pfSmooth * pow(2, pitchEnv * pa) - pfSmooth));
+        // Modulator frequency: base + (tracking) + (modBus * routing)
+        modulatorFreq = mfSmooth + (trackingAmount * mt * (pfSmooth * (1 + (pitchEnv * paCtl)) - pfSmooth));
         modulatorFreq = modulatorFreq * (1 + (modBus * md));
 
         // Modulator oscillator (mw: 0=sine, 1=tri, 2=saw, 3=feedback)
@@ -267,7 +196,7 @@ s.waitForBoot {
         ]);
 
         // Primary oscillator with FM: base + (envelope * amount)
-        fmAmount = (fmIndex + (fmEnv * fa / 16383)) * 1000;
+        fmAmount = (fmIndex + (fmEnv * faCtl / 16383)) * 1000;
         primaryOsc = Select.ar(pw.clip(0, 2).round, [
             SinOsc.ar(primaryFreq + (modOsc * fmAmount)),
             LFTri.ar(primaryFreq + (modOsc * fmAmount)),
@@ -280,7 +209,7 @@ s.waitForBoot {
             + (modOsc * (mixAmount + (modBus * mm) + (ampEnv * me)).clip(0, 1));
 
         // Discontinuity: base + (envelope * amount)
-        discontinuity = dcAmount + (dcEnv * da / 16383);
+        discontinuity = dcAmount + (dcEnv * daCtl / 16383);
         sig = sig + (modOsc * discontinuity);
         sig = Select.ar(dm.clip(0, 6).round, [
             sig.fold2(1),           // 0: fold
@@ -406,24 +335,36 @@ s.waitForBoot {
         psGrainSize = (ps_grain / 1000).clip(0.005, 0.1);
 
         psShifted = Select.ar(ps_mode.clip(0, 1), [
-            PitchShift.ar(
-                [psInputL, psInputR],
-                psGrainSize,
-                psRatio,
-                0,
-                0.1
-            ),
-            FreqShift.ar([psInputL, psInputR], ps_semi * 100)
+            [
+                PitchShift.ar(
+                    psInputL,
+                    psGrainSize,
+                    psRatio,
+                    0,
+                    0.1
+                ),
+                PitchShift.ar(
+                    psInputR,
+                    psGrainSize,
+                    psRatio,
+                    0,
+                    0.1
+                )
+            ],
+            [
+                FreqShift.ar(psInputL, ps_semi * 100),
+                FreqShift.ar(psInputR, ps_semi * 100)
+            ]
         ]);
 
         psMix = (ps_mix / 16383).clip(0, 1);
         sigL = Select.ar(ps_targ.clip(0, 1), [
-            (sigL * (1 - psMix)) + (psShifted.at(0) * psMix),
-            sigL + (psShifted.at(0) * psMix)
+            (sigL * (1 - psMix)) + (psShifted[0] * psMix),
+            sigL + (psShifted[0] * psMix)
         ]);
         sigR = Select.ar(ps_targ.clip(0, 1), [
-            (sigR * (1 - psMix)) + (psShifted.at(1) * psMix),
-            sigR + (psShifted.at(1) * psMix)
+            (sigR * (1 - psMix)) + (psShifted[1] * psMix),
+            sigR + (psShifted[1] * psMix)
         ]);
 
         // Stereo Delay with Feedback Filtering and Routing Modes
@@ -603,20 +544,6 @@ s.waitForBoot {
         ~voice.set(slewArgName, slewTime);
         ("SLEW" + paramName.toUpper + "SET TO" + (slewTime * 1000) + "MS").postln;
     }, '/monokit/slew/param');
-
-    OSCdef(\monokit_gate, { |msg|
-        var gateDur = msg[1].asFloat.clip(0, 10);
-        ~voice.set(\gate_dur, gateDur);
-        ("GATE DURATION SET TO" + gateDur + "SEC").postln;
-    }, '/monokit/gate');
-
-    OSCdef(\monokit_gate_env, { |msg|
-        var envName = msg[1].asString;
-        var gateDur = msg[2].asFloat.clip(0, 10);
-        var paramName = (envName ++ "_gate").asSymbol;
-        ~voice.set(paramName, gateDur);
-        ("PER-ENV GATE" + envName + "SET TO" + gateDur + "SEC").postln;
-    }, '/monokit/gate/env');
 
     "monokit server ready".postln;
 };

@@ -14,7 +14,7 @@ use footer::render_footer;
 use header::render_header;
 use pages::{
     render_help_page, render_init_page, render_live_page, render_metro_page, render_pattern_page,
-    render_script_page, HELP_LINES,
+    render_script_page, HELP_CATEGORIES,
 };
 
 pub fn ui(f: &mut Frame, app: &crate::App) {
@@ -110,6 +110,12 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     KeyCode::Char('v') if key.modifiers.contains(KeyModifiers::CONTROL) && app.is_script_page() => {
                         app.paste_line();
                     }
+                    KeyCode::Char('[') if is_help => {
+                        app.prev_help_page();
+                    }
+                    KeyCode::Char(']') if is_help => {
+                        app.next_help_page();
+                    }
                     KeyCode::Char('[') => {
                         app.prev_page();
                     }
@@ -198,7 +204,8 @@ pub fn run_app<B: ratatui::backend::Backend>(
                         app.help_scroll = app.help_scroll.saturating_sub(1);
                     }
                     KeyCode::Down if is_help => {
-                        app.help_scroll = app.help_scroll.saturating_add(1).min(HELP_LINES.len().saturating_sub(1));
+                        let current_page_lines = HELP_CATEGORIES[app.help_page].lines.len();
+                        app.help_scroll = app.help_scroll.saturating_add(1).min(current_page_lines.saturating_sub(1));
                     }
                     KeyCode::Up if !is_help && app.current_page == Page::Pattern => {
                         if app.pattern_cursor.1 > 0 {

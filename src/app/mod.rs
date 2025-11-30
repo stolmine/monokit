@@ -18,6 +18,7 @@ pub struct App {
     pub history_index: Option<usize>,
     pub output: Vec<String>,
     pub help_scroll: usize,
+    pub help_page: usize,
     pub metro_state: Arc<Mutex<MetroState>>,
     pub metro_tx: Sender<MetroCommand>,
     pub scripts: ScriptStorage,
@@ -52,6 +53,7 @@ impl App {
             history_index: None,
             output: Vec::new(),
             help_scroll: 0,
+            help_page: 0,
             metro_state,
             metro_tx,
             scripts: ScriptStorage::default(),
@@ -91,6 +93,22 @@ impl App {
             self.previous_page = self.current_page;
             self.current_page = Page::Help;
         }
+    }
+
+    pub fn next_help_page(&mut self) {
+        use crate::ui::pages::HELP_CATEGORIES;
+        self.help_page = (self.help_page + 1) % HELP_CATEGORIES.len();
+        self.help_scroll = 0;
+    }
+
+    pub fn prev_help_page(&mut self) {
+        use crate::ui::pages::HELP_CATEGORIES;
+        if self.help_page == 0 {
+            self.help_page = HELP_CATEGORIES.len() - 1;
+        } else {
+            self.help_page -= 1;
+        }
+        self.help_scroll = 0;
     }
 
     pub fn next_page(&mut self) {

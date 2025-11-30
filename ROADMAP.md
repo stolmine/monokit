@@ -287,9 +287,14 @@ Scheduled command execution with delay buffer (inspired by Teletype).
 - [ ] Flash/highlight on parameter change
 - [ ] Optional: Parameter history log
 
-### Help Page Styling [Low] - COMPLETE
-- [x] Add explicit `#` prefix marker to HELP_LINES section headers
-- [x] Replace heuristic-based styling with marker-based detection
+### Help System [Low] - PARTIAL
+- [x] Add explicit `#` prefix marker to section headers
+- [x] Marker-based styling (replaces fragile heuristic)
+- [x] Paginated help with category pages (10 pages)
+- [x] `[` / `]` navigate help pages when help is active
+- [ ] Help search: `Ctrl+F` opens search input
+- [ ] Sequential search with `Enter`, highlight matches
+- [ ] Jump to match location within help pages
 
 ### Activity Indicators (KO II Style) [Medium]
 - [ ] Page icon highlighting when script executes

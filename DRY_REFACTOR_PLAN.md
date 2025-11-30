@@ -450,8 +450,9 @@ cargo build --release
 | 0 | Reorganization | Cleaner structure | Cleaner structure | COMPLETE |
 | 1 | Envelopes | ~841 lines | **918 lines (81%)** | **COMPLETE** |
 | 2 | Patterns | ~1,423 lines | **1,573 lines (78% of wrappers)** | **COMPLETE** |
-| 3 | Synth Params | ~2,197 lines | TBD | Pending |
-| **Total** | | **~4,461 lines (74%)** | **2,491 lines so far** | **In Progress** |
+| 3 | Synth Params | ~2,197 lines | **2,325 lines** | **COMPLETE** |
+| 4 | Variables/Counters/Tests | ~800-850 lines | **1,126 lines** | **COMPLETE** |
+| **Total** | | **~5,600-5,700** | **~5,942 lines (28%)** | **COMPLETE** |
 
 **Phase 1 Notes:**
 - Achieved 918 line reduction vs 841 estimated (109% of estimate)

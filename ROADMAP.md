@@ -117,8 +117,8 @@ primaryFreq = pfSmooth * pow(2, pitchEnv * paCtl);
 
 ## Priority: Infrastructure Refactoring
 
-### Command System DRY Refactor [High] - IN PROGRESS
-Consolidate command definitions into a single source of truth to eliminate synchronization bugs.
+### Command System DRY Refactor [High] - COMPLETE (November 2025)
+Consolidated command definitions into a single source of truth to eliminate synchronization bugs.
 
 **Phase 0: Codebase Reorganization** - COMPLETE
 - [x] Created `core/`, `system/`, `synth/` directory structure
@@ -131,29 +131,38 @@ Consolidate command definitions into a single source of truth to eliminate synch
 - [x] Created `synth/envelopes/common.rs` with `define_int_param!` and `define_float_param!` macros
 - [x] Refactored all 6 envelope files (amp, pitch, fm, disc, feedback, filter)
 - [x] Removed dead code: `handle_*_mode` handlers, `global.rs`
-- [x] Line reduction: ~1,141 lines → 223 lines (~918 line reduction, 81% decrease)
+- [x] Line reduction: ~1,141 lines → 223 lines (**918 line reduction, 81% decrease**)
 - [x] All 411 tests pass
 
 **Phase 2: Pattern Operation DRY** - COMPLETE (November 2025)
 - [x] Created `patterns/common.rs` (902 lines) with `PatternRef` enum, shared implementations, and macro system
 - [x] Aggressive macro approach: 10 macros generate both P.* and PN.* handlers from single definitions
 - [x] Unified P.* (working) and PN.* (explicit) operations via PatternRef::Working/Explicit
-- [x] Wrapper code reduced from 2023 → 450 lines (1,573 line reduction, 78% decrease)
+- [x] Wrapper code reduced from 2023 → 450 lines (**1,573 line reduction, 78% decrease**)
 - [x] Explicit files now just re-export from working files (~10 lines each)
 - [x] All 411 tests pass
 
-**Remaining Phases:**
-- [ ] Phase 3: Synth Parameter DRY (~2,000 line reduction potential)
-  - Create `synth/param_macro.rs` with generic parameter macros
-  - Consolidate 70+ similar parameter handlers
+**Phase 3: Synth Parameter DRY** - COMPLETE (November 2025)
+- [x] Created `synth/param_macro.rs` with generic parameter macros
+- [x] Consolidated 70+ similar parameter handlers
+- [x] Line reduction: **~2,325 lines**
+- [x] All 411 tests pass
 
-**Total Impact So Far:**
-- ~2,491 line reduction through macro consolidation (Phase 1 + Phase 2)
+**Phase 4: Variables, Counters, and Test Fixtures** - COMPLETE (November 2025)
+- [x] Phase 4A: Variable/Counter macros - **489 lines removed**
+- [x] Phase 4B: Expression helpers - Infrastructure added
+- [x] Phase 4C: Test fixture optimization - **637 lines removed**
+- [x] Total Phase 4: **~1,126 lines removed**
+- [x] All 411 tests pass
+
+**Program Completion Summary:**
+- **Total DRY Reduction (Phases 1-4): ~5,942 lines (28% of original codebase)**
 - Clear, logical file organization by domain
-- Easier to add new commands (single macro invocation for both P.* and PN.*)
+- Easier to add new commands (single macro invocation)
 - All 411 tests continue to pass throughout
+- Significantly reduced maintenance burden
 
-**Reference:** See `DRY_REFACTOR_PLAN.md` for comprehensive implementation plan.
+**Reference:** See `DRY_REFACTOR_PLAN.md` and `DRY_PHASE4_PLAN.md` for comprehensive implementation details.
 
 ---
 

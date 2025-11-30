@@ -64,9 +64,9 @@ where
     metro_tx.send(MetroCommand::SendParam("pw".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("mf".to_string(), OscType::Float(50.0)))?;
     metro_tx.send(MetroCommand::SendParam("mw".to_string(), OscType::Int(0)))?;
+
     metro_tx.send(MetroCommand::SendParam("dc".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("dm".to_string(), OscType::Int(0)))?;
-    metro_tx.send(MetroCommand::SendParam("dd".to_string(), OscType::Int(100)))?;
     metro_tx.send(MetroCommand::SendParam("tk".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("mb".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("mp".to_string(), OscType::Int(0)))?;
@@ -74,16 +74,133 @@ where
     metro_tx.send(MetroCommand::SendParam("mt".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("ma".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("fm".to_string(), OscType::Int(0)))?;
-    metro_tx.send(MetroCommand::SendParam("ad".to_string(), OscType::Int(100)))?;
-    metro_tx.send(MetroCommand::SendParam("pd".to_string(), OscType::Int(10)))?;
-    metro_tx.send(MetroCommand::SendParam("fd".to_string(), OscType::Int(10)))?;
-    metro_tx.send(MetroCommand::SendParam("pa".to_string(), OscType::Float(4.0)))?;
     metro_tx.send(MetroCommand::SendParam("mx".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("mm".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("me".to_string(), OscType::Int(0)))?;
+
+    metro_tx.send(MetroCommand::SendParam("fb".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("fba".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("fbd".to_string(), OscType::Int(10)))?;
+
+    metro_tx.send(MetroCommand::SendParam("ad".to_string(), OscType::Int(100)))?;
+    metro_tx.send(MetroCommand::SendParam("pd".to_string(), OscType::Int(10)))?;
+    metro_tx.send(MetroCommand::SendParam("fd".to_string(), OscType::Int(10)))?;
+    metro_tx.send(MetroCommand::SendParam("dd".to_string(), OscType::Int(10)))?;
+    metro_tx.send(MetroCommand::SendParam("pa".to_string(), OscType::Float(4.0)))?;
     metro_tx.send(MetroCommand::SendParam("fa".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("da".to_string(), OscType::Int(0)))?;
+
+    metro_tx.send(MetroCommand::SendParam("fc".to_string(), OscType::Float(1000.0)))?;
+    metro_tx.send(MetroCommand::SendParam("fq".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("ft".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("fe".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("fed".to_string(), OscType::Int(100)))?;
+    metro_tx.send(MetroCommand::SendParam("fk".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("mf_f".to_string(), OscType::Int(0)))?;
+
+    metro_tx.send(MetroCommand::SendParam("rf".to_string(), OscType::Float(440.0)))?;
+    metro_tx.send(MetroCommand::SendParam("rd".to_string(), OscType::Int(500)))?;
+    metro_tx.send(MetroCommand::SendParam("rm".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("rk".to_string(), OscType::Int(0)))?;
+
+    metro_tx.send(MetroCommand::SendParam("dt".to_string(), OscType::Int(250)))?;
+    metro_tx.send(MetroCommand::SendParam("df".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("dlp".to_string(), OscType::Int(5000)))?;
+    metro_tx.send(MetroCommand::SendParam("dw".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("ds".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("dmode".to_string(), OscType::Int(1)))?;
+    metro_tx.send(MetroCommand::SendParam("dtail".to_string(), OscType::Int(1)))?;
+
+    metro_tx.send(MetroCommand::SendParam("rv".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("rp".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("rh".to_string(), OscType::Int(8000)))?;
+    metro_tx.send(MetroCommand::SendParam("rw".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("rmode".to_string(), OscType::Int(1)))?;
+    metro_tx.send(MetroCommand::SendParam("rtail".to_string(), OscType::Int(1)))?;
+
+    metro_tx.send(MetroCommand::SendParam("lb".to_string(), OscType::Int(16)))?;
+    metro_tx.send(MetroCommand::SendParam("ls".to_string(), OscType::Int(48000)))?;
+    metro_tx.send(MetroCommand::SendParam("lm".to_string(), OscType::Int(0)))?;
+
+    metro_tx.send(MetroCommand::SendParam("rgf".to_string(), OscType::Float(440.0)))?;
+    metro_tx.send(MetroCommand::SendParam("rgw".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("rgm".to_string(), OscType::Int(0)))?;
+
+    metro_tx.send(MetroCommand::SendParam("ct".to_string(), OscType::Int(8192)))?;
+    metro_tx.send(MetroCommand::SendParam("cr".to_string(), OscType::Int(4)))?;
+    metro_tx.send(MetroCommand::SendParam("ca".to_string(), OscType::Int(10)))?;
+    metro_tx.send(MetroCommand::SendParam("cl".to_string(), OscType::Int(100)))?;
+    metro_tx.send(MetroCommand::SendParam("cm".to_string(), OscType::Int(0)))?;
+
+    metro_tx.send(MetroCommand::SendParam("el".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("em".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("ef".to_string(), OscType::Float(1000.0)))?;
+    metro_tx.send(MetroCommand::SendParam("eq".to_string(), OscType::Float(1.0)))?;
+    metro_tx.send(MetroCommand::SendParam("eh".to_string(), OscType::Int(0)))?;
+
+    metro_tx.send(MetroCommand::SendParam("pn".to_string(), OscType::Int(0)))?;
+
+    metro_tx.send(MetroCommand::SendParam("br_act".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("br_len".to_string(), OscType::Int(2)))?;
+    metro_tx.send(MetroCommand::SendParam("br_rev".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("br_win".to_string(), OscType::Int(5)))?;
+    metro_tx.send(MetroCommand::SendParam("br_mix".to_string(), OscType::Int(0)))?;
+
+    metro_tx.send(MetroCommand::SendParam("ps_mode".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("ps_semi".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("ps_grain".to_string(), OscType::Int(20)))?;
+    metro_tx.send(MetroCommand::SendParam("ps_mix".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("ps_targ".to_string(), OscType::Int(0)))?;
+
     metro_tx.send(MetroCommand::SendVolume(1.0))?;
+
+    metro_tx.send(MetroCommand::SendParam("slew_time".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_pf".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_mf".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_fc".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_fm".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_mx".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_dc".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_fb".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_fq".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_fk".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_fe".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_rf".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_rm".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_dt".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_df".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_dw".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_rv".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_rw".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_volume".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_pn".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_lb".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_ls".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_lm".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_rgf".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_rgm".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_ct".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_cm".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_el".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_em".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_eh".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("slew_ef".to_string(), OscType::Int(-1)))?;
+
+    metro_tx.send(MetroCommand::SendParam("env_atk".to_string(), OscType::Int(1)))?;
+    metro_tx.send(MetroCommand::SendParam("env_crv".to_string(), OscType::Int(-4)))?;
+    metro_tx.send(MetroCommand::SendParam("aenv_atk".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("penv_atk".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("fmev_atk".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("denv_atk".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("fbev_atk".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("flev_atk".to_string(), OscType::Int(-1)))?;
+    metro_tx.send(MetroCommand::SendParam("aenv_crv".to_string(), OscType::Int(-100)))?;
+    metro_tx.send(MetroCommand::SendParam("penv_crv".to_string(), OscType::Int(-100)))?;
+    metro_tx.send(MetroCommand::SendParam("fmev_crv".to_string(), OscType::Int(-100)))?;
+    metro_tx.send(MetroCommand::SendParam("denv_crv".to_string(), OscType::Int(-100)))?;
+    metro_tx.send(MetroCommand::SendParam("fbev_crv".to_string(), OscType::Int(-100)))?;
+    metro_tx.send(MetroCommand::SendParam("flev_crv".to_string(), OscType::Int(-100)))?;
+
     if debug_level >= 2 {
         output("RESET TO DEFAULTS".to_string());
     }

@@ -94,10 +94,10 @@ s.waitForBoot {
             slew_ct = -1, slew_cm = -1, slew_el = -1, slew_em = -1,
             slew_eh = -1, slew_ef = -1,
             env_atk = 1, env_dec = 100, env_crv = -4, env_mode = 0,
-            aenv_atk = -1, penv_atk = -1, fmenv_atk = -1, denv_atk = -1, fbenv_atk = -1, flenv_atk = -1,
-            aenv_crv = -100, penv_crv = -100, fmenv_crv = -100, denv_crv = -100, fbenv_crv = -100, flenv_crv = -100,
-            aenv_mode = -1, penv_mode = -1, fmenv_mode = -1, denv_mode = -1, fbenv_mode = -1, flenv_mode = -1,
-            aenv_gate = -1, penv_gate = -1, fmenv_gate = -1, denv_gate = -1, fbenv_gate = -1, flenv_gate = -1,
+            aenv_atk = -1, penv_atk = -1, fmev_atk = -1, denv_atk = -1, fbev_atk = -1, flev_atk = -1,
+            aenv_crv = -100, penv_crv = -100, fmev_crv = -100, denv_crv = -100, fbev_crv = -100, flev_crv = -100,
+            aenv_mode = -1, penv_mode = -1, fmev_mode = -1, denv_mode = -1, fbev_mode = -1, flev_mode = -1,
+            aenv_gate = -1, penv_gate = -1, fmev_gate = -1, denv_gate = -1, fbev_gate = -1, flev_gate = -1,
             gate_dur = 0;
 
         // All var declarations at top
@@ -195,10 +195,10 @@ s.waitForBoot {
         ]);
 
         // FM envelope resolution
-        fmAtk = Select.kr(fmenv_atk >= 0, [env_atk, fmenv_atk]) / 1000;
-        fmCrv = Select.kr(fmenv_crv > -100, [env_crv, fmenv_crv]);
-        fmMode = Select.kr(fmenv_mode >= 0, [env_mode, fmenv_mode]);
-        fmGateDur = Select.kr(fmenv_gate >= 0, [gate_dur, fmenv_gate]);
+        fmAtk = Select.kr(fmev_atk >= 0, [env_atk, fmev_atk]) / 1000;
+        fmCrv = Select.kr(fmev_crv > -100, [env_crv, fmev_crv]);
+        fmMode = Select.kr(fmev_mode >= 0, [env_mode, fmev_mode]);
+        fmGateDur = Select.kr(fmev_gate >= 0, [gate_dur, fmev_gate]);
         fmGate = Trig1.kr(gate, fmGateDur.max(0.01));
         fmEnv = Select.kr(fmMode.clip(0, 2).round, [
             EnvGen.kr(Env.perc(fmAtk, fd / 1000, 1, fmCrv), trig),
@@ -219,10 +219,10 @@ s.waitForBoot {
         ]);
 
         // FB envelope resolution
-        fbAtk = Select.kr(fbenv_atk >= 0, [env_atk, fbenv_atk]) / 1000;
-        fbCrv = Select.kr(fbenv_crv > -100, [env_crv, fbenv_crv]);
-        fbMode = Select.kr(fbenv_mode >= 0, [env_mode, fbenv_mode]);
-        fbGateDur = Select.kr(fbenv_gate >= 0, [gate_dur, fbenv_gate]);
+        fbAtk = Select.kr(fbev_atk >= 0, [env_atk, fbev_atk]) / 1000;
+        fbCrv = Select.kr(fbev_crv > -100, [env_crv, fbev_crv]);
+        fbMode = Select.kr(fbev_mode >= 0, [env_mode, fbev_mode]);
+        fbGateDur = Select.kr(fbev_gate >= 0, [gate_dur, fbev_gate]);
         fbGate = Trig1.kr(gate, fbGateDur.max(0.01));
         fbEnv = Select.kr(fbMode.clip(0, 2).round, [
             EnvGen.kr(Env.perc(fbAtk, fbd / 1000, 1, fbCrv), trig),
@@ -231,10 +231,10 @@ s.waitForBoot {
         ]);
 
         // Filter envelope resolution
-        flAtk = Select.kr(flenv_atk >= 0, [env_atk, flenv_atk]) / 1000;
-        flCrv = Select.kr(flenv_crv > -100, [env_crv, flenv_crv]);
-        flMode = Select.kr(flenv_mode >= 0, [env_mode, flenv_mode]);
-        flGateDur = Select.kr(flenv_gate >= 0, [gate_dur, flenv_gate]);
+        flAtk = Select.kr(flev_atk >= 0, [env_atk, flev_atk]) / 1000;
+        flCrv = Select.kr(flev_crv > -100, [env_crv, flev_crv]);
+        flMode = Select.kr(flev_mode >= 0, [env_mode, flev_mode]);
+        flGateDur = Select.kr(flev_gate >= 0, [gate_dur, flev_gate]);
         flGate = Trig1.kr(gate, flGateDur.max(0.01));
         filterEnv = Select.kr(flMode.clip(0, 2).round, [
             EnvGen.kr(Env.perc(flAtk, fed / 1000, 1, flCrv), trig),
@@ -608,6 +608,14 @@ s.waitForBoot {
         ~voice.set(\gate_dur, gateDur);
         ("GATE DURATION SET TO" + gateDur + "SEC").postln;
     }, '/monokit/gate');
+
+    OSCdef(\monokit_gate_env, { |msg|
+        var envName = msg[1].asString;
+        var gateDur = msg[2].asFloat.clip(0, 10);
+        var paramName = (envName ++ "_gate").asSymbol;
+        ~voice.set(paramName, gateDur);
+        ("PER-ENV GATE" + envName + "SET TO" + gateDur + "SEC").postln;
+    }, '/monokit/gate/env');
 
     "monokit server ready".postln;
 };

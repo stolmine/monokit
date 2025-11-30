@@ -356,6 +356,23 @@ Scheduled command execution with delay buffer (inspired by Teletype).
 - [ ] State management per voice
 - [ ] Complex routing and mixing requirements
 
+### Sample Playback System [Very High]
+- [ ] `S.LOAD <path>` - Load sample from file (WAV/AIFF)
+- [ ] `S.BANK <0-N>` - Select sample bank/folder
+- [ ] `S.SEL <0-N>` - Select sample within bank
+- [ ] `S.SLICE <n>` - Set number of slices (auto-divide sample)
+- [ ] `S.IDX <0-N>` - Select slice index for playback
+- [ ] `S.START <0-1>` - Manual start point (normalized)
+- [ ] `S.END <0-1>` - Manual end point (normalized)
+- [ ] `S.DIR <-1|0|1>` - Playback direction (reverse/pause/forward)
+- [ ] `S.RATE <0.1-4>` - Playback rate/pitch
+- [ ] `S.PITCH <semitones>` - Pitch shift independent of rate
+- [ ] `S.LOOP <0|1>` - Loop mode
+- [ ] `S.TRIG` - Trigger sample playback
+- [ ] Buffer management in SuperCollider
+- [ ] Sample browser/indexing system
+- [ ] Integration with pattern system: `S.IDX PN.NEXT 0`
+
 ---
 
 ## Phase 7: Distribution

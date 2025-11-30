@@ -1,5 +1,25 @@
 # Monokit Documentation Index
 
+## Recent Bug Fixes (November 2025)
+
+### Pitch Envelope (PENV) Parameter Fix
+**Problem:** Pitch envelope parameters (PA, PD, PENV.ATK, etc.) were not affecting audio output.
+
+**Root Cause:** SuperCollider UGen graph optimization caused the `pa` parameter to evaluate differently at different points in the SynthDef, creating multiple distinct control rate signals from the same named parameter.
+
+**Solution:** Added early capture variables (`paCtl`, `faCtl`, `daCtl`, `fbaCtl`) using `Lag.kr(param, 0)` to force consistent signal evaluation throughout the graph. All envelope amount calculations now use captured control values.
+
+**Additional Improvements:**
+- Exponential pitch envelope scaling: `pow(2, pitchEnv * pa)` for proper octave behavior
+- PA parameter now correctly represents octaves (PA=4 = 4 octaves)
+- Synced envelope parameter naming between CLI and SuperCollider
+- Added missing per-envelope gate OSC handler
+
+**Files Changed:**
+- `sc/monokit_server.scd` - Lines 122-129 (control captures), 181-212 (usage)
+
+---
+
 ## Documentation
 
 - **CONCEPT.md** - Project overview, architecture, MVP implementation

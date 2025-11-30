@@ -9,6 +9,44 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ---
 
+## Recent Bug Fixes (November 2025)
+
+### Pitch Envelope Parameter Fix
+**Problem:** Pitch envelope parameters (PA, PD, PENV.ATK, etc.) were not affecting audio output.
+
+**Root Cause:** SuperCollider UGen graph optimization was causing the `pa` parameter to evaluate differently at different points in the SynthDef. The optimizer created multiple distinct control rate signals from the same named parameter, leading to inconsistent values when used in different calculations.
+
+**Solution:**
+- Added envelope amount control variables: `paCtl`, `faCtl`, `daCtl`, `fbaCtl`
+- Captured parameters early using `Lag.kr(param, 0)` to force consistent signal evaluation
+- Updated all envelope amount calculations to use captured controls instead of raw parameters
+- This prevents the optimizer from creating multiple readings of the same control
+
+**Code Changes (sc/monokit_server.scd):**
+```supercollider
+// Variable declarations (lines 122-129)
+var paCtl, faCtl, daCtl, fbaCtl;
+
+paCtl = Lag.kr(pa, 0);    // Pitch envelope amount
+faCtl = Lag.kr(fa, 0);    // FM envelope amount
+daCtl = Lag.kr(da, 0);    // Discontinuity envelope amount
+fbaCtl = Lag.kr(fba, 0);  // Feedback envelope amount
+
+// Usage points now use captured controls (lines 181-212)
+fbAmount = (fbSmooth / 16383) + (fbEnv * fbaCtl / 16383);
+primaryFreq = pfSmooth * pow(2, pitchEnv * paCtl) * (1 + (modBus * mp * 4));
+fmAmount = (fmIndex + (fmEnv * faCtl / 16383)) * 1000;
+discontinuity = dcAmount + (dcEnv * daCtl / 16383);
+```
+
+**Additional Improvements:**
+- Changed pitch envelope from linear `(1 + pitchEnv * pa)` to exponential `pow(2, pitchEnv * pa)` for proper octave scaling
+- PA parameter now correctly represents octaves (PA=4 gives 4 octaves instead of ~2.3)
+- Synced envelope parameter naming between CLI and SuperCollider (fmev_*, fbev_*, flev_*)
+- Added missing `/monokit/gate/env` OSC handler for per-envelope gate control
+
+---
+
 ## Completed Features
 
 ### Core Voice & DSP

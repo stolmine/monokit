@@ -19,13 +19,17 @@
 
 ### Source Code
 
-Modular Rust implementation (~15,000 total lines across 57 files):
+Modular Rust implementation (~18,200 total lines across 86 files):
 
 - **src/main.rs** (69 lines) - Application entry point, initializes TUI and starts main loop
 - **src/metro.rs** (112 lines) - Metro thread implementation with absolute timing
 - **src/types.rs** (233 lines) - Core data structures, enums, constants, and type definitions
 - **src/eval.rs** (498 lines) - Expression evaluation engine for nested operations, pattern access, and comparison operators
-- **src/ui.rs** (827 lines) - TUI rendering with ratatui, page-based interface
+- **src/ui/** - TUI rendering module (~1,370 lines across 10 files)
+  - **mod.rs** - Module coordinator
+  - **header.rs** - Header rendering
+  - **footer.rs** - Footer rendering
+  - **pages/** - Page implementations (7 files: live, script, metro, init, pattern, help, mod)
 - **src/scene.rs** (169 lines) - Scene persistence, file I/O
 - **src/theme.rs** (67 lines) - Theme struct and built-in themes (dark, light, system)
 - **src/config.rs** (170 lines) - Configuration loading, named theme support
@@ -33,12 +37,21 @@ Modular Rust implementation (~15,000 total lines across 57 files):
   - **mod.rs** (146 lines) - App struct, constructor, navigation
   - **input.rs** (234 lines) - Input handling methods
   - **script_exec.rs** (481 lines) - Script/command execution
-- **src/commands/** - Command processing module (26 files, ~3,400 lines)
+- **src/commands/** - Command processing module (41 files, ~9,085 lines)
   - **mod.rs** - Main dispatcher with command routing
   - **validate.rs** - Command validation
   - **aliases.rs** - Alias resolution for PREFIX.SUFFIX → short form mapping (93 aliases)
   - **variables.rs** - Variable handlers (A-D, X-Z, T, I, J, K)
-  - **patterns.rs** - Pattern operations (P.*, PN.*)
+  - **patterns/** - Pattern operations module (9 files)
+    - **mod.rs** - Module coordinator
+    - **working.rs** - Working pattern state (P.N, P.L, P.I)
+    - **working_query.rs** - Working pattern queries (P.HERE, P.NEXT, P.PREV)
+    - **working_manip.rs** - Working pattern manipulation (P.PUSH, P.POP, P.INS, P.RM, P.REV, P.ROT, P.SHUF, P.SORT, P.RND)
+    - **working_math.rs** - Working pattern math (P.ADD, P.SUB, P.MUL, P.DIV, P.MOD, P.SCALE, P.MIN, P.MAX, P.SUM, P.AVG, P.FND)
+    - **explicit.rs** - Explicit pattern state (PN.N, PN.L, PN.I)
+    - **explicit_query.rs** - Explicit pattern queries (PN.HERE, PN.NEXT, PN.PREV)
+    - **explicit_manip.rs** - Explicit pattern manipulation (PN.PUSH, PN.POP, PN.INS, PN.RM, PN.REV, PN.ROT, PN.SHUF, PN.SORT, PN.RND)
+    - **explicit_math.rs** - Explicit pattern math (PN.ADD, PN.SUB, PN.MUL, PN.DIV, PN.MOD, PN.SCALE, PN.MIN, PN.MAX, PN.SUM, PN.AVG, PN.FND)
   - **counters.rs** - Auto-increment counters (N1-N4 with MIN/MAX/RST)
   - **math_ops.rs** - Math operations (ADD, SUB, MUL, DIV, MOD, MAP)
   - **random_ops.rs** - Random operations (RND, RRND, TOSS, EITH, TOG)
@@ -49,7 +62,15 @@ Modular Rust implementation (~15,000 total lines across 57 files):
     - **oscillator.rs** - Oscillator parameters (PF, PW, MF, MW)
     - **modulation.rs** - Modulation and tracking (TK, MB, MP/MD/MT/MA, FM, MX, MM, ME)
     - **discontinuity.rs** - Discontinuity/waveshaping (DC, DM, DD, FB, FBA, FBD)
-    - **envelopes.rs** - Envelope times and amounts (AD, PD, FD, DD, PA, FA, DA)
+    - **envelopes/** - Envelope module (8 files)
+      - **mod.rs** - Module coordinator
+      - **global.rs** - Global envelope parameters (ENV.ATK, ENV.DEC, ENV.CRV, ENV.MODE)
+      - **amp.rs** - Amplitude envelope (AENV.ATK, AENV.DEC/AD, AENV.CRV, AENV.MODE, AENV.GATE, PA)
+      - **pitch.rs** - Pitch envelope (PENV.ATK, PENV.DEC/PD, PENV.CRV, PENV.MODE, PENV.GATE, PA)
+      - **fm.rs** - FM envelope (FMEV.ATK, FMEV.DEC/FD, FMEV.CRV, FMEV.MODE, FMEV.GATE, FA)
+      - **disc.rs** - Discontinuity envelope (DENV.ATK, DENV.DEC/DD, DENV.CRV, DENV.MODE, DENV.GATE, DA)
+      - **feedback.rs** - Feedback envelope (FBEV.ATK, FBEV.DEC/FBD, FBEV.CRV, FBEV.MODE, FBEV.GATE, FBA)
+      - **filter.rs** - Filter envelope (FLEV.ATK, FLEV.DEC/FED, FLEV.CRV, FLEV.MODE, FLEV.GATE, FE)
     - **filter.rs** - SVF filter parameters (FC, FQ, FT, FE, FED, FK, MF.F)
     - **resonator.rs** - Comb resonator (RF, RD, RM, RK)
     - **delay.rs** - Stereo delay (DT, DF, DLP, DW, DS, D.MODE, D.TAIL)
@@ -61,13 +82,13 @@ Modular Rust implementation (~15,000 total lines across 57 files):
   - **metro_cmds.rs** - Metro commands
   - **scene_cmds.rs** - Scene commands
   - **misc.rs** - Other commands (TR, RST, VOL, THEME, etc.)
-- **src/tests/** - Test suite module (20 files, ~4,400 lines, 282 tests)
-  - Organized by category: envelope, counter, slew, tog, rnd, toss_eith, expr, condition, pattern, variable, validation, math, comparison, scene, debug, buffer_effects
+- **src/tests/** - Test suite module (21 files, ~5,288 lines, 334 tests)
+  - Organized by category: envelope, counter, slew, tog, rnd, toss_eith, expr, condition, pattern, pattern_ops, variable, validation, math, map, comparison, scene, debug, buffer_effects
 
 Key features:
-- Page-based interface: Live, Script 1-8, Metro (M), Init (I), Pattern (P), Help
+- Page-based interface: Live, Script 1-8, Metro (M), Init (I), Pattern (P), Help (paginated with 10 category pages)
 - Script storage: 10 scripts × 8 lines (Scripts 1-8, M, I)
-- Pattern storage: 6 patterns × 64 steps (i16 values, PN accepts 0-5)
+- Pattern storage: 6 patterns × 64 steps (i16 values, patterns 0-5)
 - Variables: A-D, X-Y-Z-T (global), J-K (per-script local), I (loop counter)
 - Control flow: IF/ELIF/ELSE conditions, PROB probabilistic, EV/SKIP every-N-tick
 - Comparison operators: EZ, NZ, EQ, NE, GT, LT, GTE, LTE (return 1/0)
@@ -206,22 +227,76 @@ Monokit uses a **PREFIX.SUFFIX** naming convention for canonical command forms:
   N1.RST                  # Reset to 10
   ```
 
-#### Patterns (Working Pattern - P.N)
-- `P.N` / `P.N <0-3>` - Get/set working pattern
+#### Patterns (Working Pattern - P)
+**State & Query:**
+- `P.N` / `P.N <0-5>` - Get/set working pattern
 - `P.L` / `P.L <1-64>` - Get/set pattern length
 - `P.I` / `P.I <0-63>` - Get/set playhead index
+- `P <idx>` / `P <idx> <val>` - Get/set value at index
 - `P.HERE` - Get value at playhead
 - `P.NEXT` - Advance playhead, return value
 - `P.PREV` - Reverse playhead, return value
-- `P <idx>` / `P <idx> <val>` - Get/set value at index
+
+**Manipulation:**
+- `P.PUSH <val>` - Push value to end, shift all values left
+- `P.POP` - Return value at end
+- `P.INS <idx> <val>` - Insert value at index, shift right
+- `P.RM <idx>` - Remove value at index, shift left
+- `P.REV` - Reverse pattern order
+- `P.ROT <n>` - Rotate pattern by n positions
+- `P.SHUF` - Shuffle pattern randomly
+- `P.SORT` - Sort pattern ascending
+
+**Math Operations:**
+- `P.ADD <val>` - Add value to all steps
+- `P.SUB <val>` - Subtract value from all steps
+- `P.MUL <val>` - Multiply all steps by value
+- `P.DIV <val>` - Divide all steps by value
+- `P.MOD <val>` - Modulo all steps by value
+- `P.SCALE <min> <max>` - Scale pattern to new range
+- `P.RND [min] [max]` - Randomize all steps (default: 0-127)
+
+**Query Operations:**
+- `P.MIN` - Return minimum value in pattern
+- `P.MAX` - Return maximum value in pattern
+- `P.SUM` - Return sum of all values
+- `P.AVG` - Return average of all values
+- `P.FND <val>` - Find value, return index (-1 if not found)
 
 #### Patterns (Explicit Pattern - PN)
+**State & Query:**
 - `PN <pat> <idx>` / `PN <pat> <idx> <val>` - Get/set value (pat: 0-5)
 - `PN.L <pat>` / `PN.L <pat> <len>` - Get/set length
 - `PN.I <pat>` / `PN.I <pat> <idx>` - Get/set playhead
 - `PN.HERE <pat>` - Get value at playhead
 - `PN.NEXT <pat>` - Advance playhead, return value
 - `PN.PREV <pat>` - Reverse playhead, return value
+
+**Manipulation:**
+- `PN.PUSH <pat> <val>` - Push value to end, shift all values left
+- `PN.POP <pat>` - Return value at end
+- `PN.INS <pat> <idx> <val>` - Insert value at index, shift right
+- `PN.RM <pat> <idx>` - Remove value at index, shift left
+- `PN.REV <pat>` - Reverse pattern order
+- `PN.ROT <pat> <n>` - Rotate pattern by n positions
+- `PN.SHUF <pat>` - Shuffle pattern randomly
+- `PN.SORT <pat>` - Sort pattern ascending
+
+**Math Operations:**
+- `PN.ADD <pat> <val>` - Add value to all steps
+- `PN.SUB <pat> <val>` - Subtract value from all steps
+- `PN.MUL <pat> <val>` - Multiply all steps by value
+- `PN.DIV <pat> <val>` - Divide all steps by value
+- `PN.MOD <pat> <val>` - Modulo all steps by value
+- `PN.SCALE <pat> <min> <max>` - Scale pattern to new range
+- `PN.RND <pat> [min] [max]` - Randomize all steps (default: 0-127)
+
+**Query Operations:**
+- `PN.MIN <pat>` - Return minimum value in pattern
+- `PN.MAX <pat>` - Return maximum value in pattern
+- `PN.SUM <pat>` - Return sum of all values
+- `PN.AVG <pat>` - Return average of all values
+- `PN.FND <pat> <val>` - Find value, return index (-1 if not found)
 
 Note: All PN and P operations accept variables/expressions as arguments (e.g., `DC PN.NEXT 0`, `P I`, `PN A B`)
 

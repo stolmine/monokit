@@ -22,7 +22,7 @@ Potential line reduction through refactoring: **~4,000-5,000 lines** (60-75% of 
 ## 1. HIGH-IMPACT OPPORTUNITIES (>1000 lines reduction potential)
 
 ### 1.1 Synth Parameter Handlers - MASSIVE DUPLICATION
-**Files:** `src/commands/synth_params/*.rs` (12 files, 2,930 total lines)
+**Files:** `src/commands/synth/*.rs` (12 files, 2,930 total lines)
 **Duplicated Lines:** ~2,500
 **Potential Reduction:** ~2,000 lines (80%)
 
@@ -67,17 +67,20 @@ where
 ```
 
 **Affected Files:**
-- `effects.rs` (475 lines) - 14 handlers (lb, ls, lm, rgf, rgw, rgm, ct, cr, ca, cl, cm, pan)
-- `modulation.rs` (397 lines) - 10+ handlers
-- `filter.rs` (280 lines) - 7 handlers (fc, fq, ft, fe, fed, fk, mf_f)
-- `delay.rs` (292 lines) - 7 handlers (d_mode, d_tail, dt, df, dlp, dw, ds)
-- `reverb.rs` (253 lines) - 6 handlers (r_mode, r_tail, rv, rp, rh, rw)
-- `oscillator.rs` (280 lines) - Multiple handlers
-- `beat_repeat.rs` (230 lines)
-- `eq.rs` (202 lines)
-- `pitch_shift.rs` (196 lines)
-- `resonator.rs` (163 lines)
-- `discontinuity.rs` (128 lines)
+- `synth/effects/lofi.rs` - Lo-Fi handlers (lb, ls, lm)
+- `synth/effects/ring_mod.rs` - Ring modulator handlers (rgf, rgw, rgm)
+- `synth/effects/compressor.rs` - Compressor handlers (ct, cr, ca, cl, cm)
+- `synth/output.rs` - Output handlers (VOL, PAN)
+- `synth/modulation.rs` - 10+ modulation handlers
+- `synth/filter.rs` - Filter handlers (fc, fq, ft, fk, mf_f)
+- `synth/effects/delay.rs` - Delay handlers (d_mode, d_tail, dt, df, dlp, dw, ds)
+- `synth/effects/reverb.rs` - Reverb handlers (r_mode, r_tail, rv, rp, rh, rw)
+- `synth/oscillator.rs` - Oscillator handlers (PF, PW, MF, MW, FB)
+- `synth/effects/beat_repeat.rs` - Beat repeat handlers
+- `synth/effects/eq.rs` - EQ handlers
+- `synth/effects/pitch_shift.rs` - Pitch shift handlers
+- `synth/resonator.rs` - Resonator handlers
+- `synth/discontinuity.rs` - Discontinuity handlers (DC, DM)
 
 **Refactoring Approach:**
 
@@ -256,16 +259,17 @@ pub fn handle_pn_add<F>(/* params */) -> Result<()> {
 ## 2. MEDIUM-IMPACT OPPORTUNITIES (500-1000 lines reduction)
 
 ### 2.1 Envelope Handlers - EXTREME REPETITION
-**Files:** `src/commands/synth_params/envelopes/*.rs` (8 files, 1,142 total lines)
+**Files:** `src/commands/synth/envelopes/*.rs` (7 files, consolidated after Phase 0)
 **Duplicated Lines:** ~850
 **Potential Reduction:** ~650 lines (75%)
 
 #### Pattern Analysis:
 Six envelope types (AENV, PENV, FMEV, DENV, FBEV, FLEV) have IDENTICAL structure:
-- Each has 3 handlers: `*ENV.ATK`, `*ENV.CRV`, `*ENV.MODE`
-- ATK: Time value (1-10000 ms) → Int param
+- Each has 4 handlers: decay time, amount, `*ENV.ATK`, `*ENV.CRV`
+- Decay: Time value (1-10000 ms) → Int param (AD, PD, FD, DD, FBD, FED)
+- Amount: Envelope amount → Float param (PA, FA, DA, FBA, FE)
+- ATK: Attack time (1-10000 ms) → Int param
 - CRV: Curve value (-8.0 to 8.0) → Float param
-- MODE: Mode value (0-2) → Int param
 
 **Duplication Examples:**
 - `amp.rs::handle_aenv_atk` (lines 46-83)
@@ -638,7 +642,7 @@ Before refactoring existing code:
 4. Write comprehensive tests for new abstractions
 
 ### Step 2: Incremental Migration
-1. Pick ONE module (e.g., `effects.rs`)
+1. Pick ONE module (e.g., `synth/effects/delay.rs`)
 2. Migrate handlers one-by-one
 3. Verify all tests pass
 4. Continue to next handler

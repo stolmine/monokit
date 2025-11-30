@@ -38,7 +38,7 @@
 
 **Files Changed:**
 - `sc/monokit_server.scd` - Envelope implementation and control captures
-- `src/commands/synth_params/envelopes/*.rs` - Envelope command handlers
+- `src/commands/synth/envelopes/*.rs` - Envelope command handlers
 
 ---
 

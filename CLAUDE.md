@@ -1,2 +1,3 @@
 - always update roadmap when agents complete features
 - agents should endeavor to keep the help system updated as they work
+- always do your best to stay DRY, agents should stay DRY as well. We want a clean, efficient, and well-organized codebase

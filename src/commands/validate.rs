@@ -41,13 +41,13 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         "A" | "B" | "C" | "D" | "I" | "X" | "Y" | "Z" | "T" | "J" | "K" => {
             Ok(())
         }
-        "P.HERE" | "P.NEXT" | "P.PREV" | "P.POP" | "P.REV" | "P.SHUF" | "P.SORT" => {
+        "P.HERE" | "P.NEXT" | "P.PREV" | "P.POP" | "P.REV" | "P.SHUF" | "P.SORT" | "P.MIN" | "P.MAX" | "P.SUM" | "P.AVG" => {
             if argc > 0 {
                 return Err(anyhow::anyhow!("{} takes no arguments", command));
             }
             Ok(())
         }
-        "P.PUSH" | "P.ROT" => {
+        "P.PUSH" | "P.ROT" | "P.ADD" | "P.SUB" | "P.MUL" | "P.DIV" | "P.MOD" | "P.FND" => {
             if argc < 1 {
                 return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
             }
@@ -56,6 +56,12 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         "P.INS" | "P.RM" => {
             if argc < 1 {
                 return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
+            }
+            Ok(())
+        }
+        "P.SCALE" => {
+            if argc < 2 {
+                return Err(anyhow::anyhow!("P.SCALE requires at least 2 arguments (min and max)", ));
             }
             Ok(())
         }

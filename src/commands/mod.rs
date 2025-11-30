@@ -126,6 +126,39 @@ where
         "P.RND" => {
             patterns::handle_pattern_rnd(&parts, variables, patterns, counters, scripts, script_index, output)?;
         }
+        "P.ADD" => {
+            patterns::handle_pattern_add(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "P.SUB" => {
+            patterns::handle_pattern_sub(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "P.MUL" => {
+            patterns::handle_pattern_mul(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "P.DIV" => {
+            patterns::handle_pattern_div(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "P.MOD" => {
+            patterns::handle_pattern_mod(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "P.SCALE" => {
+            patterns::handle_pattern_scale(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
+        "P.MIN" => {
+            patterns::handle_pattern_min(patterns, output);
+        }
+        "P.MAX" => {
+            patterns::handle_pattern_max(patterns, output);
+        }
+        "P.SUM" => {
+            patterns::handle_pattern_sum(patterns, output);
+        }
+        "P.AVG" => {
+            patterns::handle_pattern_avg(patterns, output);
+        }
+        "P.FND" => {
+            patterns::handle_pattern_fnd(&parts, variables, patterns, counters, scripts, script_index, output)?;
+        }
         "P" => {
             patterns::handle_pattern(&parts, variables, patterns, counters, scripts, script_index, output)?;
         }

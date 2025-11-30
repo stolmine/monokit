@@ -130,20 +130,20 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - [x] `P.SORT` - Sort pattern ascending
 - [x] `P.RND [min] [max]` - Randomize values (default 0-127)
 
-### Pattern Math [Low]
-- [ ] `P.ADD <val>` - Add to all values
-- [ ] `P.SUB <val>` - Subtract from all values
-- [ ] `P.MUL <val>` - Multiply all values
-- [ ] `P.DIV <val>` - Divide all values
-- [ ] `P.MOD <val>` - Modulo all values
-- [ ] `P.SCALE <min> <max>` - Scale pattern to range
+### Pattern Math [Low] - COMPLETE
+- [x] `P.ADD <val>` - Add to all values (saturating)
+- [x] `P.SUB <val>` - Subtract from all values (saturating)
+- [x] `P.MUL <val>` - Multiply all values (saturating)
+- [x] `P.DIV <val>` - Divide all values (integer, zero-safe)
+- [x] `P.MOD <val>` - Modulo all values (zero-safe)
+- [x] `P.SCALE <min> <max>` - Scale pattern to new range
 
-### Pattern Queries [Low]
-- [ ] `P.MIN` - Get minimum value
-- [ ] `P.MAX` - Get maximum value
-- [ ] `P.SUM` - Sum of all values
-- [ ] `P.AVG` - Average of all values
-- [ ] `P.FND <val>` - Find index of value
+### Pattern Queries [Low] - COMPLETE
+- [x] `P.MIN` - Return minimum value
+- [x] `P.MAX` - Return maximum value
+- [x] `P.SUM` - Return sum of all values
+- [x] `P.AVG` - Return average (integer)
+- [x] `P.FND <val>` - Return index of value (-1 if not found)
 
 ### Randomization System [Medium]
 

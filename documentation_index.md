@@ -2,6 +2,25 @@
 
 ## Recent Updates (November 2025)
 
+### DRY Refactoring Complete (All Phases)
+**All three phases of DRY refactoring are now complete with ~4,816 total lines removed.**
+
+| Phase | Target | Reduction | Files |
+|-------|--------|-----------|-------|
+| Phase 0 | Reorganization | - | Command structure by domain |
+| Phase 1 | Envelopes | 918 lines (81%) | 6 envelope files |
+| Phase 2 | Patterns | 1,573 lines (78%) | 8 pattern files |
+| Phase 3 | Synth Params | 2,325 lines (80%) | 12 synth files |
+
+**Macro Systems Created:**
+- `synth/envelopes/common.rs` - Envelope parameter macros
+- `patterns/common.rs` - Pattern operation macros
+- `synth/common.rs` - Synth parameter macros (6 types: int, int_ms, float, bool, mode, mode_with_names)
+
+All 411 tests pass. Codebase is now significantly DRYer and more maintainable.
+
+---
+
 ### Phase 1 DRY Refactoring Complete
 **Changes:** Envelope handler consolidation using `define_int_param!` and `define_float_param!` macros.
 

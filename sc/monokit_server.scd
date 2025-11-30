@@ -405,36 +405,24 @@ s.waitForBoot {
         psGrainSize = (ps_grain / 1000).clip(0.005, 0.1);
 
         psShifted = Select.ar(ps_mode.clip(0, 1), [
-            [
-                PitchShift.ar(
-                    psInputL,
-                    psGrainSize,
-                    psRatio,
-                    0,
-                    0.1
-                ),
-                PitchShift.ar(
-                    psInputR,
-                    psGrainSize,
-                    psRatio,
-                    0,
-                    0.1
-                )
-            ],
-            [
-                FreqShift.ar(psInputL, ps_semi * 100),
-                FreqShift.ar(psInputR, ps_semi * 100)
-            ]
+            PitchShift.ar(
+                [psInputL, psInputR],
+                psGrainSize,
+                psRatio,
+                0,
+                0.1
+            ),
+            FreqShift.ar([psInputL, psInputR], ps_semi * 100)
         ]);
 
         psMix = (ps_mix / 16383).clip(0, 1);
         sigL = Select.ar(ps_targ.clip(0, 1), [
-            (sigL * (1 - psMix)) + (psShifted[0] * psMix),
-            sigL + (psShifted[0] * psMix)
+            (sigL * (1 - psMix)) + (psShifted.at(0) * psMix),
+            sigL + (psShifted.at(0) * psMix)
         ]);
         sigR = Select.ar(ps_targ.clip(0, 1), [
-            (sigR * (1 - psMix)) + (psShifted[1] * psMix),
-            sigR + (psShifted[1] * psMix)
+            (sigR * (1 - psMix)) + (psShifted.at(1) * psMix),
+            sigR + (psShifted.at(1) * psMix)
         ]);
 
         // Stereo Delay with Feedback Filtering and Routing Modes

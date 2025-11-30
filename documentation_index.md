@@ -2,22 +2,27 @@
 
 ## Recent Updates (November 2025)
 
-### DRY Refactoring Complete (All Phases)
-**All three phases of DRY refactoring are now complete with ~4,816 total lines removed.**
+### DRY Refactoring Status
 
-| Phase | Target | Reduction | Files |
-|-------|--------|-----------|-------|
-| Phase 0 | Reorganization | - | Command structure by domain |
-| Phase 1 | Envelopes | 918 lines (81%) | 6 envelope files |
-| Phase 2 | Patterns | 1,573 lines (78%) | 8 pattern files |
-| Phase 3 | Synth Params | 2,325 lines (80%) | 12 synth files |
+**Phases 0-3 Complete:** ~4,816 lines removed
+**Phase 4 Planned:** ~800-850 additional lines (see `DRY_PHASE4_PLAN.md`)
+
+| Phase | Target | Reduction | Status |
+|-------|--------|-----------|--------|
+| Phase 0 | Reorganization | - | ✓ Complete |
+| Phase 1 | Envelopes | 918 lines (81%) | ✓ Complete |
+| Phase 2 | Patterns | 1,573 lines (78%) | ✓ Complete |
+| Phase 3 | Synth Params | 2,325 lines (80%) | ✓ Complete |
+| Phase 4A | Variable/Counter Macros | ~400-460 lines | Planned |
+| Phase 4B | Expression Helpers | ~80-120 lines | Planned |
+| Phase 4C | Test Fixtures | ~300 lines | Planned |
 
 **Macro Systems Created:**
 - `synth/envelopes/common.rs` - Envelope parameter macros
 - `patterns/common.rs` - Pattern operation macros
-- `synth/common.rs` - Synth parameter macros (6 types: int, int_ms, float, bool, mode, mode_with_names)
+- `synth/common.rs` - Synth parameter macros (6 types)
 
-All 411 tests pass. Codebase is now significantly DRYer and more maintainable.
+**Total projected reduction:** ~5,600-5,700 lines (26-27% of original codebase)
 
 ---
 

@@ -250,11 +250,12 @@ s.waitForBoot {
         mixAmount = mxSmooth / 16383;
         fbAmount = (fbSmooth / 16383) + (fbEnv * fba / 16383);  // base + (envelope * amount)
 
-        // Primary frequency: base + (pitchEnv * amount) + (modBus * routing)
-        primaryFreq = pfSmooth * (1 + (pitchEnv * pa) + (modBus * mp * 4));
+        // Primary frequency: base * 2^(pitchEnv * octaves) + modBus routing
+        // pa is in octaves (0-16), pitchEnv is 0-1, so pitchEnv*pa gives octave offset
+        primaryFreq = pfSmooth * pow(2, pitchEnv * pa) * (1 + (modBus * mp * 4));
 
-        // Modulator frequency: base + (tracking) + (modBus * routing)
-        modulatorFreq = mfSmooth + (trackingAmount * mt * (pfSmooth * (1 + (pitchEnv * pa)) - pfSmooth));
+        // Modulator frequency: base + (tracking * pitch envelope effect) + modBus routing
+        modulatorFreq = mfSmooth + (trackingAmount * mt * (pfSmooth * pow(2, pitchEnv * pa) - pfSmooth));
         modulatorFreq = modulatorFreq * (1 + (modBus * md));
 
         // Modulator oscillator (mw: 0=sine, 1=tri, 2=saw, 3=feedback)

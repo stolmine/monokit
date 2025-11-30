@@ -92,6 +92,9 @@ pub fn run_app<B: ratatui::backend::Backend>(
                 MetroEvent::ExecuteScript(index) => {
                     app.execute_script(index);
                 }
+                MetroEvent::ExecuteDelayed(command, script_index) => {
+                    app.execute_delayed_command(&command, script_index);
+                }
             }
         }
 

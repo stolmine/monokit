@@ -21,3 +21,4 @@ mod envelope_tests;
 mod randomization;
 mod fx_randomization_tests;
 mod scale_tests;
+mod delay_tests;

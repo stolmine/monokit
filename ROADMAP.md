@@ -234,29 +234,29 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 ### Tempo-Synced Delay [Low]
 - [ ] `DS` parameter - Delay time sync to metro (divisions: 1/4, 1/8, 1/16, etc.)
 
-### Command Delay System (Teletype DEL) [Medium]
+### Command Delay System (Teletype DEL) [Medium] - COMPLETE
 Scheduled command execution with delay buffer (inspired by Teletype).
 
 **Basic Delay:**
-- [ ] `DEL <ms>: <cmd>` - Execute command after delay (max 16000ms)
-- [ ] `DEL.CLR` - Clear all pending delayed commands
+- [x] `DEL <ms>: <cmd>` - Execute command after delay (max 16000ms)
+- [x] `DEL.CLR` - Clear all pending delayed commands
 
 **Repeated Delays:**
-- [ ] `DEL.X <count> <ms>: <cmd>` - Queue command N times at intervals
+- [x] `DEL.X <count> <ms>: <cmd>` - Queue command N times at intervals
   - Example: `DEL.X 4 100: TR` fires at 100ms, 200ms, 300ms, 400ms
-- [ ] `DEL.R <count> <ms>: <cmd>` - Execute immediately, then repeat
+- [x] `DEL.R <count> <ms>: <cmd>` - Execute immediately, then repeat
   - Example: `DEL.R 4 100: TR` fires now, then at 100ms, 200ms, 300ms
 
-**Advanced Delays:**
+**Advanced Delays (Future):**
 - [ ] `DEL.B <ms> <bitmask>: <cmd>` - Bitmasked delay (16-bit pattern)
   - LSB = immediate, each bit = one interval of <ms>
   - Example: `DEL.B 100 0b1010: TR` fires at 100ms, 300ms
 - [ ] `DEL.G <ms> <exp>: <cmd>` - Exponential delay timing (non-linear)
 
 **Implementation Notes:**
-- Delay buffer holds 16-64 pending commands
-- Commands execute on metro thread at scheduled time
-- Buffer overflow behavior: oldest dropped or error
+- Delay buffer holds pending commands in metro thread
+- Commands execute at scheduled time with absolute timing
+- Supports expressions in delay time and counts
 
 ---
 

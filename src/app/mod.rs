@@ -167,6 +167,50 @@ impl App {
         self.execute_script_with_depth(script_index, 0);
     }
 
+    pub fn execute_delayed_command(&mut self, command: &str, script_index: usize) {
+        let mut metro_interval = {
+            let state = self.metro_state.lock().unwrap();
+            state.interval_ms
+        };
+        self.if_else_condition = true;
+
+        let mut output_messages = Vec::new();
+        let result = crate::commands::process_command(
+            &self.metro_tx,
+            &mut metro_interval,
+            &mut self.br_len,
+            &mut self.variables,
+            &mut self.patterns,
+            &mut self.counters,
+            &mut self.scripts,
+            script_index,
+            &mut self.scale,
+            &mut self.theme,
+            &mut self.debug_level,
+            command,
+            |msg| {
+                output_messages.push(msg);
+            },
+        );
+
+        match result {
+            Ok(scripts_to_run) => {
+                for msg in output_messages {
+                    self.add_output(msg);
+                }
+                for script_idx in scripts_to_run {
+                    self.execute_script(script_idx);
+                }
+            }
+            Err(e) => {
+                output_messages.push(format!("Error: {}", e));
+                for msg in output_messages {
+                    self.add_output(msg);
+                }
+            }
+        }
+    }
+
     pub fn clear_expired_error(&mut self) {
         if let Some(time) = self.script_error_time {
             if time.elapsed().as_secs() >= 3 {

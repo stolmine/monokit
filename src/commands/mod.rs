@@ -1,5 +1,6 @@
 mod aliases;
 mod counters;
+pub mod delay;
 mod gate;
 mod math_ops;
 mod metro_cmds;
@@ -742,6 +743,18 @@ where
         }
         "N4.MIN" => {
             counters::handle_n4_min(&parts, variables, patterns, counters, scripts, script_index, scale, output);
+        }
+        "DEL" => {
+            delay::handle_del(&parts, input, variables, patterns, counters, scripts, script_index, metro_tx, scale, *debug_level, output)?;
+        }
+        "DEL.CLR" => {
+            delay::handle_del_clr(metro_tx, *debug_level, output)?;
+        }
+        "DEL.X" => {
+            delay::handle_del_x(&parts, input, variables, patterns, counters, scripts, script_index, metro_tx, scale, *debug_level, output)?;
+        }
+        "DEL.R" => {
+            delay::handle_del_r(&parts, input, variables, patterns, counters, scripts, script_index, metro_tx, scale, *debug_level, output)?;
         }
         "Q.ROOT" => {
             scale::handle_q_root(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, output);

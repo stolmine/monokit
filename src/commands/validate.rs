@@ -16,6 +16,9 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             || prefix.starts_with("EV ")
             || prefix.starts_with("SKIP ")
             || prefix.starts_with("L ")
+            || prefix.starts_with("DEL ")
+            || prefix.starts_with("DEL.X ")
+            || prefix.starts_with("DEL.R ")
         {
             return Ok(());
         }
@@ -383,6 +386,12 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         "Q.BIT" => {
             if argc != 1 {
                 return Err(anyhow::anyhow!("Q.BIT takes exactly 1 argument (binary string)"));
+            }
+            Ok(())
+        }
+        "DEL.CLR" => {
+            if argc > 0 {
+                return Err(anyhow::anyhow!("DEL.CLR takes no arguments"));
             }
             Ok(())
         }

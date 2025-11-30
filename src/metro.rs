@@ -1,4 +1,4 @@
-use crate::types::{MetroCommand, MetroEvent, MetroState, OSC_ADDR};
+use crate::types::{DelayedCommand, MetroCommand, MetroEvent, MetroState, OSC_ADDR};
 use rosc::{encoder, OscMessage, OscPacket, OscType};
 use std::net::UdpSocket;
 use std::sync::{mpsc, Arc, Mutex};
@@ -35,6 +35,8 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
     let mut interval_ms: u64 = 500;
     let mut active = false;
     let mut next_tick = Instant::now();
+    let mut delayed_commands: Vec<DelayedCommand> = Vec::new();
+    let start_time = Instant::now();
 
     loop {
         let mut interval_changed = false;
@@ -151,6 +153,31 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                         let _ = socket.send(&buf);
                     }
                 }
+                MetroCommand::ScheduleDelayed(cmd, delay_ms, script_idx) => {
+                    let elapsed_ms = start_time.elapsed().as_millis() as u64;
+                    let due_at_ms = elapsed_ms + delay_ms;
+                    delayed_commands.push(DelayedCommand {
+                        due_at_ms,
+                        command: cmd,
+                        script_index: script_idx,
+                    });
+                    delayed_commands.sort_by_key(|dc| dc.due_at_ms);
+                }
+                MetroCommand::ScheduleRepeated(cmd, count, interval_ms, script_idx) => {
+                    let elapsed_ms = start_time.elapsed().as_millis() as u64;
+                    for i in 0..count {
+                        let due_at_ms = elapsed_ms + (i as u64 * interval_ms);
+                        delayed_commands.push(DelayedCommand {
+                            due_at_ms,
+                            command: cmd.clone(),
+                            script_index: script_idx,
+                        });
+                    }
+                    delayed_commands.sort_by_key(|dc| dc.due_at_ms);
+                }
+                MetroCommand::ClearDelayed => {
+                    delayed_commands.clear();
+                }
                 MetroCommand::Shutdown => {
                     return; // Exit the metro thread
                 }
@@ -159,6 +186,15 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
 
         if interval_changed {
             next_tick = Instant::now();
+        }
+
+        let elapsed_ms = start_time.elapsed().as_millis() as u64;
+        while !delayed_commands.is_empty() && delayed_commands[0].due_at_ms <= elapsed_ms {
+            let delayed_cmd = delayed_commands.remove(0);
+            let _ = event_tx.send(MetroEvent::ExecuteDelayed(
+                delayed_cmd.command,
+                delayed_cmd.script_index,
+            ));
         }
 
         if active {

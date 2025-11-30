@@ -198,6 +198,16 @@ Monokit uses a **PREFIX.SUFFIX** naming convention for canonical command forms:
 - `M.ACT <0|1>` - Activate (1) or deactivate (0) metro
 - `M.SCRIPT <1-8>` - Set which script metro calls on each tick (default: M script)
 
+#### Delayed Execution
+- `DEL <ms>: <cmd>` - Execute command after delay (max 16000ms)
+- `DEL.CLR` - Clear all pending delayed commands
+- `DEL.X <count> <ms>: <cmd>` - Queue command N times at intervals
+  - Example: `DEL.X 4 100: TR` fires at 100ms, 200ms, 300ms, 400ms
+- `DEL.R <count> <ms>: <cmd>` - Execute immediately, then repeat
+  - Example: `DEL.R 4 100: TR` fires now, then at 100ms, 200ms, 300ms
+- Supports expressions in delay time and counts
+- Commands execute on metro thread at scheduled time
+
 #### Scripts
 - `SCRIPT <1-8>` - Execute stored script (can be called from other scripts, supports expressions)
   - `SCRIPT 1` - Direct script number

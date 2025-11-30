@@ -175,6 +175,13 @@ impl ScriptStorage {
 }
 
 #[derive(Debug, Clone)]
+pub struct DelayedCommand {
+    pub due_at_ms: u64,
+    pub command: String,
+    pub script_index: usize,
+}
+
+#[derive(Debug, Clone)]
 pub enum MetroCommand {
     SetInterval(u64),
     SetActive(bool),
@@ -190,11 +197,15 @@ pub enum MetroCommand {
     SetGate(f32),              // Global gate duration in seconds
     SetEnvGate(String, f32),   // Per-envelope gate (env_name, duration)
     Shutdown,                  // Signal metro thread to exit
+    ScheduleDelayed(String, u64, usize),      // (cmd, delay_ms, script_idx)
+    ScheduleRepeated(String, i16, u64, usize), // (cmd, count, interval_ms, script_idx) for DEL.X
+    ClearDelayed,                              // DEL.CLR
 }
 
 #[derive(Debug, Clone)]
 pub enum MetroEvent {
     ExecuteScript(usize),
+    ExecuteDelayed(String, usize),
 }
 
 #[derive(Debug, Clone)]

@@ -134,18 +134,23 @@ Consolidate command definitions into a single source of truth to eliminate synch
 - [x] Line reduction: ~1,141 lines → 223 lines (~918 line reduction, 81% decrease)
 - [x] All 411 tests pass
 
+**Phase 2: Pattern Operation DRY** - COMPLETE (November 2025)
+- [x] Created `patterns/common.rs` (902 lines) with `PatternRef` enum, shared implementations, and macro system
+- [x] Aggressive macro approach: 10 macros generate both P.* and PN.* handlers from single definitions
+- [x] Unified P.* (working) and PN.* (explicit) operations via PatternRef::Working/Explicit
+- [x] Wrapper code reduced from 2023 → 450 lines (1,573 line reduction, 78% decrease)
+- [x] Explicit files now just re-export from working files (~10 lines each)
+- [x] All 411 tests pass
+
 **Remaining Phases:**
-- [ ] Phase 2: Pattern Operation DRY (~1,300 line reduction potential)
-  - Create `patterns/common.rs` with `PatternSelector` enum
-  - Unify P.* (working) and PN.* (explicit) operations
 - [ ] Phase 3: Synth Parameter DRY (~2,000 line reduction potential)
   - Create `synth/param_macro.rs` with generic parameter macros
   - Consolidate 70+ similar parameter handlers
 
-**Expected Total Impact:**
-- ~4,000+ line reduction through macro consolidation
+**Total Impact So Far:**
+- ~2,491 line reduction through macro consolidation (Phase 1 + Phase 2)
 - Clear, logical file organization by domain
-- Easier to add new commands
+- Easier to add new commands (single macro invocation for both P.* and PN.*)
 - All 411 tests continue to pass throughout
 
 **Reference:** See `DRY_REFACTOR_PLAN.md` for comprehensive implementation plan.

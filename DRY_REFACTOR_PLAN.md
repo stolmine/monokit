@@ -449,13 +449,30 @@ cargo build --release
 |-------|------|---------------------|------------------|--------|
 | 0 | Reorganization | Cleaner structure | Cleaner structure | COMPLETE |
 | 1 | Envelopes | ~841 lines | **918 lines (81%)** | **COMPLETE** |
-| 2 | Patterns | ~1,423 lines | TBD | Pending |
+| 2 | Patterns | ~1,423 lines | **1,573 lines (78% of wrappers)** | **COMPLETE** |
 | 3 | Synth Params | ~2,197 lines | TBD | Pending |
-| **Total** | | **~4,461 lines (74%)** | **918 lines so far** | **In Progress** |
+| **Total** | | **~4,461 lines (74%)** | **2,491 lines so far** | **In Progress** |
 
 **Phase 1 Notes:**
 - Achieved 918 line reduction vs 841 estimated (109% of estimate)
 - Better than expected due to removal of global.rs and mode handlers
+- All 411 tests pass with no loss of functionality
+
+**Phase 2 Notes:**
+- Created `patterns/common.rs` (902 lines) with `PatternRef` enum, shared implementations, AND macro system
+- Aggressive macro-based refactoring: macros generate both P.* and PN.* handlers from single definition
+- Helper functions: `parse_pattern_num`, `parse_i16_expr`, `parse_usize_expr`
+- Macro types: `define_pattern_op_1val!`, `define_pattern_op_noarg!`, `define_pattern_op_2val!`, `define_pattern_op_idx!`, `define_pattern_op_idx_val!`, `define_pattern_query!`, `define_pattern_query_1val!`, `define_pattern_nav!`, `define_pattern_pop!`, `define_pattern_rnd!`
+- **Wrapper code reduced from 2023 → 450 lines (1573 line reduction, 78%)**
+- Individual file reductions:
+  - working_math.rs: 228 → 13 lines (94%)
+  - explicit_math.rs: 294 → 8 lines (97%)
+  - working_manip.rs: 269 → 15 lines (94%)
+  - explicit_manip.rs: 420 → 11 lines (97%)
+  - working_query.rs: 94 → 9 lines (90%)
+  - explicit_query.rs: 197 → 7 lines (96%)
+  - working.rs: 168 → 135 lines (nav handlers only, 20%)
+  - explicit.rs: 268 → 166 lines (nav handlers only, 38%)
 - All 411 tests pass with no loss of functionality
 
 ---

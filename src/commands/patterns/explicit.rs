@@ -102,113 +102,11 @@ where
     Ok(())
 }
 
-pub fn handle_pn_here<F>(
-    parts: &[&str],
-    variables: &Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &ScriptStorage,
-    script_index: usize,
-    scale: &ScaleState,
-    mut output: F,
-) -> Result<()>
-where
-    F: FnMut(String),
-{
-    if parts.len() < 2 {
-        output("ERROR: PN.HERE REQUIRES PATTERN NUMBER (0-5)".to_string());
-        return Ok(());
-    }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-        expr_val as usize
-    } else {
-        parts[1]
-            .parse()
-            .context("Failed to parse pattern number")?
-    };
-    if pat > 5 {
-        output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
-        return Ok(());
-    }
-    let pattern = &patterns.patterns[pat];
-    let value = pattern.data[pattern.index];
-    output(format!("PN.HERE {} = {}", pat, value));
-    Ok(())
-}
-
-pub fn handle_pn_next<F>(
-    parts: &[&str],
-    variables: &Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &ScriptStorage,
-    script_index: usize,
-    scale: &ScaleState,
-    mut output: F,
-) -> Result<()>
-where
-    F: FnMut(String),
-{
-    if parts.len() < 2 {
-        output("ERROR: PN.NEXT REQUIRES PATTERN NUMBER (0-5)".to_string());
-        return Ok(());
-    }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-        expr_val as usize
-    } else {
-        parts[1]
-            .parse()
-            .context("Failed to parse pattern number")?
-    };
-    if pat > 5 {
-        output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
-        return Ok(());
-    }
-    let pattern = &mut patterns.patterns[pat];
-    pattern.index = (pattern.index + 1) % pattern.length;
-    let value = pattern.data[pattern.index];
-    output(format!("PN.NEXT {} = {} (INDEX NOW {})", pat, value, pattern.index));
-    Ok(())
-}
-
-pub fn handle_pn_prev<F>(
-    parts: &[&str],
-    variables: &Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &ScriptStorage,
-    script_index: usize,
-    scale: &ScaleState,
-    mut output: F,
-) -> Result<()>
-where
-    F: FnMut(String),
-{
-    if parts.len() < 2 {
-        output("ERROR: PN.PREV REQUIRES PATTERN NUMBER (0-5)".to_string());
-        return Ok(());
-    }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-        expr_val as usize
-    } else {
-        parts[1]
-            .parse()
-            .context("Failed to parse pattern number")?
-    };
-    if pat > 5 {
-        output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
-        return Ok(());
-    }
-    let pattern = &mut patterns.patterns[pat];
-    if pattern.index == 0 {
-        pattern.index = pattern.length - 1;
-    } else {
-        pattern.index -= 1;
-    }
-    let value = pattern.data[pattern.index];
-    output(format!("PN.PREV {} = {} (INDEX NOW {})", pat, value, pattern.index));
-    Ok(())
-}
+pub use super::working::{
+    handle_pn_here,
+    handle_pn_next,
+    handle_pn_prev,
+};
 
 pub fn handle_pn<F>(
     parts: &[&str],

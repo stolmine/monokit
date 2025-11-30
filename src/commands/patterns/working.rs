@@ -2,6 +2,8 @@ use crate::eval::eval_expression;
 use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables};
 use anyhow::{Context, Result};
 
+use super::common::{define_pattern_nav};
+
 pub fn handle_pattern_n<F>(
     parts: &[&str],
     patterns: &mut PatternStorage,
@@ -82,44 +84,9 @@ pub fn handle_pattern_i<F>(
     }
 }
 
-pub fn handle_pattern_here<F>(
-    patterns: &PatternStorage,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    let pattern = &patterns.patterns[patterns.working];
-    let value = pattern.data[pattern.index];
-    output(format!("P.HERE = {}", value));
-}
-
-pub fn handle_pattern_next<F>(
-    patterns: &mut PatternStorage,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    let pattern = &mut patterns.patterns[patterns.working];
-    pattern.index = (pattern.index + 1) % pattern.length;
-    let value = pattern.data[pattern.index];
-    output(format!("P.NEXT = {} (INDEX NOW {})", value, pattern.index));
-}
-
-pub fn handle_pattern_prev<F>(
-    patterns: &mut PatternStorage,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    let pattern = &mut patterns.patterns[patterns.working];
-    if pattern.index == 0 {
-        pattern.index = pattern.length - 1;
-    } else {
-        pattern.index -= 1;
-    }
-    let value = pattern.data[pattern.index];
-    output(format!("P.PREV = {} (INDEX NOW {})", value, pattern.index));
-}
+define_pattern_nav!(handle_pattern_here, handle_pn_here, pattern_here_impl, "HERE", here);
+define_pattern_nav!(handle_pattern_next, handle_pn_next, pattern_next_impl, "NEXT", nav);
+define_pattern_nav!(handle_pattern_prev, handle_pn_prev, pattern_prev_impl, "PREV", nav);
 
 pub fn handle_pattern<F>(
     parts: &[&str],

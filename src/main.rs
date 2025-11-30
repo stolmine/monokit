@@ -8,6 +8,7 @@ mod theme;
 mod types;
 mod ui;
 
+pub use anyhow;
 use anyhow::Result;
 use crossterm::{
     execute,

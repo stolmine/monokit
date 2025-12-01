@@ -5,9 +5,17 @@
 Show current position in stateful operators (SEQ, TOG) within script display. When viewing a script page, highlight which value is currently active.
 
 **Visual Design:**
-- SEQ: `SEQ "C3 E3 >G3< C4"` - current step bracketed with `>` and `<`
-- TOG: `TOG 10 >20<` - active value bracketed
-- Use theme accent color for highlighted segments
+- SEQ: `SEQ "C3 E3 G3 C4"` - current step shown in highlight color (no brackets)
+- TOG: `TOG 10 20` - active value shown in highlight color (no brackets)
+- Highlighting via **text color only**, no bracket markers
+
+**Color Strategy:**
+- **Non-selected line:** Current value in `foreground` color, rest in `secondary`
+- **Selected line (on highlight_bg):** Current value in `success` (green), rest in `highlight_fg`
+
+This provides good contrast across themes:
+- Dark theme: green (80, 255, 80) on white highlight_bg
+- Light theme: green (0, 160, 0) on black highlight_bg
 
 ## State Storage
 
@@ -56,10 +64,12 @@ pub struct HighlightedLine {
 
 impl HighlightedLine {
     /// Convert to ratatui Spans with appropriate styling
-    pub fn to_spans(&self, normal_color: Color, accent_color: Color) -> Vec<Span<'static>> {
+    /// - normal_color: color for non-highlighted text
+    /// - highlight_color: color for current SEQ/TOG value
+    pub fn to_spans(&self, normal_color: Color, highlight_color: Color) -> Vec<Span<'static>> {
         self.segments.iter().map(|seg| {
             if seg.is_highlighted {
-                Span::styled(seg.text.clone(), Style::default().fg(accent_color))
+                Span::styled(seg.text.clone(), Style::default().fg(highlight_color))
             } else {
                 Span::styled(seg.text.clone(), Style::default().fg(normal_color))
             }
@@ -89,13 +99,16 @@ let highlighted = highlight_stateful_operators(
     &app.patterns.toggle_state,
 );
 
-let (normal_color, accent_color) = if is_selected {
-    (app.theme.highlight_fg, app.theme.accent)
+// Color strategy:
+// - Non-selected: foreground for highlight, secondary for normal
+// - Selected: success (green) for highlight, highlight_fg for normal
+let (normal_color, highlight_color) = if is_selected {
+    (app.theme.highlight_fg, app.theme.success)
 } else {
-    (app.theme.secondary, app.theme.accent)
+    (app.theme.secondary, app.theme.foreground)
 };
 
-let spans = highlighted.to_spans(normal_color, accent_color);
+let spans = highlighted.to_spans(normal_color, highlight_color);
 ```
 
 ### MODIFY: `src/ui/pages/metro.rs`
@@ -122,8 +135,8 @@ pub mod state_highlight;
 3. Build state key: `format!("seq_{}_{}", script_index, pattern)`
 4. Look up current index from `toggle_state` (default 0)
 5. Parse pattern tokens to identify current step
-6. Insert `>` before and `<` after current token
-7. Return segments: prefix (normal), highlighted value (accent), suffix (normal)
+6. Mark current token as highlighted (color change only, no brackets)
+7. Return segments with is_highlighted flags
 
 **Pattern Parsing Considerations:**
 - Split by whitespace
@@ -141,7 +154,7 @@ pub mod state_highlight;
 3. Build state key: `format!("{}_{}", script_index, "TOG_<val1>_<val2>")`
 4. Look up current state (default 0)
 5. Active value = state % 2 (0 = first, 1 = second)
-6. Insert `>` before and `<` after active token
+6. Mark active token as highlighted (color change only, no brackets)
 
 ### Multiple Operators Per Line
 

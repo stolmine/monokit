@@ -2,6 +2,19 @@
 
 ## Recent Updates (November 2025)
 
+### MIDI Clock Sync
+
+**MIDI Clock Input:**
+- External tempo sync from DAW or MIDI clock devices
+- Transport start/stop follows MIDI messages
+- 16th note resolution (each MIDI clock tick = metro tick)
+- Auto-detection of available MIDI inputs
+- `M.SYNC <0|1>` - Set sync mode (0=internal, 1=MIDI clock)
+- `MIDI.IN` - List available MIDI input devices
+- `MIDI.IN <name>` - Connect to specific MIDI device
+
+When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport start/stop messages control metro activation.
+
 ### REPL Scrolling and UI Enhancements
 
 **REPL Output Scrolling (Live Page):**
@@ -373,6 +386,9 @@ Monokit uses a **PREFIX.SUFFIX** naming convention for canonical command forms:
 - `M.BPM <bpm>` - Set metro tempo as BPM
 - `M.ACT <0|1>` - Activate (1) or deactivate (0) metro
 - `M.SCRIPT <1-8>` - Set which script metro calls on each tick (default: M script)
+- `M.SYNC <0|1>` - Set sync mode (0=internal, 1=MIDI clock)
+- `MIDI.IN` - List available MIDI input devices
+- `MIDI.IN <name>` - Connect to MIDI device for clock sync
 
 #### Delayed Execution
 - `DEL <ms>: <cmd>` - Execute command after delay (max 16000ms)

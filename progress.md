@@ -2,6 +2,36 @@
 
 ## November 2025
 
+### MIDI Clock Sync - COMPLETE (Input Only)
+**Date:** November 2025
+**Status:** Input Complete
+
+**Implemented:**
+- `M.SYNC <0|1>` - Set sync mode (0=internal, 1=MIDI clock)
+- `MIDI.IN` - List available MIDI input devices
+- `MIDI.IN <name>` - Connect to MIDI device for clock sync
+- Auto-detection of available MIDI inputs
+- External tempo sync from DAW or MIDI clock devices (24 PPQN standard)
+- Transport start/stop follows MIDI messages
+- 16th note resolution (each MIDI clock tick = metro tick)
+
+**Usage:**
+```
+MIDI.IN                      # List available MIDI devices
+MIDI.IN "My MIDI Device"     # Connect to specific device
+M.SYNC 1                     # Enable MIDI clock sync
+M.ACT 1                      # Activate metro (will follow external clock)
+```
+
+When M.SYNC is enabled, the metro follows external MIDI clock timing. Transport start/stop messages automatically control metro activation.
+
+**Not Implemented:**
+- MIDI clock output
+- Clock division/multiplication
+- Explicit transport control commands
+
+---
+
 ### SEQ Mini Notation System - COMPLETE (Phase 2)
 **Date:** November 2025
 **Status:** Phase 2 Complete

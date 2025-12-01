@@ -371,23 +371,25 @@ PSET.SAVE 2 my-bass          # Save script 2 as user preset
 PSETS                        # List all presets
 ```
 
-### DAW / MIDI Clock Sync [High]
+### DAW / MIDI Clock Sync [High] - PARTIAL
 
-**MIDI Clock Input:**
-- [ ] `M.SYNC <0-2>` - Sync mode (0=internal, 1=MIDI clock, 2=MIDI clock + transport)
-- [ ] Auto-detect MIDI clock from connected devices
-- [ ] Follow external tempo (24 PPQN standard)
-- [ ] Start/stop follows MIDI transport commands
+**MIDI Clock Input:** - COMPLETE
+- [x] `M.SYNC <0|1>` - Sync mode (0=internal, 1=MIDI clock)
+- [x] `MIDI.IN` - List available MIDI input devices
+- [x] `MIDI.IN <name>` - Connect to MIDI device for clock sync
+- [x] Auto-detect MIDI input devices
+- [x] Follow external tempo (24 PPQN standard, 16th note resolution)
+- [x] Start/stop follows MIDI transport commands
 
-**MIDI Clock Output:**
+**MIDI Clock Output:** - NOT IMPLEMENTED
 - [ ] `M.SEND <0|1>` - Send MIDI clock out
 - [ ] Send start/stop/continue messages
 
-**Clock Division/Multiplication:**
+**Clock Division/Multiplication:** - NOT IMPLEMENTED
 - [ ] `M.DIV <1-16>` - Divide incoming clock
 - [ ] `M.MUL <1-4>` - Multiply incoming clock
 
-**Transport Control:**
+**Transport Control:** - NOT IMPLEMENTED
 - [ ] `PLAY`, `STOP`, `PAUSE` - Playback control
 - [ ] `RST.POS` - Reset to beginning
 

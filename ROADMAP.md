@@ -380,6 +380,19 @@ PSETS                        # List all presets
 - [x] Auto-detect MIDI input devices
 - [x] Follow external tempo (24 PPQN standard, 16th note resolution)
 - [x] Start/stop follows MIDI transport commands
+- [x] Rock-solid timing (0.02% jitter, no swing artifacts)
+
+**Timing Diagnostics:** - COMPLETE (December 2025)
+- [x] `MIDI.DIAG 1/0` - Enable/disable Rust-side timing diagnostics
+- [x] `MIDI.DIAG REPORT` - Write timing report to `midi_timing_report.txt`
+- [x] `SC.DIAG 1/0` - Enable/disable SuperCollider-side timing diagnostics
+- [x] `SC.DIAG REPORT` - Write timing report to `sc_timing_report.txt`
+- [x] Trigger counting on both sides (detect packet loss)
+- [x] Swing detection via odd/even interval analysis
+- [x] 4MB UDP socket buffer (eliminates packet loss)
+- [x] 1ms UI event poll (eliminates timing jitter)
+
+**Technical Details:** See `docs/MIDI_CLOCK_TIMING_LESSONS.md` for comprehensive debugging notes.
 
 **MIDI Clock Output:** - NOT IMPLEMENTED
 - [ ] `M.SEND <0|1>` - Send MIDI clock out

@@ -1,4 +1,4 @@
-use crate::midi::MidiConnection;
+use crate::midi::{MidiConnection, MidiTimingStats};
 use crate::theme::Theme;
 use crate::types::{
     Counters, MetroCommand, MetroState, Page, PatternStorage, ScaleState, ScriptStorage, SyncMode, Variables,
@@ -45,6 +45,7 @@ pub struct App {
     pub scale: ScaleState,
     pub sync_mode: SyncMode,
     pub midi_connection: Option<MidiConnection>,
+    pub midi_timing_stats: Arc<MidiTimingStats>,
 }
 
 impl App {
@@ -84,6 +85,7 @@ impl App {
             scale: ScaleState::default(),
             sync_mode: SyncMode::Internal,
             midi_connection: None,
+            midi_timing_stats: MidiTimingStats::new(),
         }
     }
 
@@ -190,6 +192,7 @@ impl App {
             &mut self.br_len,
             &mut self.sync_mode,
             &mut self.midi_connection,
+            &self.midi_timing_stats,
             &mut self.variables,
             &mut self.patterns,
             &mut self.counters,

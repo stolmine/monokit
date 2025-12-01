@@ -31,6 +31,7 @@ impl App {
             &mut self.br_len,
             &mut self.sync_mode,
             &mut self.midi_connection,
+            &self.midi_timing_stats,
             &mut self.variables,
             &mut self.patterns,
             &mut self.counters,

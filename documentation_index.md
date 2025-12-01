@@ -149,6 +149,7 @@ All 411 tests pass. Codebase reduced by ~28% while maintaining full functionalit
 - **EFFECT_ROUTING_DESIGN.md** - Design document for flexible effect routing system
 - **DRY_REFACTOR_PLAN.md** - Comprehensive refactoring plan for codebase reorganization and DRY consolidation
 - **DRY_ANALYSIS_REPORT.md** - Detailed analysis of code duplication and refactoring opportunities (~4,000-5,000 line reduction potential)
+- **UI_REFINEMENT_PLAN.md** - Detailed implementation plan for UI enhancements: activity indicators, variable monitoring, SEQ/TOG highlighting, audio metering
 - **documentation_index.md** - This file, listing all documentation and key project files
 
 ## Key Project Files

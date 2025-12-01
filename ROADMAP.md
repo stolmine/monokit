@@ -515,15 +515,57 @@ Blocked by same SC complexity constraints.
 
 **Focus:** Visual enhancements and real-time parameter monitoring
 
-### Variable Display [Medium]
-- [ ] Dedicated UI area showing A, B, C, D, X, Y, Z, T values
-- [ ] Real-time updates as variables change
-- [ ] Color coding for recently changed variables
+**Reference:** See `UI_REFINEMENT_PLAN.md` for detailed implementation guide.
 
-### Parameter Feedback [Medium]
-- [ ] Show last-changed parameter and value
-- [ ] Flash/highlight on parameter change
-- [ ] Optional: Parameter history log
+### Phase 5.1: Activity Indicators [Medium] - NOT STARTED
+Script and metro execution feedback with decay animations (KO II style).
+
+- [ ] Add `ActivityState` struct tracking script/metro/trigger timestamps
+- [ ] Decay animation using block characters: `█ ▓ ▒ ░ ·`
+- [ ] Header shows script indicators (1-8, M, I) with brightness decay
+- [ ] Metro tick pulses M indicator
+- [ ] TR command pulses trigger indicator
+- [ ] 500ms decay timing (5 levels, 100ms each)
+
+### Phase 5.2: SEQ/TOG State Highlighting [Medium] - NOT STARTED
+Show current position in stateful operators within script display.
+
+- [ ] Bracket markers for current value: `SEQ "C3 E3 >G3< C4"`
+- [ ] TOG active option highlighting: `TOG 10 >20<`
+- [ ] Theme accent color for highlighted segments
+- [ ] State lookup from existing `toggle_state` HashMap
+- [ ] Handle multiple operators per line
+- [ ] Create `src/ui/state_highlight.rs` module
+
+### Phase 5.3: Variables Page [Medium] - NOT STARTED
+Dedicated page showing all variable state (Teletype-style monitor).
+
+- [ ] Add `Page::Variables` to page enum
+- [ ] Create `src/ui/pages/variables.rs`
+- [ ] Display global vars: A, B, C, D, X, Y, Z, T
+- [ ] Display counters: N1-N4 with min/max bounds
+- [ ] Display per-script locals: J, K for all 10 scripts
+- [ ] Optional: highlight recently-changed values
+
+### Phase 5.4: Parameter Activity Grid [Medium] - NOT STARTED
+KO II-style grid showing which parameter categories are being modified.
+
+- [ ] Category mapping: OSC, FM, ENV, FLT, FX, MOD, OUT
+- [ ] Add `ParamActivity` struct with per-category timestamps
+- [ ] Mark activity when parameters change
+- [ ] Display in header or footer: `OSC:█ FM:▓ ENV:░ FLT:·`
+- [ ] Same decay timing as script indicators
+
+### Phase 5.5: Audio Metering [High] - NOT STARTED
+Real-time amplitude and CPU display (requires bidirectional OSC).
+
+- [ ] Add `SendPeakRMS` to SuperCollider SynthDef
+- [ ] Create `src/meter.rs` receiver thread (port 57121)
+- [ ] Add `MeterData` and `CpuData` types
+- [ ] Spawn meter thread in main.rs
+- [ ] Unicode bargraph display: `▁▂▃▄▅▆▇█`
+- [ ] CPU percentage from SC `/status` command
+- [ ] Peak hold and clip indicator
 
 ### Help System [Low] - PARTIAL
 - [x] Add explicit `#` prefix marker to section headers
@@ -534,30 +576,7 @@ Blocked by same SC complexity constraints.
 - [ ] Sequential search with `Enter`, highlight matches
 - [ ] Jump to match location within help pages
 
-### Activity Indicators (KO II Style) [Medium]
-- [ ] Page icon highlighting when script executes
-- [ ] M icon pulses on metro tick
-- [ ] Script 1-8 icons flash when called
-- [ ] Live screen event visualization (trigger, metro, pattern, script icons)
-- [ ] Decay/fade animations
-- [ ] Per-parameter activity dots with brightness/color coding
-
-### Live Sequence State Highlighting [Medium]
-- [ ] Highlight current SEQ step in script display (show which value is active)
-- [ ] Highlight current TOG state (show which of the two values is next)
-- [ ] Highlight EITH outcomes (show last selected value)
-- [ ] Visual indication for N1-N4 counter current values
-- [ ] Per-line state annotations for any sequential/stateful operators
-- [ ] Subtle color coding or underline for active sequence positions
-
-### CPU & Audio Metering [Medium]
-- [ ] `CPU` - Display SuperCollider server CPU usage
-- [ ] Status bar CPU meter with warning at >80%
-- [ ] `METER` - Audio output level metering
-- [ ] Peak hold display
-- [ ] Clip indicator
-
-### Waveform Preview [Medium] (Optional)
+### Waveform Preview [Medium] (Optional/Future)
 - [ ] Mini oscilloscope on Live page
 - [ ] Real-time output waveform display
 - [ ] Optional: Spectrum analyzer

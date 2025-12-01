@@ -428,12 +428,33 @@ Scheduled command execution with delay buffer (inspired by Teletype).
 
 ---
 
-## Phase 4: Modulation System
+## Phase 4: Modulation System - ON HOLD
 
-**Focus:** New synthesis infrastructure with LFO routing matrix and extended envelope coverage
+**Status:** ON HOLD INDEFINITELY - SuperCollider UGen complexity limits
 
-### Aux Envelope System [High]
+**Issue:** SuperCollider SynthDef complexity limits prevent implementation of freely routable LFO destinations. Extensive testing (December 2025) showed:
+- 2 LFOs × 5 destinations worked initially
+- 3-4 LFOs × 7+ destinations hit UGen limits
+- Architectural attempts (control bus separation, split routers) all failed
+- The InRange.kr routing matrix creates too many UGens regardless of synth splitting
+
+**Attempted Solutions:**
+- Control bus architecture (LFO generation separate from main synth)
+- Pre-computed destination routing in separate synth
+- Split lfo_bank into lfo_gen + lfo_router
+- Split router into two 8-destination synths (lfo_router_a + lfo_router_b)
+- All approaches hit SC's internal optimization/complexity limits
+
+**Conclusion:** Freely routable multi-LFO modulation is not feasible within SuperCollider's SynthDef architecture for a synth of monokit's complexity. Would require either:
+- Fixed LFO→destination assignments (not user-routable)
+- Significant reduction in main synth features
+- Alternative audio engine (not SC)
+
+---
+
+### Aux Envelope System [High] - ON HOLD
 Flexible auxiliary envelope that can be routed to any synth parameter.
+Same routing complexity issues as LFO system.
 
 - [ ] `XENV.DEC <ms>` - Aux envelope decay time
 - [ ] `XENV.ATK <ms>` - Aux envelope attack time
@@ -443,8 +464,9 @@ Flexible auxiliary envelope that can be routed to any synth parameter.
 - [ ] Multiple destinations support (optional)
 - [ ] SC implementation: New envelope with routing matrix
 
-### Extended Envelope Coverage [Medium]
+### Extended Envelope Coverage [Medium] - ON HOLD
 Dedicated envelopes for synth/FX parameters currently lacking envelope control.
+Blocked by same SC complexity constraints.
 
 **Lo-Fi Effect:**
 - [ ] `LOEV.DEC <ms>` - Lo-Fi envelope decay
@@ -458,7 +480,7 @@ Dedicated envelopes for synth/FX parameters currently lacking envelope control.
 - [ ] Delay envelope (DW wet)
 - [ ] Reverb envelope (RW wet)
 
-### LFO System [High]
+### LFO System [High] - ON HOLD
 - [ ] 2-4 LFO units (L1, L2, L3, L4)
 - [ ] `L1.RATE <hz>` - LFO frequency (0.01-100 Hz)
 - [ ] `L1.WAVE <0-4>` - Waveform (sin, tri, saw, square, random)

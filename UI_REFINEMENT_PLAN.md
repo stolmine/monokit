@@ -338,11 +338,36 @@ impl ParamActivity {
 
 ---
 
-## Phase 5: Audio Metering
+## Phase 5: UI Feedback & Activity Indicators
+
+### 5.1 Activity Indicators [Medium] - COMPLETE
+
+Script and metro execution feedback with decay animations (KO II style).
+
+**Implemented Features:**
+- [x] Script activity indicators (1-8, M, I) flash when scripts execute
+- [x] TR indicator flashes when TR command runs
+- [x] Smooth color decay animation with hold period + cubic ease-out
+- [x] FLASH command to adjust hold time (FLASH <ms>, default 200ms)
+- [x] Works for all script executions including nested SCRIPT calls from metro
+- [x] Activity tracking in App struct (activity_last_active, activity_hold_ms)
+- [x] Theme-aware color rendering (activity_color() with hold + decay)
+
+**Files Changed:**
+- src/theme.rs - activity_color() with hold + decay
+- src/app/mod.rs - activity_hold_ms field
+- src/app/script_exec/mod.rs - activity recording for all script executions
+- src/ui/header.rs - activity-colored indicators
+- src/ui/mod.rs - event ordering fix (process before render)
+- src/commands/mod.rs - FLASH command
+
+---
+
+## Phase 6: Audio Metering
 
 **Goal:** Real-time amplitude and CPU display
 
-### 5.1 Architecture
+### 6.1 Architecture
 
 ```
 ┌─────────┐  OSC commands  ┌──────────────┐

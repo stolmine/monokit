@@ -44,6 +44,7 @@ pub fn process_command<F>(
     scale: &mut ScaleState,
     theme: &mut Theme,
     debug_level: &mut u8,
+    activity_hold_ms: &mut f32,
     input: &str,
     mut output: F,
 ) -> Result<Vec<usize>>
@@ -680,6 +681,16 @@ where
         }
         "DEBUG" => {
             misc::handle_debug(&parts, debug_level, output);
+        }
+        "FLASH" => {
+            if parts.len() < 2 {
+                output(format!("FLASH HOLD: {}ms", *activity_hold_ms as u32));
+            } else if let Ok(val) = parts[1].parse::<u32>() {
+                *activity_hold_ms = val as f32;
+                output(format!("FLASH HOLD: {}ms", val));
+            } else {
+                output("ERROR: FLASH <MS> (0-1000)".to_string());
+            }
         }
         "N1" => {
             counters::handle_n1(counters, output);

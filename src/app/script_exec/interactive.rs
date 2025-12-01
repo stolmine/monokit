@@ -95,6 +95,10 @@ impl App {
                 continue;
             }
 
+            if sub_cmd.eq_ignore_ascii_case("TR") {
+                self.trigger_activity = Some(std::time::Instant::now());
+            }
+
             self.process_sub_command(sub_cmd, 10, &mut metro_interval, None);
         }
     }

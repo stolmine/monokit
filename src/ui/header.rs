@@ -2,6 +2,22 @@ use ratatui::{prelude::*, widgets::*};
 
 use crate::types::{Page, NAVIGABLE_PAGES};
 
+fn page_to_activity_index(page: &Page) -> Option<usize> {
+    match page {
+        Page::Script1 => Some(0),
+        Page::Script2 => Some(1),
+        Page::Script3 => Some(2),
+        Page::Script4 => Some(3),
+        Page::Script5 => Some(4),
+        Page::Script6 => Some(5),
+        Page::Script7 => Some(6),
+        Page::Script8 => Some(7),
+        Page::Metro => Some(8),
+        Page::Init => Some(9),
+        _ => None,
+    }
+}
+
 pub fn render_header(app: &crate::App) -> Paragraph<'static> {
     let mut spans = vec![Span::raw(" ")];
 
@@ -14,22 +30,34 @@ pub fn render_header(app: &crate::App) -> Paragraph<'static> {
         ));
     } else {
         for page in NAVIGABLE_PAGES.iter() {
-            if *page == app.current_page {
+            let is_selected = *page == app.current_page;
+            let activity = page_to_activity_index(page)
+                .and_then(|idx| app.script_activity[idx]);
+            let color = app.theme.activity_color(activity, is_selected, app.activity_hold_ms);
+
+            if is_selected {
                 spans.push(Span::styled(
                     format!("[{}]", page.name()),
                     Style::default()
-                        .fg(app.theme.accent)
+                        .fg(color)
                         .add_modifier(Modifier::BOLD),
                 ));
             } else {
                 spans.push(Span::styled(
                     page.name().to_string(),
-                    Style::default().fg(app.theme.secondary),
+                    Style::default().fg(color),
                 ));
             }
             spans.push(Span::raw(" "));
         }
     }
+
+    let tr_color = app.theme.activity_color(app.trigger_activity, false, app.activity_hold_ms);
+    spans.push(Span::raw("  "));
+    spans.push(Span::styled(
+        "TR",
+        Style::default().fg(tr_color),
+    ));
 
     if app.recording {
         let duration = app.recording_start

@@ -85,8 +85,8 @@ pub fn run_app<B: ratatui::backend::Backend>(
 ) -> Result<()> {
     loop {
         app.clear_expired_error();
-        terminal.draw(|f| ui(f, app))?;
 
+        // Process metro events BEFORE rendering so activity indicators update immediately
         while let Ok(event) = metro_event_rx.try_recv() {
             match event {
                 MetroEvent::ExecuteScript(index) => {
@@ -97,6 +97,8 @@ pub fn run_app<B: ratatui::backend::Backend>(
                 }
             }
         }
+
+        terminal.draw(|f| ui(f, app))?;
 
         if event::poll(Duration::from_millis(1))? {
             if let Event::Key(key) = event::read()? {

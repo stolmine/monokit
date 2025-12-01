@@ -18,6 +18,7 @@ fn test_tog_command_integration() {
     let mut scale = ScaleState::default();
     let mut theme = crate::theme::Theme::default();
     let mut debug_level = 0u8;
+    let mut activity_hold_ms = 200.0f32;
     let script_index = 0;
 
     let mut outputs = Vec::new();
@@ -40,6 +41,7 @@ fn test_tog_command_integration() {
         &mut scale,
         &mut theme,
         &mut debug_level,
+        &mut activity_hold_ms,
         "TOG 100 200",
         output,
     );
@@ -64,6 +66,7 @@ fn test_tog_command_integration() {
         &mut scale,
         &mut theme,
         &mut debug_level,
+        &mut activity_hold_ms,
         "TOG 100 200",
         output,
     );
@@ -88,6 +91,7 @@ fn test_tog_command_integration() {
         &mut scale,
         &mut theme,
         &mut debug_level,
+        &mut activity_hold_ms,
         "TOG 100 200",
         output,
     );
@@ -109,6 +113,7 @@ fn test_tog_with_variable_assignment() {
     let mut scale = ScaleState::default();
     let mut theme = crate::theme::Theme::default();
     let mut debug_level = 0u8;
+    let mut activity_hold_ms = 200.0f32;
     let script_index = 0;
 
     let mut outputs = Vec::new();
@@ -131,6 +136,7 @@ fn test_tog_with_variable_assignment() {
         &mut scale,
         &mut theme,
         &mut debug_level,
+        &mut activity_hold_ms,
         "A TOG 0 1",
         output,
     );
@@ -154,6 +160,7 @@ fn test_tog_with_variable_assignment() {
         &mut scale,
         &mut theme,
         &mut debug_level,
+        &mut activity_hold_ms,
         "A TOG 0 1",
         output,
     );
@@ -177,6 +184,7 @@ fn test_tog_with_variable_assignment() {
         &mut scale,
         &mut theme,
         &mut debug_level,
+        &mut activity_hold_ms,
         "A TOG 0 1",
         output,
     );

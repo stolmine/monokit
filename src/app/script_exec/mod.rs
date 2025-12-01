@@ -24,6 +24,9 @@ impl App {
         metro_interval: &mut u64,
         depth: Option<usize>,
     ) {
+        if cmd_to_run.trim().eq_ignore_ascii_case("TR") {
+            self.trigger_activity = Some(std::time::Instant::now());
+        }
         let mut output_messages = Vec::new();
         let result = process_command(
             &self.metro_tx,
@@ -40,6 +43,7 @@ impl App {
             &mut self.scale,
             &mut self.theme,
             &mut self.debug_level,
+            &mut self.activity_hold_ms,
             cmd_to_run,
             |msg| {
                 output_messages.push(msg);
@@ -130,6 +134,9 @@ impl App {
             self.add_output(format!("Error: Invalid script index {}", script_index));
             return;
         }
+
+        // Record activity for all script executions, including nested calls
+        self.script_activity[script_index] = Some(std::time::Instant::now());
 
         if depth > 10 {
             self.add_output("Error: Script recursion depth exceeded (max 10)".to_string());

@@ -46,6 +46,9 @@ pub struct App {
     pub sync_mode: SyncMode,
     pub midi_connection: Option<MidiConnection>,
     pub midi_timing_stats: Arc<MidiTimingStats>,
+    pub script_activity: [Option<Instant>; 10],
+    pub trigger_activity: Option<Instant>,
+    pub activity_hold_ms: f32,
 }
 
 impl App {
@@ -86,6 +89,9 @@ impl App {
             sync_mode: SyncMode::Internal,
             midi_connection: None,
             midi_timing_stats: MidiTimingStats::new(),
+            script_activity: [None; 10],
+            trigger_activity: None,
+            activity_hold_ms: crate::theme::DEFAULT_ACTIVITY_HOLD_MS,
         }
     }
 
@@ -201,6 +207,7 @@ impl App {
             &mut self.scale,
             &mut self.theme,
             &mut self.debug_level,
+            &mut self.activity_hold_ms,
             command,
             |msg| {
                 output_messages.push(msg);

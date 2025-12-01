@@ -1,4 +1,5 @@
 use ratatui::style::Color;
+use std::time::Instant;
 
 #[derive(Clone, Debug)]
 pub struct Theme {
@@ -63,5 +64,45 @@ impl Theme {
 impl Default for Theme {
     fn default() -> Self {
         Self::dark()
+    }
+}
+
+pub const DEFAULT_ACTIVITY_HOLD_MS: f32 = 200.0;
+pub const ACTIVITY_DECAY_MS: f32 = 300.0;
+
+impl Theme {
+    pub fn lerp_color(from: Color, to: Color, t: f32) -> Color {
+        let t = t.clamp(0.0, 1.0);
+        match (from, to) {
+            (Color::Rgb(r1, g1, b1), Color::Rgb(r2, g2, b2)) => {
+                let r = (r1 as f32 + (r2 as f32 - r1 as f32) * t) as u8;
+                let g = (g1 as f32 + (g2 as f32 - g1 as f32) * t) as u8;
+                let b = (b1 as f32 + (b2 as f32 - b1 as f32) * t) as u8;
+                Color::Rgb(r, g, b)
+            }
+            _ => if t >= 0.5 { to } else { from }
+        }
+    }
+
+    pub fn activity_color(&self, last_activity: Option<Instant>, is_selected: bool, hold_ms: f32) -> Color {
+        let progress = match last_activity {
+            Some(instant) => {
+                let elapsed_ms = instant.elapsed().as_millis() as f32;
+                if elapsed_ms < hold_ms {
+                    0.0 // Fully lit during hold period
+                } else {
+                    let decay_elapsed = (elapsed_ms - hold_ms) / ACTIVITY_DECAY_MS;
+                    // Cubic ease-out for smooth falloff
+                    1.0 - (1.0 - decay_elapsed.min(1.0)).powi(3)
+                }
+            }
+            None => 1.0,
+        };
+        // Use theme colors: foreground (bright) fading to secondary (dim)
+        if is_selected {
+            Self::lerp_color(self.highlight_bg, self.foreground, progress)
+        } else {
+            Self::lerp_color(self.foreground, self.secondary, progress)
+        }
     }
 }

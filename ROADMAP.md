@@ -517,15 +517,17 @@ Blocked by same SC complexity constraints.
 
 **Reference:** See `UI_REFINEMENT_PLAN.md` for detailed implementation guide.
 
-### Phase 5.1: Activity Indicators [Medium] - NOT STARTED
+### Phase 5.1: Activity Indicators [Medium] - COMPLETE (December 2025)
 Script and metro execution feedback with decay animations (KO II style).
 
-- [ ] Add `ActivityState` struct tracking script/metro/trigger timestamps
-- [ ] Decay animation using block characters: `█ ▓ ▒ ░ ·`
-- [ ] Header shows script indicators (1-8, M, I) with brightness decay
-- [ ] Metro tick pulses M indicator
-- [ ] TR command pulses trigger indicator
-- [ ] 500ms decay timing (5 levels, 100ms each)
+- [x] Add activity tracking to App struct (activity_last_active, activity_hold_ms)
+- [x] Smooth color decay using cubic ease-out interpolation
+- [x] Header shows script indicators (1-8, M, I) with color decay
+- [x] Metro tick pulses M indicator
+- [x] TR command pulses trigger indicator
+- [x] FLASH command to adjust hold time (default 200ms)
+- [x] Works for nested SCRIPT calls from metro
+- [x] Theme-aware activity_color() in theme.rs
 
 ### Phase 5.2: SEQ/TOG State Highlighting [Medium] - NOT STARTED
 Show current position in stateful operators within script display.

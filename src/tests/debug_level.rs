@@ -31,6 +31,7 @@ fn test_debug_level_0_blocks_param_output() {
     let midi_timing_stats = MidiTimingStats::new();
     let mut theme = Theme::dark();
     let mut debug_level = 0u8;
+    let mut activity_hold_ms = 200.0f32;
     let mut output_messages = Vec::new();
 
     let result = process_command(
@@ -48,6 +49,7 @@ fn test_debug_level_0_blocks_param_output() {
         &mut scale,
         &mut theme,
         &mut debug_level,
+        &mut activity_hold_ms,
         "PF 440",
         |msg| {
             output_messages.push(msg);
@@ -73,6 +75,7 @@ fn test_debug_level_0_blocks_trigger_output() {
     let midi_timing_stats = MidiTimingStats::new();
     let mut theme = Theme::dark();
     let mut debug_level = 0u8;
+    let mut activity_hold_ms = 200.0f32;
     let mut output_messages = Vec::new();
 
     let result = process_command(
@@ -90,6 +93,7 @@ fn test_debug_level_0_blocks_trigger_output() {
         &mut scale,
         &mut theme,
         &mut debug_level,
+        &mut activity_hold_ms,
         "TR",
         |msg| {
             output_messages.push(msg);
@@ -115,6 +119,7 @@ fn test_debug_level_0_blocks_print() {
     let midi_timing_stats = MidiTimingStats::new();
     let mut theme = Theme::dark();
     let mut debug_level = 0u8;
+    let mut activity_hold_ms = 200.0f32;
     let mut output_messages = Vec::new();
 
     let result = process_command(
@@ -132,6 +137,7 @@ fn test_debug_level_0_blocks_print() {
         &mut scale,
         &mut theme,
         &mut debug_level,
+        &mut activity_hold_ms,
         "PRINT 42",
         |msg| {
             output_messages.push(msg);
@@ -157,6 +163,7 @@ fn test_debug_level_1_allows_print() {
     let midi_timing_stats = MidiTimingStats::new();
     let mut theme = Theme::dark();
     let mut debug_level = 1u8;
+    let mut activity_hold_ms = 200.0f32;
     let mut output_messages = Vec::new();
 
     let result = process_command(
@@ -174,6 +181,7 @@ fn test_debug_level_1_allows_print() {
         &mut scale,
         &mut theme,
         &mut debug_level,
+        &mut activity_hold_ms,
         "PRINT 42",
         |msg| {
             output_messages.push(msg);
@@ -200,6 +208,7 @@ fn test_debug_level_1_blocks_params() {
     let midi_timing_stats = MidiTimingStats::new();
     let mut theme = Theme::dark();
     let mut debug_level = 1u8;
+    let mut activity_hold_ms = 200.0f32;
     let mut output_messages = Vec::new();
 
     let result = process_command(
@@ -217,6 +226,7 @@ fn test_debug_level_1_blocks_params() {
         &mut scale,
         &mut theme,
         &mut debug_level,
+        &mut activity_hold_ms,
         "PF 440",
         |msg| {
             output_messages.push(msg);
@@ -242,6 +252,7 @@ fn test_debug_level_1_allows_metro_status() {
     let midi_timing_stats = MidiTimingStats::new();
     let mut theme = Theme::dark();
     let mut debug_level = 1u8;
+    let mut activity_hold_ms = 200.0f32;
     let mut output_messages = Vec::new();
 
     let result = process_command(
@@ -259,6 +270,7 @@ fn test_debug_level_1_allows_metro_status() {
         &mut scale,
         &mut theme,
         &mut debug_level,
+        &mut activity_hold_ms,
         "M",
         |msg| {
             output_messages.push(msg);
@@ -285,6 +297,7 @@ fn test_debug_level_2_allows_all() {
     let midi_timing_stats = MidiTimingStats::new();
     let mut theme = Theme::dark();
     let mut debug_level = 2u8;
+    let mut activity_hold_ms = 200.0f32;
     let mut output_messages = Vec::new();
 
     let result = process_command(
@@ -302,6 +315,7 @@ fn test_debug_level_2_allows_all() {
         &mut scale,
         &mut theme,
         &mut debug_level,
+        &mut activity_hold_ms,
         "PF 440",
         |msg| {
             output_messages.push(msg);
@@ -329,6 +343,7 @@ fn test_debug_level_2_allows_all() {
         &mut scale,
         &mut theme,
         &mut debug_level,
+        &mut activity_hold_ms,
         "PRINT 42",
         |msg| {
             output_messages.push(msg);
@@ -356,6 +371,7 @@ fn test_debug_level_2_allows_all() {
         &mut scale,
         &mut theme,
         &mut debug_level,
+        &mut activity_hold_ms,
         "M",
         |msg| {
             output_messages.push(msg);

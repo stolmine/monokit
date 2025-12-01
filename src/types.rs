@@ -2,7 +2,6 @@ use rosc::OscType;
 use serde::{Deserialize, Serialize};
 use serde_big_array::BigArray;
 use std::collections::HashMap;
-use std::sync::mpsc::Sender;
 
 pub const OSC_ADDR: &str = "127.0.0.1:57120";
 
@@ -211,6 +210,13 @@ pub enum MetroCommand {
     MidiClockTick,
     MidiTransportStart,
     MidiTransportStop,
+    EnableMidiTimingDiag,
+    DisableMidiTimingDiag,
+    PrintMidiTimingReport,
+    SendScDiag(i32),       // Send /monokit/diag with 0 or 1
+    SendScDiagReport,      // Send /monokit/diag/report
+    GetTriggerCount,       // Get the current trigger count
+    ResetTriggerCount,     // Reset the trigger counter to 0
 }
 
 #[derive(Debug, Clone)]

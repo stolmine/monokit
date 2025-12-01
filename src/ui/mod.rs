@@ -98,7 +98,7 @@ pub fn run_app<B: ratatui::backend::Backend>(
             }
         }
 
-        if event::poll(Duration::from_millis(100))? {
+        if event::poll(Duration::from_millis(1))? {
             if let Event::Key(key) = event::read()? {
                 let is_help = app.current_page == Page::Help;
                 let has_alt = key.modifiers.contains(KeyModifiers::ALT);

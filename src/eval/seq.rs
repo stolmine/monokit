@@ -10,8 +10,10 @@ pub enum SeqStep {
     Rest,
     /// Random trigger (50% chance of 1, 50% chance of 0)
     RandomTrigger,
-    /// Alternation - randomly choose one option
+    /// Alternation - deterministically cycles through options
     Alternation(Vec<SeqStep>),
+    /// Random selection - randomly picks one option each time
+    RandomChoice(Vec<SeqStep>),
 }
 
 /// Parse a note name (C3, Eb4, F#2, etc.) to semitones relative to C3
@@ -66,36 +68,79 @@ pub fn parse_note_name(s: &str) -> Option<i16> {
     Some(note + accidental + (octave - 3) * 12)
 }
 
-/// Tokenize a pattern string respecting <...> groupings
+#[derive(Debug, Clone, Copy)]
+enum BracketType {
+    Angle,
+    Curly,
+}
+
+impl BracketType {
+    fn open_char(&self) -> char {
+        match self {
+            BracketType::Angle => '<',
+            BracketType::Curly => '{',
+        }
+    }
+
+    fn close_char(&self) -> char {
+        match self {
+            BracketType::Angle => '>',
+            BracketType::Curly => '}',
+        }
+    }
+
+    fn nested_error(&self) -> String {
+        match self {
+            BracketType::Angle => "Nested alternation <...> is not allowed".to_string(),
+            BracketType::Curly => "Nested random choice {...} is not allowed".to_string(),
+        }
+    }
+
+    fn unexpected_close_error(&self) -> String {
+        format!("Unexpected closing bracket {}", self.close_char())
+    }
+
+    fn unclosed_error(&self) -> String {
+        match self {
+            BracketType::Angle => "Unclosed alternation bracket <".to_string(),
+            BracketType::Curly => "Unclosed random choice bracket {".to_string(),
+        }
+    }
+}
+
 fn tokenize_pattern(pattern: &str) -> Result<Vec<String>, String> {
     let mut tokens = Vec::new();
     let mut current_token = String::new();
-    let mut in_brackets = false;
+    let mut active_bracket: Option<BracketType> = None;
     let mut bracket_depth = 0;
     let mut just_closed_bracket = false;
 
     for ch in pattern.chars() {
         match ch {
-            '<' => {
-                if in_brackets {
-                    return Err("Nested alternation <...> is not allowed".to_string());
+            '<' | '{' => {
+                let bracket_type = if ch == '<' { BracketType::Angle } else { BracketType::Curly };
+                if active_bracket.is_some() {
+                    return Err(bracket_type.nested_error());
                 }
-                in_brackets = true;
+                active_bracket = Some(bracket_type);
                 bracket_depth += 1;
                 current_token.push(ch);
                 just_closed_bracket = false;
             }
-            '>' => {
-                if !in_brackets {
-                    return Err("Unexpected closing bracket >".to_string());
+            '>' | '}' => {
+                let expected_type = if ch == '>' { BracketType::Angle } else { BracketType::Curly };
+                match active_bracket {
+                    Some(t) if t.close_char() == ch => {
+                        active_bracket = None;
+                        bracket_depth -= 1;
+                        current_token.push(ch);
+                        just_closed_bracket = true;
+                    }
+                    _ => return Err(expected_type.unexpected_close_error()),
                 }
-                in_brackets = false;
-                bracket_depth -= 1;
-                current_token.push(ch);
-                just_closed_bracket = true;
             }
             c if c.is_whitespace() => {
-                if in_brackets {
+                if active_bracket.is_some() {
                     current_token.push(c);
                 } else {
                     if just_closed_bracket {
@@ -125,7 +170,9 @@ fn tokenize_pattern(pattern: &str) -> Result<Vec<String>, String> {
     }
 
     if bracket_depth > 0 {
-        return Err("Unclosed alternation bracket <".to_string());
+        if let Some(bracket_type) = active_bracket {
+            return Err(bracket_type.unclosed_error());
+        }
     }
 
     if !current_token.trim().is_empty() {
@@ -154,7 +201,31 @@ fn parse_single_token(token: &str) -> Result<SeqStep, String> {
     }
 }
 
-/// Parse a sequence pattern string into steps
+fn parse_grouped_options(
+    inner: &str,
+    empty_error_msg: &str,
+    nested_error_msg: &str,
+) -> Result<Vec<SeqStep>, String> {
+    if inner.trim().is_empty() {
+        return Err(empty_error_msg.to_string());
+    }
+
+    let tokens: Vec<&str> = inner.split_whitespace().collect();
+    let mut options = Vec::new();
+
+    for token in tokens {
+        let step = parse_single_token(token)?;
+        match step {
+            SeqStep::Alternation(_) | SeqStep::RandomChoice(_) => {
+                return Err(nested_error_msg.to_string());
+            }
+            _ => options.push(step),
+        }
+    }
+
+    Ok(options)
+}
+
 pub fn parse_seq_pattern(pattern: &str) -> Result<Vec<SeqStep>, String> {
     let mut steps = Vec::new();
     let tokens = tokenize_pattern(pattern)?;
@@ -176,24 +247,20 @@ pub fn parse_seq_pattern(pattern: &str) -> Result<Vec<SeqStep>, String> {
 
         let step = if base_str.starts_with('<') && base_str.ends_with('>') {
             let inner = &base_str[1..base_str.len()-1];
-            if inner.trim().is_empty() {
-                return Err("Empty alternation <> is not allowed".to_string());
-            }
-
-            let alt_tokens: Vec<&str> = inner.split_whitespace().collect();
-            let mut alternatives = Vec::new();
-
-            for alt_token in alt_tokens {
-                let alt_step = parse_single_token(alt_token)?;
-                match alt_step {
-                    SeqStep::Alternation(_) => {
-                        return Err("Nested alternation is not allowed".to_string());
-                    }
-                    _ => alternatives.push(alt_step),
-                }
-            }
-
-            SeqStep::Alternation(alternatives)
+            let options = parse_grouped_options(
+                inner,
+                "Empty alternation <> is not allowed",
+                "Nested alternation is not allowed",
+            )?;
+            SeqStep::Alternation(options)
+        } else if base_str.starts_with('{') && base_str.ends_with('}') {
+            let inner = &base_str[1..base_str.len()-1];
+            let options = parse_grouped_options(
+                inner,
+                "Empty random choice {} is not allowed",
+                "Nested random choice is not allowed",
+            )?;
+            SeqStep::RandomChoice(options)
         } else {
             parse_single_token(&base_str)?
         };
@@ -206,8 +273,44 @@ pub fn parse_seq_pattern(pattern: &str) -> Result<Vec<SeqStep>, String> {
     Ok(steps)
 }
 
-/// Extract a quoted string from parts, handling spaces within quotes
-/// Returns (extracted_string, parts_consumed) or None if no valid quoted string
+fn eval_simple_step(step: &SeqStep) -> i16 {
+    match step {
+        SeqStep::Value(v) => *v,
+        SeqStep::Rest => 0,
+        SeqStep::RandomTrigger => {
+            if rand::thread_rng().gen_bool(0.5) { 1 } else { 0 }
+        }
+        SeqStep::Alternation(_) | SeqStep::RandomChoice(_) => unreachable!(),
+    }
+}
+
+fn eval_step(
+    step: &SeqStep,
+    patterns: &mut PatternStorage,
+    script_index: usize,
+    pattern: &str,
+    step_index: usize,
+) -> i16 {
+    match step {
+        SeqStep::Value(v) => *v,
+        SeqStep::Rest => 0,
+        SeqStep::RandomTrigger => {
+            if rand::thread_rng().gen_bool(0.5) { 1 } else { 0 }
+        }
+        SeqStep::Alternation(options) => {
+            let alt_key = format!("seq_alt_{}_{}_{}", script_index, pattern, step_index);
+            let alt_index = patterns.toggle_state.entry(alt_key).or_insert(0);
+            let idx = *alt_index % options.len();
+            *alt_index = (*alt_index).wrapping_add(1);
+            eval_simple_step(&options[idx])
+        }
+        SeqStep::RandomChoice(options) => {
+            let idx = rand::thread_rng().gen_range(0..options.len());
+            eval_simple_step(&options[idx])
+        }
+    }
+}
+
 pub fn extract_quoted_string(parts: &[&str], start: usize) -> Option<(String, usize)> {
     if start >= parts.len() {
         return None;
@@ -279,30 +382,18 @@ pub fn eval_seq_expression(
 
     // Get/create state for this sequence using toggle_state HashMap
     let key = format!("seq_{}_{}", script_index, pattern);
-    let index = patterns.toggle_state.entry(key).or_insert(0);
 
-    // Get current step value
-    let step = &steps[*index % steps.len()];
-    let value = match step {
-        SeqStep::Value(v) => *v,
-        SeqStep::Rest => 0,
-        SeqStep::RandomTrigger => {
-            if rand::thread_rng().gen_bool(0.5) { 1 } else { 0 }
-        }
-        SeqStep::Alternation(options) => {
-            let idx = rand::thread_rng().gen_range(0..options.len());
-            match &options[idx] {
-                SeqStep::Value(v) => *v,
-                SeqStep::Rest => 0,
-                SeqStep::RandomTrigger => {
-                    if rand::thread_rng().gen_bool(0.5) { 1 } else { 0 }
-                }
-                SeqStep::Alternation(_) => unreachable!(),
-            }
-        }
+    // Get current step index (drop the mutable reference immediately)
+    let step_index = {
+        let index = patterns.toggle_state.entry(key.clone()).or_insert(0);
+        *index % steps.len()
     };
 
+    let step = &steps[step_index];
+    let value = eval_step(step, patterns, script_index, &pattern, step_index);
+
     // Advance to next step
+    let index = patterns.toggle_state.entry(key).or_insert(0);
     *index = (*index).wrapping_add(1);
 
     Some((value, 1 + consumed))
@@ -489,5 +580,104 @@ mod tests {
         let result = parse_seq_pattern("C3*abc");
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("Invalid repeat count"));
+    }
+
+    #[test]
+    fn test_parse_seq_pattern_random_choice_basic() {
+        let steps = parse_seq_pattern("{C3 E3}").unwrap();
+        assert_eq!(steps.len(), 1);
+        match &steps[0] {
+            SeqStep::RandomChoice(options) => {
+                assert_eq!(options.len(), 2);
+                assert_eq!(options[0], SeqStep::Value(0));
+                assert_eq!(options[1], SeqStep::Value(4));
+            }
+            _ => panic!("Expected RandomChoice"),
+        }
+    }
+
+    #[test]
+    fn test_parse_seq_pattern_random_choice_with_repeat() {
+        let steps = parse_seq_pattern("{C3 E3}*3").unwrap();
+        assert_eq!(steps.len(), 3);
+        for step in &steps {
+            match step {
+                SeqStep::RandomChoice(options) => {
+                    assert_eq!(options.len(), 2);
+                }
+                _ => panic!("Expected RandomChoice"),
+            }
+        }
+    }
+
+    #[test]
+    fn test_parse_seq_pattern_combined_alternation_and_random() {
+        let steps = parse_seq_pattern("<C3 E3> {G3 B3}").unwrap();
+        assert_eq!(steps.len(), 2);
+        match &steps[0] {
+            SeqStep::Alternation(options) => {
+                assert_eq!(options.len(), 2);
+            }
+            _ => panic!("Expected Alternation"),
+        }
+        match &steps[1] {
+            SeqStep::RandomChoice(options) => {
+                assert_eq!(options.len(), 2);
+            }
+            _ => panic!("Expected RandomChoice"),
+        }
+    }
+
+    #[test]
+    fn test_parse_seq_pattern_random_choice_empty() {
+        let result = parse_seq_pattern("{}");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Empty random choice"));
+    }
+
+    #[test]
+    fn test_parse_seq_pattern_random_choice_unclosed() {
+        let result = parse_seq_pattern("{C3");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Unclosed random choice"));
+    }
+
+    #[test]
+    fn test_parse_seq_pattern_random_choice_nested() {
+        let result = parse_seq_pattern("{C3 {E3 G3}}");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Nested"));
+    }
+
+    #[test]
+    fn test_random_choice_statistical() {
+        use crate::types::PatternStorage;
+
+        let mut patterns = PatternStorage::default();
+
+        let mut c3_count = 0;
+        let mut e3_count = 0;
+        let iterations = 1000;
+
+        for i in 0..iterations {
+            let pattern_str = format!("\"{}\"", "{C3 E3}");
+            let parts: Vec<&str> = vec!["SEQ", &pattern_str];
+            if let Some((value, _)) = eval_seq_expression("SEQ", &parts, 0, &mut patterns, i) {
+                if value == 0 {
+                    c3_count += 1;
+                } else if value == 4 {
+                    e3_count += 1;
+                }
+            }
+        }
+
+        // Both values should appear (non-zero counts)
+        assert!(c3_count > 0, "C3 should appear at least once");
+        assert!(e3_count > 0, "E3 should appear at least once");
+
+        // Should be roughly balanced (allowing for randomness)
+        // Each should be between 30% and 70% of iterations
+        assert!(c3_count > 300 && c3_count < 700, "C3 count {} should be between 300-700", c3_count);
+        assert!(e3_count > 300 && e3_count < 700, "E3 count {} should be between 300-700", e3_count);
     }
 }

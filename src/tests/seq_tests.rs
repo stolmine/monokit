@@ -709,28 +709,21 @@ fn test_seq_alternation_produces_both_values() {
     let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
     let parts = vec!["SEQ", "\"<C3 E3>\""];
 
-    let mut seen_c3 = false;
-    let mut seen_e3 = false;
+    // First call should return C3 (deterministic cycling starts at 0)
+    let result1 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result1.unwrap().0, 0, "First call should return C3 (0)");
 
-    for _ in 0..100 {
-        let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
-        let value = result.unwrap().0;
-        assert!(value == 0 || value == 4, "Should be C3 (0) or E3 (4)");
+    // Second call should return E3 (cycles to next option)
+    let result2 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result2.unwrap().0, 4, "Second call should return E3 (4)");
 
-        if value == 0 {
-            seen_c3 = true;
-        }
-        if value == 4 {
-            seen_e3 = true;
-        }
+    // Third call should wrap back to C3
+    let result3 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result3.unwrap().0, 0, "Third call should wrap to C3 (0)");
 
-        if seen_c3 && seen_e3 {
-            break;
-        }
-    }
-
-    assert!(seen_c3, "Should have seen C3 (0) at least once");
-    assert!(seen_e3, "Should have seen E3 (4) at least once");
+    // Fourth call should be E3 again
+    let result4 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result4.unwrap().0, 4, "Fourth call should be E3 (4)");
 }
 
 #[test]
@@ -738,22 +731,18 @@ fn test_seq_alternation_three_options_produces_all() {
     let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
     let parts = vec!["SEQ", "\"<C3 E3 G3>\""];
 
-    let mut seen_values = std::collections::HashSet::new();
+    // Deterministic cycling through all three options
+    let result1 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result1.unwrap().0, 0, "First call should return C3");
 
-    for _ in 0..200 {
-        let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
-        let value = result.unwrap().0;
-        assert!(value == 0 || value == 4 || value == 7, "Should be C3, E3, or G3");
-        seen_values.insert(value);
+    let result2 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result2.unwrap().0, 4, "Second call should return E3");
 
-        if seen_values.len() == 3 {
-            break;
-        }
-    }
+    let result3 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result3.unwrap().0, 7, "Third call should return G3");
 
-    assert!(seen_values.contains(&0), "Should have seen C3");
-    assert!(seen_values.contains(&4), "Should have seen E3");
-    assert!(seen_values.contains(&7), "Should have seen G3");
+    let result4 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result4.unwrap().0, 0, "Fourth call should wrap to C3");
 }
 
 #[test]
@@ -809,26 +798,38 @@ fn test_seq_alternation_with_rest_and_trigger() {
     let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
     let parts = vec!["SEQ", "\"<x _>\""];
 
-    let mut seen_one = false;
-    let mut seen_zero = false;
+    // Deterministic cycling between trigger and rest
+    let result1 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result1.unwrap().0, 1, "First call should be x (1)");
 
-    for _ in 0..100 {
-        let result = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
-        let value = result.unwrap().0;
-        assert!(value == 0 || value == 1, "Should be 0 or 1");
+    let result2 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result2.unwrap().0, 0, "Second call should be _ (0)");
 
-        if value == 0 {
-            seen_zero = true;
-        }
-        if value == 1 {
-            seen_one = true;
-        }
+    let result3 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result3.unwrap().0, 1, "Third call should wrap to x (1)");
 
-        if seen_zero && seen_one {
-            break;
-        }
-    }
+    let result4 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result4.unwrap().0, 0, "Fourth call should be _ (0)");
+}
 
-    assert!(seen_zero, "Should see 0 (rest)");
-    assert!(seen_one, "Should see 1 (trigger)");
+#[test]
+fn test_seq_alternation_deterministic_cycle() {
+    let (variables, mut patterns, scripts, mut counters, scale) = test_setup!();
+    let parts = vec!["SEQ", "\"<C3 E3>\""];
+
+    // Verify exact cycling behavior: C3, E3, C3, E3, C3...
+    let result1 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result1.unwrap().0, 0, "First: C3");
+
+    let result2 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result2.unwrap().0, 4, "Second: E3");
+
+    let result3 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result3.unwrap().0, 0, "Third: C3");
+
+    let result4 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result4.unwrap().0, 4, "Fourth: E3");
+
+    let result5 = eval_expression(&parts, 0, &variables, &mut patterns, &mut counters, &scripts, 0, &scale);
+    assert_eq!(result5.unwrap().0, 0, "Fifth: C3");
 }

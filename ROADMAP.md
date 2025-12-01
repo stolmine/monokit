@@ -314,8 +314,17 @@ SEQ provides inline sequence notation that cycles through values on each evaluat
 **Phase 2 (Complete):**
 - [x] `*n` - Repeat token n times (e.g., `C3*4` expands to `C3 C3 C3 C3`)
 - [x] `?` - Random trigger (50% chance of 1, 50% chance of 0)
-- [x] `<a b>` - Alternation (randomly picks one of the options)
-- [x] Combinable modifiers (e.g., `<C3 E3>*2` picks twice)
+- [x] `<a b>` - Toggle/Cycle (deterministic, like TOG - cycles A, B, A, B...)
+- [x] `{a b}` - Random Choice (unpredictable, like EITH - randomly picks A or B each time)
+- [x] Combinable modifiers (e.g., `<C3 E3>*2` toggles twice, `{C3 E3}*2` picks randomly twice)
+
+**Distinction Between Toggle and Random:**
+- `<a b>` = **Toggle/Cycle** - deterministic state machine
+  - `SEQ "<C3 E3>"` → C3, E3, C3, E3, C3, E3...
+  - State persists across calls (remembers last value)
+- `{a b}` = **Random Choice** - unpredictable selection
+  - `SEQ "{C3 E3}"` → randomly C3 or E3, then randomly again
+  - No state (picks fresh each time)
 
 **Phase 3 (Future):**
 - [ ] `[a b]` - Subdivision brackets
@@ -325,9 +334,12 @@ SEQ provides inline sequence notation that cycles through values on each evaluat
 **Phase 2 Usage Examples:**
 ```
 SEQ "C3*4 E3*2"                # Repeated notes (C3 C3 C3 C3 E3 E3)
-SEQ "<C3 E3> G3"               # Random C3 or E3, then G3
+SEQ "<C3 E3> G3"               # Toggle C3/E3, then G3
+SEQ "{C3 E3} G3"               # Random C3 or E3, then G3
 SEQ "x ? x ?"                  # Random triggers (50% chance each)
-SEQ "<C3 E3>*2"                # Two random choices (alternation with repeat)
+SEQ "<C3 E3>*2"                # Two toggles
+SEQ "{C3 E3}*2"                # Two random choices
+SEQ "<C3 E3> {G3 B3}"          # First toggles, second random
 
 IF SEQ "x _ x _": TR           # Trigger on beats 1 and 3
 PF N SEQ "C3 E3 G3 C4"         # Arpeggiate C major (semitones → Hz)

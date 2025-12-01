@@ -513,8 +513,19 @@ All numeric arguments accept nested expressions, including:
   - **Phase 2 Features:**
     - `*n` = repeat token n times (e.g., `C3*4` expands to `C3 C3 C3 C3`)
     - `?` = random trigger (50% chance of 1, 50% chance of 0)
-    - `<a b>` = alternation (randomly picks one of the options)
-    - Combinable modifiers (e.g., `<C3 E3>*2` picks twice)
+    - `<a b>` = toggle/cycle (deterministic, like TOG operator - returns A, then B, then A, then B...)
+    - `{a b}` = random choice (unpredictable, like EITH - randomly picks A or B each time)
+    - Combinable modifiers (e.g., `<C3 E3>*2` toggles twice, `{C3 E3}*2` picks randomly twice)
+
+**Distinction Between Toggle and Random:**
+- `<a b>` = **Toggle/Cycle** - deterministic state machine (like TOG)
+  - `SEQ "<C3 E3>"` → C3, E3, C3, E3, C3, E3...
+  - State persists across calls (remembers last value)
+
+- `{a b}` = **Random Choice** - unpredictable selection (like EITH)
+  - `SEQ "{C3 E3}"` → randomly C3 or E3, then randomly again
+  - No state (picks fresh each time)
+
 - State persists per-script and per-pattern (independent counters)
 - Use with N operator for Hz: `PF N SEQ "C3 E3 G3"`
 - Use with Q for quantization: `PF N Q SEQ "0 3 5 7"`
@@ -525,9 +536,12 @@ IF SEQ "x _ x _": TR           # Trigger on beats 1 and 3
 PF N SEQ "C3 E3 G3 C4"         # Arpeggiate C major
 A SEQ "0 1 2 3"                # Store in variable
 SEQ "C3*4 E3*2"                # Repeated notes (C3 C3 C3 C3 E3 E3)
-SEQ "<C3 E3> G3"               # Random C3 or E3, then G3
+SEQ "<C3 E3> G3"               # Toggle C3/E3, then G3
+SEQ "{C3 E3} G3"               # Random C3 or E3, then G3
 SEQ "x ? x ?"                  # Random triggers (50% chance each)
-SEQ "<C3 E3>*2"                # Two random choices (alternation with repeat)
+SEQ "<C3 E3>*2"                # Two toggles
+SEQ "{C3 E3}*2"                # Two random choices
+SEQ "<C3 E3> {G3 B3}"          # First toggles, second random
 ```
 
 #### Preset System (PSET)

@@ -22,8 +22,9 @@
 **Implemented (Phase 2):**
 - `*n` - Repeat modifier (e.g., `C3*4` expands to `C3 C3 C3 C3`)
 - `?` - Random trigger token (50% chance of 1, 50% chance of 0)
-- `<a b>` - Alternation/choice (randomly picks one of the options)
-- Combinable modifiers (e.g., `<C3 E3>*2` picks twice)
+- `<a b>` - Toggle/Cycle (deterministic, like TOG - cycles A, B, A, B...)
+- `{a b}` - Random Choice (unpredictable, like EITH - randomly picks A or B each time)
+- Combinable modifiers (e.g., `<C3 E3>*2` toggles twice, `{C3 E3}*2` picks randomly twice)
 
 **Usage Examples:**
 ```

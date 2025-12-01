@@ -1,6 +1,7 @@
 mod footer;
 mod header;
 pub mod pages;
+pub mod state_highlight;
 
 use anyhow::Result;
 use crossterm::event::{self, Event, KeyCode, KeyModifiers};

@@ -1,4 +1,5 @@
 use ratatui::{prelude::*, widgets::*};
+use crate::ui::state_highlight::highlight_stateful_operators;
 
 pub fn render_script_page(app: &crate::App, num: u8) -> Paragraph<'static> {
     let script_index = (num - 1) as usize;
@@ -10,18 +11,37 @@ pub fn render_script_page(app: &crate::App, num: u8) -> Paragraph<'static> {
         let line_content = &script.lines[i];
         let is_selected = app.selected_line == Some(i);
 
-        if is_selected {
-            lines.push(Line::from(vec![
-                Span::styled(format!("  {}", line_content), Style::default().bg(app.theme.highlight_bg).fg(app.theme.highlight_fg)),
-            ]));
-        } else if line_content.is_empty() {
+        if line_content.is_empty() {
             lines.push(Line::from(vec![
                 Span::styled("  ", Style::default().fg(app.theme.secondary)),
             ]));
         } else {
-            lines.push(Line::from(vec![
-                Span::styled(format!("  {}", line_content), Style::default().fg(app.theme.secondary)),
-            ]));
+            let highlighted = highlight_stateful_operators(
+                line_content,
+                script_index,
+                &app.patterns.toggle_state,
+            );
+
+            let (normal_color, highlight_color) = if is_selected {
+                (app.theme.highlight_fg, app.theme.success)
+            } else {
+                (app.theme.secondary, app.theme.foreground)
+            };
+
+            let mut spans = vec![Span::styled("  ", Style::default().fg(normal_color))];
+            spans.extend(highlighted.to_spans(normal_color, highlight_color));
+
+            if is_selected {
+                lines.push(Line::from(
+                    spans.into_iter()
+                        .map(|span| {
+                            Span::styled(span.content, span.style.bg(app.theme.highlight_bg))
+                        })
+                        .collect::<Vec<_>>()
+                ));
+            } else {
+                lines.push(Line::from(spans));
+            }
         }
     }
 

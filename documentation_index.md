@@ -54,6 +54,28 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 **Roadmap Updates:**
 - "Live Sequence State Highlighting" feature added to Phase 5 (UI enhancements)
 
+### SEQ/TOG State Highlighting (December 2025)
+
+**Phase 5.2: State Highlighting - COMPLETE**
+- Color-only highlighting for current step in SEQ patterns
+- Current TOG option highlighted
+- Nested alternation `<a b>` shows active option based on stored state
+- Nested random choice `{a b}` shows last selected option (state now tracked)
+- Integrated into Script, Metro, and Init pages
+- Color strategy: non-selected lines use foreground/secondary, selected lines use success/highlight_fg
+
+**SEQ Validation:**
+- Added validation to reject `SEQ"..."` (no space before quote)
+- Added validation to reject `SEQ "...` (unclosed quote)
+- Invalid lines are not saved to scripts
+
+**Random Choice State Tracking:**
+- Random choice `{}` now stores selected index in toggle_state with key `seq_rnd_{script}_{pattern}_{step}`
+- UI can now accurately highlight which option was randomly selected
+
+**Files Created:**
+- `src/ui/state_highlight.rs` - New module for highlighting stateful operators
+
 ### DRY Refactoring Complete (All Phases)
 
 **Total lines removed: ~5,942 lines**

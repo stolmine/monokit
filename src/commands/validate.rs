@@ -8,6 +8,28 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         return Ok(());
     }
 
+    let upper = trimmed.to_uppercase();
+    if upper.contains("SEQ\"") || upper.contains("SEQ'") {
+        return Err(anyhow::anyhow!("SEQ requires space before quote: SEQ \"...\""));
+    }
+
+    if let Some(seq_pos) = upper.find("SEQ ") {
+        let after_seq_start = seq_pos + 4;
+        if after_seq_start < trimmed.len() {
+            let remaining = &trimmed[after_seq_start..];
+            let remaining_trimmed = remaining.trim_start();
+            if remaining_trimmed.starts_with('"') {
+                if !remaining_trimmed.ends_with('"') || remaining_trimmed.len() == 1 {
+                    return Err(anyhow::anyhow!("SEQ has unclosed quote"));
+                }
+            } else if remaining_trimmed.starts_with('\'') {
+                if !remaining_trimmed.ends_with('\'') || remaining_trimmed.len() == 1 {
+                    return Err(anyhow::anyhow!("SEQ has unclosed quote"));
+                }
+            }
+        }
+    }
+
     if trimmed.contains(':') {
         let colon_pos = trimmed.find(':').unwrap();
         let prefix = trimmed[..colon_pos].trim().to_uppercase();
@@ -179,6 +201,9 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         "TOG" => {
             if argc < 2 {
                 return Err(anyhow::anyhow!("TOG requires at least 2 arguments"));
+            }
+            if argc >= 2 && parts[1] == parts[2] {
+                return Err(anyhow::anyhow!("TOG requires two different values"));
             }
             Ok(())
         }

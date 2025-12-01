@@ -114,24 +114,16 @@ With activity (M script just fired, script 1 decaying):
 
 ---
 
-## Phase 2: SEQ/TOG State Highlighting
+## Phase 2: SEQ/TOG State Highlighting - COMPLETE (December 2025)
 
 **Goal:** Show current position in stateful operators within script display
 
 ### 2.1 Visual Design
 
-```
-Before:
-  SEQ "C3 E3 G3 C4"
-  TOG 10 20
-
-After (current step highlighted):
-  SEQ "C3 E3 >G3< C4"
-  TOG 10 >20<
-```
-
-**Bracket markers:** `>value<` for current/next item
-**Color:** Theme accent color for highlighted value
+Uses **color-only highlighting** (no bracket markers) for cleaner display:
+- Current SEQ step: highlighted in `foreground` (non-selected) or `success` (selected)
+- Other tokens: dimmed in `secondary` (non-selected) or `highlight_fg` (selected)
+- Same approach for TOG active option
 
 ### 2.2 State Already Tracked
 
@@ -139,54 +131,46 @@ State lives in `PatternStorage.toggle_state: HashMap<String, usize>`:
 - SEQ key: `seq_{script_index}_{pattern_string}`
 - TOG key: `{script_index}_TOG_{arg1}_{arg2}`
 
-### 2.3 Rendering Approach
+### 2.3 Implementation Complete
 
-Create `src/ui/state_highlight.rs`:
+Created `src/ui/state_highlight.rs` with:
+- `HighlightedSegment` struct for text with highlighting flag
+- `HighlightedLine` struct with `to_spans()` method
+- `highlight_stateful_operators()` main entry point
+- `highlight_seq_pattern()` for SEQ parsing
+- `highlight_tog_expression()` for TOG parsing
+- Token parsing using existing `parse_seq_pattern()` from `src/eval/seq.rs`
 
-```rust
-pub struct HighlightedSegment {
-    pub text: String,
-    pub is_current: bool,
-}
+### 2.4 Implementation Steps - COMPLETE
 
-/// Parse a line and identify SEQ/TOG operators with their current state
-pub fn highlight_stateful_operators(
-    line: &str,
-    script_index: usize,
-    toggle_state: &HashMap<String, usize>,
-) -> Vec<HighlightedSegment> {
-    // 1. Find SEQ "..." patterns
-    // 2. Look up current index in toggle_state
-    // 3. Insert bracket markers around current token
-    // 4. Find TOG a b patterns
-    // 5. Look up state and mark active option
-    // Return segments for rendering with Spans
-}
-```
+- [x] Create `src/ui/state_highlight.rs` module
+- [x] Implement SEQ pattern detection and token extraction
+- [x] Implement TOG expression detection
+- [x] Look up state from `toggle_state` HashMap
+- [x] Generate highlighted segments with color flags
+- [x] Integrate into `src/ui/pages/script.rs` rendering
+- [x] Integrate into `src/ui/pages/metro.rs` (script_index=8)
+- [x] Integrate into `src/ui/pages/init.rs` (script_index=9)
+- [x] Apply theme colors to highlighted segments
+- [x] Handle edge cases: empty state, quoted strings, multiple per line
 
-### 2.4 Implementation Steps
+### 2.5 Features Implemented
 
-- [ ] Create `src/ui/state_highlight.rs` module
-- [ ] Implement SEQ pattern detection and token extraction
-- [ ] Implement TOG expression detection
-- [ ] Look up state from `toggle_state` HashMap
-- [ ] Generate highlighted segments with bracket markers
-- [ ] Integrate into `src/ui/pages/script.rs` rendering
-- [ ] Apply theme accent color to highlighted segments
-- [ ] Handle edge cases: empty state, quoted strings, multiple per line
+- **SEQ highlighting:** Current step shown in highlight color
+- **TOG highlighting:** Active option shown in highlight color
+- **Nested alternation:** `<a b>` shows active option based on stored state
+- **Nested random choice:** `{a b}` shows last selected option (state now tracked)
+- **SEQ validation:** Rejects invalid syntax (`SEQ"..."` and `SEQ "...`)
+- **Random choice state tracking:** `{}` selections tracked with `seq_rnd_` keys
+- **Color strategy:** non-selected lines use foreground/secondary, selected lines use success/highlight_fg
 
-### 2.5 Challenges
+### 2.6 Files Created/Modified
 
-- **Long patterns:** `SEQ "C3 E3 G3 C4 D4 E4..."` - only bracket current, don't clutter
-- **Nested quotes:** Respect string boundaries when parsing
-- **First render:** State may not exist until first execution (show index 0)
-- **Multiple operators:** Each gets independent highlighting
-
-### 2.6 Files to Create/Modify
-
-- `src/ui/state_highlight.rs` - NEW: highlighting logic
+- `src/ui/state_highlight.rs` - NEW: highlighting logic with unit tests
+- `src/ui/mod.rs` - Export new module
 - `src/ui/pages/script.rs` - Integrate state-aware rendering
-- `src/ui/pages/mod.rs` - Export new module
+- `src/ui/pages/metro.rs` - Integrate state-aware rendering
+- `src/ui/pages/init.rs` - Integrate state-aware rendering
 
 ---
 

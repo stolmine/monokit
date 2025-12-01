@@ -529,15 +529,21 @@ Script and metro execution feedback with decay animations (KO II style).
 - [x] Works for nested SCRIPT calls from metro
 - [x] Theme-aware activity_color() in theme.rs
 
-### Phase 5.2: SEQ/TOG State Highlighting [Medium] - NOT STARTED
+### Phase 5.2: SEQ/TOG State Highlighting [Medium] - COMPLETE (December 2025)
 Show current position in stateful operators within script display.
 
-- [ ] Bracket markers for current value: `SEQ "C3 E3 >G3< C4"`
-- [ ] TOG active option highlighting: `TOG 10 >20<`
-- [ ] Theme accent color for highlighted segments
-- [ ] State lookup from existing `toggle_state` HashMap
-- [ ] Handle multiple operators per line
-- [ ] Create `src/ui/state_highlight.rs` module
+- [x] Color-only highlighting (no bracket markers) for cleaner display
+- [x] Current SEQ step highlighted in foreground/success color
+- [x] TOG active option highlighted in foreground/success color
+- [x] Nested alternation `<a b>` shows active option based on stored state
+- [x] Nested random choice `{a b}` shows last selected option (state now tracked)
+- [x] Color strategy: non-selected lines use foreground/secondary, selected lines use success/highlight_fg
+- [x] State lookup from existing `toggle_state` HashMap
+- [x] Handle multiple operators per line
+- [x] Created `src/ui/state_highlight.rs` module with unit tests
+- [x] Integrated into script.rs, metro.rs, init.rs pages
+- [x] SEQ validation: reject invalid syntax (`SEQ"..."` and `SEQ "...`)
+- [x] Random choice state tracking with `seq_rnd_` keys
 
 ### Phase 5.3: Variables Page [Medium] - NOT STARTED
 Dedicated page showing all variable state (Teletype-style monitor).

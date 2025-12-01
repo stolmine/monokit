@@ -306,6 +306,8 @@ fn eval_step(
         }
         SeqStep::RandomChoice(options) => {
             let idx = rand::thread_rng().gen_range(0..options.len());
+            let rnd_key = format!("seq_rnd_{}_{}_{}", script_index, pattern, step_index);
+            patterns.toggle_state.insert(rnd_key, idx);
             eval_simple_step(&options[idx])
         }
     }

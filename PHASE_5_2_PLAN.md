@@ -1,5 +1,7 @@
 # Phase 5.2: SEQ/TOG State Highlighting
 
+## Status: COMPLETE (December 2025)
+
 ## Goal
 
 Show current position in stateful operators (SEQ, TOG) within script display. When viewing a script page, highlight which value is currently active.
@@ -174,16 +176,33 @@ Process left-to-right, building segments incrementally:
 | Alternation inside SEQ | Show current option within group |
 | Repeat syntax `C3*4` | Track expanded step count vs display position |
 
-## Implementation Order
+## Implementation Summary
 
-1. Create `src/ui/state_highlight.rs` with structs and main function signature
-2. Implement SEQ token parsing (reference `src/eval/seq.rs`)
-3. Implement TOG detection and state lookup (reference `src/eval/logic.rs:68`)
-4. Handle multiple operators per line
-5. Update `src/ui/pages/script.rs` to use highlighting
-6. Update `src/ui/pages/metro.rs` (script_index = 8)
-7. Update `src/ui/pages/init.rs` (script_index = 9)
-8. Add unit tests
+All steps completed:
+
+1. ✓ Created `src/ui/state_highlight.rs` with structs and main function signature
+2. ✓ Implemented SEQ token parsing (reference `src/eval/seq.rs`)
+3. ✓ Implemented TOG detection and state lookup (reference `src/eval/logic.rs:68`)
+4. ✓ Handled multiple operators per line
+5. ✓ Updated `src/ui/pages/script.rs` to use highlighting
+6. ✓ Updated `src/ui/pages/metro.rs` (script_index = 8)
+7. ✓ Updated `src/ui/pages/init.rs` (script_index = 9)
+8. ✓ Added unit tests
+
+## Additional Features Implemented
+
+- **SEQ validation:** Reject invalid syntax (`SEQ"..."` and `SEQ "...`)
+- **Random choice state tracking:** Track `{a b}` selections with `seq_rnd_` keys
+- **Nested alternation highlighting:** Show active option in `<a b>` groups
+- **Multi-operator support:** Correctly handle multiple SEQ/TOG on same line
+
+## Files Created/Modified
+
+- `src/ui/state_highlight.rs` - NEW: highlighting logic with unit tests
+- `src/ui/mod.rs` - Export new module
+- `src/ui/pages/script.rs` - Integrate state-aware rendering
+- `src/ui/pages/metro.rs` - Integrate state-aware rendering
+- `src/ui/pages/init.rs` - Integrate state-aware rendering
 
 ## Reference Files
 

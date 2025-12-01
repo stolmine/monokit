@@ -1,4 +1,5 @@
 use ratatui::{prelude::*, widgets::*};
+use crate::ui::state_highlight::highlight_stateful_operators;
 
 pub fn render_metro_page(app: &crate::App) -> Paragraph<'static> {
     let state = app.metro_state.lock().unwrap();
@@ -35,18 +36,31 @@ pub fn render_metro_page(app: &crate::App) -> Paragraph<'static> {
         let line_content = &metro_script.lines[i];
         let is_selected = app.selected_line == Some(i);
 
-        if is_selected {
-            text.push(Line::from(vec![
-                Span::styled(format!("  {}", line_content), Style::default().bg(app.theme.highlight_bg).fg(app.theme.highlight_fg)),
-            ]));
-        } else if line_content.is_empty() {
+        if line_content.is_empty() {
             text.push(Line::from(vec![
                 Span::styled("  ", Style::default().fg(app.theme.secondary)),
             ]));
         } else {
-            text.push(Line::from(vec![
-                Span::styled(format!("  {}", line_content), Style::default().fg(app.theme.secondary)),
-            ]));
+            let highlighted = highlight_stateful_operators(
+                line_content,
+                8,
+                &app.patterns.toggle_state,
+            );
+
+            let (normal_color, highlight_color) = if is_selected {
+                (app.theme.highlight_fg, app.theme.success)
+            } else {
+                (app.theme.secondary, app.theme.foreground)
+            };
+
+            let mut spans = vec![Span::raw("  ")];
+            spans.extend(highlighted.to_spans(normal_color, highlight_color));
+
+            let mut line = Line::from(spans);
+            if is_selected {
+                line = line.style(Style::default().bg(app.theme.highlight_bg));
+            }
+            text.push(line);
         }
     }
 

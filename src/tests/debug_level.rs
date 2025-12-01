@@ -1,5 +1,5 @@
 use crate::commands::process_command;
-use crate::midi::MidiConnection;
+use crate::midi::{MidiConnection, MidiTimingStats};
 use crate::theme::Theme;
 use crate::types::{Counters, MetroCommand, MetroState, SyncMode};
 use std::sync::mpsc;
@@ -28,6 +28,7 @@ fn test_debug_level_0_blocks_param_output() {
     let mut br_len = 2usize;
     let mut sync_mode = SyncMode::Internal;
     let mut midi_connection: Option<MidiConnection> = None;
+    let midi_timing_stats = MidiTimingStats::new();
     let mut theme = Theme::dark();
     let mut debug_level = 0u8;
     let mut output_messages = Vec::new();
@@ -38,6 +39,7 @@ fn test_debug_level_0_blocks_param_output() {
         &mut br_len,
         &mut sync_mode,
         &mut midi_connection,
+        &midi_timing_stats,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -68,6 +70,7 @@ fn test_debug_level_0_blocks_trigger_output() {
     let mut br_len = 2usize;
     let mut sync_mode = SyncMode::Internal;
     let mut midi_connection: Option<MidiConnection> = None;
+    let midi_timing_stats = MidiTimingStats::new();
     let mut theme = Theme::dark();
     let mut debug_level = 0u8;
     let mut output_messages = Vec::new();
@@ -78,6 +81,7 @@ fn test_debug_level_0_blocks_trigger_output() {
         &mut br_len,
         &mut sync_mode,
         &mut midi_connection,
+        &midi_timing_stats,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -108,6 +112,7 @@ fn test_debug_level_0_blocks_print() {
     let mut br_len = 2usize;
     let mut sync_mode = SyncMode::Internal;
     let mut midi_connection: Option<MidiConnection> = None;
+    let midi_timing_stats = MidiTimingStats::new();
     let mut theme = Theme::dark();
     let mut debug_level = 0u8;
     let mut output_messages = Vec::new();
@@ -118,6 +123,7 @@ fn test_debug_level_0_blocks_print() {
         &mut br_len,
         &mut sync_mode,
         &mut midi_connection,
+        &midi_timing_stats,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -148,6 +154,7 @@ fn test_debug_level_1_allows_print() {
     let mut br_len = 2usize;
     let mut sync_mode = SyncMode::Internal;
     let mut midi_connection: Option<MidiConnection> = None;
+    let midi_timing_stats = MidiTimingStats::new();
     let mut theme = Theme::dark();
     let mut debug_level = 1u8;
     let mut output_messages = Vec::new();
@@ -158,6 +165,7 @@ fn test_debug_level_1_allows_print() {
         &mut br_len,
         &mut sync_mode,
         &mut midi_connection,
+        &midi_timing_stats,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -189,6 +197,7 @@ fn test_debug_level_1_blocks_params() {
     let mut br_len = 2usize;
     let mut sync_mode = SyncMode::Internal;
     let mut midi_connection: Option<MidiConnection> = None;
+    let midi_timing_stats = MidiTimingStats::new();
     let mut theme = Theme::dark();
     let mut debug_level = 1u8;
     let mut output_messages = Vec::new();
@@ -199,6 +208,7 @@ fn test_debug_level_1_blocks_params() {
         &mut br_len,
         &mut sync_mode,
         &mut midi_connection,
+        &midi_timing_stats,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -229,6 +239,7 @@ fn test_debug_level_1_allows_metro_status() {
     let mut br_len = 2usize;
     let mut sync_mode = SyncMode::Internal;
     let mut midi_connection: Option<MidiConnection> = None;
+    let midi_timing_stats = MidiTimingStats::new();
     let mut theme = Theme::dark();
     let mut debug_level = 1u8;
     let mut output_messages = Vec::new();
@@ -239,6 +250,7 @@ fn test_debug_level_1_allows_metro_status() {
         &mut br_len,
         &mut sync_mode,
         &mut midi_connection,
+        &midi_timing_stats,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -270,6 +282,7 @@ fn test_debug_level_2_allows_all() {
     let mut br_len = 2usize;
     let mut sync_mode = SyncMode::Internal;
     let mut midi_connection: Option<MidiConnection> = None;
+    let midi_timing_stats = MidiTimingStats::new();
     let mut theme = Theme::dark();
     let mut debug_level = 2u8;
     let mut output_messages = Vec::new();
@@ -280,6 +293,7 @@ fn test_debug_level_2_allows_all() {
         &mut br_len,
         &mut sync_mode,
         &mut midi_connection,
+        &midi_timing_stats,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -306,6 +320,7 @@ fn test_debug_level_2_allows_all() {
         &mut br_len,
         &mut sync_mode,
         &mut midi_connection,
+        &midi_timing_stats,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -332,6 +347,7 @@ fn test_debug_level_2_allows_all() {
         &mut br_len,
         &mut sync_mode,
         &mut midi_connection,
+        &midi_timing_stats,
         &mut variables,
         &mut patterns,
         &mut counters,

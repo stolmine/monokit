@@ -1,5 +1,5 @@
 use crate::commands::process_command;
-use crate::midi::MidiConnection;
+use crate::midi::{MidiConnection, MidiTimingStats};
 use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, SyncMode, Variables};
 use std::sync::mpsc;
 
@@ -10,6 +10,7 @@ fn test_tog_command_integration() {
     let mut br_len = 2usize;
     let mut sync_mode = SyncMode::Internal;
     let mut midi_connection: Option<MidiConnection> = None;
+    let midi_timing_stats = MidiTimingStats::new();
     let mut variables = Variables::default();
     let mut patterns = PatternStorage::default();
     let mut counters = Counters::default();
@@ -30,6 +31,7 @@ fn test_tog_command_integration() {
         &mut br_len,
         &mut sync_mode,
         &mut midi_connection,
+        &midi_timing_stats,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -53,6 +55,7 @@ fn test_tog_command_integration() {
         &mut br_len,
         &mut sync_mode,
         &mut midi_connection,
+        &midi_timing_stats,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -76,6 +79,7 @@ fn test_tog_command_integration() {
         &mut br_len,
         &mut sync_mode,
         &mut midi_connection,
+        &midi_timing_stats,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -97,6 +101,7 @@ fn test_tog_with_variable_assignment() {
     let mut br_len = 2usize;
     let mut sync_mode = SyncMode::Internal;
     let mut midi_connection: Option<MidiConnection> = None;
+    let midi_timing_stats = MidiTimingStats::new();
     let mut variables = Variables::default();
     let mut patterns = PatternStorage::default();
     let mut counters = Counters::default();
@@ -117,6 +122,7 @@ fn test_tog_with_variable_assignment() {
         &mut br_len,
         &mut sync_mode,
         &mut midi_connection,
+        &midi_timing_stats,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -139,6 +145,7 @@ fn test_tog_with_variable_assignment() {
         &mut br_len,
         &mut sync_mode,
         &mut midi_connection,
+        &midi_timing_stats,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -161,6 +168,7 @@ fn test_tog_with_variable_assignment() {
         &mut br_len,
         &mut sync_mode,
         &mut midi_connection,
+        &midi_timing_stats,
         &mut variables,
         &mut patterns,
         &mut counters,

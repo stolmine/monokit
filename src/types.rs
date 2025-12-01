@@ -6,6 +6,13 @@ use std::sync::mpsc::Sender;
 
 pub const OSC_ADDR: &str = "127.0.0.1:57120";
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum SyncMode {
+    #[default]
+    Internal = 0,
+    MidiClock = 1,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Script {
     pub lines: [String; 8],
@@ -200,6 +207,10 @@ pub enum MetroCommand {
     ScheduleDelayed(String, u64, usize),      // (cmd, delay_ms, script_idx)
     ScheduleRepeated(String, i16, u64, usize), // (cmd, count, interval_ms, script_idx) for DEL.X
     ClearDelayed,                              // DEL.CLR
+    SetSyncMode(SyncMode),
+    MidiClockTick,
+    MidiTransportStart,
+    MidiTransportStop,
 }
 
 #[derive(Debug, Clone)]

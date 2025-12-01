@@ -15,13 +15,14 @@ pub use core::scale;
 pub use core::scheduling as delay;
 
 // Re-export from system module
-use system::{metro as metro_cmds, misc, preset as preset_cmds, scene as scene_cmds};
+use system::{metro as metro_cmds, midi as midi_cmds, misc, preset as preset_cmds, scene as scene_cmds};
 
 // Re-export from synth module
 use synth as synth_params;
 
+use crate::midi::MidiConnection;
 use crate::theme::Theme;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, SyncMode, Variables};
 use anyhow::Result;
 use std::sync::mpsc::Sender;
 
@@ -32,6 +33,8 @@ pub fn process_command<F>(
     metro_tx: &Sender<MetroCommand>,
     metro_interval: &mut u64,
     br_len: &mut usize,
+    sync_mode: &mut SyncMode,
+    midi_connection: &mut Option<MidiConnection>,
     variables: &mut Variables,
     patterns: &mut PatternStorage,
     counters: &mut Counters,
@@ -266,6 +269,12 @@ where
         }
         "M.SCRIPT" => {
             metro_cmds::handle_m_script(&parts, metro_tx, *debug_level, output)?;
+        }
+        "M.SYNC" => {
+            metro_cmds::handle_m_sync(&parts, sync_mode, metro_tx, *debug_level, output)?;
+        }
+        "MIDI.IN" | "MIDI" => {
+            midi_cmds::handle_midi_in(&parts, metro_tx, midi_connection, output)?;
         }
         "PF" => {
             synth_params::handle_pf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;

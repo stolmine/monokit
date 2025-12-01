@@ -3,6 +3,8 @@ mod commands;
 mod config;
 mod eval;
 mod metro;
+mod midi;
+mod osc_utils;
 mod preset;
 mod scene;
 mod theme;

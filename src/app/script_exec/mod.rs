@@ -29,6 +29,8 @@ impl App {
             &self.metro_tx,
             metro_interval,
             &mut self.br_len,
+            &mut self.sync_mode,
+            &mut self.midi_connection,
             &mut self.variables,
             &mut self.patterns,
             &mut self.counters,

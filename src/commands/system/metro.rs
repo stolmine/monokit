@@ -1,4 +1,4 @@
-use crate::types::MetroCommand;
+use crate::types::{MetroCommand, SyncMode};
 use anyhow::{Context, Result};
 use std::sync::mpsc::Sender;
 
@@ -128,6 +128,51 @@ where
         .context("Failed to send script index to metro thread")?;
     if debug_level >= 1 {
         output(format!("METRO WILL CALL SCRIPT {} ON EACH TICK", value));
+    }
+    Ok(())
+}
+
+pub fn handle_m_sync<F>(
+    parts: &[&str],
+    sync_mode: &mut SyncMode,
+    metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    if parts.len() < 2 {
+        let mode_str = match *sync_mode {
+            SyncMode::Internal => "0 (INTERNAL)",
+            SyncMode::MidiClock => "1 (MIDI CLOCK)",
+        };
+        if debug_level >= 1 {
+            output(format!("SYNC MODE: {}", mode_str));
+        }
+        return Ok(());
+    }
+    let value: i32 = parts[1]
+        .parse()
+        .context("Failed to parse sync mode value")?;
+    let new_mode = match value {
+        0 => SyncMode::Internal,
+        1 => SyncMode::MidiClock,
+        _ => {
+            output("ERROR: M.SYNC VALUE MUST BE 0 (INTERNAL) OR 1 (MIDI)".to_string());
+            return Ok(());
+        }
+    };
+    metro_tx
+        .send(MetroCommand::SetSyncMode(new_mode))
+        .context("Failed to send sync mode to metro thread")?;
+    *sync_mode = new_mode;
+    if debug_level >= 1 {
+        let mode_str = match new_mode {
+            SyncMode::Internal => "INTERNAL",
+            SyncMode::MidiClock => "MIDI CLOCK",
+        };
+        output(format!("SET SYNC MODE TO {}", mode_str));
     }
     Ok(())
 }

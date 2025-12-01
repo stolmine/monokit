@@ -1,5 +1,6 @@
 use crate::commands::process_command;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
+use crate::midi::MidiConnection;
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, SyncMode, Variables};
 use std::sync::mpsc;
 
 #[test]
@@ -7,6 +8,8 @@ fn test_tog_command_integration() {
     let (metro_tx, _metro_rx) = mpsc::channel::<MetroCommand>();
     let mut metro_interval = 500u64;
     let mut br_len = 2usize;
+    let mut sync_mode = SyncMode::Internal;
+    let mut midi_connection: Option<MidiConnection> = None;
     let mut variables = Variables::default();
     let mut patterns = PatternStorage::default();
     let mut counters = Counters::default();
@@ -25,6 +28,8 @@ fn test_tog_command_integration() {
         &metro_tx,
         &mut metro_interval,
         &mut br_len,
+        &mut sync_mode,
+        &mut midi_connection,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -46,6 +51,8 @@ fn test_tog_command_integration() {
         &metro_tx,
         &mut metro_interval,
         &mut br_len,
+        &mut sync_mode,
+        &mut midi_connection,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -67,6 +74,8 @@ fn test_tog_command_integration() {
         &metro_tx,
         &mut metro_interval,
         &mut br_len,
+        &mut sync_mode,
+        &mut midi_connection,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -86,6 +95,8 @@ fn test_tog_with_variable_assignment() {
     let (metro_tx, _metro_rx) = mpsc::channel::<MetroCommand>();
     let mut metro_interval = 500u64;
     let mut br_len = 2usize;
+    let mut sync_mode = SyncMode::Internal;
+    let mut midi_connection: Option<MidiConnection> = None;
     let mut variables = Variables::default();
     let mut patterns = PatternStorage::default();
     let mut counters = Counters::default();
@@ -104,6 +115,8 @@ fn test_tog_with_variable_assignment() {
         &metro_tx,
         &mut metro_interval,
         &mut br_len,
+        &mut sync_mode,
+        &mut midi_connection,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -124,6 +137,8 @@ fn test_tog_with_variable_assignment() {
         &metro_tx,
         &mut metro_interval,
         &mut br_len,
+        &mut sync_mode,
+        &mut midi_connection,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -144,6 +159,8 @@ fn test_tog_with_variable_assignment() {
         &metro_tx,
         &mut metro_interval,
         &mut br_len,
+        &mut sync_mode,
+        &mut midi_connection,
         &mut variables,
         &mut patterns,
         &mut counters,

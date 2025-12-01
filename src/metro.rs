@@ -1,24 +1,25 @@
-use crate::types::{DelayedCommand, MetroCommand, MetroEvent, MetroState, OSC_ADDR};
-use rosc::{encoder, OscMessage, OscPacket, OscType};
+use crate::osc_utils::{create_bundle, OSC_LATENCY_MS};
+use crate::types::{DelayedCommand, MetroCommand, MetroEvent, MetroState, SyncMode, OSC_ADDR};
+use rosc::{encoder, OscMessage, OscType};
+use spin_sleep::SpinSleeper;
+use audio_thread_priority::promote_current_thread_to_real_time;
 use std::net::UdpSocket;
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
-pub fn precise_sleep(duration: Duration) {
-    let start = Instant::now();
-    let spin_threshold = Duration::from_micros(100);
-
-    if duration > spin_threshold {
-        thread::sleep(duration - spin_threshold);
-    }
-
-    while start.elapsed() < duration {
-        std::hint::spin_loop();
+fn send_bundled(socket: &UdpSocket, messages: Vec<OscMessage>) {
+    let packet = create_bundle(messages, OSC_LATENCY_MS);
+    if let Ok(buf) = encoder::encode(&packet) {
+        let _ = socket.send(&buf);
     }
 }
 
 pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroState>>, event_tx: mpsc::Sender<MetroEvent>) {
+    let _rt_handle = promote_current_thread_to_real_time(512, 48000).ok();
+
+    let spinner = SpinSleeper::default();
+
     let socket = match UdpSocket::bind("0.0.0.0:0") {
         Ok(s) => s,
         Err(e) => {
@@ -34,6 +35,7 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
 
     let mut interval_ms: u64 = 500;
     let mut active = false;
+    let mut sync_mode = SyncMode::Internal;
     let mut next_tick = Instant::now();
     let mut delayed_commands: Vec<DelayedCommand> = Vec::new();
     let start_time = Instant::now();
@@ -58,100 +60,70 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                         addr: "/monokit/param".to_string(),
                         args: vec![OscType::String(name), value],
                     };
-                    let packet = OscPacket::Message(msg);
-                    if let Ok(buf) = encoder::encode(&packet) {
-                        let _ = socket.send(&buf);
-                    }
+                    send_bundled(&socket, vec![msg]);
                 }
                 MetroCommand::SendTrigger => {
                     let msg = OscMessage {
                         addr: "/monokit/trigger".to_string(),
                         args: vec![],
                     };
-                    let packet = OscPacket::Message(msg);
-                    if let Ok(buf) = encoder::encode(&packet) {
-                        let _ = socket.send(&buf);
-                    }
+                    send_bundled(&socket, vec![msg]);
                 }
                 MetroCommand::SendVolume(value) => {
                     let msg = OscMessage {
                         addr: "/monokit/volume".to_string(),
                         args: vec![OscType::Float(value)],
                     };
-                    let packet = OscPacket::Message(msg);
-                    if let Ok(buf) = encoder::encode(&packet) {
-                        let _ = socket.send(&buf);
-                    }
+                    send_bundled(&socket, vec![msg]);
                 }
                 MetroCommand::StartRecording(dir) => {
                     let msg = OscMessage {
                         addr: "/monokit/rec".to_string(),
                         args: vec![OscType::String(dir)],
                     };
-                    let packet = OscPacket::Message(msg);
-                    if let Ok(buf) = encoder::encode(&packet) {
-                        let _ = socket.send(&buf);
-                    }
+                    send_bundled(&socket, vec![msg]);
                 }
                 MetroCommand::StopRecording => {
                     let msg = OscMessage {
                         addr: "/monokit/rec/stop".to_string(),
                         args: vec![],
                     };
-                    let packet = OscPacket::Message(msg);
-                    if let Ok(buf) = encoder::encode(&packet) {
-                        let _ = socket.send(&buf);
-                    }
+                    send_bundled(&socket, vec![msg]);
                 }
                 MetroCommand::SetRecordingPath(path) => {
                     let msg = OscMessage {
                         addr: "/monokit/rec/path".to_string(),
                         args: vec![OscType::String(path)],
                     };
-                    let packet = OscPacket::Message(msg);
-                    if let Ok(buf) = encoder::encode(&packet) {
-                        let _ = socket.send(&buf);
-                    }
+                    send_bundled(&socket, vec![msg]);
                 }
                 MetroCommand::SetSlewTime(time_sec) => {
                     let msg = OscMessage {
                         addr: "/monokit/slew".to_string(),
                         args: vec![OscType::Float(time_sec)],
                     };
-                    let packet = OscPacket::Message(msg);
-                    if let Ok(buf) = encoder::encode(&packet) {
-                        let _ = socket.send(&buf);
-                    }
+                    send_bundled(&socket, vec![msg]);
                 }
                 MetroCommand::SetParamSlew(param, time_sec) => {
                     let msg = OscMessage {
                         addr: "/monokit/slew/param".to_string(),
                         args: vec![OscType::String(param), OscType::Float(time_sec)],
                     };
-                    let packet = OscPacket::Message(msg);
-                    if let Ok(buf) = encoder::encode(&packet) {
-                        let _ = socket.send(&buf);
-                    }
+                    send_bundled(&socket, vec![msg]);
                 }
                 MetroCommand::SetGate(time_sec) => {
                     let msg = OscMessage {
                         addr: "/monokit/gate".to_string(),
                         args: vec![OscType::Float(time_sec)],
                     };
-                    let packet = OscPacket::Message(msg);
-                    if let Ok(buf) = encoder::encode(&packet) {
-                        let _ = socket.send(&buf);
-                    }
+                    send_bundled(&socket, vec![msg]);
                 }
                 MetroCommand::SetEnvGate(env_name, time_sec) => {
                     let msg = OscMessage {
                         addr: "/monokit/gate/env".to_string(),
                         args: vec![OscType::String(env_name), OscType::Float(time_sec)],
                     };
-                    let packet = OscPacket::Message(msg);
-                    if let Ok(buf) = encoder::encode(&packet) {
-                        let _ = socket.send(&buf);
-                    }
+                    send_bundled(&socket, vec![msg]);
                 }
                 MetroCommand::ScheduleDelayed(cmd, delay_ms, script_idx) => {
                     let elapsed_ms = start_time.elapsed().as_millis() as u64;
@@ -178,6 +150,28 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                 MetroCommand::ClearDelayed => {
                     delayed_commands.clear();
                 }
+                MetroCommand::SetSyncMode(mode) => {
+                    sync_mode = mode;
+                }
+                MetroCommand::MidiClockTick => {
+                    if sync_mode == SyncMode::MidiClock && active {
+                        let script_index = {
+                            let st = state.lock().unwrap();
+                            st.script_index
+                        };
+                        let _ = event_tx.send(MetroEvent::ExecuteScript(script_index));
+                    }
+                }
+                MetroCommand::MidiTransportStart => {
+                    if sync_mode == SyncMode::MidiClock {
+                        active = true;
+                    }
+                }
+                MetroCommand::MidiTransportStop => {
+                    if sync_mode == SyncMode::MidiClock {
+                        active = false;
+                    }
+                }
                 MetroCommand::Shutdown => {
                     return; // Exit the metro thread
                 }
@@ -197,25 +191,32 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
             ));
         }
 
-        if active {
-            let script_index = {
-                let st = state.lock().unwrap();
-                st.script_index
-            };
+        match sync_mode {
+            SyncMode::Internal => {
+                if active {
+                    let script_index = {
+                        let st = state.lock().unwrap();
+                        st.script_index
+                    };
 
-            let _ = event_tx.send(MetroEvent::ExecuteScript(script_index));
+                    let _ = event_tx.send(MetroEvent::ExecuteScript(script_index));
 
-            next_tick += Duration::from_millis(interval_ms);
+                    next_tick += Duration::from_millis(interval_ms);
 
-            let now = Instant::now();
-            if next_tick > now {
-                let sleep_duration = next_tick - now;
-                precise_sleep(sleep_duration);
-            } else {
-                next_tick = now;
+                    let now = Instant::now();
+                    if next_tick > now {
+                        let sleep_duration = next_tick - now;
+                        spinner.sleep(sleep_duration);
+                    } else {
+                        next_tick = now;
+                    }
+                } else {
+                    thread::sleep(Duration::from_millis(10));
+                }
             }
-        } else {
-            thread::sleep(Duration::from_millis(10));
+            SyncMode::MidiClock => {
+                thread::sleep(Duration::from_millis(1));
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
+use crate::midi::MidiConnection;
 use crate::theme::Theme;
 use crate::types::{
-    Counters, MetroCommand, MetroState, Page, PatternStorage, ScaleState, ScriptStorage, Variables,
+    Counters, MetroCommand, MetroState, Page, PatternStorage, ScaleState, ScriptStorage, SyncMode, Variables,
 };
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -42,6 +43,8 @@ pub struct App {
     pub br_len: usize,
     pub slew_time_ms: f32,
     pub scale: ScaleState,
+    pub sync_mode: SyncMode,
+    pub midi_connection: Option<MidiConnection>,
 }
 
 impl App {
@@ -79,6 +82,8 @@ impl App {
             br_len: 2,
             slew_time_ms: 0.0,
             scale: ScaleState::default(),
+            sync_mode: SyncMode::Internal,
+            midi_connection: None,
         }
     }
 
@@ -183,6 +188,8 @@ impl App {
             &self.metro_tx,
             &mut metro_interval,
             &mut self.br_len,
+            &mut self.sync_mode,
+            &mut self.midi_connection,
             &mut self.variables,
             &mut self.patterns,
             &mut self.counters,

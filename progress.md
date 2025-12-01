@@ -2,6 +2,37 @@
 
 ## November 2025
 
+### Timing Infrastructure Improvements - COMPLETE
+**Date:** November 2025
+**Status:** Complete
+
+**Implemented:**
+- Platform-calibrated hybrid sleep timing using `spin_sleep` crate
+- Real-time thread priority elevation via `audio_thread_priority` crate
+- Timestamped OSC bundles with NTP timestamps for sample-accurate scheduling
+- Created `src/osc_utils.rs` utility module for OSC bundle generation
+- SpinSleeper integration in metro thread for precise timing
+- RT priority elevation on macOS, Linux, and Windows (best-effort)
+
+**Technical Details:**
+- SpinSleeper uses calibrated spin thresholds based on platform sleep characteristics
+- RT priority reduces OS scheduling latency (requires privileges on some platforms)
+- All OSC messages bundled with timestamps relative to immediate time
+- SuperCollider receives timestamped bundles for sample-accurate scheduling
+- Improved metro stability and timing accuracy
+
+**Dependencies Added:**
+- `spin_sleep = "1.2"` - Hybrid sleep with platform calibration
+- `audio_thread_priority = "0.32"` - Cross-platform RT priority elevation
+
+**Files Modified:**
+- `Cargo.toml` - Added timing dependencies
+- `src/osc_utils.rs` - New utility module
+- `src/metro.rs` - SpinSleeper and RT priority integration
+- `src/main.rs` - Module declaration
+
+---
+
 ### MIDI Clock Sync - COMPLETE (Input Only)
 **Date:** November 2025
 **Status:** Input Complete

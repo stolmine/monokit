@@ -1,6 +1,7 @@
 use crate::commands::process_command;
+use crate::midi::MidiConnection;
 use crate::theme::Theme;
-use crate::types::{Counters, MetroCommand, MetroState};
+use crate::types::{Counters, MetroCommand, MetroState, SyncMode};
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
 use super::common::{create_test_patterns, create_test_scale, create_test_scripts, create_test_variables, create_test_counters};
@@ -25,7 +26,8 @@ fn test_debug_level_0_blocks_param_output() {
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
     let mut br_len = 2usize;
-    let mut br_len = 2usize;
+    let mut sync_mode = SyncMode::Internal;
+    let mut midi_connection: Option<MidiConnection> = None;
     let mut theme = Theme::dark();
     let mut debug_level = 0u8;
     let mut output_messages = Vec::new();
@@ -34,6 +36,8 @@ fn test_debug_level_0_blocks_param_output() {
         &metro_tx,
         &mut metro_interval,
         &mut br_len,
+        &mut sync_mode,
+        &mut midi_connection,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -62,6 +66,8 @@ fn test_debug_level_0_blocks_trigger_output() {
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
     let mut br_len = 2usize;
+    let mut sync_mode = SyncMode::Internal;
+    let mut midi_connection: Option<MidiConnection> = None;
     let mut theme = Theme::dark();
     let mut debug_level = 0u8;
     let mut output_messages = Vec::new();
@@ -70,6 +76,8 @@ fn test_debug_level_0_blocks_trigger_output() {
         &metro_tx,
         &mut metro_interval,
         &mut br_len,
+        &mut sync_mode,
+        &mut midi_connection,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -98,6 +106,8 @@ fn test_debug_level_0_blocks_print() {
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
     let mut br_len = 2usize;
+    let mut sync_mode = SyncMode::Internal;
+    let mut midi_connection: Option<MidiConnection> = None;
     let mut theme = Theme::dark();
     let mut debug_level = 0u8;
     let mut output_messages = Vec::new();
@@ -106,6 +116,8 @@ fn test_debug_level_0_blocks_print() {
         &metro_tx,
         &mut metro_interval,
         &mut br_len,
+        &mut sync_mode,
+        &mut midi_connection,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -134,6 +146,8 @@ fn test_debug_level_1_allows_print() {
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
     let mut br_len = 2usize;
+    let mut sync_mode = SyncMode::Internal;
+    let mut midi_connection: Option<MidiConnection> = None;
     let mut theme = Theme::dark();
     let mut debug_level = 1u8;
     let mut output_messages = Vec::new();
@@ -142,6 +156,8 @@ fn test_debug_level_1_allows_print() {
         &metro_tx,
         &mut metro_interval,
         &mut br_len,
+        &mut sync_mode,
+        &mut midi_connection,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -171,6 +187,8 @@ fn test_debug_level_1_blocks_params() {
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
     let mut br_len = 2usize;
+    let mut sync_mode = SyncMode::Internal;
+    let mut midi_connection: Option<MidiConnection> = None;
     let mut theme = Theme::dark();
     let mut debug_level = 1u8;
     let mut output_messages = Vec::new();
@@ -179,6 +197,8 @@ fn test_debug_level_1_blocks_params() {
         &metro_tx,
         &mut metro_interval,
         &mut br_len,
+        &mut sync_mode,
+        &mut midi_connection,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -207,6 +227,8 @@ fn test_debug_level_1_allows_metro_status() {
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
     let mut br_len = 2usize;
+    let mut sync_mode = SyncMode::Internal;
+    let mut midi_connection: Option<MidiConnection> = None;
     let mut theme = Theme::dark();
     let mut debug_level = 1u8;
     let mut output_messages = Vec::new();
@@ -215,6 +237,8 @@ fn test_debug_level_1_allows_metro_status() {
         &metro_tx,
         &mut metro_interval,
         &mut br_len,
+        &mut sync_mode,
+        &mut midi_connection,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -244,6 +268,8 @@ fn test_debug_level_2_allows_all() {
     let (metro_tx, _metro_rx, _metro_state) = create_test_metro();
     let mut metro_interval = 500u64;
     let mut br_len = 2usize;
+    let mut sync_mode = SyncMode::Internal;
+    let mut midi_connection: Option<MidiConnection> = None;
     let mut theme = Theme::dark();
     let mut debug_level = 2u8;
     let mut output_messages = Vec::new();
@@ -252,6 +278,8 @@ fn test_debug_level_2_allows_all() {
         &metro_tx,
         &mut metro_interval,
         &mut br_len,
+        &mut sync_mode,
+        &mut midi_connection,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -276,6 +304,8 @@ fn test_debug_level_2_allows_all() {
         &metro_tx,
         &mut metro_interval,
         &mut br_len,
+        &mut sync_mode,
+        &mut midi_connection,
         &mut variables,
         &mut patterns,
         &mut counters,
@@ -300,6 +330,8 @@ fn test_debug_level_2_allows_all() {
         &metro_tx,
         &mut metro_interval,
         &mut br_len,
+        &mut sync_mode,
+        &mut midi_connection,
         &mut variables,
         &mut patterns,
         &mut counters,

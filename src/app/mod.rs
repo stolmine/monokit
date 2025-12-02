@@ -58,6 +58,7 @@ pub struct App {
     pub header_level: u8,
     pub limiter_enabled: bool,
     pub notes: NotesStorage,
+    pub load_rst: bool,
 }
 
 impl App {
@@ -110,6 +111,7 @@ impl App {
             header_level: config.display.header_level,
             limiter_enabled: true,
             notes: NotesStorage::default(),
+            load_rst: config.display.load_rst,
         }
     }
 
@@ -230,6 +232,7 @@ impl App {
             &mut self.header_level,
             &mut self.limiter_enabled,
             &mut self.notes,
+            &mut self.load_rst,
             command,
             |msg| {
                 output_messages.push(msg);

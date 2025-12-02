@@ -60,9 +60,9 @@ pub fn handle_rst<F>(
 where
     F: FnMut(String),
 {
-    metro_tx.send(MetroCommand::SendParam("pf".to_string(), OscType::Float(200.0)))?;
+    metro_tx.send(MetroCommand::SendParam("pf".to_string(), OscType::Float(131.0)))?;
     metro_tx.send(MetroCommand::SendParam("pw".to_string(), OscType::Int(0)))?;
-    metro_tx.send(MetroCommand::SendParam("mf".to_string(), OscType::Float(50.0)))?;
+    metro_tx.send(MetroCommand::SendParam("mf".to_string(), OscType::Float(262.0)))?;
     metro_tx.send(MetroCommand::SendParam("mw".to_string(), OscType::Int(0)))?;
 
     metro_tx.send(MetroCommand::SendParam("dc".to_string(), OscType::Int(0)))?;
@@ -86,11 +86,11 @@ where
     metro_tx.send(MetroCommand::SendParam("pd".to_string(), OscType::Int(10)))?;
     metro_tx.send(MetroCommand::SendParam("fd".to_string(), OscType::Int(10)))?;
     metro_tx.send(MetroCommand::SendParam("dd".to_string(), OscType::Int(10)))?;
-    metro_tx.send(MetroCommand::SendParam("pa".to_string(), OscType::Float(4.0)))?;
+    metro_tx.send(MetroCommand::SendParam("pa".to_string(), OscType::Float(0.0)))?;
     metro_tx.send(MetroCommand::SendParam("fa".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("da".to_string(), OscType::Int(0)))?;
 
-    metro_tx.send(MetroCommand::SendParam("fc".to_string(), OscType::Float(1000.0)))?;
+    metro_tx.send(MetroCommand::SendParam("fc".to_string(), OscType::Float(10000.0)))?;
     metro_tx.send(MetroCommand::SendParam("fq".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("ft".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("fe".to_string(), OscType::Int(0)))?;
@@ -108,14 +108,14 @@ where
     metro_tx.send(MetroCommand::SendParam("dlp".to_string(), OscType::Int(5000)))?;
     metro_tx.send(MetroCommand::SendParam("dw".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("ds".to_string(), OscType::Int(0)))?;
-    metro_tx.send(MetroCommand::SendParam("dmode".to_string(), OscType::Int(1)))?;
+    metro_tx.send(MetroCommand::SendParam("dmode".to_string(), OscType::Int(2)))?;
     metro_tx.send(MetroCommand::SendParam("dtail".to_string(), OscType::Int(1)))?;
 
     metro_tx.send(MetroCommand::SendParam("rv".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("rp".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("rh".to_string(), OscType::Int(8000)))?;
     metro_tx.send(MetroCommand::SendParam("rw".to_string(), OscType::Int(0)))?;
-    metro_tx.send(MetroCommand::SendParam("rmode".to_string(), OscType::Int(1)))?;
+    metro_tx.send(MetroCommand::SendParam("rmode".to_string(), OscType::Int(2)))?;
     metro_tx.send(MetroCommand::SendParam("rtail".to_string(), OscType::Int(1)))?;
 
     metro_tx.send(MetroCommand::SendParam("lb".to_string(), OscType::Int(16)))?;
@@ -127,7 +127,7 @@ where
     metro_tx.send(MetroCommand::SendParam("rgm".to_string(), OscType::Int(0)))?;
 
     metro_tx.send(MetroCommand::SendParam("ct".to_string(), OscType::Int(8192)))?;
-    metro_tx.send(MetroCommand::SendParam("cr".to_string(), OscType::Int(4)))?;
+    metro_tx.send(MetroCommand::SendParam("cr".to_string(), OscType::Int(1)))?;
     metro_tx.send(MetroCommand::SendParam("ca".to_string(), OscType::Int(10)))?;
     metro_tx.send(MetroCommand::SendParam("cl".to_string(), OscType::Int(100)))?;
     metro_tx.send(MetroCommand::SendParam("cm".to_string(), OscType::Int(0)))?;
@@ -139,9 +139,10 @@ where
     metro_tx.send(MetroCommand::SendParam("eh".to_string(), OscType::Int(0)))?;
 
     metro_tx.send(MetroCommand::SendParam("pn".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("gate".to_string(), OscType::Int(0)))?;
 
     metro_tx.send(MetroCommand::SendParam("br_act".to_string(), OscType::Int(0)))?;
-    metro_tx.send(MetroCommand::SendParam("br_len".to_string(), OscType::Int(2)))?;
+    metro_tx.send(MetroCommand::SendParam("br_len".to_string(), OscType::Int(250)))?;
     metro_tx.send(MetroCommand::SendParam("br_rev".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("br_win".to_string(), OscType::Int(5)))?;
     metro_tx.send(MetroCommand::SendParam("br_mix".to_string(), OscType::Int(0)))?;
@@ -601,4 +602,33 @@ where
         }
     }
     Ok(())
+}
+
+pub fn handle_load_rst<F>(
+    parts: &[&str],
+    load_rst: &mut bool,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("LOAD.RST: {}", if *load_rst { 1 } else { 0 }));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *load_rst = false;
+                let _ = config::save_load_rst(*load_rst);
+                output("LOAD.RST: OFF (PERSIST PARAMS)".to_string());
+            }
+            "1" => {
+                *load_rst = true;
+                let _ = config::save_load_rst(*load_rst);
+                output("LOAD.RST: ON (RESET BEFORE LOAD)".to_string());
+            }
+            _ => {
+                output("ERROR: LOAD.RST TAKES 0 (PERSIST) OR 1 (RESET)".to_string());
+            }
+        }
+    }
 }

@@ -80,6 +80,7 @@ pub struct TestContext {
     pub header_level: u8,
     pub limiter_enabled: bool,
     pub notes: NotesStorage,
+    pub load_rst: bool,
     pub outputs: Vec<String>,
 }
 
@@ -107,6 +108,7 @@ impl Default for TestContext {
             header_level: 4,
             limiter_enabled: true,
             notes: NotesStorage::default(),
+            load_rst: false,
             outputs: Vec::new(),
         }
     }
@@ -138,6 +140,7 @@ impl TestContext {
             &mut self.header_level,
             &mut self.limiter_enabled,
             &mut self.notes,
+            &mut self.load_rst,
             input,
             |msg| {
                 self.outputs.push(msg);

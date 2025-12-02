@@ -49,6 +49,7 @@ pub fn process_command<F>(
     header_level: &mut u8,
     limiter_enabled: &mut bool,
     notes: &mut crate::types::NotesStorage,
+    load_rst: &mut bool,
     input: &str,
     mut output: F,
 ) -> Result<Vec<usize>>
@@ -643,9 +644,15 @@ where
             scene_cmds::handle_save(&parts, scripts, patterns, notes, output);
         }
         "LOAD" => {
+            if *load_rst {
+                misc::handle_rst(metro_tx, *debug_level, &mut |_| {})?;
+            }
             if scene_cmds::handle_load(&parts, variables, scripts, patterns, notes, output) {
                 return Ok(vec![9]);
             }
+        }
+        "LOAD.RST" => {
+            misc::handle_load_rst(&parts, load_rst, output);
         }
         "SCENES" => {
             scene_cmds::handle_scenes(output);

@@ -20,6 +20,8 @@ pub struct DisplayConfig {
     pub theme: String,
     #[serde(default = "default_header_level")]
     pub header_level: u8,
+    #[serde(default)]
+    pub load_rst: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -66,6 +68,7 @@ impl Default for DisplayConfig {
         Self {
             theme: default_theme_mode(),
             header_level: default_header_level(),
+            load_rst: false,
         }
     }
 }
@@ -186,6 +189,13 @@ pub fn save_theme_mode(mode: &str) -> Result<()> {
 pub fn save_header_level(level: u8) -> Result<()> {
     let mut config = load_config()?;
     config.display.header_level = level;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_load_rst(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.load_rst = enabled;
     save_config(&config)?;
     Ok(())
 }

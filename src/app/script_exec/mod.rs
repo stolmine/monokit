@@ -55,6 +55,7 @@ impl App {
             &mut self.header_level,
             &mut self.limiter_enabled,
             &mut self.notes,
+            &mut self.load_rst,
             cmd_to_run,
             |msg| {
                 output_messages.push(msg);

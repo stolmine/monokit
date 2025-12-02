@@ -87,6 +87,15 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 - Clean three-column layout for easy scanning
 - Added `Page::Variables` to navigation system
 
+**Notes Page (December 2025)
+
+**Phase 5.6: Notes Page Redesign - COMPLETE**
+- Redesigned to use 8 fixed lines like script pages
+- Line navigation with Up/Down arrows
+- Same editing commands: Ctrl+D/K/C/X/V
+- Notes saved and loaded with scenes
+- Consistent with script page UX
+
 **Bug Fixes:**
 - SLEW and SLEW.ALL commands now accept expressions in scripts (fixed strict arg count validation)
 - Empty line cursor visibility restored on Script 1-8, Metro, and Init pages
@@ -125,6 +134,7 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 - 15-band spectrum analyzer on grid view below parameter grid, 2 rows tall
 - Logarithmically-spaced frequency bands (25Hz to 16kHz)
 - Square root scaling for better visual response with smooth decay (0.85 rate)
+- Per-band clipping: each spectrum band shows red when exceeding 0.95 threshold
 - SuperCollider uses BPF filters + Amplitude followers at 20Hz, OSC to port 57121
 - CPU percentage display in header border (right-aligned, toggleable with CPU 1/0 command)
 - CPU percentage text on grid view (bottom-right, aligned with spectrum bottom): right-aligned "   XX%"
@@ -1047,7 +1057,14 @@ PS.TARG 0         // Process input signal
   - Works with variables, math operations, pattern operations, etc.
 
 #### System
-- `RST` - Reset all parameters to defaults
+- `RST` - Reset all parameters to defaults:
+  - PF: 131 Hz (C3), MF: 262 Hz (C4)
+  - PA: 0 (pitch env off), FC: 10000 Hz
+  - D.MODE: 2 (SEND), R.MODE: 2 (SEND)
+  - CR: 1 (compressor off)
+- `LOAD.RST` - Show current reset mode setting
+- `LOAD.RST 0` - Persist synth params on scene load (default)
+- `LOAD.RST 1` - Reset all params before loading scene
 - `CLEAR` - Clear REPL output history
 - `DEBUG <level>` - Set debug verbosity level:
   - `DEBUG 0` - Silent mode (no REPL output except errors and PRINT commands)

@@ -3,7 +3,7 @@ use std::env;
 use std::fs;
 use std::path::PathBuf;
 
-use crate::types::{PatternStorage, ScriptStorage};
+use crate::types::{NotesStorage, PatternStorage, ScriptStorage};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Scene {
@@ -12,7 +12,7 @@ pub struct Scene {
     pub patterns: Vec<ScenePattern>,
     pub pattern_working: usize,
     #[serde(default)]
-    pub notes: String,
+    pub notes: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -112,7 +112,7 @@ pub fn delete_scene(name: &str) -> Result<(), SceneError> {
 }
 
 impl Scene {
-    pub fn from_app_state(scripts: &ScriptStorage, patterns: &PatternStorage, notes: &str) -> Self {
+    pub fn from_app_state(scripts: &ScriptStorage, patterns: &PatternStorage, notes: &NotesStorage) -> Self {
         let scene_scripts: Vec<SceneScript> = scripts
             .scripts
             .iter()
@@ -138,11 +138,11 @@ impl Scene {
             scripts: scene_scripts,
             patterns: scene_patterns,
             pattern_working: patterns.working,
-            notes: notes.to_string(),
+            notes: notes.lines.to_vec(),
         }
     }
 
-    pub fn apply_to_app_state(&self, scripts: &mut ScriptStorage, patterns: &mut PatternStorage, notes: &mut String) {
+    pub fn apply_to_app_state(&self, scripts: &mut ScriptStorage, patterns: &mut PatternStorage, notes: &mut NotesStorage) {
         for (i, scene_script) in self.scripts.iter().enumerate() {
             if i < scripts.scripts.len() {
                 for (j, line) in scene_script.lines.iter().enumerate() {
@@ -168,6 +168,10 @@ impl Scene {
         }
 
         patterns.working = self.pattern_working.min(5);
-        *notes = self.notes.clone();
+
+        // Clear all notes first, then load from scene
+        for i in 0..8 {
+            notes.lines[i] = self.notes.get(i).cloned().unwrap_or_default();
+        }
     }
 }

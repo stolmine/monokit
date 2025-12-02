@@ -1,7 +1,7 @@
 use crate::midi::{MidiConnection, MidiTimingStats};
 use crate::theme::Theme;
 use crate::types::{
-    Counters, CpuData, MeterData, MetroCommand, MetroState, Page, ParamActivity, PatternStorage, ScaleState, ScriptStorage, SpectrumData, SyncMode, Variables,
+    Counters, CpuData, MeterData, MetroCommand, MetroState, NotesStorage, Page, ParamActivity, PatternStorage, ScaleState, ScriptStorage, SpectrumData, SyncMode, Variables,
 };
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -57,8 +57,7 @@ pub struct App {
     pub show_cpu: bool,
     pub header_level: u8,
     pub limiter_enabled: bool,
-    pub notes: String,
-    pub notes_cursor: usize,
+    pub notes: NotesStorage,
 }
 
 impl App {
@@ -110,8 +109,7 @@ impl App {
             show_cpu: false,
             header_level: config.display.header_level,
             limiter_enabled: true,
-            notes: String::new(),
-            notes_cursor: 0,
+            notes: NotesStorage::default(),
         }
     }
 

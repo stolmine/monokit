@@ -232,43 +232,83 @@ impl App {
         }
     }
 
-    pub fn insert_notes_char(&mut self, c: char) {
-        let byte_pos = self
-            .notes
-            .char_indices()
-            .nth(self.notes_cursor)
-            .map(|(i, _)| i)
-            .unwrap_or(self.notes.len());
-        self.notes.insert(byte_pos, c);
-        self.notes_cursor += 1;
+    pub fn select_notes_line_up(&mut self) {
+        let new_selection = match self.selected_line {
+            None => 7,
+            Some(0) => 0,
+            Some(n) => n - 1,
+        };
+        self.selected_line = Some(new_selection);
+        self.input = self.notes.lines[new_selection].clone();
+        self.cursor_position = self.input.len();
     }
 
-    pub fn delete_notes_char(&mut self) {
-        if self.notes_cursor > 0 {
-            let byte_pos = self
-                .notes
-                .char_indices()
-                .nth(self.notes_cursor - 1)
-                .map(|(i, _)| i)
-                .unwrap_or(0);
-            self.notes.remove(byte_pos);
-            self.notes_cursor -= 1;
+    pub fn select_notes_line_down(&mut self) {
+        let new_selection = match self.selected_line {
+            None => 0,
+            Some(7) => 7,
+            Some(n) => n + 1,
+        };
+        self.selected_line = Some(new_selection);
+        self.input = self.notes.lines[new_selection].clone();
+        self.cursor_position = self.input.len();
+    }
+
+    pub fn save_notes_line(&mut self) {
+        let line_idx = if let Some(selected) = self.selected_line {
+            selected
+        } else {
+            let mut first_empty = None;
+            for i in 0..8 {
+                if self.notes.lines[i].is_empty() {
+                    first_empty = Some(i);
+                    break;
+                }
+            }
+            first_empty.unwrap_or(7)
+        };
+
+        self.notes.lines[line_idx] = self.input.clone();
+        let next_line = if line_idx < 7 { line_idx + 1 } else { 0 };
+        self.selected_line = Some(next_line);
+        self.input.clear();
+        self.cursor_position = 0;
+    }
+
+    pub fn duplicate_notes_line(&mut self) {
+        if let Some(selected) = self.selected_line {
+            if selected < 7 {
+                let line_content = self.notes.lines[selected].clone();
+                self.notes.lines[selected + 1] = line_content;
+                self.selected_line = Some(selected + 1);
+            }
         }
     }
 
-    pub fn insert_notes_newline(&mut self) {
-        self.insert_notes_char('\n');
-    }
-
-    pub fn move_notes_cursor_left(&mut self) {
-        if self.notes_cursor > 0 {
-            self.notes_cursor -= 1;
+    pub fn delete_notes_line(&mut self) {
+        if let Some(selected) = self.selected_line {
+            self.notes.lines[selected].clear();
+            self.input.clear();
+            self.cursor_position = 0;
         }
     }
 
-    pub fn move_notes_cursor_right(&mut self) {
-        if self.notes_cursor < self.notes.chars().count() {
-            self.notes_cursor += 1;
+    pub fn copy_notes_line(&mut self) {
+        if let Some(selected) = self.selected_line {
+            self.clipboard = self.notes.lines[selected].clone();
+        }
+    }
+
+    pub fn cut_notes_line(&mut self) {
+        self.copy_notes_line();
+        self.delete_notes_line();
+    }
+
+    pub fn paste_notes_line(&mut self) {
+        if let Some(selected) = self.selected_line {
+            self.notes.lines[selected] = self.clipboard.clone();
+            self.input = self.clipboard.clone();
+            self.cursor_position = self.input.len();
         }
     }
 }

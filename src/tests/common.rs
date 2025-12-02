@@ -1,7 +1,7 @@
 use crate::commands::process_command;
 use crate::midi::{MidiConnection, MidiTimingStats};
 use crate::theme::Theme;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, SyncMode, Variables};
+use crate::types::{Counters, MetroCommand, NotesStorage, PatternStorage, ScaleState, ScriptStorage, SyncMode, Variables};
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::Arc;
 
@@ -79,7 +79,7 @@ pub struct TestContext {
     pub show_cpu: bool,
     pub header_level: u8,
     pub limiter_enabled: bool,
-    pub notes: String,
+    pub notes: NotesStorage,
     pub outputs: Vec<String>,
 }
 
@@ -106,7 +106,7 @@ impl Default for TestContext {
             show_cpu: false,
             header_level: 4,
             limiter_enabled: true,
-            notes: String::new(),
+            notes: NotesStorage::default(),
             outputs: Vec::new(),
         }
     }

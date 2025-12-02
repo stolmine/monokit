@@ -48,7 +48,7 @@ pub fn process_command<F>(
     show_cpu: &mut bool,
     header_level: &mut u8,
     limiter_enabled: &mut bool,
-    notes: &mut String,
+    notes: &mut crate::types::NotesStorage,
     input: &str,
     mut output: F,
 ) -> Result<Vec<usize>>

@@ -182,6 +182,28 @@ impl ScriptStorage {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NotesStorage {
+    pub lines: [String; 8],
+}
+
+impl Default for NotesStorage {
+    fn default() -> Self {
+        Self {
+            lines: [
+                String::new(),
+                String::new(),
+                String::new(),
+                String::new(),
+                String::new(),
+                String::new(),
+                String::new(),
+                String::new(),
+            ],
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct DelayedCommand {
     pub due_at_ms: u64,

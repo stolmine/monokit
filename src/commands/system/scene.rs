@@ -1,10 +1,10 @@
-use crate::types::{PatternStorage, ScriptStorage, Variables};
+use crate::types::{NotesStorage, PatternStorage, ScriptStorage, Variables};
 
 pub fn handle_save<F>(
     parts: &[&str],
     scripts: &ScriptStorage,
     patterns: &PatternStorage,
-    notes: &str,
+    notes: &NotesStorage,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -26,7 +26,7 @@ pub fn handle_load<F>(
     variables: &mut Variables,
     scripts: &mut ScriptStorage,
     patterns: &mut PatternStorage,
-    notes: &mut String,
+    notes: &mut NotesStorage,
     mut output: F,
 ) -> bool
 where

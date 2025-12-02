@@ -127,6 +127,15 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     KeyCode::Char('v') if key.modifiers.contains(KeyModifiers::CONTROL) && app.is_script_page() => {
                         app.paste_line();
                     }
+                    KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) && app.current_page == Page::Notes => {
+                        app.copy_notes_line();
+                    }
+                    KeyCode::Char('x') if key.modifiers.contains(KeyModifiers::CONTROL) && app.current_page == Page::Notes => {
+                        app.cut_notes_line();
+                    }
+                    KeyCode::Char('v') if key.modifiers.contains(KeyModifiers::CONTROL) && app.current_page == Page::Notes => {
+                        app.paste_notes_line();
+                    }
                     KeyCode::Tab => {
                         if app.current_page == Page::Live {
                             app.show_grid_view = !app.show_grid_view;
@@ -288,11 +297,23 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     KeyCode::Down if !is_help && app.is_script_page() => {
                         app.select_line_down();
                     }
+                    KeyCode::Up if !is_help && app.current_page == Page::Notes => {
+                        app.select_notes_line_up();
+                    }
+                    KeyCode::Down if !is_help && app.current_page == Page::Notes => {
+                        app.select_notes_line_down();
+                    }
                     KeyCode::Char('d') if !is_help && app.is_script_page() && key.modifiers.contains(KeyModifiers::CONTROL) => {
                         app.duplicate_line();
                     }
+                    KeyCode::Char('d') if !is_help && app.current_page == Page::Notes && key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        app.duplicate_notes_line();
+                    }
                     KeyCode::Enter if !is_help && app.is_script_page() => {
                         app.save_line();
+                    }
+                    KeyCode::Enter if !is_help && app.current_page == Page::Notes => {
+                        app.save_notes_line();
                     }
                     KeyCode::Enter if !is_help && app.current_page != Page::Pattern => {
                         app.execute_command();
@@ -303,6 +324,9 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     KeyCode::Char('k') if !is_help && app.is_script_page() && key.modifiers.contains(KeyModifiers::CONTROL) => {
                         app.delete_entire_line();
                     }
+                    KeyCode::Char('k') if !is_help && app.current_page == Page::Notes && key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        app.delete_notes_line();
+                    }
                     KeyCode::Backspace if !is_help && app.current_page != Page::Pattern && key.modifiers.contains(KeyModifiers::SHIFT) => {
                         app.clear_input();
                     }
@@ -311,21 +335,6 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     }
                     KeyCode::Char('u') if !is_help && app.current_page != Page::Pattern && app.current_page != Page::Notes && key.modifiers.contains(KeyModifiers::CONTROL) => {
                         app.delete_to_start();
-                    }
-                    KeyCode::Char(c) if !is_help && app.current_page == Page::Notes => {
-                        app.insert_notes_char(c);
-                    }
-                    KeyCode::Backspace if !is_help && app.current_page == Page::Notes => {
-                        app.delete_notes_char();
-                    }
-                    KeyCode::Enter if !is_help && app.current_page == Page::Notes => {
-                        app.insert_notes_newline();
-                    }
-                    KeyCode::Left if !is_help && app.current_page == Page::Notes => {
-                        app.move_notes_cursor_left();
-                    }
-                    KeyCode::Right if !is_help && app.current_page == Page::Notes => {
-                        app.move_notes_cursor_right();
                     }
                     KeyCode::Char(c) if !is_help && app.current_page != Page::Pattern => {
                         app.insert_char(c);

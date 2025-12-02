@@ -1072,22 +1072,24 @@ pub fn handle_activity<F>(
 
 pub fn handle_grid<F>(
     parts: &[&str],
-    show_grid_view: &mut bool,
+    show_grid: &mut bool,
     mut output: F,
 ) where
     F: FnMut(String),
 {
     if parts.len() == 1 {
-        output(format!("GRID: {}", if *show_grid_view { 1 } else { 0 }));
+        output(format!("GRID: {}", if *show_grid { 1 } else { 0 }));
     } else {
         let value = parts[1];
         match value {
             "0" => {
-                *show_grid_view = false;
+                *show_grid = false;
+                let _ = config::save_show_grid(*show_grid);
                 output("GRID: OFF".to_string());
             }
             "1" => {
-                *show_grid_view = true;
+                *show_grid = true;
+                let _ = config::save_show_grid(*show_grid);
                 output("GRID: ON".to_string());
             }
             _ => {

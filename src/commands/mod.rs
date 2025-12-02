@@ -61,6 +61,7 @@ pub fn process_command<F>(
     show_meters_grid: &mut bool,
     show_spectrum: &mut bool,
     show_activity: &mut bool,
+    show_grid: &mut bool,
     show_grid_view: &mut bool,
     show_seq_highlight: &mut bool,
     grid_mode: &mut u8,
@@ -787,7 +788,7 @@ where
             misc::handle_activity(&parts, show_activity, output);
         }
         "GRID" => {
-            misc::handle_grid(&parts, show_grid_view, output);
+            misc::handle_grid(&parts, show_grid, output);
         }
         "GRID.DEF" => {
             misc::handle_grid_def(&parts, show_grid_view, output);

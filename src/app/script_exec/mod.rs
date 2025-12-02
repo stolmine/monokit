@@ -66,6 +66,7 @@ impl App {
             &mut self.show_meters_grid,
             &mut self.show_spectrum,
             &mut self.show_activity,
+            &mut self.show_grid,
             &mut self.show_grid_view,
             &mut self.show_seq_highlight,
             &mut self.grid_mode,

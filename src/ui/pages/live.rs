@@ -54,11 +54,14 @@ fn render_grid_view(app: &crate::App, _width: usize, height: usize) -> Paragraph
     let content_height = height.saturating_sub(2);
 
     // Calculate total content height based on enabled elements
-    // 6 grid rows (always shown)
+    // 6 grid rows (if show_grid)
     // + 1 meter label (if grid meters shown)
     // + 2 spectrum rows (if spectrum shown)
     // + 1 spectrum label (if spectrum shown)
-    let mut total_content_height = 6;
+    let mut total_content_height = 0;
+    if app.show_grid {
+        total_content_height += 6;
+    }
     if app.show_meters_grid {
         total_content_height += 1;
     }
@@ -80,44 +83,46 @@ fn render_grid_view(app: &crate::App, _width: usize, height: usize) -> Paragraph
     // Render 6 rows of parameter grid with optional 6-row meters on right
     let meter_rows = 6;
 
-    for row in 0..6 {
-        let mut spans = vec![];
+    if app.show_grid {
+        for row in 0..6 {
+            let mut spans = vec![];
 
-        // Render grid icons or labels based on grid_mode
-        for col in 0..8 {
-            let idx = row * 8 + col;
-            let activity = app.param_activity.timestamps[idx];
-            let color = app.theme.activity_color(activity, false, app.activity_hold_ms);
+            // Render grid icons or labels based on grid_mode
+            for col in 0..8 {
+                let idx = row * 8 + col;
+                let activity = app.param_activity.timestamps[idx];
+                let color = app.theme.activity_color(activity, false, app.activity_hold_ms);
 
-            if app.grid_mode == 1 {
-                // Icon mode
-                let icon = GRID_ICONS[idx];
-                spans.push(Span::styled(format!("{}", icon), Style::default().fg(color)));
-            } else {
-                // Label mode
-                let label = GRID_LABELS[idx];
-                spans.push(Span::styled(format!("{}", label), Style::default().fg(color)));
+                if app.grid_mode == 1 {
+                    // Icon mode
+                    let icon = GRID_ICONS[idx];
+                    spans.push(Span::styled(format!("{}", icon), Style::default().fg(color)));
+                } else {
+                    // Label mode
+                    let label = GRID_LABELS[idx];
+                    spans.push(Span::styled(format!("{}", label), Style::default().fg(color)));
+                }
+
+                if col < 7 {
+                    spans.push(Span::raw(icon_spacing));
+                }
             }
 
-            if col < 7 {
-                spans.push(Span::raw(icon_spacing));
+            if app.show_meters_grid {
+                // Space before meters
+                spans.push(Span::raw("  "));
+
+                // Add 2-char wide L/R meters (full height, matching grid)
+                let (l_char, l_color) = get_meter_char_and_color_scaled(app.meter_data.peak_l, row, meter_rows, app.meter_data.clip_l, &app.theme);
+                let (r_char, r_color) = get_meter_char_and_color_scaled(app.meter_data.peak_r, row, meter_rows, app.meter_data.clip_r, &app.theme);
+
+                spans.push(Span::styled(format!("{}{}", l_char, l_char), Style::default().fg(l_color)));
+                spans.push(Span::raw(" "));
+                spans.push(Span::styled(format!("{}{}", r_char, r_char), Style::default().fg(r_color)));
             }
+
+            lines.push(Line::from(spans).alignment(Alignment::Center));
         }
-
-        if app.show_meters_grid {
-            // Space before meters
-            spans.push(Span::raw("  "));
-
-            // Add 2-char wide L/R meters (full height, matching grid)
-            let (l_char, l_color) = get_meter_char_and_color_scaled(app.meter_data.peak_l, row, meter_rows, app.meter_data.clip_l, &app.theme);
-            let (r_char, r_color) = get_meter_char_and_color_scaled(app.meter_data.peak_r, row, meter_rows, app.meter_data.clip_r, &app.theme);
-
-            spans.push(Span::styled(format!("{}{}", l_char, l_char), Style::default().fg(l_color)));
-            spans.push(Span::raw(" "));
-            spans.push(Span::styled(format!("{}{}", r_char, r_char), Style::default().fg(r_color)));
-        }
-
-        lines.push(Line::from(spans).alignment(Alignment::Center));
     }
 
     // Meter labels row (only if grid meters are shown)

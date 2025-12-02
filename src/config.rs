@@ -36,6 +36,8 @@ pub struct DisplayConfig {
     pub show_spectrum: bool,
     #[serde(default = "default_show_activity")]
     pub show_activity: bool,
+    #[serde(default = "default_show_grid")]
+    pub show_grid: bool,
     #[serde(default)]
     pub show_grid_view: bool,
     #[serde(default = "default_show_seq_highlight")]
@@ -115,6 +117,10 @@ fn default_show_activity() -> bool {
     true
 }
 
+fn default_show_grid() -> bool {
+    true
+}
+
 fn default_show_bpm() -> bool {
     true
 }
@@ -156,6 +162,7 @@ impl Default for DisplayConfig {
             show_meters_grid: default_show_meters(),
             show_spectrum: default_show_spectrum(),
             show_activity: default_show_activity(),
+            show_grid: default_show_grid(),
             show_grid_view: false,
             show_seq_highlight: default_show_seq_highlight(),
             show_conditional_highlight: default_show_conditional_highlight(),
@@ -343,6 +350,13 @@ pub fn save_show_spectrum(enabled: bool) -> Result<()> {
 pub fn save_show_activity(enabled: bool) -> Result<()> {
     let mut config = load_config()?;
     config.display.show_activity = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_show_grid(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.show_grid = enabled;
     save_config(&config)?;
     Ok(())
 }

@@ -226,7 +226,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "SCRIPT" => {
+        "SCRIPT" | "$" => {
             if argc != 1 {
                 return Err(anyhow::anyhow!("SCRIPT takes exactly 1 argument"));
             }

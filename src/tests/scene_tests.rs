@@ -25,6 +25,7 @@ fn test_scene_serialization_roundtrip() {
             index: 0,
         }],
         pattern_working: 0,
+        notes: String::new(),
     };
 
     let json = serde_json::to_string(&scene).unwrap();
@@ -58,7 +59,7 @@ fn test_scene_from_app_state() {
     patterns.patterns[0].index = 1;
     patterns.working = 2;
 
-    let scene = Scene::from_app_state(&scripts, &patterns);
+    let scene = Scene::from_app_state(&scripts, &patterns, "");
 
     assert_eq!(scene.version, 1);
     assert_eq!(scene.scripts.len(), 10);
@@ -99,12 +100,14 @@ fn test_scene_apply_to_app_state() {
             index: 2,
         }],
         pattern_working: 1,
+        notes: String::new(),
     };
 
     let mut scripts = create_test_scripts();
     let mut patterns = create_test_patterns();
+    let mut notes = String::new();
 
-    scene.apply_to_app_state(&mut scripts, &mut patterns);
+    scene.apply_to_app_state(&mut scripts, &mut patterns, &mut notes);
 
     assert_eq!(scripts.scripts[0].lines[0], "A 10");
     assert_eq!(scripts.scripts[0].lines[1], "B 20");

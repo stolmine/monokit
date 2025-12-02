@@ -55,6 +55,9 @@ pub struct App {
     pub spectrum_data: SpectrumData,
     pub cpu_data: CpuData,
     pub show_cpu: bool,
+    pub limiter_enabled: bool,
+    pub notes: String,
+    pub notes_cursor: usize,
 }
 
 impl App {
@@ -104,6 +107,9 @@ impl App {
             spectrum_data: SpectrumData::default(),
             cpu_data: CpuData::default(),
             show_cpu: false,
+            limiter_enabled: true,
+            notes: String::new(),
+            notes_cursor: 0,
         }
     }
 
@@ -221,6 +227,8 @@ impl App {
             &mut self.debug_level,
             &mut self.activity_hold_ms,
             &mut self.show_cpu,
+            &mut self.limiter_enabled,
+            &mut self.notes,
             command,
             |msg| {
                 output_messages.push(msg);

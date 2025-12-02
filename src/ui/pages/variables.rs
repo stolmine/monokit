@@ -51,8 +51,6 @@ pub fn render_variables_page(app: &crate::App) -> Paragraph<'static> {
     ];
     lines.push(Line::from(row4_spans));
 
-    lines.push(Line::from(""));
-
     let locals_label = Span::styled(" LOCALS (J, K)", Style::default().fg(app.theme.label));
     lines.push(Line::from(locals_label));
 

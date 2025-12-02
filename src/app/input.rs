@@ -231,4 +231,44 @@ impl App {
             }
         }
     }
+
+    pub fn insert_notes_char(&mut self, c: char) {
+        let byte_pos = self
+            .notes
+            .char_indices()
+            .nth(self.notes_cursor)
+            .map(|(i, _)| i)
+            .unwrap_or(self.notes.len());
+        self.notes.insert(byte_pos, c);
+        self.notes_cursor += 1;
+    }
+
+    pub fn delete_notes_char(&mut self) {
+        if self.notes_cursor > 0 {
+            let byte_pos = self
+                .notes
+                .char_indices()
+                .nth(self.notes_cursor - 1)
+                .map(|(i, _)| i)
+                .unwrap_or(0);
+            self.notes.remove(byte_pos);
+            self.notes_cursor -= 1;
+        }
+    }
+
+    pub fn insert_notes_newline(&mut self) {
+        self.insert_notes_char('\n');
+    }
+
+    pub fn move_notes_cursor_left(&mut self) {
+        if self.notes_cursor > 0 {
+            self.notes_cursor -= 1;
+        }
+    }
+
+    pub fn move_notes_cursor_right(&mut self) {
+        if self.notes_cursor < self.notes.chars().count() {
+            self.notes_cursor += 1;
+        }
+    }
 }

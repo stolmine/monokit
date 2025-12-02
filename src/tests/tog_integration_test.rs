@@ -20,6 +20,8 @@ fn test_tog_command_integration() {
     let mut debug_level = 0u8;
     let mut activity_hold_ms = 200.0f32;
     let mut show_cpu = false;
+    let mut limiter_enabled = true;
+    let mut notes = String::new();
     let script_index = 0;
 
     let mut outputs = Vec::new();
@@ -44,6 +46,8 @@ fn test_tog_command_integration() {
         &mut debug_level,
         &mut activity_hold_ms,
         &mut show_cpu,
+        &mut limiter_enabled,
+        &mut notes,
         "TOG 100 200",
         output,
     );
@@ -70,6 +74,8 @@ fn test_tog_command_integration() {
         &mut debug_level,
         &mut activity_hold_ms,
         &mut show_cpu,
+        &mut limiter_enabled,
+        &mut notes,
         "TOG 100 200",
         output,
     );
@@ -96,6 +102,8 @@ fn test_tog_command_integration() {
         &mut debug_level,
         &mut activity_hold_ms,
         &mut show_cpu,
+        &mut limiter_enabled,
+        &mut notes,
         "TOG 100 200",
         output,
     );
@@ -119,6 +127,8 @@ fn test_tog_with_variable_assignment() {
     let mut debug_level = 0u8;
     let mut activity_hold_ms = 200.0f32;
     let mut show_cpu = false;
+    let mut limiter_enabled = true;
+    let mut notes = String::new();
     let script_index = 0;
 
     let mut outputs = Vec::new();
@@ -143,6 +153,8 @@ fn test_tog_with_variable_assignment() {
         &mut debug_level,
         &mut activity_hold_ms,
         &mut show_cpu,
+        &mut limiter_enabled,
+        &mut notes,
         "A TOG 0 1",
         output,
     );
@@ -168,6 +180,8 @@ fn test_tog_with_variable_assignment() {
         &mut debug_level,
         &mut activity_hold_ms,
         &mut show_cpu,
+        &mut limiter_enabled,
+        &mut notes,
         "A TOG 0 1",
         output,
     );
@@ -193,6 +207,8 @@ fn test_tog_with_variable_assignment() {
         &mut debug_level,
         &mut activity_hold_ms,
         &mut show_cpu,
+        &mut limiter_enabled,
+        &mut notes,
         "A TOG 0 1",
         output,
     );

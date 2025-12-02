@@ -33,6 +33,8 @@ fn test_debug_level_0_blocks_param_output() {
     let mut debug_level = 0u8;
     let mut activity_hold_ms = 200.0f32;
     let mut show_cpu = false;
+    let mut limiter_enabled = true;
+    let mut notes = String::new();
     let mut output_messages = Vec::new();
 
     let result = process_command(
@@ -52,6 +54,8 @@ fn test_debug_level_0_blocks_param_output() {
         &mut debug_level,
         &mut activity_hold_ms,
         &mut show_cpu,
+        &mut limiter_enabled,
+        &mut notes,
         "PF 440",
         |msg| {
             output_messages.push(msg);
@@ -79,6 +83,8 @@ fn test_debug_level_0_blocks_trigger_output() {
     let mut debug_level = 0u8;
     let mut activity_hold_ms = 200.0f32;
     let mut show_cpu = false;
+    let mut limiter_enabled = true;
+    let mut notes = String::new();
     let mut output_messages = Vec::new();
 
     let result = process_command(
@@ -98,6 +104,8 @@ fn test_debug_level_0_blocks_trigger_output() {
         &mut debug_level,
         &mut activity_hold_ms,
         &mut show_cpu,
+        &mut limiter_enabled,
+        &mut notes,
         "TR",
         |msg| {
             output_messages.push(msg);
@@ -125,6 +133,8 @@ fn test_debug_level_0_blocks_print() {
     let mut debug_level = 0u8;
     let mut activity_hold_ms = 200.0f32;
     let mut show_cpu = false;
+    let mut limiter_enabled = true;
+    let mut notes = String::new();
     let mut output_messages = Vec::new();
 
     let result = process_command(
@@ -144,6 +154,8 @@ fn test_debug_level_0_blocks_print() {
         &mut debug_level,
         &mut activity_hold_ms,
         &mut show_cpu,
+        &mut limiter_enabled,
+        &mut notes,
         "PRINT 42",
         |msg| {
             output_messages.push(msg);
@@ -171,6 +183,8 @@ fn test_debug_level_1_allows_print() {
     let mut debug_level = 1u8;
     let mut activity_hold_ms = 200.0f32;
     let mut show_cpu = false;
+    let mut limiter_enabled = true;
+    let mut notes = String::new();
     let mut output_messages = Vec::new();
 
     let result = process_command(
@@ -190,6 +204,8 @@ fn test_debug_level_1_allows_print() {
         &mut debug_level,
         &mut activity_hold_ms,
         &mut show_cpu,
+        &mut limiter_enabled,
+        &mut notes,
         "PRINT 42",
         |msg| {
             output_messages.push(msg);
@@ -218,6 +234,8 @@ fn test_debug_level_1_blocks_params() {
     let mut debug_level = 1u8;
     let mut activity_hold_ms = 200.0f32;
     let mut show_cpu = false;
+    let mut limiter_enabled = true;
+    let mut notes = String::new();
     let mut output_messages = Vec::new();
 
     let result = process_command(
@@ -237,6 +255,8 @@ fn test_debug_level_1_blocks_params() {
         &mut debug_level,
         &mut activity_hold_ms,
         &mut show_cpu,
+        &mut limiter_enabled,
+        &mut notes,
         "PF 440",
         |msg| {
             output_messages.push(msg);
@@ -264,6 +284,8 @@ fn test_debug_level_1_allows_metro_status() {
     let mut debug_level = 1u8;
     let mut activity_hold_ms = 200.0f32;
     let mut show_cpu = false;
+    let mut limiter_enabled = true;
+    let mut notes = String::new();
     let mut output_messages = Vec::new();
 
     let result = process_command(
@@ -283,6 +305,8 @@ fn test_debug_level_1_allows_metro_status() {
         &mut debug_level,
         &mut activity_hold_ms,
         &mut show_cpu,
+        &mut limiter_enabled,
+        &mut notes,
         "M",
         |msg| {
             output_messages.push(msg);
@@ -311,6 +335,8 @@ fn test_debug_level_2_allows_all() {
     let mut debug_level = 2u8;
     let mut activity_hold_ms = 200.0f32;
     let mut show_cpu = false;
+    let mut limiter_enabled = true;
+    let mut notes = String::new();
     let mut output_messages = Vec::new();
 
     let result = process_command(
@@ -330,6 +356,8 @@ fn test_debug_level_2_allows_all() {
         &mut debug_level,
         &mut activity_hold_ms,
         &mut show_cpu,
+        &mut limiter_enabled,
+        &mut notes,
         "PF 440",
         |msg| {
             output_messages.push(msg);
@@ -359,6 +387,8 @@ fn test_debug_level_2_allows_all() {
         &mut debug_level,
         &mut activity_hold_ms,
         &mut show_cpu,
+        &mut limiter_enabled,
+        &mut notes,
         "PRINT 42",
         |msg| {
             output_messages.push(msg);
@@ -388,6 +418,8 @@ fn test_debug_level_2_allows_all() {
         &mut debug_level,
         &mut activity_hold_ms,
         &mut show_cpu,
+        &mut limiter_enabled,
+        &mut notes,
         "M",
         |msg| {
             output_messages.push(msg);

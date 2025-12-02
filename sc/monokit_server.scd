@@ -82,6 +82,7 @@ s.waitForBoot {
             ps_grain = 20, // Pitch shift grain size ms (5-100)
             ps_mix = 0,   // Pitch shift mix (0-16383)
             ps_targ = 0,  // Pitch shift target (0=main, 1=repeat)
+            limit = 1,    // Limiter enabled (0-1)
             volume = 1,
             gate = 0,
             slew_time = 0,
@@ -478,6 +479,12 @@ s.waitForBoot {
             sigR,
             (sigR * (1 - reverbWetSmooth)) + (reverbedR * reverbWetSmooth),
             sigR + (reverbedR * Select.kr(rtail.clip(0, 2).round, [reverbWetSmooth, 1, 1]))
+        ]);
+
+        // Limiter at end of chain (before output)
+        #sigL, sigR = Select.ar(limit.clip(0, 1).round, [
+            [sigL, sigR],
+            Limiter.ar([sigL, sigR], 1.0, 0.01)
         ]);
 
         // Send peak/RMS at 20Hz to Rust meter thread

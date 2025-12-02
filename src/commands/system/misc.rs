@@ -513,3 +513,44 @@ pub fn handle_cpu<F>(
         }
     }
 }
+
+pub fn handle_limit<F>(
+    parts: &[&str],
+    limiter_enabled: &mut bool,
+    metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("LIMITER: {}", if *limiter_enabled { 1 } else { 0 }));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *limiter_enabled = false;
+                metro_tx
+                    .send(MetroCommand::SendParam("limit".to_string(), OscType::Int(0)))
+                    .context("Failed to send limiter param")?;
+                if debug_level >= 2 {
+                    output("LIMITER: OFF".to_string());
+                }
+            }
+            "1" => {
+                *limiter_enabled = true;
+                metro_tx
+                    .send(MetroCommand::SendParam("limit".to_string(), OscType::Int(1)))
+                    .context("Failed to send limiter param")?;
+                if debug_level >= 2 {
+                    output("LIMITER: ON".to_string());
+                }
+            }
+            _ => {
+                output("ERROR: LIMIT TAKES 0 (OFF) OR 1 (ON)".to_string());
+            }
+        }
+    }
+    Ok(())
+}

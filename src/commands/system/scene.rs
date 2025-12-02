@@ -4,6 +4,7 @@ pub fn handle_save<F>(
     parts: &[&str],
     scripts: &ScriptStorage,
     patterns: &PatternStorage,
+    notes: &str,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -13,7 +14,7 @@ pub fn handle_save<F>(
         return;
     }
     let name = parts[1..].join(" ");
-    let scene = crate::scene::Scene::from_app_state(scripts, patterns);
+    let scene = crate::scene::Scene::from_app_state(scripts, patterns, notes);
     match crate::scene::save_scene(&name, &scene) {
         Ok(()) => output(format!("SAVED SCENE: {}", name)),
         Err(e) => output(format!("ERROR: {:?}", e)),
@@ -25,6 +26,7 @@ pub fn handle_load<F>(
     variables: &mut Variables,
     scripts: &mut ScriptStorage,
     patterns: &mut PatternStorage,
+    notes: &mut String,
     mut output: F,
 ) -> bool
 where
@@ -37,7 +39,7 @@ where
     let name = parts[1..].join(" ");
     match crate::scene::load_scene(&name) {
         Ok(scene) => {
-            scene.apply_to_app_state(scripts, patterns);
+            scene.apply_to_app_state(scripts, patterns, notes);
             *variables = crate::types::Variables::default();
             output(format!("LOADED SCENE: {}", name));
             true

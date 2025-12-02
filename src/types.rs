@@ -286,10 +286,11 @@ pub enum Page {
     Init,
     Pattern,
     Variables,
+    Notes,
     Help,
 }
 
-pub const NAVIGABLE_PAGES: [Page; 13] = [
+pub const NAVIGABLE_PAGES: [Page; 14] = [
     Page::Live,
     Page::Script1,
     Page::Script2,
@@ -303,6 +304,7 @@ pub const NAVIGABLE_PAGES: [Page; 13] = [
     Page::Init,
     Page::Pattern,
     Page::Variables,
+    Page::Notes,
 ];
 
 impl Page {
@@ -321,6 +323,7 @@ impl Page {
             Page::Init => "I",
             Page::Pattern => "P",
             Page::Variables => "V",
+            Page::Notes => "N",
             Page::Help => "HELP",
         }
     }

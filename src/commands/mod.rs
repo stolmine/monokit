@@ -46,6 +46,8 @@ pub fn process_command<F>(
     debug_level: &mut u8,
     activity_hold_ms: &mut f32,
     show_cpu: &mut bool,
+    limiter_enabled: &mut bool,
+    notes: &mut String,
     input: &str,
     mut output: F,
 ) -> Result<Vec<usize>>
@@ -633,14 +635,14 @@ where
         "MAP" => {
             math_ops::handle_map(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
-        "SCRIPT" => {
+        "SCRIPT" | "$" => {
             return misc::handle_script(&parts, variables, patterns, counters, scripts, script_index, scale);
         }
         "SAVE" => {
-            scene_cmds::handle_save(&parts, scripts, patterns, output);
+            scene_cmds::handle_save(&parts, scripts, patterns, notes, output);
         }
         "LOAD" => {
-            if scene_cmds::handle_load(&parts, variables, scripts, patterns, output) {
+            if scene_cmds::handle_load(&parts, variables, scripts, patterns, notes, output) {
                 return Ok(vec![9]);
             }
         }
@@ -685,6 +687,9 @@ where
         }
         "CPU" => {
             misc::handle_cpu(&parts, show_cpu, output);
+        }
+        "LIMIT" => {
+            misc::handle_limit(&parts, limiter_enabled, metro_tx, *debug_level, output)?;
         }
         "FLASH" => {
             if parts.len() < 2 {

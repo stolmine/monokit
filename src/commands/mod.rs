@@ -789,6 +789,9 @@ where
         "GRID" => {
             misc::handle_grid(&parts, show_grid_view, output);
         }
+        "GRID.DEF" => {
+            misc::handle_grid_def(&parts, show_grid_view, output);
+        }
         "GRID.MODE" => {
             misc::handle_grid_mode(&parts, grid_mode, output);
         }

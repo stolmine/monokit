@@ -1084,16 +1084,43 @@ pub fn handle_grid<F>(
         match value {
             "0" => {
                 *show_grid_view = false;
-                let _ = config::save_show_grid_view(*show_grid_view);
                 output("GRID: OFF".to_string());
             }
             "1" => {
                 *show_grid_view = true;
-                let _ = config::save_show_grid_view(*show_grid_view);
                 output("GRID: ON".to_string());
             }
             _ => {
-                output("ERROR: GRID TAKES 0 (OFF) OR 1 (ON)".to_string());
+                output("ERROR: GRID TAKES 0-1".to_string());
+            }
+        }
+    }
+}
+
+pub fn handle_grid_def<F>(
+    parts: &[&str],
+    show_grid_view: &mut bool,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("GRID.DEF: {}", if *show_grid_view { 1 } else { 0 }));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *show_grid_view = false;
+                let _ = config::save_show_grid_view(*show_grid_view);
+                output("GRID.DEF: 0 (REPL)".to_string());
+            }
+            "1" => {
+                *show_grid_view = true;
+                let _ = config::save_show_grid_view(*show_grid_view);
+                output("GRID.DEF: 1 (GRID)".to_string());
+            }
+            _ => {
+                output("ERROR: GRID.DEF TAKES 0-1".to_string());
             }
         }
     }

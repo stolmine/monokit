@@ -708,16 +708,22 @@ where
             misc::handle_limit(&parts, limiter_enabled, metro_tx, *debug_level, output)?;
         }
         "SCOPE.TIME" => {
-            misc::handle_scope_time(&parts, scope_timespan_ms, metro_tx, *debug_level, output)?;
+            misc::handle_scope_time(&parts, scope_timespan_ms, metro_tx, variables, patterns, counters, scripts, script_index, scale, *debug_level, output)?;
         }
         "SCOPE.CLR" => {
-            misc::handle_scope_clr(&parts, scope_color_mode, *debug_level, output);
+            misc::handle_scope_clr(&parts, scope_color_mode, variables, patterns, counters, scripts, script_index, scale, *debug_level, output);
         }
         "SCOPE.MODE" => {
-            misc::handle_scope_mode(&parts, scope_display_mode, *debug_level, output);
+            misc::handle_scope_mode(&parts, scope_display_mode, variables, patterns, counters, scripts, script_index, scale, *debug_level, output);
         }
         "SCOPE.UNI" => {
-            misc::handle_scope_uni(&parts, scope_unipolar, *debug_level, output);
+            misc::handle_scope_uni(&parts, scope_unipolar, variables, patterns, counters, scripts, script_index, scale, *debug_level, output);
+        }
+        "NOTE" => {
+            misc::handle_note(&parts, notes, *debug_level, output);
+        }
+        "NOTE.CLR" => {
+            misc::handle_note_clr(notes, *debug_level, output);
         }
         "FLASH" => {
             if parts.len() < 2 {

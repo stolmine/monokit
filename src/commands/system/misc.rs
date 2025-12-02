@@ -637,6 +637,12 @@ pub fn handle_scope_time<F>(
     parts: &[&str],
     scope_timespan_ms: &mut u32,
     metro_tx: &Sender<MetroCommand>,
+    variables: &Variables,
+    patterns: &mut PatternStorage,
+    counters: &mut Counters,
+    scripts: &ScriptStorage,
+    script_index: usize,
+    scale: &ScaleState,
     debug_level: u8,
     mut output: F,
 ) -> Result<()>
@@ -646,9 +652,11 @@ where
     if parts.len() == 1 {
         output(format!("SCOPE.TIME: {}MS", scope_timespan_ms));
     } else {
-        let value: u32 = parts[1]
-            .parse()
-            .context("Failed to parse timespan value")?;
+        let value = if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+            val as u32
+        } else {
+            parts[1].parse().context("Failed to parse timespan value")?
+        };
 
         if value < 5 || value > 500 {
             output("ERROR: SCOPE.TIME MUST BE 5-500 MS".to_string());
@@ -671,6 +679,12 @@ where
 pub fn handle_scope_clr<F>(
     parts: &[&str],
     scope_color_mode: &mut u8,
+    variables: &Variables,
+    patterns: &mut PatternStorage,
+    counters: &mut Counters,
+    scripts: &ScriptStorage,
+    script_index: usize,
+    scale: &ScaleState,
     debug_level: u8,
     mut output: F,
 ) where
@@ -680,31 +694,44 @@ pub fn handle_scope_clr<F>(
         let mode_name = match *scope_color_mode {
             1 => "ERROR",
             2 => "FOREGROUND",
+            3 => "ACCENT",
             _ => "SUCCESS",
         };
         output(format!("SCOPE.CLR: {} ({})", scope_color_mode, mode_name));
     } else {
-        match parts[1] {
-            "0" => {
+        let value = if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+            val
+        } else {
+            parts[1].parse().unwrap_or(-1)
+        };
+
+        match value {
+            0 => {
                 *scope_color_mode = 0;
                 if debug_level >= 2 {
                     output("SCOPE.CLR: 0 (SUCCESS)".to_string());
                 }
             }
-            "1" => {
+            1 => {
                 *scope_color_mode = 1;
                 if debug_level >= 2 {
                     output("SCOPE.CLR: 1 (ERROR)".to_string());
                 }
             }
-            "2" => {
+            2 => {
                 *scope_color_mode = 2;
                 if debug_level >= 2 {
                     output("SCOPE.CLR: 2 (FOREGROUND)".to_string());
                 }
             }
+            3 => {
+                *scope_color_mode = 3;
+                if debug_level >= 2 {
+                    output("SCOPE.CLR: 3 (ACCENT)".to_string());
+                }
+            }
             _ => {
-                output("ERROR: SCOPE.CLR TAKES 0 (SUCCESS), 1 (ERROR), OR 2 (FOREGROUND)".to_string());
+                output("ERROR: SCOPE.CLR TAKES 0 (SUCCESS), 1 (ERROR), 2 (FOREGROUND), OR 3 (ACCENT)".to_string());
             }
         }
     }
@@ -713,6 +740,12 @@ pub fn handle_scope_clr<F>(
 pub fn handle_scope_mode<F>(
     parts: &[&str],
     scope_display_mode: &mut u8,
+    variables: &Variables,
+    patterns: &mut PatternStorage,
+    counters: &mut Counters,
+    scripts: &ScriptStorage,
+    script_index: usize,
+    scale: &ScaleState,
     debug_level: u8,
     mut output: F,
 ) where
@@ -728,24 +761,30 @@ pub fn handle_scope_mode<F>(
         };
         output(format!("SCOPE.MODE: {} ({})", scope_display_mode, mode_name));
     } else {
-        match parts[1] {
-            "0" => {
+        let value = if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+            val
+        } else {
+            parts[1].parse().unwrap_or(-1)
+        };
+
+        match value {
+            0 => {
                 *scope_display_mode = 0;
                 if debug_level >= 2 { output("SCOPE.MODE: 0 (BRAILLE)".to_string()); }
             }
-            "1" => {
+            1 => {
                 *scope_display_mode = 1;
                 if debug_level >= 2 { output("SCOPE.MODE: 1 (BLOCK)".to_string()); }
             }
-            "2" => {
+            2 => {
                 *scope_display_mode = 2;
                 if debug_level >= 2 { output("SCOPE.MODE: 2 (LINE)".to_string()); }
             }
-            "3" => {
+            3 => {
                 *scope_display_mode = 3;
                 if debug_level >= 2 { output("SCOPE.MODE: 3 (DOT)".to_string()); }
             }
-            "4" => {
+            4 => {
                 *scope_display_mode = 4;
                 if debug_level >= 2 { output("SCOPE.MODE: 4 (QUADRANT)".to_string()); }
             }
@@ -759,6 +798,12 @@ pub fn handle_scope_mode<F>(
 pub fn handle_scope_uni<F>(
     parts: &[&str],
     scope_unipolar: &mut bool,
+    variables: &Variables,
+    patterns: &mut PatternStorage,
+    counters: &mut Counters,
+    scripts: &ScriptStorage,
+    script_index: usize,
+    scale: &ScaleState,
     debug_level: u8,
     mut output: F,
 ) where
@@ -767,12 +812,18 @@ pub fn handle_scope_uni<F>(
     if parts.len() == 1 {
         output(format!("SCOPE.UNI: {}", if *scope_unipolar { 1 } else { 0 }));
     } else {
-        match parts[1] {
-            "0" => {
+        let value = if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+            val
+        } else {
+            parts[1].parse().unwrap_or(-1)
+        };
+
+        match value {
+            0 => {
                 *scope_unipolar = false;
                 if debug_level >= 2 { output("SCOPE.UNI: 0 (BIPOLAR)".to_string()); }
             }
-            "1" => {
+            1 => {
                 *scope_unipolar = true;
                 if debug_level >= 2 { output("SCOPE.UNI: 1 (UNIPOLAR)".to_string()); }
             }
@@ -780,5 +831,64 @@ pub fn handle_scope_uni<F>(
                 output("ERROR: SCOPE.UNI TAKES 0 (BIPOLAR) OR 1 (UNIPOLAR)".to_string());
             }
         }
+    }
+}
+
+pub fn handle_note<F>(
+    parts: &[&str],
+    notes: &mut crate::types::NotesStorage,
+    debug_level: u8,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() < 2 {
+        output("ERROR: NOTE REQUIRES QUOTED TEXT".to_string());
+        return;
+    }
+
+    let joined = parts[1..].join(" ");
+
+    let text = if (joined.starts_with('"') && joined.ends_with('"')) ||
+                  (joined.starts_with('\'') && joined.ends_with('\'')) {
+        if joined.len() < 2 {
+            output("ERROR: NOTE TEXT MUST BE QUOTED".to_string());
+            return;
+        }
+        joined[1..joined.len()-1].to_string()
+    } else {
+        output("ERROR: NOTE TEXT MUST BE QUOTED".to_string());
+        return;
+    };
+
+    let mut found_empty = false;
+    for i in 0..8 {
+        if notes.lines[i].is_empty() {
+            notes.lines[i] = text.clone();
+            found_empty = true;
+            if debug_level >= 2 {
+                output(format!("NOTE ADDED TO LINE {}", i + 1));
+            }
+            break;
+        }
+    }
+
+    if !found_empty {
+        output("ERROR: NOTES PAGE FULL (8 LINES MAX)".to_string());
+    }
+}
+
+pub fn handle_note_clr<F>(
+    notes: &mut crate::types::NotesStorage,
+    debug_level: u8,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    for i in 0..8 {
+        notes.lines[i].clear();
+    }
+    if debug_level >= 2 {
+        output("NOTES CLEARED".to_string());
     }
 }

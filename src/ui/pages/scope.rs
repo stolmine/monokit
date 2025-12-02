@@ -39,6 +39,7 @@ pub fn render_scope_page(app: &crate::App, area: Rect) -> Paragraph<'static> {
     let waveform_color = match app.scope_color_mode {
         1 => app.theme.error,
         2 => app.theme.foreground,
+        3 => app.theme.accent,
         _ => app.theme.success,
     };
 

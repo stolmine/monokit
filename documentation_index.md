@@ -186,15 +186,19 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 - Info displayed on bottom border (TIME, SAMPLES)
 
 **Commands:**
-- `SCOPE.TIME <5-500>` - Set waveform timespan in milliseconds (default 30)
-- `SCOPE.CLR <0|1|2>` - Set waveform color: 0=success, 1=error, 2=foreground
-- `SCOPE.MODE <0-4>` - Set display mode:
+- `SCOPE.TIME <5-500>` - Set waveform timespan in milliseconds (default 30, accepts expressions)
+- `SCOPE.CLR <0-3>` - Set waveform color (accepts expressions):
+  - 0 = success (green)
+  - 1 = error (red)
+  - 2 = foreground
+  - 3 = accent
+- `SCOPE.MODE <0-4>` - Set display mode (accepts expressions):
   - 0 = BRAILLE (2×4 dots, highest resolution)
   - 1 = BLOCK (vertical bars ▁▂▃▄▅▆▇█)
   - 2 = LINE (line drawing ─╱╲)
   - 3 = DOT (scatter plot ●)
   - 4 = QUADRANT (2×2 blocks ▖▗▘▙▚▛▜▝▞▟)
-- `SCOPE.UNI <0|1>` - Unipolar mode: 0=bipolar (±1 range), 1=unipolar (rectified, 2× resolution)
+- `SCOPE.UNI <0|1>` - Unipolar mode: 0=bipolar (±1 range), 1=unipolar (rectified, 2× resolution, accepts expressions)
 
 **Navigation:**
 - `Alt+S` - Jump to Scope page
@@ -1113,15 +1117,23 @@ PS.TARG 0         // Process input signal
   - Works with variables, math operations, pattern operations, etc.
 
 #### Oscilloscope
-- `SCOPE.TIME <5-500>` - Set waveform timespan in milliseconds (default 30)
-- `SCOPE.CLR <0|1|2>` - Set waveform color (0=success, 1=error, 2=foreground)
-- `SCOPE.MODE <0-4>` - Set display mode:
+- `SCOPE.TIME <5-500>` - Set waveform timespan in milliseconds (default 30, accepts expressions)
+- `SCOPE.CLR <0-3>` - Set waveform color (accepts expressions):
+  - 0 = success (green)
+  - 1 = error (red)
+  - 2 = foreground
+  - 3 = accent
+- `SCOPE.MODE <0-4>` - Set display mode (accepts expressions):
   - 0 = BRAILLE (2×4 dots, highest resolution)
   - 1 = BLOCK (vertical bars ▁▂▃▄▅▆▇█)
   - 2 = LINE (line drawing ─╱╲)
   - 3 = DOT (scatter plot ●)
   - 4 = QUADRANT (2×2 blocks ▖▗▘▙▚▛▜▝▞▟)
-- `SCOPE.UNI <0|1>` - Unipolar mode (0=bipolar ±1, 1=unipolar rectified)
+- `SCOPE.UNI <0|1>` - Unipolar mode (0=bipolar ±1, 1=unipolar rectified, accepts expressions)
+
+#### Notes
+- `NOTE "text"` - Append quoted text to Notes page (error if all 8 lines full)
+- `NOTE.CLR` - Clear all notes
 
 #### System
 - `RST` - Reset all parameters to defaults:

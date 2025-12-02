@@ -475,6 +475,22 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
+        "SCOPE.TIME" | "SCOPE.CLR" | "SCOPE.MODE" | "SCOPE.UNI" => {
+            // All scope commands take 0 args (query) or 1+ args (expression)
+            Ok(())
+        }
+        "NOTE" => {
+            if argc < 1 {
+                return Err(anyhow::anyhow!("NOTE requires quoted text"));
+            }
+            Ok(())
+        }
+        "NOTE.CLR" => {
+            if argc > 0 {
+                return Err(anyhow::anyhow!("NOTE.CLR takes no arguments"));
+            }
+            Ok(())
+        }
         _ => {
             Err(anyhow::anyhow!("Unknown command: {}", command))
         }

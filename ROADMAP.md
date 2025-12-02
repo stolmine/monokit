@@ -620,6 +620,18 @@ Real-time amplitude display via bidirectional OSC.
 - [x] Color scheme: secondary normally, error when >= 80%
 - [ ] Peak hold decay visualization (future)
 
+### Phase 5.6: Notes Page [Medium] - COMPLETE (December 2025)
+Dedicated notes page with command-based text entry and scene integration.
+
+- [x] Redesigned to use 8 fixed lines like script pages
+- [x] Line navigation with Up/Down arrows
+- [x] Same editing commands: Ctrl+D/K/C/X/V
+- [x] `NOTE "text"` - Append quoted text to Notes page (error if all 8 lines full)
+- [x] `NOTE.CLR` - Clear all notes
+- [x] Notes saved and loaded with scenes
+- [x] Consistent with script page UX
+- [x] Added to validator for script execution
+
 ### Phase 5.7: Conditional Execution Highlighting [Medium] - COMPLETE (December 2025)
 Show visual feedback when conditionals and control flow commands execute their bodies.
 
@@ -659,10 +671,11 @@ Dedicated oscilloscope page with real-time waveform visualization.
 
 - [x] New Scope page showing 128 samples at 20Hz from SuperCollider
 - [x] Multiple character rendering modes (BRAILLE, BLOCK, LINE, DOT, QUADRANT)
-- [x] `SCOPE.TIME <5-500>` - Set waveform timespan in milliseconds
-- [x] `SCOPE.CLR <0|1|2>` - Set waveform color (success/error/foreground)
-- [x] `SCOPE.MODE <0-4>` - Set display mode
-- [x] `SCOPE.UNI <0|1>` - Toggle unipolar/bipolar display
+- [x] `SCOPE.TIME <5-500>` - Set waveform timespan in milliseconds (accepts expressions)
+- [x] `SCOPE.CLR <0-3>` - Set waveform color: 0=success, 1=error, 2=foreground, 3=accent (accepts expressions)
+- [x] `SCOPE.MODE <0-4>` - Set display mode (accepts expressions)
+- [x] `SCOPE.UNI <0|1>` - Toggle unipolar/bipolar display (accepts expressions)
+- [x] All SCOPE commands now support expressions for dynamic/visualizer control
 - [x] `Alt+S` navigation hotkey
 - [x] Info display on bottom border (TIME, SAMPLES)
 - [x] DC blocking via LeakDC in SuperCollider

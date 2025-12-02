@@ -1,9 +1,26 @@
 use ratatui::{prelude::*, widgets::*};
 use crate::ui::state_highlight::highlight_stateful_operators;
+use crate::ui::search_highlight::highlight_matches_in_line;
+use crate::types::SearchScope;
 
 pub fn render_script_page(app: &crate::App, num: u8) -> Paragraph<'static> {
     let script_index = (num - 1) as usize;
     let script = app.scripts.get_script(script_index);
+
+    let should_highlight_search = app.search_mode && !app.search_query.is_empty();
+    let current_match_line_col = if should_highlight_search && !app.search_matches.is_empty() {
+        let current_match = &app.search_matches[app.search_current_match];
+        if matches!(current_match.scope, SearchScope::Script)
+            && current_match.page == app.current_page
+            && current_match.page_index == script_index
+        {
+            Some((current_match.line_index, current_match.column_start))
+        } else {
+            None
+        }
+    } else {
+        None
+    };
 
     let mut lines = vec![Line::from("")];
 
@@ -13,7 +30,6 @@ pub fn render_script_page(app: &crate::App, num: u8) -> Paragraph<'static> {
 
         if line_content.is_empty() {
             if is_selected {
-                // Show cursor area on empty selected line
                 lines.push(Line::from(vec![
                     Span::styled("  ", Style::default().bg(app.theme.highlight_bg)),
                 ]));
@@ -36,7 +52,36 @@ pub fn render_script_page(app: &crate::App, num: u8) -> Paragraph<'static> {
             };
 
             let mut spans = vec![Span::styled("  ", Style::default().fg(normal_color))];
-            spans.extend(highlighted.to_spans(normal_color, highlight_color));
+
+            if should_highlight_search {
+                let current_col = if current_match_line_col.map(|(l, _)| l) == Some(i) {
+                    current_match_line_col.map(|(_, c)| c)
+                } else {
+                    None
+                };
+
+                let search_segments = highlight_matches_in_line(line_content, &app.search_query, current_col);
+
+                for (segment_text, is_match, is_current) in search_segments {
+                    let segment_highlighted = highlight_stateful_operators(
+                        &segment_text,
+                        script_index,
+                        &app.patterns.toggle_state,
+                    );
+
+                    for segment_span in segment_highlighted.to_spans(normal_color, highlight_color) {
+                        let mut style = segment_span.style;
+                        if is_current {
+                            style = style.bg(app.theme.highlight_bg).fg(app.theme.highlight_fg);
+                        } else if is_match {
+                            style = style.fg(app.theme.accent);
+                        }
+                        spans.push(Span::styled(segment_span.content, style));
+                    }
+                }
+            } else {
+                spans.extend(highlighted.to_spans(normal_color, highlight_color));
+            }
 
             if is_selected {
                 lines.push(Line::from(

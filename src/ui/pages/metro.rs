@@ -1,9 +1,11 @@
 use ratatui::{prelude::*, widgets::*};
 use crate::ui::state_highlight::highlight_stateful_operators;
+use crate::ui::search_highlight::highlight_matches_in_line;
+use crate::types::{Page, SearchScope};
 
 pub fn render_metro_page(app: &crate::App) -> Paragraph<'static> {
     let state = app.metro_state.lock().unwrap();
-    let bpm = 15000.0 / state.interval_ms as f32; // interval is 16th note, so ×4 for quarter note
+    let bpm = 15000.0 / state.interval_ms as f32;
     let status = if state.active { "ON" } else { "OFF" };
     let status_color = if state.active {
         app.theme.success
@@ -15,7 +17,6 @@ pub fn render_metro_page(app: &crate::App) -> Paragraph<'static> {
     let fg = app.theme.foreground;
     let mut text = Vec::new();
 
-    // Single info line: BPM, interval, and status
     text.push(Line::from(vec![
         Span::styled("  M ", Style::default().fg(label_color)),
         Span::styled(format!("{}MS", state.interval_ms), Style::default().fg(fg)),
@@ -25,7 +26,23 @@ pub fn render_metro_page(app: &crate::App) -> Paragraph<'static> {
         Span::styled(status, Style::default().fg(status_color).add_modifier(Modifier::BOLD)),
     ]));
 
-    let metro_script = app.scripts.get_script(8);
+    let should_highlight_search = app.search_mode && !app.search_query.is_empty();
+    let script_index = 8;
+    let current_match_line_col = if should_highlight_search && !app.search_matches.is_empty() {
+        let current_match = &app.search_matches[app.search_current_match];
+        if matches!(current_match.scope, SearchScope::Script)
+            && current_match.page == Page::Metro
+            && current_match.page_index == script_index
+        {
+            Some((current_match.line_index, current_match.column_start))
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    let metro_script = app.scripts.get_script(script_index);
     for i in 0..8 {
         let line_content = &metro_script.lines[i];
         let is_selected = app.selected_line == Some(i);
@@ -43,7 +60,7 @@ pub fn render_metro_page(app: &crate::App) -> Paragraph<'static> {
         } else {
             let highlighted = highlight_stateful_operators(
                 line_content,
-                8,
+                script_index,
                 &app.patterns.toggle_state,
             );
 
@@ -54,7 +71,36 @@ pub fn render_metro_page(app: &crate::App) -> Paragraph<'static> {
             };
 
             let mut spans = vec![Span::raw("  ")];
-            spans.extend(highlighted.to_spans(normal_color, highlight_color));
+
+            if should_highlight_search {
+                let current_col = if current_match_line_col.map(|(l, _)| l) == Some(i) {
+                    current_match_line_col.map(|(_, c)| c)
+                } else {
+                    None
+                };
+
+                let search_segments = highlight_matches_in_line(line_content, &app.search_query, current_col);
+
+                for (segment_text, is_match, is_current) in search_segments {
+                    let segment_highlighted = highlight_stateful_operators(
+                        &segment_text,
+                        script_index,
+                        &app.patterns.toggle_state,
+                    );
+
+                    for segment_span in segment_highlighted.to_spans(normal_color, highlight_color) {
+                        let mut style = segment_span.style;
+                        if is_current {
+                            style = style.bg(app.theme.highlight_bg).fg(app.theme.highlight_fg);
+                        } else if is_match {
+                            style = style.fg(app.theme.accent);
+                        }
+                        spans.push(Span::styled(segment_span.content, style));
+                    }
+                }
+            } else {
+                spans.extend(highlighted.to_spans(normal_color, highlight_color));
+            }
 
             let mut line = Line::from(spans);
             if is_selected {

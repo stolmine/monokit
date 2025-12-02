@@ -427,3 +427,21 @@ pub const GRID_ICONS: [char; 48] = [
     '⊟', '⊠', '≡', '⊕', '⫰', '⧫', '⧪', '⬡',
     '⬢', '⬣', '▮', '⬌', '⟿', '✱', '◉', '⊙',
 ];
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SearchScope {
+    Help,
+    Script,
+}
+
+#[derive(Debug, Clone)]
+pub struct SearchMatch {
+    pub scope: SearchScope,
+    pub page: Page,
+    pub page_index: usize,
+    pub line_index: usize,
+    pub column_start: usize,
+    pub column_end: usize,
+    pub matched_text: String,
+    pub context: String,
+}

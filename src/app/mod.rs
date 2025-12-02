@@ -1,7 +1,7 @@
 use crate::midi::{MidiConnection, MidiTimingStats};
 use crate::theme::Theme;
 use crate::types::{
-    Counters, CpuData, MeterData, MetroCommand, MetroState, NotesStorage, Page, ParamActivity, PatternStorage, ScaleState, ScriptStorage, SpectrumData, SyncMode, Variables,
+    Counters, CpuData, MeterData, MetroCommand, MetroState, NotesStorage, Page, ParamActivity, PatternStorage, ScaleState, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
 };
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -59,6 +59,11 @@ pub struct App {
     pub limiter_enabled: bool,
     pub notes: NotesStorage,
     pub load_rst: bool,
+    pub search_mode: bool,
+    pub search_query: String,
+    pub search_cursor: usize,
+    pub search_matches: Vec<SearchMatch>,
+    pub search_current_match: usize,
 }
 
 impl App {
@@ -112,6 +117,11 @@ impl App {
             limiter_enabled: true,
             notes: NotesStorage::default(),
             load_rst: config.display.load_rst,
+            search_mode: false,
+            search_query: String::new(),
+            search_cursor: 0,
+            search_matches: Vec::new(),
+            search_current_match: 0,
         }
     }
 
@@ -263,6 +273,118 @@ impl App {
                 self.script_error = None;
                 self.script_error_time = None;
             }
+        }
+    }
+
+    pub fn enter_search_mode(&mut self) {
+        self.search_mode = true;
+        self.search_query.clear();
+        self.search_cursor = 0;
+        self.search_matches.clear();
+        self.search_current_match = 0;
+    }
+
+    pub fn exit_search_mode(&mut self) {
+        self.search_mode = false;
+        self.search_query.clear();
+        self.search_matches.clear();
+        self.search_current_match = 0;
+    }
+
+    pub fn perform_search(&mut self) {
+        if self.current_page == Page::Help {
+            use crate::ui::pages::HELP_CATEGORIES;
+            self.search_matches = crate::ui::search::search_help(&self.search_query, HELP_CATEGORIES);
+        } else {
+            self.search_matches = crate::ui::search::search_scripts(&self.search_query, &self.scripts);
+        }
+        if !self.search_matches.is_empty() {
+            self.search_current_match = 0;
+            self.jump_to_current_match();
+        } else {
+            self.search_current_match = 0;
+        }
+    }
+
+    pub fn next_search_match(&mut self) {
+        if self.search_matches.is_empty() {
+            return;
+        }
+        self.search_current_match = (self.search_current_match + 1) % self.search_matches.len();
+        self.jump_to_current_match();
+    }
+
+    pub fn prev_search_match(&mut self) {
+        if self.search_matches.is_empty() {
+            return;
+        }
+        if self.search_current_match == 0 {
+            self.search_current_match = self.search_matches.len() - 1;
+        } else {
+            self.search_current_match -= 1;
+        }
+        self.jump_to_current_match();
+    }
+
+    fn jump_to_current_match(&mut self) {
+        if self.search_matches.is_empty() {
+            return;
+        }
+        let match_data = &self.search_matches[self.search_current_match];
+
+        if match_data.page != self.current_page {
+            if match_data.page != Page::Help {
+                self.previous_page = match_data.page;
+            }
+            self.current_page = match_data.page;
+        }
+
+        match match_data.scope {
+            crate::types::SearchScope::Help => {
+                self.help_page = match_data.page_index;
+                self.help_scroll = match_data.line_index;
+            }
+            crate::types::SearchScope::Script => {
+                self.selected_line = Some(match_data.line_index);
+            }
+        }
+    }
+
+    pub fn search_insert_char(&mut self, c: char) {
+        let byte_pos = self
+            .search_query
+            .char_indices()
+            .nth(self.search_cursor)
+            .map(|(i, _)| i)
+            .unwrap_or(self.search_query.len());
+        self.search_query.insert(byte_pos, c);
+        self.search_cursor += 1;
+        self.perform_search();
+    }
+
+    pub fn search_delete_char(&mut self) {
+        if self.search_cursor > 0 {
+            let byte_pos = self
+                .search_query
+                .char_indices()
+                .nth(self.search_cursor - 1)
+                .map(|(i, _)| i)
+                .unwrap_or(0);
+            self.search_query.remove(byte_pos);
+            self.search_cursor -= 1;
+            self.perform_search();
+        }
+    }
+
+    pub fn search_move_cursor_left(&mut self) {
+        if self.search_cursor > 0 {
+            self.search_cursor -= 1;
+        }
+    }
+
+    pub fn search_move_cursor_right(&mut self) {
+        if self.search_cursor < self.search_query.chars().count() {
+            self.search_cursor += 1;
         }
     }
 }

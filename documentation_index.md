@@ -1130,6 +1130,21 @@ PS.TARG 0         // Process input signal
 - `Ctrl+V` - Paste line (script pages)
 - Script pages show validation errors that auto-clear after 3 seconds or on successful save
 
+#### Search
+- `Ctrl+F` - Enter search mode (isolated scope based on current page context)
+  - Search bar shows `/` prefix to indicate search mode active
+  - Help search scope: searches help pages only
+  - Script search scope: searches scripts 1-8, M, I (no patterns)
+- `Enter` - Jump to next match
+- `Shift+Enter` - Jump to previous match
+- `ESC` - Exit search mode (user position preserved)
+- Match highlighting:
+  - Current match: highlighted with highlight_bg/highlight_fg colors
+  - Other matches: highlighted with accent color
+- Match count indicator: displays as `[N/M]` (current match / total matches)
+- Navigation hotkeys (Alt+key, F1-F12) exit search and navigate to new page
+- Search queries are case-insensitive
+
 ### UI Style (Teletype)
 - **Uppercase text:** All UI text (commands, labels, output) displays in uppercase for a Teletype-style aesthetic
 - **User input conversion:** User input is automatically converted to uppercase on entry

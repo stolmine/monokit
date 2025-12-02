@@ -1,6 +1,8 @@
 mod footer;
 mod header;
 pub mod pages;
+pub mod search;
+pub mod search_highlight;
 pub mod state_highlight;
 
 use anyhow::Result;
@@ -29,13 +31,15 @@ pub fn ui(f: &mut Frame, app: &crate::App) {
 
     let is_help = app.current_page == Page::Help;
     let is_pattern = app.current_page == Page::Pattern;
+    let needs_footer = app.search_mode || (!is_help && !is_pattern);
 
-    let chunks = if is_help || is_pattern {
+    let chunks = if needs_footer {
         Layout::default()
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Length(3),
                 Constraint::Min(0),
+                Constraint::Length(3),
             ])
             .split(f.area())
     } else {
@@ -44,7 +48,6 @@ pub fn ui(f: &mut Frame, app: &crate::App) {
             .constraints([
                 Constraint::Length(3),
                 Constraint::Min(0),
-                Constraint::Length(3),
             ])
             .split(f.area())
     };
@@ -71,8 +74,7 @@ pub fn ui(f: &mut Frame, app: &crate::App) {
     };
     f.render_widget(content, chunks[1]);
 
-    let is_pattern = app.current_page == Page::Pattern;
-    if !is_help && !is_pattern {
+    if needs_footer {
         let footer = render_footer(app);
         f.render_widget(footer, chunks[2]);
     }
@@ -113,6 +115,49 @@ pub fn run_app<B: ratatui::backend::Backend>(
             if let Event::Key(key) = event::read()? {
                 let is_help = app.current_page == Page::Help;
                 let has_alt = key.modifiers.contains(KeyModifiers::ALT);
+
+                if key.code == KeyCode::Char('f') && key.modifiers.contains(KeyModifiers::CONTROL) {
+                    app.enter_search_mode();
+                    continue;
+                }
+
+                if app.search_mode {
+                    let is_nav_hotkey = match key.code {
+                        KeyCode::F(_) => true,
+                        KeyCode::Char(_) if has_alt => true,
+                        _ => false,
+                    };
+
+                    if is_nav_hotkey {
+                        app.exit_search_mode();
+                    } else {
+                        match key.code {
+                            KeyCode::Esc => {
+                                app.exit_search_mode();
+                            }
+                            KeyCode::Enter if key.modifiers.contains(KeyModifiers::SHIFT) => {
+                                app.prev_search_match();
+                            }
+                            KeyCode::Enter => {
+                                app.next_search_match();
+                            }
+                            KeyCode::Backspace => {
+                                app.search_delete_char();
+                            }
+                            KeyCode::Left => {
+                                app.search_move_cursor_left();
+                            }
+                            KeyCode::Right => {
+                                app.search_move_cursor_right();
+                            }
+                            KeyCode::Char(c) => {
+                                app.search_insert_char(c);
+                            }
+                            _ => {}
+                        }
+                        continue;
+                    }
+                }
 
                 match key.code {
                     KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) && app.is_script_page() => {

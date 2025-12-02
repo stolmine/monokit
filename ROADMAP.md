@@ -9,6 +9,34 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ---
 
+## Recent Updates (December 2025)
+
+### Global Search Feature [COMPLETE]
+Unified search functionality with isolated scopes for help pages and scripts.
+
+**Keybindings:**
+- `Ctrl+F` - Enter search mode (context-aware scope based on current page)
+- `Enter` - Jump to next match
+- `Shift+Enter` - Jump to previous match
+- `ESC` - Exit search mode (preserves user position)
+
+**Behavior:**
+- Help search scope: searches help pages only
+- Script search scope: searches scripts 1-8, M, I (no patterns)
+- Case-insensitive queries
+- Current match highlighted with highlight_bg/highlight_fg
+- Other matches highlighted with accent color
+- Match count indicator: [N/M] format
+- Navigation hotkeys (Alt+key, F1-F12) exit search and navigate
+
+**Implementation:**
+- Search state tracked in App struct
+- Two isolated search result buffers (help_search, script_search)
+- Dynamic scope switching on page navigation
+- Position restoration on ESC
+
+---
+
 ## Recent Updates (November 2025)
 
 ### Envelope System Simplification
@@ -394,7 +422,7 @@ PSETS                        # List all presets
 
 **Technical Details:** See `docs/MIDI_CLOCK_TIMING_LESSONS.md` for comprehensive debugging notes.
 
-**MIDI Clock Output:** - NOT IMPLEMENTED
+**MIDI Clock Output:** - ON HOLD INDEFINITELY
 - [ ] `M.SEND <0|1>` - Send MIDI clock out
 - [ ] Send start/stop/continue messages
 
@@ -592,16 +620,17 @@ Real-time amplitude display via bidirectional OSC.
 - [x] Color scheme: secondary normally, error when >= 80%
 - [ ] Peak hold decay visualization (future)
 
-### Global Search [Medium] - NOT STARTED
-Search functionality across scripts and patterns.
+### Global Search [Medium] - COMPLETE (December 2025)
+Search functionality with isolated scopes for help and scripts.
 
-- [ ] `Ctrl+F` transforms input bar into search mode
-- [ ] Search bar shows `/` prefix to indicate search mode
-- [ ] `Enter` jumps to next match (cycles through all instances)
-- [ ] `Escape` exits search mode
-- [ ] Search across: script content, pattern values, help text
-- [ ] Highlight matching text on current page
-- [ ] Show match count indicator (e.g., "2/5")
+- [x] `Ctrl+F` enters search mode
+- [x] Search bar shows `/` prefix to indicate search mode
+- [x] `Enter` jumps to next match, `Shift+Enter` to previous match
+- [x] `ESC` exits search mode
+- [x] Two isolated scopes: Help search (help pages only), Script search (scripts only)
+- [x] Match highlighting on current page
+- [x] Show match count indicator (e.g., "2/5")
+- [x] User position preserved when exiting search mode
 
 ### Help System [Low] - PARTIAL
 - [x] Add explicit `#` prefix marker to section headers
@@ -610,14 +639,150 @@ Search functionality across scripts and patterns.
 - [x] `[` / `]` navigate help pages when help is active
 - [ ] Help search integrated with global search
 
-### Waveform Preview [Medium] (Optional/Future)
+### Waveform Preview [Medium] - ON HOLD INDEFINITELY
 - [ ] Mini oscilloscope on Live page
 - [ ] Real-time output waveform display
 - [ ] Optional: Spectrum analyzer
 
 ---
 
-## Phase 6: Advanced DSP
+## Phase 6: Polish & Refinements
+
+**Focus:** Cherry-on-top polish items for production readiness and optimal user experience
+
+### Config Persistence Audit [Medium]
+Ensure all user preferences persist across sessions for consistent experience.
+
+- [ ] DEBUG level persistence to config.toml
+- [ ] HEADER verbosity level persistence (0/1/2)
+- [ ] CPU indicator toggle state persistence
+- [ ] Activity grid label/icon mode persistence
+- [ ] Per-element UI toggle states persistence
+- [ ] Load saved preferences on startup
+- [ ] Save preferences on change (not just on exit)
+
+### Alias Coverage Audit [Low]
+Complete alias to canonical name coverage - many parameters have no short forms in CLI even though they are generally addressed with short forms in SuperCollider.
+
+- [ ] Audit all parameters for missing short-form aliases
+- [ ] Add aliases for envelope attacks (AENV.ATK → AA, PENV.ATK → PAA, etc.)
+- [ ] Add aliases for envelope curves (AENV.CRV → AC, PENV.CRV → PC, etc.)
+- [ ] Review SC parameter names vs CLI command names for consistency
+- [ ] Update aliases.rs with new mappings
+- [ ] Update help system with new aliases
+
+### Per-Element UI Toggles [Low]
+Individual override commands to toggle visual elements independently.
+
+- [ ] `METER <0|1>` - Toggle audio meters on/off
+- [ ] `SPECTRUM <0|1>` - Toggle spectrum analyzer on/off
+- [ ] `ACTIVITY <0|1>` - Toggle script activity indicators on/off
+- [ ] `GRID <0|1>` - Toggle parameter activity grid on/off
+- [ ] Each toggle state persists to config.toml
+- [ ] Works independently of global UI modes
+
+### Activity Grid Label/Icon Toggle [Low]
+Command to switch between text labels and unicode icons on parameter activity grid.
+
+- [ ] `GRID.MODE <0|1>` - Toggle between labels (0) and icons (1)
+- [ ] Default: icons (current behavior)
+- [ ] Label mode shows 2-4 char param names instead of icons
+- [ ] State persists to config.toml
+- [ ] Applies to Live page Tab view grid
+
+### BPM Header Display [Medium]
+Add BPM readout to header border alongside CPU and REC indicators.
+
+- [ ] Add BPM display to header upper border
+- [ ] Format: "BPM: 120" (right-aligned or center)
+- [ ] Integrate with HEADER command verbosity levels:
+  - HEADER 0: no BPM display
+  - HEADER 1: BPM display
+  - HEADER 2: BPM + CPU + REC
+- [ ] Update BPM display when metro tempo changes (M.BPM command)
+- [ ] Calculate BPM from metro period_ms (60000 / period_ms)
+
+### Global Text Audit [High]
+Ensure all UI text fits within 50x18 terminal window constraints.
+
+- [ ] Audit all pages for text overflow beyond 50 columns
+- [ ] Check Help pages for line wrapping
+- [ ] Verify REPL history doesn't trail off screen
+- [ ] Test all error messages fit within bounds
+- [ ] Validate grid layouts don't exceed boundaries
+- [ ] Check header/footer borders stay within limits
+- [ ] Test with longest possible command outputs
+
+### Initial Window Sizing [Low]
+Provide terminal window sizing defaults/recommendations.
+
+- [ ] Document recommended terminal size (50x18 minimum)
+- [ ] Detect current terminal size on startup
+- [ ] Warn if terminal too small (< 50x18)
+- [ ] Optional: Set terminal size via ANSI escape sequences (if supported)
+- [ ] Add to README/docs as setup requirement
+
+### Command Arg Scaling Audit [Medium]
+Review parameter ranges for consistency and user-friendliness.
+
+- [ ] Review all 0-16383 parameters (14-bit)
+- [ ] Consider 0-100 scaling for mix/level params
+- [ ] Evaluate 0-127 (MIDI-style) for appropriate params
+- [ ] Document rationale for each range choice
+- [ ] Update help system with new ranges
+- [ ] Add MAP operators if needed (MAP7, MAP14)
+- [ ] Ensure backwards compatibility or migration path
+
+### REPL/DEBUG Level Audit [Medium]
+Review what information is sent to REPL at each DEBUG level, add granularity.
+
+- [ ] Document current DEBUG 0/1/2 behavior
+- [ ] Identify missing debug information
+- [ ] Add DEBUG 3 level for verbose diagnostics
+- [ ] Per-subsystem debug flags (DEBUG.MIDI, DEBUG.OSC, DEBUG.METRO)
+- [ ] Ensure no sensitive data in debug output
+- [ ] Log timing information at higher levels
+- [ ] Balance verbosity vs usefulness
+
+### Audio Device Selection [High]
+Add runtime command to choose SuperCollider audio output device.
+
+- [ ] `AUDIO.OUT` - List available audio output devices
+- [ ] `AUDIO.OUT <device>` - Select audio output device
+- [ ] `AUDIO.IN` - List available audio input devices (if needed)
+- [ ] `AUDIO.IN <device>` - Select audio input device (if needed)
+- [ ] Query SC for available devices via OSC
+- [ ] Restart audio subsystem on device change
+- [ ] Persist selection to config.toml
+- [ ] Handle device not available gracefully
+
+### Global Error Handling Audit [Medium]
+Review codebase for silent failures, add proper error reporting.
+
+- [ ] Audit all `.unwrap()` calls
+- [ ] Replace panics with proper error messages
+- [ ] Add error reporting to REPL
+- [ ] File I/O error handling (SAVE/LOAD)
+- [ ] OSC communication error handling
+- [ ] MIDI connection error handling
+- [ ] Pattern operation bounds checking
+- [ ] Expression evaluation error messages
+
+### Help Coverage Audit [Low]
+Update help system with all new commands and features.
+
+- [ ] Review all Phase 1-5 completed features
+- [ ] Add missing commands to help pages
+- [ ] Document all config options
+- [ ] Update examples with new operators
+- [ ] Add SEQ notation examples
+- [ ] Document all UI toggles (CPU, HEADER, etc.)
+- [ ] Add MIDI sync commands to help
+- [ ] Verify help page navigation works correctly
+
+---
+
+## Phase 7: Advanced DSP
 
 **Focus:** Major architectural changes requiring deep SuperCollider work
 
@@ -667,7 +832,7 @@ Search functionality across scripts and patterns.
 
 ---
 
-## Phase 7: Distribution
+## Phase 8: Distribution
 
 **Focus:** Packaging and deployment infrastructure
 
@@ -703,8 +868,9 @@ Search functionality across scripts and patterns.
 - **Phase 3** scale quantization needed before mini notation (note name parsing)
 - **Phase 4** LFO system may inform additional Phase 3 modulation routing
 - **Phase 5** UI features can be implemented incrementally, no blocking dependencies
-- **Phase 6** requires all features complete and stable before voice architecture changes
-- **Phase 7** requires all features complete and tested before packaging
+- **Phase 6** polish items should be implemented after core features complete (helps identify what needs polish)
+- **Phase 7** requires all features complete and stable before voice architecture changes
+- **Phase 8** requires all features complete and tested before packaging
 
 ### Complexity Legend
 - **[Low]** - 1-3 days, minimal dependencies, straightforward implementation

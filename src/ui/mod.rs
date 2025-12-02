@@ -112,7 +112,7 @@ pub fn run_app<B: ratatui::backend::Backend>(
 
         terminal.draw(|f| ui(f, app))?;
 
-        if event::poll(Duration::from_millis(1))? {
+        if event::poll(Duration::from_millis(16))? {
             if let Event::Key(key) = event::read()? {
                 let is_help = app.current_page == Page::Help;
                 let has_alt = key.modifiers.contains(KeyModifiers::ALT);

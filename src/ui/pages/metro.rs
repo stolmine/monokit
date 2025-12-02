@@ -80,5 +80,4 @@ pub fn render_metro_page(app: &crate::App) -> Paragraph<'static> {
                 .title(" METRO ")
                 .title_style(Style::default().fg(app.theme.foreground))
         )
-        .wrap(Wrap { trim: false })
 }

@@ -447,6 +447,15 @@ pub const GRID_ICONS: [char; 48] = [
     '⬢', '⬣', '▮', '⬌', '⟿', '✱', '◉', '⊙',
 ];
 
+pub const GRID_LABELS: [&str; 48] = [
+    "PF", "PW", "MF", "MW", "FM", "FB", "DC", "FC",
+    "FQ", "FT", "FE", "RF", "RD", "RM", "AD", "PD",
+    "PA", "FD", "FA", "DD", "DA", "DT", "DF", "DW",
+    "RV", "RH", "RW", "LM", "CT", "BA", "PS", "RG",
+    "LB", "LS", "EQ", "TK", "MB", "MP", "MD", "MT",
+    "MA", "MX", "VL", "PN", "DS", "MM", "ME", "FK",
+];
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SearchScope {
     Help,

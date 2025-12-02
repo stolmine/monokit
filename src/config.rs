@@ -22,6 +22,40 @@ pub struct DisplayConfig {
     pub header_level: u8,
     #[serde(default)]
     pub load_rst: bool,
+    #[serde(default = "default_debug_level")]
+    pub debug_level: u8,
+    #[serde(default)]
+    pub show_cpu: bool,
+    #[serde(default = "default_show_meters")]
+    pub show_meters_header: bool,
+    #[serde(default = "default_show_meters")]
+    pub show_meters_grid: bool,
+    #[serde(default = "default_show_spectrum")]
+    pub show_spectrum: bool,
+    #[serde(default = "default_show_activity")]
+    pub show_activity: bool,
+    #[serde(default)]
+    pub show_grid_view: bool,
+    #[serde(default = "default_show_seq_highlight")]
+    pub show_seq_highlight: bool,
+    #[serde(default = "default_show_conditional_highlight")]
+    pub show_conditional_highlight: bool,
+    #[serde(default = "default_grid_mode")]
+    pub grid_mode: u8,
+    #[serde(default = "default_limiter_enabled")]
+    pub limiter_enabled: bool,
+    #[serde(default = "default_activity_hold_ms")]
+    pub activity_hold_ms: u32,
+    #[serde(default)]
+    pub title_mode: u8,
+    #[serde(default = "default_scope_timespan_ms")]
+    pub scope_timespan_ms: u32,
+    #[serde(default)]
+    pub scope_color_mode: u8,
+    #[serde(default)]
+    pub scope_display_mode: u8,
+    #[serde(default)]
+    pub scope_unipolar: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -63,12 +97,69 @@ fn default_header_level() -> u8 {
     4
 }
 
+fn default_debug_level() -> u8 {
+    2
+}
+
+fn default_show_meters() -> bool {
+    true
+}
+
+fn default_show_spectrum() -> bool {
+    true
+}
+
+fn default_show_activity() -> bool {
+    true
+}
+
+fn default_show_seq_highlight() -> bool {
+    true
+}
+
+fn default_show_conditional_highlight() -> bool {
+    true
+}
+
+fn default_grid_mode() -> u8 {
+    1
+}
+
+fn default_limiter_enabled() -> bool {
+    true
+}
+
+fn default_activity_hold_ms() -> u32 {
+    200
+}
+
+fn default_scope_timespan_ms() -> u32 {
+    30
+}
+
 impl Default for DisplayConfig {
     fn default() -> Self {
         Self {
             theme: default_theme_mode(),
             header_level: default_header_level(),
             load_rst: false,
+            debug_level: default_debug_level(),
+            show_cpu: false,
+            show_meters_header: default_show_meters(),
+            show_meters_grid: default_show_meters(),
+            show_spectrum: default_show_spectrum(),
+            show_activity: default_show_activity(),
+            show_grid_view: false,
+            show_seq_highlight: default_show_seq_highlight(),
+            show_conditional_highlight: default_show_conditional_highlight(),
+            grid_mode: default_grid_mode(),
+            limiter_enabled: default_limiter_enabled(),
+            activity_hold_ms: default_activity_hold_ms(),
+            title_mode: 0,
+            scope_timespan_ms: default_scope_timespan_ms(),
+            scope_color_mode: 0,
+            scope_display_mode: 0,
+            scope_unipolar: false,
         }
     }
 }
@@ -196,6 +287,107 @@ pub fn save_header_level(level: u8) -> Result<()> {
 pub fn save_load_rst(enabled: bool) -> Result<()> {
     let mut config = load_config()?;
     config.display.load_rst = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_debug_level(level: u8) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.debug_level = level;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_show_cpu(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.show_cpu = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_show_meters_header(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.show_meters_header = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_show_meters_grid(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.show_meters_grid = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_show_spectrum(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.show_spectrum = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_show_activity(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.show_activity = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_show_grid_view(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.show_grid_view = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_show_seq_highlight(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.show_seq_highlight = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_show_conditional_highlight(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.show_conditional_highlight = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_grid_mode(mode: u8) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.grid_mode = mode;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_limiter_enabled(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.limiter_enabled = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_activity_hold_ms(ms: u32) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.activity_hold_ms = ms;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_title_mode(mode: u8) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.title_mode = mode;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_scope_settings(timespan: u32, color: u8, mode: u8, unipolar: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.scope_timespan_ms = timespan;
+    config.display.scope_color_mode = color;
+    config.display.scope_display_mode = mode;
+    config.display.scope_unipolar = unipolar;
     save_config(&config)?;
     Ok(())
 }

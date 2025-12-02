@@ -55,6 +55,13 @@ pub fn process_command<F>(
     scope_color_mode: &mut u8,
     scope_display_mode: &mut u8,
     scope_unipolar: &mut bool,
+    show_meters_header: &mut bool,
+    show_meters_grid: &mut bool,
+    show_spectrum: &mut bool,
+    show_activity: &mut bool,
+    show_grid_view: &mut bool,
+    show_seq_highlight: &mut bool,
+    grid_mode: &mut u8,
     input: &str,
     mut output: F,
 ) -> Result<Vec<usize>>
@@ -753,6 +760,27 @@ where
                     }
                 }
             }
+        }
+        "HL.SEQ" => {
+            misc::handle_hl_seq(&parts, show_seq_highlight, output);
+        }
+        "METER.HDR" => {
+            misc::handle_meter_hdr(&parts, show_meters_header, output);
+        }
+        "METER.GRID" => {
+            misc::handle_meter_grid(&parts, show_meters_grid, output);
+        }
+        "SPECTRUM" => {
+            misc::handle_spectrum(&parts, show_spectrum, output);
+        }
+        "ACTIVITY" => {
+            misc::handle_activity(&parts, show_activity, output);
+        }
+        "GRID" => {
+            misc::handle_grid(&parts, show_grid_view, output);
+        }
+        "GRID.MODE" => {
+            misc::handle_grid_mode(&parts, grid_mode, output);
         }
         "N1" => {
             counters::handle_n1(counters, output);

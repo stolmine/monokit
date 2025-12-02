@@ -81,8 +81,12 @@ pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
         }
     } else if app.header_level <= 2 {
         // Levels 0-2: Show only current page name dynamically
-        let activity = page_to_activity_index(&app.current_page)
-            .and_then(|idx| app.script_activity[idx]);
+        let activity = if app.show_activity {
+            page_to_activity_index(&app.current_page)
+                .and_then(|idx| app.script_activity[idx])
+        } else {
+            None
+        };
         let color = app.theme.activity_color(activity, true, app.activity_hold_ms);
         let label = format!("[{}]", app.current_page.name());
         let label_width = label.len();
@@ -100,8 +104,12 @@ pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
         // Levels 3-4: Show full navigation
         for page in NAVIGABLE_PAGES.iter() {
             let is_selected = *page == app.current_page;
-            let activity = page_to_activity_index(page)
-                .and_then(|idx| app.script_activity[idx]);
+            let activity = if app.show_activity {
+                page_to_activity_index(page)
+                    .and_then(|idx| app.script_activity[idx])
+            } else {
+                None
+            };
             let color = app.theme.activity_color(activity, is_selected, app.activity_hold_ms);
 
             if is_selected {
@@ -125,8 +133,8 @@ pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
     let mut right_spans: Vec<Span<'static>> = Vec::new();
     let mut right_width = 0;
 
-    // TR indicator: show at level 2 and above
-    if app.header_level >= 2 {
+    // TR indicator: show at level 2 and above if activity is enabled
+    if app.show_activity && app.header_level >= 2 {
         let tr_color = app.theme.activity_color(app.trigger_activity, false, app.activity_hold_ms);
         right_spans.push(Span::styled(
             "TR",
@@ -136,8 +144,8 @@ pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
         right_width += 3; // "TR" + space
     }
 
-    // Meters: show at level 1 and above
-    if app.header_level >= 1 {
+    // Meters: show at level 1 and above if header meters are enabled
+    if app.show_meters_header && app.header_level >= 1 {
         right_spans.extend(render_meters(&app.meter_data, &app.theme));
         right_width += 2; // Two meter characters
     }

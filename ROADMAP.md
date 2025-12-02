@@ -693,47 +693,40 @@ Dedicated oscilloscope page with real-time waveform visualization.
 
 **Focus:** Cherry-on-top polish items for production readiness and optimal user experience
 
-### Config Persistence Audit [Medium]
+### Config Persistence Audit [Medium] - COMPLETE
 Ensure all user preferences persist across sessions for consistent experience.
 
-- [ ] DEBUG level persistence to config.toml
-- [ ] HEADER verbosity level persistence (0/1/2)
-- [ ] CPU indicator toggle state persistence
-- [ ] Activity grid label/icon mode persistence
-- [ ] Per-element UI toggle states persistence
-- [ ] Load saved preferences on startup
-- [ ] Save preferences on change (not just on exit)
+- [x] DEBUG level persistence to config.toml
+- [x] HEADER verbosity level persistence (0/1/2)
+- [x] CPU indicator toggle state persistence
+- [x] Activity grid label/icon mode persistence
+- [x] Per-element UI toggle states persistence
+- [x] Load saved preferences on startup
+- [x] Save preferences on change (not just on exit)
 
-### Alias Coverage Audit [Low]
+### Alias Coverage Audit [Low] - COMPLETE
 Complete alias to canonical name coverage - many parameters have no short forms in CLI even though they are generally addressed with short forms in SuperCollider.
 
-- [ ] Audit all parameters for missing short-form aliases
-- [ ] Add aliases for envelope attacks (AENV.ATK → AA, PENV.ATK → PAA, etc.)
-- [ ] Add aliases for envelope curves (AENV.CRV → AC, PENV.CRV → PC, etc.)
-- [ ] Review SC parameter names vs CLI command names for consistency
-- [ ] Update aliases.rs with new mappings
-- [ ] Update help system with new aliases
+- [x] Audit all parameters for missing short-form aliases
+- [x] Add aliases for envelope attacks (AENV.ATK → AA, PENV.ATK → PAA, etc.)
+- [x] Add aliases for envelope curves (AENV.CRV → AC, PENV.CRV → PC, etc.)
+- [x] Review SC parameter names vs CLI command names for consistency
+- [x] Update aliases.rs with new mappings
+- [x] Update help system with new aliases
 
-### Per-Element UI Toggles [Low]
+### Per-Element UI Toggles [Low] - COMPLETE
 Individual override commands to toggle visual elements independently.
 
-- [ ] `METER <0|1>` - Toggle audio meters on/off
-- [ ] `SPECTRUM <0|1>` - Toggle spectrum analyzer on/off
-- [ ] `ACTIVITY <0|1>` - Toggle script activity indicators on/off
-- [ ] `GRID <0|1>` - Toggle parameter activity grid on/off
-- [ ] `HL.SEQ <0|1>` - Toggle SEQ/TOG state highlighting on/off
-- [ ] `HL.COND <0|1>` - Toggle conditional execution highlighting on/off
-- [ ] Each toggle state persists to config.toml
-- [ ] Works independently and on top of global UI modes
-
-### Activity Grid Label/Icon Toggle [Low]
-Command to switch between text labels and unicode icons on parameter activity grid.
-
-- [ ] `GRID.MODE <0|1>` - Toggle between labels (0) and icons (1)
-- [ ] Default: icons (current behavior)
-- [ ] Label mode shows 2-4 char param names instead of icons
-- [ ] State persists to config.toml
-- [ ] Applies to Live page Tab view grid
+- [x] `METER.HDR <0|1>` - Toggle audio meters on/off in header
+- [x] `METER.GRID <0|1>` - Toggle audio meters on/off in grid view
+- [x] `SPECTRUM <0|1>` - Toggle spectrum analyzer on/off
+- [x] `ACTIVITY <0|1>` - Toggle script activity indicators on/off
+- [x] `GRID <0|1>` - Toggle parameter activity grid on/off
+- [x] `GRID.MODE <0|1>` - Toggle between text labels and icons on grid
+- [x] `HL.SEQ <0|1>` - Toggle SEQ/TOG state highlighting on/off
+- [x] `HL.COND <0|1>` - Toggle conditional execution highlighting on/off (already existed)
+- [x] Each toggle state persists to config.toml
+- [x] Works independently and on top of global UI modes
 
 ### Scene Name Header Display [Low]
 Toggleable display of current scene name in header, replacing "MONOKIT" title.

@@ -1,5 +1,73 @@
 # Monokit Documentation Index
 
+## Recent Updates (December 2025)
+
+### Phase 6: Polish & UI Preferences
+
+**Config Persistence (December 2025)**
+- Added 16 new DisplayConfig fields for UI preferences persistence
+- All UI toggles now save to ~/.monokit/config.toml
+- Settings persist across sessions
+- Config automatically created on first launch if missing
+
+**New Persisted Settings:**
+- show_header_meters: Audio meters in header (default: true)
+- show_grid_meters: Audio meters in grid view (default: true)
+- show_spectrum: Spectrum analyzer in grid view (default: true)
+- show_activity: Script activity indicators (default: true)
+- show_grid: Parameter activity grid (default: true)
+- grid_icons_mode: Grid labels (0) vs icons (1) (default: true)
+- highlight_seq: SEQ/TOG state highlighting (default: true)
+- header_verbosity: Header display mode 0-4 (default: 4)
+- show_cpu_meter: CPU percentage display (default: true)
+- highlight_cond: Conditional execution highlighting (default: true)
+- load_reset_mode: Scene load behavior (default: false)
+- debug_level: REPL output verbosity (default: 2)
+- scope_time_ms: Oscilloscope timespan (default: 30)
+- scope_color: Waveform color 0-3 (default: 0)
+- scope_mode: Display mode 0-4 (default: 0)
+- scope_unipolar: Unipolar mode (default: false)
+
+**UI Toggle Commands (December 2025)**
+- METER.HDR <0|1> - Toggle header audio meters
+- METER.GRID <0|1> - Toggle grid view audio meters
+- SPECTRUM <0|1> - Toggle spectrum analyzer in grid view
+- ACTIVITY <0|1> - Toggle script activity indicators (Phase 5.1)
+- GRID <0|1> - Toggle parameter activity grid (Phase 5.4)
+- GRID.MODE <0|1> - Grid display: 0=labels, 1=icons (Phase 5.4)
+- HL.SEQ <0|1> - Toggle SEQ/TOG state highlighting (Phase 5.2)
+- HL.COND <0|1> - Toggle conditional execution highlighting (Phase 5.7)
+
+**New Command Aliases (December 2025)**
+Added envelope parameter aliases for consistency:
+- AA → AENV.ATK (Amplitude envelope attack)
+- PAA → PENV.ATK (Pitch envelope attack)
+- FAA → FMEV.ATK (FM envelope attack)
+- DAA → DENV.ATK (Discontinuity envelope attack)
+- FBAA → FBEV.ATK (Feedback envelope attack)
+- FLAA → FLEV.ATK (Filter envelope attack)
+- AC → AENV.CRV (Amplitude envelope curve)
+- PC → PENV.CRV (Pitch envelope curve)
+- FBC → FBEV.CRV (Feedback envelope curve)
+- FLC → FLEV.CRV (Filter envelope curve)
+
+Note: FMEV.CRV and DENV.CRV have no aliases (consistency with missing FA.CRV, DA.CRV patterns)
+
+**Help System Updates (December 2025)**
+- Added "UI & DISPLAY" category documenting all UI toggle commands
+- Added "OSCILLOSCOPE" category documenting scope commands
+- Help system now covers all 7 UI control commands
+- Comprehensive documentation for meter, spectrum, activity, and grid toggles
+
+**Files Changed:**
+- src/config.rs - Added 16 DisplayConfig fields with persistence
+- src/app/mod.rs - Read config on startup, write on command changes
+- src/commands/system/misc.rs - Added toggle command handlers (METER.HDR, METER.GRID, SPECTRUM, ACTIVITY, GRID, GRID.MODE, HL.SEQ)
+- src/commands/aliases.rs - Added 10 new envelope aliases
+- src/help_content.rs - Added "UI & DISPLAY" and "OSCILLOSCOPE" categories
+
+---
+
 ## Recent Updates (November 2025)
 
 ### Timing Infrastructure Improvements

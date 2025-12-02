@@ -892,3 +892,207 @@ pub fn handle_note_clr<F>(
         output("NOTES CLEARED".to_string());
     }
 }
+
+pub fn handle_meter_hdr<F>(
+    parts: &[&str],
+    show_meters_header: &mut bool,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("HEADER METERS: {}", if *show_meters_header { 1 } else { 0 }));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *show_meters_header = false;
+                let _ = config::save_show_meters_header(*show_meters_header);
+                output("HEADER METERS: OFF".to_string());
+            }
+            "1" => {
+                *show_meters_header = true;
+                let _ = config::save_show_meters_header(*show_meters_header);
+                output("HEADER METERS: ON".to_string());
+            }
+            _ => {
+                output("ERROR: METER.HDR TAKES 0 (OFF) OR 1 (ON)".to_string());
+            }
+        }
+    }
+}
+
+pub fn handle_meter_grid<F>(
+    parts: &[&str],
+    show_meters_grid: &mut bool,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("GRID METERS: {}", if *show_meters_grid { 1 } else { 0 }));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *show_meters_grid = false;
+                let _ = config::save_show_meters_grid(*show_meters_grid);
+                output("GRID METERS: OFF".to_string());
+            }
+            "1" => {
+                *show_meters_grid = true;
+                let _ = config::save_show_meters_grid(*show_meters_grid);
+                output("GRID METERS: ON".to_string());
+            }
+            _ => {
+                output("ERROR: METER.GRID TAKES 0 (OFF) OR 1 (ON)".to_string());
+            }
+        }
+    }
+}
+
+pub fn handle_spectrum<F>(
+    parts: &[&str],
+    show_spectrum: &mut bool,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("SPECTRUM: {}", if *show_spectrum { 1 } else { 0 }));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *show_spectrum = false;
+                let _ = config::save_show_spectrum(*show_spectrum);
+                output("SPECTRUM: OFF".to_string());
+            }
+            "1" => {
+                *show_spectrum = true;
+                let _ = config::save_show_spectrum(*show_spectrum);
+                output("SPECTRUM: ON".to_string());
+            }
+            _ => {
+                output("ERROR: SPECTRUM TAKES 0 (OFF) OR 1 (ON)".to_string());
+            }
+        }
+    }
+}
+
+pub fn handle_activity<F>(
+    parts: &[&str],
+    show_activity: &mut bool,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("ACTIVITY: {}", if *show_activity { 1 } else { 0 }));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *show_activity = false;
+                let _ = config::save_show_activity(*show_activity);
+                output("ACTIVITY: OFF".to_string());
+            }
+            "1" => {
+                *show_activity = true;
+                let _ = config::save_show_activity(*show_activity);
+                output("ACTIVITY: ON".to_string());
+            }
+            _ => {
+                output("ERROR: ACTIVITY TAKES 0 (OFF) OR 1 (ON)".to_string());
+            }
+        }
+    }
+}
+
+pub fn handle_grid<F>(
+    parts: &[&str],
+    show_grid_view: &mut bool,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("GRID: {}", if *show_grid_view { 1 } else { 0 }));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *show_grid_view = false;
+                let _ = config::save_show_grid_view(*show_grid_view);
+                output("GRID: OFF".to_string());
+            }
+            "1" => {
+                *show_grid_view = true;
+                let _ = config::save_show_grid_view(*show_grid_view);
+                output("GRID: ON".to_string());
+            }
+            _ => {
+                output("ERROR: GRID TAKES 0 (OFF) OR 1 (ON)".to_string());
+            }
+        }
+    }
+}
+
+pub fn handle_hl_seq<F>(
+    parts: &[&str],
+    show_seq_highlight: &mut bool,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("SEQ HIGHLIGHT: {}", if *show_seq_highlight { 1 } else { 0 }));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *show_seq_highlight = false;
+                let _ = config::save_show_seq_highlight(*show_seq_highlight);
+                output("SEQ HIGHLIGHT: OFF".to_string());
+            }
+            "1" => {
+                *show_seq_highlight = true;
+                let _ = config::save_show_seq_highlight(*show_seq_highlight);
+                output("SEQ HIGHLIGHT: ON".to_string());
+            }
+            _ => {
+                output("ERROR: HL.SEQ TAKES 0 (OFF) OR 1 (ON)".to_string());
+            }
+        }
+    }
+}
+
+pub fn handle_grid_mode<F>(
+    parts: &[&str],
+    grid_mode: &mut u8,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        let mode_name = if *grid_mode == 0 { "LABELS" } else { "ICONS" };
+        output(format!("GRID.MODE: {} ({})", grid_mode, mode_name));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *grid_mode = 0;
+                let _ = config::save_grid_mode(*grid_mode);
+                output("GRID.MODE: 0 (LABELS)".to_string());
+            }
+            "1" => {
+                *grid_mode = 1;
+                let _ = config::save_grid_mode(*grid_mode);
+                output("GRID.MODE: 1 (ICONS)".to_string());
+            }
+            _ => {
+                output("ERROR: GRID.MODE TAKES 0 (LABELS) OR 1 (ICONS)".to_string());
+            }
+        }
+    }
+}

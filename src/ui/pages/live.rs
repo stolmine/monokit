@@ -46,128 +46,154 @@ fn render_repl_view(app: &crate::App, height: usize) -> Paragraph<'static> {
 }
 
 fn render_grid_view(app: &crate::App, _width: usize, height: usize) -> Paragraph<'static> {
-    use crate::types::GRID_ICONS;
+    use crate::types::{GRID_ICONS, GRID_LABELS};
 
     let mut lines = vec![];
 
     // Content height (excluding borders)
     let content_height = height.saturating_sub(2);
 
-    // Total content height: 6 grid rows + 1 meter label + 2 spectrum rows + 1 spectrum label = 10
-    let total_content_height = 10;
+    // Calculate total content height based on enabled elements
+    // 6 grid rows (always shown)
+    // + 1 meter label (if grid meters shown)
+    // + 2 spectrum rows (if spectrum shown)
+    // + 1 spectrum label (if spectrum shown)
+    let mut total_content_height = 6;
+    if app.show_meters_grid {
+        total_content_height += 1;
+    }
+    if app.show_spectrum {
+        total_content_height += 3;
+    }
 
     // Calculate vertical padding for centering
     let top_pad_count = content_height.saturating_sub(total_content_height) / 2;
 
-    let icon_spacing = "   ";  // 3 spaces between icons
+    // Labels (mode 0) need tighter spacing (2-char label + 2 spaces), icons (mode 1) get 3 spaces
+    let icon_spacing = if app.grid_mode == 0 { "  " } else { "   " };
 
     // Add top padding for vertical centering
     for _ in 0..top_pad_count {
         lines.push(Line::from(""));
     }
 
-    // Render 6 rows of parameter grid with 6-row meters on right
+    // Render 6 rows of parameter grid with optional 6-row meters on right
     let meter_rows = 6;
 
     for row in 0..6 {
         let mut spans = vec![];
 
-        // Render grid icons
+        // Render grid icons or labels based on grid_mode
         for col in 0..8 {
             let idx = row * 8 + col;
             let activity = app.param_activity.timestamps[idx];
             let color = app.theme.activity_color(activity, false, app.activity_hold_ms);
-            let icon = GRID_ICONS[idx];
-            spans.push(Span::styled(format!("{}", icon), Style::default().fg(color)));
+
+            if app.grid_mode == 1 {
+                // Icon mode
+                let icon = GRID_ICONS[idx];
+                spans.push(Span::styled(format!("{}", icon), Style::default().fg(color)));
+            } else {
+                // Label mode
+                let label = GRID_LABELS[idx];
+                spans.push(Span::styled(format!("{}", label), Style::default().fg(color)));
+            }
+
             if col < 7 {
                 spans.push(Span::raw(icon_spacing));
             }
         }
 
-        // Space before meters
-        spans.push(Span::raw("  "));
+        if app.show_meters_grid {
+            // Space before meters
+            spans.push(Span::raw("  "));
 
-        // Add 2-char wide L/R meters (full height, matching grid)
-        let (l_char, l_color) = get_meter_char_and_color_scaled(app.meter_data.peak_l, row, meter_rows, app.meter_data.clip_l, &app.theme);
-        let (r_char, r_color) = get_meter_char_and_color_scaled(app.meter_data.peak_r, row, meter_rows, app.meter_data.clip_r, &app.theme);
+            // Add 2-char wide L/R meters (full height, matching grid)
+            let (l_char, l_color) = get_meter_char_and_color_scaled(app.meter_data.peak_l, row, meter_rows, app.meter_data.clip_l, &app.theme);
+            let (r_char, r_color) = get_meter_char_and_color_scaled(app.meter_data.peak_r, row, meter_rows, app.meter_data.clip_r, &app.theme);
 
-        spans.push(Span::styled(format!("{}{}", l_char, l_char), Style::default().fg(l_color)));
-        spans.push(Span::raw(" "));
-        spans.push(Span::styled(format!("{}{}", r_char, r_char), Style::default().fg(r_color)));
+            spans.push(Span::styled(format!("{}{}", l_char, l_char), Style::default().fg(l_color)));
+            spans.push(Span::raw(" "));
+            spans.push(Span::styled(format!("{}{}", r_char, r_char), Style::default().fg(r_color)));
+        }
 
         lines.push(Line::from(spans).alignment(Alignment::Center));
     }
 
-    // Meter labels row
-    let mut meter_label = vec![];
-    meter_label.push(Span::raw("                             "));  // Grid space (29 chars)
-    meter_label.push(Span::raw("  "));
-    meter_label.push(Span::styled("L ", Style::default().fg(app.theme.label)));
-    meter_label.push(Span::raw(" "));
-    meter_label.push(Span::styled("R ", Style::default().fg(app.theme.label)));
-    lines.push(Line::from(meter_label).alignment(Alignment::Center));
-
-    // Multi-row spectrum (2 rows tall)
-    // 2 rows × 8 sub-levels per char = 16 levels of resolution
-    // Grid+meters width = 36 chars, spectrum = 30 chars, CPU = 2 chars, spacing = 1 char
-    let spectrum_rows = 2;
-    let spectrum_chars: [char; 9] = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
-
-    // CPU percentage and color
-    let cpu_percent = app.cpu_data.avg_cpu as u32;
-    let cpu_color = if app.cpu_data.avg_cpu >= 80.0 {
-        app.theme.error
-    } else {
-        app.theme.secondary
-    };
-
-    for spec_row in 0..spectrum_rows {
-        let mut spectrum_spans = vec![];
-
-        for i in 0..SPECTRUM_BANDS {
-            // Apply logarithmic scaling for better visual response
-            // sqrt gives a moderate curve between linear and full log
-            let raw = app.spectrum_data.bands[i];
-            let scaled = (raw * 3.0).sqrt().min(1.0);
-            let is_clipping = app.spectrum_data.clip[i];
-
-            let (spec_char, spec_color) = get_spectrum_char_for_row(
-                scaled,
-                spec_row,
-                spectrum_rows,
-                &spectrum_chars,
-                is_clipping,
-                &app.theme
-            );
-
-            // Double each character for 2-char width
-            spectrum_spans.push(Span::styled(
-                format!("{}{}", spec_char, spec_char),
-                Style::default().fg(spec_color)
-            ));
-        }
-
-        // Right column: CPU percentage on bottom row only (aligned with spectrum bottom)
-        // Layout: spectrum (30) + gap (1) + right-aligned percentage (5) = 36
-        if spec_row == spectrum_rows - 1 {
-            // Bottom row: show CPU percentage, right-aligned
-            let cpu_text = format!("{:>5}%", cpu_percent);
-            spectrum_spans.push(Span::styled(cpu_text, Style::default().fg(cpu_color)));
-        } else {
-            // Top row: empty space
-            spectrum_spans.push(Span::raw("      "));  // 6 spaces
-        }
-
-        lines.push(Line::from(spectrum_spans).alignment(Alignment::Center));
+    // Meter labels row (only if grid meters are shown)
+    if app.show_meters_grid {
+        let mut meter_label = vec![];
+        meter_label.push(Span::raw("                             "));  // Grid space (29 chars)
+        meter_label.push(Span::raw("  "));
+        meter_label.push(Span::styled("L ", Style::default().fg(app.theme.label)));
+        meter_label.push(Span::raw(" "));
+        meter_label.push(Span::styled("R ", Style::default().fg(app.theme.label)));
+        lines.push(Line::from(meter_label).alignment(Alignment::Center));
     }
 
-    // Label row: SPECTRUM on left, CPU on right (same row)
-    let mut spec_label = vec![];
-    spec_label.push(Span::styled("SPECTRUM", Style::default().fg(app.theme.label)));
-    // Pad between labels: 36 - 8 (SPECTRUM) - 3 (CPU) = 25 spaces
-    spec_label.push(Span::raw("                         "));  // 25 spaces
-    spec_label.push(Span::styled("CPU", Style::default().fg(app.theme.label)));
-    lines.push(Line::from(spec_label).alignment(Alignment::Center));
+    // Multi-row spectrum (2 rows tall) - only if spectrum is enabled
+    if app.show_spectrum {
+        // 2 rows × 8 sub-levels per char = 16 levels of resolution
+        // Grid+meters width = 36 chars, spectrum = 30 chars, CPU = 2 chars, spacing = 1 char
+        let spectrum_rows = 2;
+        let spectrum_chars: [char; 9] = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+
+        // CPU percentage and color
+        let cpu_percent = app.cpu_data.avg_cpu as u32;
+        let cpu_color = if app.cpu_data.avg_cpu >= 80.0 {
+            app.theme.error
+        } else {
+            app.theme.secondary
+        };
+
+        for spec_row in 0..spectrum_rows {
+            let mut spectrum_spans = vec![];
+
+            for i in 0..SPECTRUM_BANDS {
+                // Apply logarithmic scaling for better visual response
+                // sqrt gives a moderate curve between linear and full log
+                let raw = app.spectrum_data.bands[i];
+                let scaled = (raw * 3.0).sqrt().min(1.0);
+                let is_clipping = app.spectrum_data.clip[i];
+
+                let (spec_char, spec_color) = get_spectrum_char_for_row(
+                    scaled,
+                    spec_row,
+                    spectrum_rows,
+                    &spectrum_chars,
+                    is_clipping,
+                    &app.theme
+                );
+
+                // Double each character for 2-char width
+                spectrum_spans.push(Span::styled(
+                    format!("{}{}", spec_char, spec_char),
+                    Style::default().fg(spec_color)
+                ));
+            }
+
+            // Right column: CPU percentage on bottom row only (aligned with spectrum bottom)
+            // Layout: spectrum (30) + gap (1) + right-aligned percentage (5) = 36
+            if spec_row == spectrum_rows - 1 {
+                // Bottom row: show CPU percentage, right-aligned
+                let cpu_text = format!("{:>5}%", cpu_percent);
+                spectrum_spans.push(Span::styled(cpu_text, Style::default().fg(cpu_color)));
+            } else {
+                // Top row: empty space
+                spectrum_spans.push(Span::raw("      "));  // 6 spaces
+            }
+
+            lines.push(Line::from(spectrum_spans).alignment(Alignment::Center));
+        }
+
+        // Label row: SPECTRUM on left, CPU on right (same row)
+        let mut spec_label = vec![];
+        spec_label.push(Span::styled("SPECTRUM", Style::default().fg(app.theme.label)));
+        // Pad between labels: 36 - 8 (SPECTRUM) - 3 (CPU) = 25 spaces
+        spec_label.push(Span::raw("                         "));  // 25 spaces
+        spec_label.push(Span::styled("CPU", Style::default().fg(app.theme.label)));
+        lines.push(Line::from(spec_label).alignment(Alignment::Center));
+    }
 
     Paragraph::new(lines)
         .style(Style::default().bg(app.theme.background).fg(app.theme.foreground))

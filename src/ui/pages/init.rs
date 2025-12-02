@@ -39,12 +39,6 @@ pub fn render_init_page(app: &crate::App) -> Paragraph<'static> {
                 ]));
             }
         } else {
-            let highlighted = highlight_stateful_operators(
-                line_content,
-                script_index,
-                &app.patterns.toggle_state,
-            );
-
             let (normal_color, highlight_color) = if is_selected {
                 (app.theme.highlight_fg, app.theme.success)
             } else {
@@ -63,34 +57,54 @@ pub fn render_init_page(app: &crate::App) -> Paragraph<'static> {
                 let search_segments = highlight_matches_in_line(line_content, &app.search_query, current_col);
 
                 for (segment_text, is_match, is_current) in search_segments {
-                    let segment_highlighted = highlight_stateful_operators(
-                        &segment_text,
-                        script_index,
-                        &app.patterns.toggle_state,
-                    );
+                    if app.show_seq_highlight {
+                        let segment_highlighted = highlight_stateful_operators(
+                            &segment_text,
+                            script_index,
+                            &app.patterns.toggle_state,
+                        );
 
-                    for segment_span in segment_highlighted.to_spans(normal_color, highlight_color) {
-                        let mut style = segment_span.style;
+                        for segment_span in segment_highlighted.to_spans(normal_color, highlight_color) {
+                            let mut style = segment_span.style;
+                            if is_current {
+                                style = style.bg(app.theme.highlight_bg).fg(app.theme.highlight_fg);
+                            } else if is_match {
+                                style = style.fg(app.theme.accent);
+                            }
+                            span_vec.push(Span::styled(segment_span.content, style));
+                        }
+                    } else {
+                        let mut style = Style::default().fg(normal_color);
                         if is_current {
                             style = style.bg(app.theme.highlight_bg).fg(app.theme.highlight_fg);
                         } else if is_match {
                             style = style.fg(app.theme.accent);
                         }
-                        span_vec.push(Span::styled(segment_span.content, style));
+                        span_vec.push(Span::styled(segment_text, style));
                     }
                 }
-            } else if app.show_conditional_highlight {
-                let conditional_spans = apply_conditional_activity(
-                    highlighted,
-                    &app.conditional_segments[script_index][i],
-                    &app.theme,
-                    app.activity_hold_ms,
-                    is_selected,
+            } else if app.show_seq_highlight {
+                let highlighted = highlight_stateful_operators(
+                    line_content,
+                    script_index,
+                    &app.patterns.toggle_state,
                 );
-                span_vec.extend(conditional_spans);
+
+                if app.show_conditional_highlight {
+                    let conditional_spans = apply_conditional_activity(
+                        highlighted,
+                        &app.conditional_segments[script_index][i],
+                        &app.theme,
+                        app.activity_hold_ms,
+                        is_selected,
+                    );
+                    span_vec.extend(conditional_spans);
+                } else {
+                    let content_spans = highlighted.to_spans(normal_color, highlight_color);
+                    span_vec.extend(content_spans);
+                }
             } else {
-                let content_spans = highlighted.to_spans(normal_color, highlight_color);
-                span_vec.extend(content_spans);
+                span_vec.push(Span::styled(line_content.to_string(), Style::default().fg(normal_color)));
             }
 
             if is_selected {

@@ -86,6 +86,13 @@ pub struct TestContext {
     pub scope_color_mode: u8,
     pub scope_display_mode: u8,
     pub scope_unipolar: bool,
+    pub show_meters_header: bool,
+    pub show_meters_grid: bool,
+    pub show_spectrum: bool,
+    pub show_activity: bool,
+    pub show_grid_view: bool,
+    pub show_seq_highlight: bool,
+    pub grid_mode: u8,
     pub outputs: Vec<String>,
 }
 
@@ -119,6 +126,13 @@ impl Default for TestContext {
             scope_color_mode: 0,
             scope_display_mode: 0,
             scope_unipolar: false,
+            show_meters_header: true,
+            show_meters_grid: true,
+            show_spectrum: true,
+            show_activity: true,
+            show_grid_view: false,
+            show_seq_highlight: true,
+            grid_mode: 1,
             outputs: Vec::new(),
         }
     }
@@ -156,6 +170,13 @@ impl TestContext {
             &mut self.scope_color_mode,
             &mut self.scope_display_mode,
             &mut self.scope_unipolar,
+            &mut self.show_meters_header,
+            &mut self.show_meters_grid,
+            &mut self.show_spectrum,
+            &mut self.show_activity,
+            &mut self.show_grid_view,
+            &mut self.show_seq_highlight,
+            &mut self.grid_mode,
             input,
             |msg| {
                 self.outputs.push(msg);

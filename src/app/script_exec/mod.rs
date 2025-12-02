@@ -61,6 +61,13 @@ impl App {
             &mut self.scope_color_mode,
             &mut self.scope_display_mode,
             &mut self.scope_unipolar,
+            &mut self.show_meters_header,
+            &mut self.show_meters_grid,
+            &mut self.show_spectrum,
+            &mut self.show_activity,
+            &mut self.show_grid_view,
+            &mut self.show_seq_highlight,
+            &mut self.grid_mode,
             cmd_to_run,
             |msg| {
                 output_messages.push(msg);

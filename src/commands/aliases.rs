@@ -4,6 +4,9 @@ use std::collections::HashMap;
 static CANONICAL_TO_ALIAS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new(|| {
     let mut m = HashMap::new();
 
+    // NOTE: FMEV.CRV and DENV.CRV have no short aliases
+    // FC = Filter Cutoff (FILT.CUT), DC = Discontinuity Amount (DISC.AMT)
+
     m.insert("POSC.FREQ", "PF");
     m.insert("POSC.WAVE", "PW");
 
@@ -86,6 +89,18 @@ static CANONICAL_TO_ALIAS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new
     m.insert("PENV.AMT", "PA");
     m.insert("FMEV.AMT", "FA");
     m.insert("DENV.AMT", "DA");
+
+    m.insert("AENV.ATK", "AA");
+    m.insert("PENV.ATK", "PAA");
+    m.insert("FMEV.ATK", "FAA");
+    m.insert("DENV.ATK", "DAA");
+    m.insert("FBEV.ATK", "FBAA");
+    m.insert("FLEV.ATK", "FLAA");
+
+    m.insert("AENV.CRV", "AC");
+    m.insert("PENV.CRV", "PC");
+    m.insert("FBEV.CRV", "FBC");
+    m.insert("FLEV.CRV", "FLC");
 
     m
 });

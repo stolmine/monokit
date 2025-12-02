@@ -2,6 +2,17 @@
 
 ## Recent Updates (December 2025)
 
+### UI Polish (December 2025)
+
+**Search Input Display:**
+- Search input now displays in uppercase (Teletype aesthetic)
+- Maintains consistent visual style with rest of UI
+
+**Tab Hotkey Enhancement:**
+- Tab now navigates to Live page from any other page
+- On Live page, Tab continues to toggle grid view
+- Dual function improves navigation flow
+
 ### Phase 6: Polish & UI Preferences
 
 **Config Persistence (December 2025)**

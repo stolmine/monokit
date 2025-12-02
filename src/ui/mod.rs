@@ -186,6 +186,8 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     KeyCode::Tab => {
                         if app.current_page == Page::Live {
                             app.show_grid_view = !app.show_grid_view;
+                        } else {
+                            app.go_to_page(Page::Live);
                         }
                     }
                     KeyCode::Char('[') if is_help => {

@@ -401,6 +401,7 @@ impl App {
     }
 
     pub fn search_insert_char(&mut self, c: char) {
+        let c = c.to_ascii_uppercase();
         let byte_pos = self
             .search_query
             .char_indices()

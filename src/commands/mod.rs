@@ -20,6 +20,7 @@ use system::{metro as metro_cmds, midi as midi_cmds, misc, preset as preset_cmds
 // Re-export from synth module
 use synth as synth_params;
 
+use crate::config;
 use crate::midi::{MidiConnection, MidiTimingStats};
 use crate::theme::Theme;
 use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, SyncMode, Variables};
@@ -743,6 +744,7 @@ where
                 output(format!("FLASH HOLD: {}ms", *activity_hold_ms as u32));
             } else if let Ok(val) = parts[1].parse::<u32>() {
                 *activity_hold_ms = val as f32;
+                let _ = config::save_activity_hold_ms(val);
                 output(format!("FLASH HOLD: {}ms", val));
             } else {
                 output("ERROR: FLASH <MS> (0-1000)".to_string());
@@ -755,10 +757,12 @@ where
                 match parts[1] {
                     "0" => {
                         *show_conditional_highlight = false;
+                        let _ = config::save_show_conditional_highlight(*show_conditional_highlight);
                         output("COND HIGHLIGHT: OFF".to_string());
                     }
                     "1" => {
                         *show_conditional_highlight = true;
+                        let _ = config::save_show_conditional_highlight(*show_conditional_highlight);
                         output("COND HIGHLIGHT: ON".to_string());
                     }
                     _ => {

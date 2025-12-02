@@ -396,6 +396,34 @@ pub fn save_title_mode(mode: u8) -> Result<()> {
     Ok(())
 }
 
+pub fn save_scope_timespan_ms(ms: u32) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.scope_timespan_ms = ms;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_scope_color_mode(mode: u8) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.scope_color_mode = mode;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_scope_display_mode(mode: u8) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.scope_display_mode = mode;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_scope_unipolar(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.scope_unipolar = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
 pub fn save_scope_settings(timespan: u32, color: u8, mode: u8, unipolar: bool) -> Result<()> {
     let mut config = load_config()?;
     config.display.scope_timespan_ms = timespan;

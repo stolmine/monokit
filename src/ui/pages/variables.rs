@@ -6,46 +6,47 @@ pub fn render_variables_page(app: &crate::App) -> Paragraph<'static> {
     let global_label = Span::styled(" GLOBAL        COUNTERS", Style::default().fg(app.theme.label));
     lines.push(Line::from(global_label));
 
+    // 6-char width for values (5 digits + 1 space)
     let row1_spans = vec![
         Span::styled(" A: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{:<4}", app.variables.a), Style::default().fg(app.theme.foreground)),
-        Span::styled(" X: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{:<4}", app.variables.x), Style::default().fg(app.theme.foreground)),
-        Span::styled(" N1: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{} ", app.counters.values[0]), Style::default().fg(app.theme.foreground)),
+        Span::styled(format!("{:<6}", app.variables.a), Style::default().fg(app.theme.foreground)),
+        Span::styled("X: ", Style::default().fg(app.theme.secondary)),
+        Span::styled(format!("{:<6}", app.variables.x), Style::default().fg(app.theme.foreground)),
+        Span::styled("N1: ", Style::default().fg(app.theme.secondary)),
+        Span::styled(format!("{:<6}", app.counters.values[0]), Style::default().fg(app.theme.foreground)),
         Span::styled(format!("[{}..{}]", app.counters.min[0], app.counters.max[0]), Style::default().fg(app.theme.secondary)),
     ];
     lines.push(Line::from(row1_spans));
 
     let row2_spans = vec![
         Span::styled(" B: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{:<4}", app.variables.b), Style::default().fg(app.theme.foreground)),
-        Span::styled(" Y: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{:<4}", app.variables.y), Style::default().fg(app.theme.foreground)),
-        Span::styled(" N2: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{} ", app.counters.values[1]), Style::default().fg(app.theme.foreground)),
+        Span::styled(format!("{:<6}", app.variables.b), Style::default().fg(app.theme.foreground)),
+        Span::styled("Y: ", Style::default().fg(app.theme.secondary)),
+        Span::styled(format!("{:<6}", app.variables.y), Style::default().fg(app.theme.foreground)),
+        Span::styled("N2: ", Style::default().fg(app.theme.secondary)),
+        Span::styled(format!("{:<6}", app.counters.values[1]), Style::default().fg(app.theme.foreground)),
         Span::styled(format!("[{}..{}]", app.counters.min[1], app.counters.max[1]), Style::default().fg(app.theme.secondary)),
     ];
     lines.push(Line::from(row2_spans));
 
     let row3_spans = vec![
         Span::styled(" C: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{:<4}", app.variables.c), Style::default().fg(app.theme.foreground)),
-        Span::styled(" Z: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{:<4}", app.variables.z), Style::default().fg(app.theme.foreground)),
-        Span::styled(" N3: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{} ", app.counters.values[2]), Style::default().fg(app.theme.foreground)),
+        Span::styled(format!("{:<6}", app.variables.c), Style::default().fg(app.theme.foreground)),
+        Span::styled("Z: ", Style::default().fg(app.theme.secondary)),
+        Span::styled(format!("{:<6}", app.variables.z), Style::default().fg(app.theme.foreground)),
+        Span::styled("N3: ", Style::default().fg(app.theme.secondary)),
+        Span::styled(format!("{:<6}", app.counters.values[2]), Style::default().fg(app.theme.foreground)),
         Span::styled(format!("[{}..{}]", app.counters.min[2], app.counters.max[2]), Style::default().fg(app.theme.secondary)),
     ];
     lines.push(Line::from(row3_spans));
 
     let row4_spans = vec![
         Span::styled(" D: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{:<4}", app.variables.d), Style::default().fg(app.theme.foreground)),
-        Span::styled(" T: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{:<4}", app.variables.t), Style::default().fg(app.theme.foreground)),
-        Span::styled(" N4: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{} ", app.counters.values[3]), Style::default().fg(app.theme.foreground)),
+        Span::styled(format!("{:<6}", app.variables.d), Style::default().fg(app.theme.foreground)),
+        Span::styled("T: ", Style::default().fg(app.theme.secondary)),
+        Span::styled(format!("{:<6}", app.variables.t), Style::default().fg(app.theme.foreground)),
+        Span::styled("N4: ", Style::default().fg(app.theme.secondary)),
+        Span::styled(format!("{:<6}", app.counters.values[3]), Style::default().fg(app.theme.foreground)),
         Span::styled(format!("[{}..{}]", app.counters.min[3], app.counters.max[3]), Style::default().fg(app.theme.secondary)),
     ];
     lines.push(Line::from(row4_spans));
@@ -55,17 +56,17 @@ pub fn render_variables_page(app: &crate::App) -> Paragraph<'static> {
     let locals_label = Span::styled(" LOCALS (J, K)", Style::default().fg(app.theme.label));
     lines.push(Line::from(locals_label));
 
-    // Row 1: scripts 1, 5, M
+    // Row 1: scripts 1, 5, M (6-char width per value)
     let s1 = &app.scripts.scripts[0];
     let s5 = &app.scripts.scripts[4];
     let sm = &app.scripts.scripts[8];
     lines.push(Line::from(vec![
         Span::styled(" 1: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{:<3}{:<4}", s1.j, s1.k), Style::default().fg(app.theme.foreground)),
-        Span::styled(" 5: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{:<3}{:<4}", s5.j, s5.k), Style::default().fg(app.theme.foreground)),
-        Span::styled(" M: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{} {}", sm.j, sm.k), Style::default().fg(app.theme.foreground)),
+        Span::styled(format!("{:<6}{:<6}", s1.j, s1.k), Style::default().fg(app.theme.foreground)),
+        Span::styled("5: ", Style::default().fg(app.theme.secondary)),
+        Span::styled(format!("{:<6}{:<6}", s5.j, s5.k), Style::default().fg(app.theme.foreground)),
+        Span::styled("M: ", Style::default().fg(app.theme.secondary)),
+        Span::styled(format!("{:<6}{}", sm.j, sm.k), Style::default().fg(app.theme.foreground)),
     ]));
 
     // Row 2: scripts 2, 6, I
@@ -74,11 +75,11 @@ pub fn render_variables_page(app: &crate::App) -> Paragraph<'static> {
     let si = &app.scripts.scripts[9];
     lines.push(Line::from(vec![
         Span::styled(" 2: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{:<3}{:<4}", s2.j, s2.k), Style::default().fg(app.theme.foreground)),
-        Span::styled(" 6: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{:<3}{:<4}", s6.j, s6.k), Style::default().fg(app.theme.foreground)),
-        Span::styled(" I: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{} {}", si.j, si.k), Style::default().fg(app.theme.foreground)),
+        Span::styled(format!("{:<6}{:<6}", s2.j, s2.k), Style::default().fg(app.theme.foreground)),
+        Span::styled("6: ", Style::default().fg(app.theme.secondary)),
+        Span::styled(format!("{:<6}{:<6}", s6.j, s6.k), Style::default().fg(app.theme.foreground)),
+        Span::styled("I: ", Style::default().fg(app.theme.secondary)),
+        Span::styled(format!("{:<6}{}", si.j, si.k), Style::default().fg(app.theme.foreground)),
     ]));
 
     // Row 3: scripts 3, 7
@@ -86,9 +87,9 @@ pub fn render_variables_page(app: &crate::App) -> Paragraph<'static> {
     let s7 = &app.scripts.scripts[6];
     lines.push(Line::from(vec![
         Span::styled(" 3: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{:<3}{:<4}", s3.j, s3.k), Style::default().fg(app.theme.foreground)),
-        Span::styled(" 7: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{} {}", s7.j, s7.k), Style::default().fg(app.theme.foreground)),
+        Span::styled(format!("{:<6}{:<6}", s3.j, s3.k), Style::default().fg(app.theme.foreground)),
+        Span::styled("7: ", Style::default().fg(app.theme.secondary)),
+        Span::styled(format!("{:<6}{}", s7.j, s7.k), Style::default().fg(app.theme.foreground)),
     ]));
 
     // Row 4: scripts 4, 8
@@ -96,9 +97,9 @@ pub fn render_variables_page(app: &crate::App) -> Paragraph<'static> {
     let s8 = &app.scripts.scripts[7];
     lines.push(Line::from(vec![
         Span::styled(" 4: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{:<3}{:<4}", s4.j, s4.k), Style::default().fg(app.theme.foreground)),
-        Span::styled(" 8: ", Style::default().fg(app.theme.secondary)),
-        Span::styled(format!("{} {}", s8.j, s8.k), Style::default().fg(app.theme.foreground)),
+        Span::styled(format!("{:<6}{:<6}", s4.j, s4.k), Style::default().fg(app.theme.foreground)),
+        Span::styled("8: ", Style::default().fg(app.theme.secondary)),
+        Span::styled(format!("{:<6}{}", s8.j, s8.k), Style::default().fg(app.theme.foreground)),
     ]));
 
     Paragraph::new(lines)

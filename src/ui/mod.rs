@@ -117,6 +117,11 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     KeyCode::Char('v') if key.modifiers.contains(KeyModifiers::CONTROL) && app.is_script_page() => {
                         app.paste_line();
                     }
+                    KeyCode::Tab => {
+                        if app.current_page == Page::Live {
+                            app.show_grid_view = !app.show_grid_view;
+                        }
+                    }
                     KeyCode::Char('[') if is_help => {
                         app.prev_help_page();
                     }

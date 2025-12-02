@@ -1,7 +1,7 @@
 use crate::midi::{MidiConnection, MidiTimingStats};
 use crate::theme::Theme;
 use crate::types::{
-    Counters, MetroCommand, MetroState, Page, PatternStorage, ScaleState, ScriptStorage, SyncMode, Variables,
+    Counters, MetroCommand, MetroState, Page, ParamActivity, PatternStorage, ScaleState, ScriptStorage, SyncMode, Variables,
 };
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -49,6 +49,8 @@ pub struct App {
     pub script_activity: [Option<Instant>; 10],
     pub trigger_activity: Option<Instant>,
     pub activity_hold_ms: f32,
+    pub param_activity: ParamActivity,
+    pub show_grid_view: bool,
 }
 
 impl App {
@@ -92,6 +94,8 @@ impl App {
             script_activity: [None; 10],
             trigger_activity: None,
             activity_hold_ms: crate::theme::DEFAULT_ACTIVITY_HOLD_MS,
+            param_activity: ParamActivity::default(),
+            show_grid_view: false,
         }
     }
 

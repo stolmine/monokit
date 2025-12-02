@@ -555,14 +555,16 @@ Dedicated page showing all variable state (Teletype-style monitor).
 - [x] Display per-script locals: J, K for all 10 scripts
 - [ ] Optional: highlight recently-changed values
 
-### Phase 5.4: Parameter Activity Grid [Medium] - NOT STARTED
-KO II-style grid showing which parameter categories are being modified.
+### Phase 5.4: Parameter Activity Grid [Medium] - COMPLETE
+Alternate grid view on Live page showing parameter activity with unicode icons.
 
-- [ ] Category mapping: OSC, FM, ENV, FLT, FX, MOD, OUT
-- [ ] Add `ParamActivity` struct with per-category timestamps
-- [ ] Mark activity when parameters change
-- [ ] Display in header or footer: `OSC:█ FM:▓ ENV:░ FLT:·`
-- [ ] Same decay timing as script indicators
+- [x] Add `ParamActivity` struct with per-parameter timestamps
+- [x] Mark activity when parameters change in script execution and REPL
+- [x] Tab keybinding to toggle between REPL and Grid view on Live page
+- [x] 8x6 grid of 48 unicode icons representing synth parameters
+- [x] Icons light up and decay when parameters change (reuses activity_color())
+- [x] Grid center-justified with 3-space gaps between icons
+- [x] Same decay timing as script indicators
 
 ### Phase 5.5: Audio Metering [High] - NOT STARTED
 Real-time amplitude and CPU display (requires bidirectional OSC).

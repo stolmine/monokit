@@ -94,6 +94,24 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 **Files Created:**
 - `src/ui/pages/variables.rs` - New page implementation
 
+### Parameter Activity Grid (December 2025)
+
+**Phase 5.4: Parameter Activity Grid - COMPLETE**
+- Alternate view on Live page showing parameter activity as grid
+- Press Tab to toggle between REPL view and Grid view
+- 8x6 grid of 48 unicode icons representing synth parameters
+- Icons light up and decay when their parameters change (reuses activity_color())
+- Grid is center-justified in the content area with 3-space gaps between icons
+- Activity tracked for: oscillators (PF, PW, MF, MW), FM/FB, filter, effects, envelopes, modulation, output
+
+**Files Changed:**
+- `src/types.rs` - Added ParamActivity struct, GRID_ICONS const
+- `src/app/mod.rs` - Added param_activity and show_grid_view fields
+- `src/ui/pages/live.rs` - Added grid view rendering
+- `src/ui/mod.rs` - Added Tab keybinding
+- `src/app/script_exec/mod.rs` - Mark param activity on script execution
+- `src/app/script_exec/interactive.rs` - Mark param activity on REPL commands
+
 ### DRY Refactoring Complete (All Phases)
 
 **Total lines removed: ~5,942 lines**

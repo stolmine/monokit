@@ -27,6 +27,13 @@ impl App {
         if cmd_to_run.trim().eq_ignore_ascii_case("TR") {
             self.trigger_activity = Some(std::time::Instant::now());
         }
+
+        // Mark parameter activity
+        let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
+        if let Some(cmd) = parts.get(0) {
+            self.param_activity.mark(cmd);
+        }
+
         let mut output_messages = Vec::new();
         let result = process_command(
             &self.metro_tx,

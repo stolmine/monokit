@@ -99,6 +99,12 @@ impl App {
                 self.trigger_activity = Some(std::time::Instant::now());
             }
 
+            // Mark parameter activity
+            let parts: Vec<&str> = sub_cmd.split_whitespace().collect();
+            if let Some(cmd) = parts.get(0) {
+                self.param_activity.mark(cmd);
+            }
+
             self.process_sub_command(sub_cmd, 10, &mut metro_interval, None);
         }
     }

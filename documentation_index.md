@@ -76,6 +76,24 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 **Files Created:**
 - `src/ui/state_highlight.rs` - New module for highlighting stateful operators
 
+### Variables Page (December 2025)
+
+**Phase 5.3: Variable State Monitoring - COMPLETE**
+- New Variables page shows all variable state in Teletype-style monitor layout
+- Access via `Alt+V` or `[`/`]` navigation
+- Displays global variables: A, B, C, D, X, Y, Z, T
+- Displays counters N1-N4 with their min/max bounds
+- Displays per-script local variables: J, K for all 10 scripts (Scripts 1-8, M, I)
+- Clean three-column layout for easy scanning
+- Added `Page::Variables` to navigation system
+
+**Bug Fixes:**
+- SLEW and SLEW.ALL commands now accept expressions in scripts (fixed strict arg count validation)
+- Empty line cursor visibility restored on Script 1-8, Metro, and Init pages
+
+**Files Created:**
+- `src/ui/pages/variables.rs` - New page implementation
+
 ### DRY Refactoring Complete (All Phases)
 
 **Total lines removed: ~5,942 lines**

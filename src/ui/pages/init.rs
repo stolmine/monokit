@@ -11,9 +11,15 @@ pub fn render_init_page(app: &crate::App) -> Paragraph<'static> {
         let is_selected = app.selected_line == Some(i);
 
         if line_content.is_empty() {
-            lines.push(Line::from(vec![
-                Span::styled("  ", Style::default().fg(app.theme.secondary)),
-            ]));
+            if is_selected {
+                lines.push(Line::from(vec![
+                    Span::styled("  ", Style::default().bg(app.theme.highlight_bg)),
+                ]));
+            } else {
+                lines.push(Line::from(vec![
+                    Span::styled("  ", Style::default().fg(app.theme.secondary)),
+                ]));
+            }
         } else {
             let highlighted = highlight_stateful_operators(
                 line_content,

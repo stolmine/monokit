@@ -15,7 +15,7 @@ use footer::render_footer;
 use header::render_header;
 use pages::{
     render_help_page, render_init_page, render_live_page, render_metro_page, render_pattern_page,
-    render_script_page, HELP_CATEGORIES,
+    render_script_page, render_variables_page, HELP_CATEGORIES,
 };
 
 pub fn ui(f: &mut Frame, app: &crate::App) {
@@ -68,6 +68,7 @@ pub fn ui(f: &mut Frame, app: &crate::App) {
         Page::Metro => render_metro_page(app),
         Page::Init => render_init_page(app),
         Page::Pattern => render_pattern_page(app),
+        Page::Variables => render_variables_page(app),
         Page::Help => render_help_page(app, chunks[1].height as usize),
     };
     f.render_widget(content, chunks[1]);
@@ -181,6 +182,9 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     }
                     KeyCode::Char('p') if has_alt => {
                         app.go_to_page(Page::Pattern);
+                    }
+                    KeyCode::Char('v') if has_alt => {
+                        app.go_to_page(Page::Variables);
                     }
                     KeyCode::Char('1') if has_alt => {
                         app.go_to_page(Page::Script1);

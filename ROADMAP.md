@@ -545,14 +545,14 @@ Show current position in stateful operators within script display.
 - [x] SEQ validation: reject invalid syntax (`SEQ"..."` and `SEQ "...`)
 - [x] Random choice state tracking with `seq_rnd_` keys
 
-### Phase 5.3: Variables Page [Medium] - NOT STARTED
+### Phase 5.3: Variables Page [Medium] - COMPLETE
 Dedicated page showing all variable state (Teletype-style monitor).
 
-- [ ] Add `Page::Variables` to page enum
-- [ ] Create `src/ui/pages/variables.rs`
-- [ ] Display global vars: A, B, C, D, X, Y, Z, T
-- [ ] Display counters: N1-N4 with min/max bounds
-- [ ] Display per-script locals: J, K for all 10 scripts
+- [x] Add `Page::Variables` to page enum
+- [x] Create `src/ui/pages/variables.rs`
+- [x] Display global vars: A, B, C, D, X, Y, Z, T
+- [x] Display counters: N1-N4 with min/max bounds
+- [x] Display per-script locals: J, K for all 10 scripts
 - [ ] Optional: highlight recently-changed values
 
 ### Phase 5.4: Parameter Activity Grid [Medium] - NOT STARTED

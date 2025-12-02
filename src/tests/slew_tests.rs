@@ -22,9 +22,10 @@ fn test_slew_missing_args() {
 }
 
 #[test]
-fn test_slew_too_many_args() {
-    assert!(validate_script_command("SLEW PF 100 200").is_err());
-    assert!(validate_script_command("SLEW MF 100 200 300").is_err());
+fn test_slew_with_expressions() {
+    // SLEW now accepts expressions, so extra args are valid expression parts
+    assert!(validate_script_command("SLEW PF ADD 100 200").is_ok());
+    assert!(validate_script_command("SLEW MF MUL 100 2").is_ok());
 }
 
 #[test]
@@ -41,8 +42,9 @@ fn test_slew_all_missing_args() {
 }
 
 #[test]
-fn test_slew_all_too_many_args() {
-    assert!(validate_script_command("SLEW.ALL 100 200").is_err());
+fn test_slew_all_with_expressions() {
+    // SLEW.ALL now accepts expressions, so extra args are valid expression parts
+    assert!(validate_script_command("SLEW.ALL ADD 100 200").is_ok());
 }
 
 #[test]

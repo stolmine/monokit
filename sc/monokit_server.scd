@@ -480,12 +480,23 @@ s.waitForBoot {
             sigR + (reverbedR * Select.kr(rtail.clip(0, 2).round, [reverbWetSmooth, 1, 1]))
         ]);
 
+        // Send peak/RMS at 20Hz to Rust meter thread
+        SendPeakRMS.kr(sigL, 20, 3, '/monokit/meter', 1);
+        SendPeakRMS.kr(sigR, 20, 3, '/monokit/meter', 2);
+
         Out.ar(0, [sigL, sigR]);
     }).add;
 
     s.sync;
 
     ~voice = Synth(\monokit);
+
+    // Forward meter data from SendPeakRMS to Rust app on port 57121
+    ~meterAddr = NetAddr("127.0.0.1", 57121);
+    OSCdef(\monokit_meter_fwd, { |msg|
+        // msg format: ['/monokit/meter', channel, peak, rms]
+        ~meterAddr.sendMsg('/monokit/meter', msg[1], msg[2], msg[3]);
+    }, '/monokit/meter');
 
     OSCdef(\monokit_trigger, { |msg|
         ~voice.set(\gate, 1);

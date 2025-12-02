@@ -220,10 +220,23 @@ pub enum MetroCommand {
     ResetTriggerCount,     // Reset the trigger counter to 0
 }
 
+#[derive(Debug, Clone, Default)]
+pub struct MeterData {
+    pub peak_l: f32,
+    pub peak_r: f32,
+    pub rms_l: f32,
+    pub rms_r: f32,
+    pub peak_hold_l: f32,
+    pub peak_hold_r: f32,
+    pub clip_l: bool,
+    pub clip_r: bool,
+}
+
 #[derive(Debug, Clone)]
 pub enum MetroEvent {
     ExecuteScript(usize),
     ExecuteDelayed(String, usize),
+    MeterUpdate(MeterData),
 }
 
 #[derive(Debug, Clone)]

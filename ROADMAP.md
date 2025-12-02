@@ -566,16 +566,18 @@ Alternate grid view on Live page showing parameter activity with unicode icons.
 - [x] Grid center-justified with 3-space gaps between icons
 - [x] Same decay timing as script indicators
 
-### Phase 5.5: Audio Metering [High] - NOT STARTED
-Real-time amplitude and CPU display (requires bidirectional OSC).
+### Phase 5.5: Audio Metering [High] - COMPLETE
+Real-time amplitude display via bidirectional OSC.
 
-- [ ] Add `SendPeakRMS` to SuperCollider SynthDef
-- [ ] Create `src/meter.rs` receiver thread (port 57121)
-- [ ] Add `MeterData` and `CpuData` types
-- [ ] Spawn meter thread in main.rs
-- [ ] Unicode bargraph display: `▁▂▃▄▅▆▇█`
-- [ ] CPU percentage from SC `/status` command
-- [ ] Peak hold and clip indicator
+- [x] Add `SendPeakRMS` to SuperCollider SynthDef (20Hz updates)
+- [x] Create `src/meter.rs` receiver thread (port 57121)
+- [x] Add `MeterData` type with peak/RMS/clip fields
+- [x] Spawn meter thread in main.rs
+- [x] Unicode bargraph display: `L▅▆ R▅▅` in header
+- [x] Clip indicator (meter turns error color on clip)
+- [x] REC indicator moved to right-aligned border title
+- [ ] CPU percentage from SC `/status` command (future)
+- [ ] Peak hold decay visualization (future)
 
 ### Global Search [Medium] - NOT STARTED
 Search functionality across scripts and patterns.

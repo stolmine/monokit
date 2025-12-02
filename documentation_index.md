@@ -112,6 +112,25 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 - `src/app/script_exec/mod.rs` - Mark param activity on script execution
 - `src/app/script_exec/interactive.rs` - Mark param activity on REPL commands
 
+### Audio Metering (December 2025)
+
+**Phase 5.5: Audio Metering - COMPLETE**
+- Real-time stereo peak/RMS metering via bidirectional OSC
+- SuperCollider sends meter data at 20Hz via SendPeakRMS
+- Meter thread receives on UDP port 57121
+- Unicode bargraph display in header: `L▅▆ R▅▅`
+- Clip indicator changes meter color to error
+- REC indicator moved to right-aligned border title
+
+**Files Created/Changed:**
+- `src/meter.rs` - New receiver thread for meter data
+- `src/types.rs` - Added MeterData struct, MetroEvent::MeterUpdate
+- `src/app/mod.rs` - Added meter_data field
+- `src/main.rs` - Spawns meter thread
+- `src/ui/mod.rs` - Handles MeterUpdate events
+- `src/ui/header.rs` - Bargraph rendering, REC in border title
+- `sc/monokit_server.scd` - Added SendPeakRMS and OSCdef forwarder
+
 ### DRY Refactoring Complete (All Phases)
 
 **Total lines removed: ~5,942 lines**

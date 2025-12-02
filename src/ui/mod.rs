@@ -97,6 +97,9 @@ pub fn run_app<B: ratatui::backend::Backend>(
                 MetroEvent::ExecuteDelayed(command, script_index) => {
                     app.execute_delayed_command(&command, script_index);
                 }
+                MetroEvent::MeterUpdate(meter_data) => {
+                    app.meter_data = meter_data;
+                }
             }
         }
 

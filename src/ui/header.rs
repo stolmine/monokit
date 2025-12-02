@@ -1,6 +1,38 @@
 use ratatui::{prelude::*, widgets::*};
 
-use crate::types::{Page, NAVIGABLE_PAGES};
+use crate::types::{MeterData, Page, NAVIGABLE_PAGES};
+
+const BARGRAPH_CHARS: [char; 8] = ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+
+fn level_to_bars(level: f32) -> String {
+    // 2-char display for 0.0-1.0
+    let clamped = level.clamp(0.0, 1.0);
+    let first_idx = (clamped * 8.0).min(7.0) as usize;
+    let second_char = if clamped > 0.5 {
+        BARGRAPH_CHARS[((clamped - 0.5) * 16.0).min(7.0) as usize]
+    } else {
+        ' '
+    };
+    format!("{}{}", BARGRAPH_CHARS[first_idx], second_char)
+}
+
+fn render_meters(meter_data: &MeterData, theme: &crate::theme::Theme) -> Vec<Span<'static>> {
+    let mut spans = Vec::new();
+
+    // Left channel
+    let l_color = if meter_data.clip_l { theme.error } else { theme.success };
+    spans.push(Span::styled("L", Style::default().fg(theme.secondary)));
+    spans.push(Span::styled(level_to_bars(meter_data.peak_l), Style::default().fg(l_color)));
+
+    spans.push(Span::raw(" "));
+
+    // Right channel
+    let r_color = if meter_data.clip_r { theme.error } else { theme.success };
+    spans.push(Span::styled("R", Style::default().fg(theme.secondary)));
+    spans.push(Span::styled(level_to_bars(meter_data.peak_r), Style::default().fg(r_color)));
+
+    spans
+}
 
 fn page_to_activity_index(page: &Page) -> Option<usize> {
     match page {
@@ -59,29 +91,39 @@ pub fn render_header(app: &crate::App) -> Paragraph<'static> {
         Style::default().fg(tr_color),
     ));
 
-    if app.recording {
+    // Add meters after TR
+    spans.push(Span::raw("  "));
+    spans.extend(render_meters(&app.meter_data, &app.theme));
+
+    // Build REC title for border (right-aligned) if recording
+    let rec_title = if app.recording {
         let duration = app.recording_start
             .map(|start| start.elapsed().as_secs())
             .unwrap_or(0);
         let mins = duration / 60;
         let secs = duration % 60;
+        format!(" ● REC {:02}:{:02} ", mins, secs)
+    } else {
+        String::new()
+    };
 
-        spans.push(Span::raw("  "));
-        spans.push(Span::styled(
-            format!("● REC {:02}:{:02}", mins, secs),
-            Style::default()
-                .fg(app.theme.error)
-                .add_modifier(Modifier::BOLD),
-        ));
+    let mut block = Block::default()
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(app.theme.border))
+        .title(" MONOKIT ")
+        .title_style(Style::default().fg(app.theme.foreground));
+
+    if app.recording {
+        block = block.title(
+            ratatui::widgets::block::Title::from(Span::styled(
+                rec_title,
+                Style::default().fg(app.theme.error).add_modifier(Modifier::BOLD),
+            ))
+            .alignment(Alignment::Right)
+        );
     }
 
     Paragraph::new(Line::from(spans))
         .style(Style::default().bg(app.theme.background).fg(app.theme.foreground))
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_style(Style::default().fg(app.theme.border))
-                .title(" MONOKIT ")
-                .title_style(Style::default().fg(app.theme.foreground))
-        )
+        .block(block)
 }

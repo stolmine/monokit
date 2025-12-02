@@ -2,6 +2,7 @@ mod app;
 mod commands;
 mod config;
 mod eval;
+mod meter;
 mod metro;
 mod midi;
 mod osc_utils;
@@ -23,6 +24,7 @@ use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 
 use crate::app::App;
+use crate::meter::meter_thread;
 use crate::metro::metro_thread;
 use crate::types::{MetroCommand, MetroEvent, MetroState};
 use crate::ui::run_app;
@@ -33,8 +35,14 @@ fn main() -> Result<()> {
     let (metro_event_tx, metro_event_rx) = mpsc::channel::<MetroEvent>();
 
     let metro_state_clone = metro_state.clone();
+    let meter_event_tx = metro_event_tx.clone();
     let metro_handle = thread::spawn(move || {
         metro_thread(metro_rx, metro_state_clone, metro_event_tx);
+    });
+
+    // Spawn meter thread for receiving audio level data from SuperCollider
+    thread::spawn(move || {
+        meter_thread(meter_event_tx);
     });
 
     enable_raw_mode()?;

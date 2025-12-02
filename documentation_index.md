@@ -2,6 +2,31 @@
 
 ## Recent Updates (December 2025)
 
+### Tiered REPL Verbosity System (December 2025)
+
+**DEBUG Command Enhancement:**
+- DEBUG now supports tiers 0-5 (was 0-2)
+- Tier 0: SILENT - Nothing (use category overrides)
+- Tier 1: ERRORS - All error messages
+- Tier 2: ESSENTIAL - State changes (scene, metro, rec)
+- Tier 3: QUERIES - Value read responses
+- Tier 4: CONFIRMS - Set confirmations
+- Tier 5: VERBOSE - All output
+
+**Category Override Commands:**
+- OUT.ERR <0|1> - Override: show errors
+- OUT.ESS <0|1> - Override: show essential
+- OUT.QRY <0|1> - Override: show queries
+- OUT.CFM <0|1> - Override: show confirms
+
+**REPL.DUMP Command:**
+- REPL.DUMP [filename] - Export REPL contents to text
+- Default filename: repl_dump.txt
+
+**Background Error Routing:**
+- Meter/MIDI errors now route to REPL (was stderr)
+- Uses MetroEvent::Error for thread communication
+
 ### UI Polish (December 2025)
 
 **Search Input Display:**

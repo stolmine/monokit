@@ -818,6 +818,10 @@ Comprehensive tiered verbosity system with category overrides.
 - [x] `OUT.QRY <0|1>` - Override: show queries
 - [x] `OUT.CFM <0|1>` - Override: show confirms
 
+**REPL Management:**
+- [x] `CLEAR` - Clear all REPL output
+- [x] `REPL.DUMP [filename]` - Save REPL output to file (default: repl_dump.txt)
+
 **Additional Fixes:**
 - [x] Fixed 21 messages exceeding 46-char limit
 - [x] Standardized message formats (ERROR:, SET...TO, etc.)

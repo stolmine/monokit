@@ -38,6 +38,10 @@
 - HL.SEQ <0|1> - Toggle SEQ/TOG state highlighting (Phase 5.2)
 - HL.COND <0|1> - Toggle conditional execution highlighting (Phase 5.7)
 
+**Grid View Layout Stability (December 2025)**
+- Fixed spectrum/meters positioning when GRID visibility toggles
+- Grid reserves fixed 30 chars regardless of GRID.MODE (labels/icons)
+
 **New Command Aliases (December 2025)**
 Added envelope parameter aliases for consistency:
 - AA → AENV.ATK (Amplitude envelope attack)

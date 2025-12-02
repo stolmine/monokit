@@ -2,34 +2,33 @@ use ratatui::{prelude::*, widgets::*};
 
 use crate::types::{MeterData, Page, NAVIGABLE_PAGES};
 
-const BARGRAPH_CHARS: [char; 8] = ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+// 8-level vertical bar characters for meter display
+const METER_CHARS: [char; 9] = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
 
-fn level_to_bars(level: f32) -> String {
-    // 2-char display for 0.0-1.0
+fn level_to_char(level: f32) -> char {
     let clamped = level.clamp(0.0, 1.0);
-    let first_idx = (clamped * 8.0).min(7.0) as usize;
-    let second_char = if clamped > 0.5 {
-        BARGRAPH_CHARS[((clamped - 0.5) * 16.0).min(7.0) as usize]
-    } else {
-        ' '
-    };
-    format!("{}{}", BARGRAPH_CHARS[first_idx], second_char)
+    let idx = (clamped * 8.0).round() as usize;
+    METER_CHARS[idx.min(8)]
 }
 
 fn render_meters(meter_data: &MeterData, theme: &crate::theme::Theme) -> Vec<Span<'static>> {
     let mut spans = Vec::new();
 
-    // Left channel
+    // Left channel - single char meter
     let l_color = if meter_data.clip_l { theme.error } else { theme.success };
     spans.push(Span::styled("L", Style::default().fg(theme.secondary)));
-    spans.push(Span::styled(level_to_bars(meter_data.peak_l), Style::default().fg(l_color)));
+    spans.push(Span::styled(
+        level_to_char(meter_data.peak_l).to_string(),
+        Style::default().fg(l_color),
+    ));
 
-    spans.push(Span::raw(" "));
-
-    // Right channel
+    // Right channel - single char meter
     let r_color = if meter_data.clip_r { theme.error } else { theme.success };
     spans.push(Span::styled("R", Style::default().fg(theme.secondary)));
-    spans.push(Span::styled(level_to_bars(meter_data.peak_r), Style::default().fg(r_color)));
+    spans.push(Span::styled(
+        level_to_char(meter_data.peak_r).to_string(),
+        Style::default().fg(r_color),
+    ));
 
     spans
 }

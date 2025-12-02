@@ -26,6 +26,8 @@ pub struct DisplayConfig {
     pub debug_level: u8,
     #[serde(default)]
     pub show_cpu: bool,
+    #[serde(default = "default_show_bpm")]
+    pub show_bpm: bool,
     #[serde(default = "default_show_meters")]
     pub show_meters_header: bool,
     #[serde(default = "default_show_meters")]
@@ -113,6 +115,10 @@ fn default_show_activity() -> bool {
     true
 }
 
+fn default_show_bpm() -> bool {
+    true
+}
+
 fn default_show_seq_highlight() -> bool {
     true
 }
@@ -145,6 +151,7 @@ impl Default for DisplayConfig {
             load_rst: false,
             debug_level: default_debug_level(),
             show_cpu: false,
+            show_bpm: default_show_bpm(),
             show_meters_header: default_show_meters(),
             show_meters_grid: default_show_meters(),
             show_spectrum: default_show_spectrum(),
@@ -301,6 +308,13 @@ pub fn save_debug_level(level: u8) -> Result<()> {
 pub fn save_show_cpu(enabled: bool) -> Result<()> {
     let mut config = load_config()?;
     config.display.show_cpu = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_show_bpm(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.show_bpm = enabled;
     save_config(&config)?;
     Ok(())
 }

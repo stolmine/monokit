@@ -505,6 +505,7 @@ pub const HELP_CATEGORIES: &[HelpCategory] = &[
             "  HL.SEQ <0|1>      SEQ/TOG HIGHL",
             "  HL.COND <0|1>     COND HIGHL",
             "  CPU <0|1>         CPU METER",
+            "  BPM <0|1>         BPM DISPLAY",
             "  TITLE <0|1>       HDR TITLE MODE",
             "  HEADER <0-4>      HDR VERBOSE",
             "  DEBUG <0-2>       DBG LEVEL",

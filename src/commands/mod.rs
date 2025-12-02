@@ -46,6 +46,7 @@ pub fn process_command<F>(
     debug_level: &mut u8,
     activity_hold_ms: &mut f32,
     show_cpu: &mut bool,
+    show_bpm: &mut bool,
     header_level: &mut u8,
     limiter_enabled: &mut bool,
     notes: &mut crate::types::NotesStorage,
@@ -709,6 +710,9 @@ where
         }
         "CPU" => {
             misc::handle_cpu(&parts, show_cpu, output);
+        }
+        "BPM" => {
+            misc::handle_bpm(&parts, show_bpm, output);
         }
         "HEADER" => {
             misc::handle_header(&parts, header_level, output);

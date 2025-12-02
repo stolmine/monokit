@@ -519,6 +519,35 @@ pub fn handle_cpu<F>(
     }
 }
 
+pub fn handle_bpm<F>(
+    parts: &[&str],
+    show_bpm: &mut bool,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("BPM: {}", if *show_bpm { 1 } else { 0 }));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *show_bpm = false;
+                let _ = config::save_show_bpm(*show_bpm);
+                output("BPM: OFF".to_string());
+            }
+            "1" => {
+                *show_bpm = true;
+                let _ = config::save_show_bpm(*show_bpm);
+                output("BPM: ON".to_string());
+            }
+            _ => {
+                output("ERROR: BPM TAKES 0 (OFF) OR 1 (ON)".to_string());
+            }
+        }
+    }
+}
+
 pub fn handle_header<F>(
     parts: &[&str],
     header_level: &mut u8,

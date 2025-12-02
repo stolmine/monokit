@@ -60,6 +60,7 @@ pub struct App {
     pub scope_unipolar: bool,  // Rectify waveform and use full height for 0-1 range
     pub cpu_data: CpuData,
     pub show_cpu: bool,
+    pub show_bpm: bool,
     pub header_level: u8,
     pub limiter_enabled: bool,
     pub show_meters_header: bool,
@@ -133,6 +134,7 @@ impl App {
             scope_unipolar: false,
             cpu_data: CpuData::default(),
             show_cpu: false,
+            show_bpm: config.display.show_bpm,
             header_level: config.display.header_level,
             limiter_enabled: true,
             show_meters_header: true,
@@ -269,6 +271,7 @@ impl App {
             &mut self.debug_level,
             &mut self.activity_hold_ms,
             &mut self.show_cpu,
+            &mut self.show_bpm,
             &mut self.header_level,
             &mut self.limiter_enabled,
             &mut self.notes,

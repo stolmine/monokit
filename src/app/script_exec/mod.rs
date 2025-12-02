@@ -52,6 +52,7 @@ impl App {
             &mut self.debug_level,
             &mut self.activity_hold_ms,
             &mut self.show_cpu,
+            &mut self.show_bpm,
             &mut self.header_level,
             &mut self.limiter_enabled,
             &mut self.notes,

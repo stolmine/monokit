@@ -185,8 +185,8 @@ pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
         ));
     }
 
-    // Add BPM indicator: show at level 1 and above
-    if app.header_level >= 1 {
+    // Add BPM indicator: show at level 1 and above if show_bpm is enabled
+    if app.show_bpm && app.header_level >= 1 {
         if let Ok(metro) = app.metro_state.try_lock() {
             // Add separator if REC is also showing
             if !title_parts.is_empty() {

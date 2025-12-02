@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::time::Instant;
 
 pub const OSC_ADDR: &str = "127.0.0.1:57120";
+pub const SPECTRUM_BANDS: usize = 15;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum SyncMode {
@@ -232,11 +233,18 @@ pub struct MeterData {
     pub clip_r: bool,
 }
 
+#[derive(Debug, Clone, Default)]
+pub struct SpectrumData {
+    pub bands: [f32; SPECTRUM_BANDS],
+    pub peak_hold: [f32; SPECTRUM_BANDS],
+}
+
 #[derive(Debug, Clone)]
 pub enum MetroEvent {
     ExecuteScript(usize),
     ExecuteDelayed(String, usize),
     MeterUpdate(MeterData),
+    SpectrumUpdate(SpectrumData),
 }
 
 #[derive(Debug, Clone)]

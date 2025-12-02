@@ -1,4 +1,4 @@
-use crate::types::{MeterData, MetroEvent};
+use crate::types::{MeterData, MetroEvent, SpectrumData, SPECTRUM_BANDS};
 use rosc::{decoder, OscPacket, OscType};
 use socket2::{Domain, Protocol, Socket, Type};
 use std::net::{SocketAddr, UdpSocket};
@@ -33,6 +33,7 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
     }
 
     let mut meter_data = MeterData::default();
+    let mut spectrum_data = SpectrumData::default();
     let mut buf = [0u8; 1024];
 
     loop {
@@ -46,6 +47,15 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
 
                                 if let Err(e) = event_tx.send(MetroEvent::MeterUpdate(meter_data.clone())) {
                                     eprintln!("Meter thread: Failed to send MeterUpdate: {}", e);
+                                    return;
+                                }
+                            }
+                        } else if msg.addr == "/monokit/spectrum" {
+                            if let Some(bands) = parse_spectrum_message(&msg.args) {
+                                apply_spectrum_update(&mut spectrum_data, bands);
+
+                                if let Err(e) = event_tx.send(MetroEvent::SpectrumUpdate(spectrum_data.clone())) {
+                                    eprintln!("Meter thread: Failed to send SpectrumUpdate: {}", e);
                                     return;
                                 }
                             }
@@ -148,5 +158,51 @@ fn decay_peak_holds(meter_data: &mut MeterData) {
     }
     if meter_data.peak_hold_r < meter_data.peak_r {
         meter_data.peak_hold_r = meter_data.peak_r;
+    }
+}
+
+fn parse_spectrum_message(args: &[OscType]) -> Option<[f32; SPECTRUM_BANDS]> {
+    if args.len() != SPECTRUM_BANDS {
+        return None;
+    }
+
+    let mut bands = [0.0f32; SPECTRUM_BANDS];
+    for (i, arg) in args.iter().enumerate() {
+        let value = match arg {
+            OscType::Float(f) => *f,
+            OscType::Double(d) => *d as f32,
+            _ => return None,
+        };
+        bands[i] = value;
+    }
+
+    Some(bands)
+}
+
+// Decay rate for smooth falloff (higher = slower decay)
+const SPECTRUM_DECAY_RATE: f32 = 0.85;
+const SPECTRUM_PEAK_HOLD_DECAY_RATE: f32 = 0.92;
+
+fn apply_spectrum_update(spectrum_data: &mut SpectrumData, bands: [f32; SPECTRUM_BANDS]) {
+    for i in 0..SPECTRUM_BANDS {
+        let new_value = bands[i].max(0.0).min(1.0);
+
+        // Smooth falloff: if new value is higher, jump to it; otherwise decay slowly
+        if new_value > spectrum_data.bands[i] {
+            spectrum_data.bands[i] = new_value;
+        } else {
+            spectrum_data.bands[i] *= SPECTRUM_DECAY_RATE;
+            // But don't go below the new value
+            if spectrum_data.bands[i] < new_value {
+                spectrum_data.bands[i] = new_value;
+            }
+        }
+
+        // Peak hold (for potential future use)
+        if new_value > spectrum_data.peak_hold[i] {
+            spectrum_data.peak_hold[i] = new_value;
+        } else {
+            spectrum_data.peak_hold[i] *= SPECTRUM_PEAK_HOLD_DECAY_RATE;
+        }
     }
 }

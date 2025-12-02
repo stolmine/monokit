@@ -578,6 +578,12 @@ Real-time amplitude display via bidirectional OSC.
 - [x] REC indicator moved to right-aligned border title
 - [x] Vertical 8-row meters on grid view (Tab on Live page)
 - [x] 64 levels of resolution per meter
+- [x] 15-band spectrum analyzer on grid view, 2 rows tall
+- [x] Logarithmically-spaced frequency bands (25Hz to 16kHz)
+- [x] Square root scaling for better visual response
+- [x] Smooth decay (0.85 rate) for gentle falloff
+- [x] SuperCollider BPF filters + Amplitude followers at 20Hz
+- [x] OSC messages sent to port 57121 via /monokit/spectrum
 - [ ] CPU percentage from SC `/status` command (future)
 - [ ] Peak hold decay visualization (future)
 

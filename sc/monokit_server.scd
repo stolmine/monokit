@@ -487,9 +487,30 @@ s.waitForBoot {
         Out.ar(0, [sigL, sigR]);
     }).add;
 
+    SynthDef(\monokit_spectrum, {
+        var sigL, sigR, mono, bands, freqs;
+
+        sigL = InFeedback.ar(0);
+        sigR = InFeedback.ar(1);
+        mono = (sigL + sigR) * 0.5;
+
+        // 15 logarithmically-spaced band center frequencies (20Hz - 20kHz)
+        freqs = [25, 40, 63, 100, 160, 250, 400, 630, 1000, 1600, 2500, 4000, 6300, 10000, 16000];
+
+        bands = freqs.collect({ |freq|
+            // BPF rq parameter = 1/Q, use rq=0.5 for moderate bandwidth
+            var filtered = BPF.ar(mono, freq, 0.5);
+            // Amplitude follower with fast attack, moderate release
+            Amplitude.kr(filtered, 0.01, 0.1)
+        });
+
+        SendReply.kr(Impulse.kr(20), '/monokit/spectrum', bands);
+    }).add;
+
     s.sync;
 
     ~voice = Synth(\monokit);
+    ~spectrum = Synth(\monokit_spectrum, addAction: \addToTail);
 
     // Forward meter data from SendPeakRMS to Rust app on port 57121
     // SendPeakRMS msg format: [cmdName, nodeID, replyID, peak, rms]
@@ -501,6 +522,15 @@ s.waitForBoot {
         var rms = msg[4];
         ~meterAddr.sendMsg('/monokit/meter', channel, peak, rms);
     }, '/monokit/meter');
+
+    // Forward spectrum data to Rust app on port 57121
+    // SendReply msg format: [cmdName, nodeID, replyID, ...values]
+    // With 15 bands, values are at indices 3-17
+    ~spectrumAddr = NetAddr("127.0.0.1", 57121);
+    OSCdef(\monokit_spectrum_fwd, { |msg|
+        var bands = msg.copyRange(3, 17);
+        ~spectrumAddr.sendMsg('/monokit/spectrum', *bands);
+    }, '/monokit/spectrum');
 
     OSCdef(\monokit_trigger, { |msg|
         ~voice.set(\gate, 1);

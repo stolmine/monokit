@@ -56,7 +56,7 @@ pub fn ui(f: &mut Frame, app: &crate::App) {
     f.render_widget(header, chunks[0]);
 
     let content = match app.current_page {
-        Page::Live => render_live_page(app, chunks[1].height as usize),
+        Page::Live => render_live_page(app, chunks[1].width as usize, chunks[1].height as usize),
         Page::Script1 => render_script_page(app, 1),
         Page::Script2 => render_script_page(app, 2),
         Page::Script3 => render_script_page(app, 3),
@@ -99,6 +99,9 @@ pub fn run_app<B: ratatui::backend::Backend>(
                 }
                 MetroEvent::MeterUpdate(meter_data) => {
                     app.meter_data = meter_data;
+                }
+                MetroEvent::SpectrumUpdate(spectrum_data) => {
+                    app.spectrum_data = spectrum_data;
                 }
             }
         }

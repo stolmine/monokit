@@ -122,6 +122,10 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 - Clip indicator (error color) resets when level drops
 - REC indicator moved to right-aligned border title
 - Vertical 8-row meters on grid view (Tab on Live page) with 64 levels of resolution
+- 15-band spectrum analyzer on grid view below parameter grid, 2 rows tall
+- Logarithmically-spaced frequency bands (25Hz to 16kHz)
+- Square root scaling for better visual response with smooth decay (0.85 rate)
+- SuperCollider uses BPF filters + Amplitude followers at 20Hz, OSC to port 57121
 
 **Files Created/Changed:**
 - `src/meter.rs` - New receiver thread for meter data
@@ -130,8 +134,8 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 - `src/main.rs` - Spawns meter thread
 - `src/ui/mod.rs` - Handles MeterUpdate events
 - `src/ui/header.rs` - Bargraph rendering, REC in border title
-- `src/ui/pages/live.rs` - Vertical meters on grid view
-- `sc/monokit_server.scd` - Added SendPeakRMS and OSCdef forwarder
+- `src/ui/pages/live.rs` - Vertical meters on grid view, spectrum analyzer rendering
+- `sc/monokit_server.scd` - Added SendPeakRMS and OSCdef forwarder, spectrum analysis
 
 ### DRY Refactoring Complete (All Phases)
 

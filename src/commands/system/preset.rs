@@ -9,7 +9,7 @@ pub fn handle_pset<F>(
     F: FnMut(String),
 {
     if parts.len() < 3 {
-        output("ERROR: PSET REQUIRES SCRIPT NUMBER AND PRESET NAME".to_string());
+        output("ERROR: PSET NEEDS SCRIPT# AND NAME".to_string());
         return;
     }
 
@@ -63,7 +63,7 @@ pub fn handle_pset_save<F>(
     F: FnMut(String),
 {
     if parts.len() < 3 {
-        output("ERROR: PSET.SAVE REQUIRES SCRIPT NUMBER AND PRESET NAME".to_string());
+        output("ERROR: PSET.SAVE NEEDS SCRIPT# AND NAME".to_string());
         return;
     }
 

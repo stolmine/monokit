@@ -107,7 +107,7 @@ where
     let colon_pos = match input.find(':') {
         Some(pos) => pos,
         None => {
-            output("ERROR: DEL.X REQUIRES FORMAT: DEL.X <count> <ms>: <cmd>".to_string());
+            output("ERROR: DEL.X FORMAT: DEL.X N MS: CMD".to_string());
             return Ok(());
         }
     };
@@ -185,7 +185,7 @@ where
     let colon_pos = match input.find(':') {
         Some(pos) => pos,
         None => {
-            output("ERROR: DEL.R REQUIRES FORMAT: DEL.R <count> <ms>: <cmd>".to_string());
+            output("ERROR: DEL.R FORMAT: DEL.R N MS: CMD".to_string());
             return Ok(());
         }
     };

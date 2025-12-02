@@ -56,8 +56,8 @@ fn main() -> Result<()> {
     let theme = config::load_theme(&config).unwrap_or_default();
 
     let mut app = App::new(metro_tx, metro_state, theme, &config);
-    app.add_output("MONOKIT - TELETYPE-STYLE SCRIPTING FOR COMPLEX OSCILLATOR".to_string());
-    app.add_output("TYPE COMMANDS AND PRESS ENTER. USE [ ] TO NAVIGATE PAGES.".to_string());
+    app.add_output("MONOKIT - SCRIPTING FOR COMPLEX OSCILLATOR".to_string());
+    app.add_output("ENTER CMDS. [ ] NAV PAGES. ESC FOR HELP.".to_string());
 
     app.execute_script(9);
 

@@ -90,6 +90,7 @@ static CANONICAL_TO_ALIAS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new
     m.insert("FMEV.AMT", "FA");
     m.insert("DENV.AMT", "DA");
 
+    // Envelope ATK short forms (canonical → alias)
     m.insert("AENV.ATK", "AA");
     m.insert("PENV.ATK", "PAA");
     m.insert("FMEV.ATK", "FAA");
@@ -97,10 +98,12 @@ static CANONICAL_TO_ALIAS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new
     m.insert("FBEV.ATK", "FBAA");
     m.insert("FLEV.ATK", "FLAA");
 
+    // Envelope CRV short forms (canonical → alias)
     m.insert("AENV.CRV", "AC");
     m.insert("PENV.CRV", "PC");
     m.insert("FBEV.CRV", "FBC");
     m.insert("FLEV.CRV", "FLC");
+    // Note: FMEV.CRV and DENV.CRV have no aliases (FC=FILT.CUT, DC=DISC.AMT)
 
     m
 });

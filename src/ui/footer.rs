@@ -60,7 +60,7 @@ pub fn render_footer(app: &crate::App) -> Paragraph<'static> {
         vec![
             input_line,
             Line::from(Span::styled(
-                "[ ] PAGES  ESC HELP  F1-F12 NAV  'QUIT' TO EXIT",
+                "[ ] NAV  ESC HELP  F1-F12  'Q' EXIT",
                 Style::default().fg(app.theme.secondary),
             )),
         ]

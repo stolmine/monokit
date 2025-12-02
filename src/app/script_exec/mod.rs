@@ -68,6 +68,8 @@ impl App {
             &mut self.show_grid_view,
             &mut self.show_seq_highlight,
             &mut self.grid_mode,
+            &mut self.current_scene_name,
+            &mut self.title_mode,
             cmd_to_run,
             |msg| {
                 output_messages.push(msg);

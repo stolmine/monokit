@@ -87,7 +87,7 @@ fn test_header_invalid_value() {
     assert!(result.is_ok());
     assert_eq!(ctx.header_level, 4);
     assert_eq!(ctx.outputs.len(), 1);
-    assert_eq!(ctx.outputs[0], "ERROR: HEADER TAKES 0 (NAV ONLY), 1 (NAV + METERS), 2 (NAV + TR + METERS), 3 (FULL NAV + TR + METERS), OR 4 (FULL NAV + TR + METERS + CPU)");
+    assert_eq!(ctx.outputs[0], "ERROR: HEADER TAKES 0-4");
 }
 
 #[test]
@@ -99,5 +99,5 @@ fn test_header_non_numeric() {
     assert!(result.is_ok());
     assert_eq!(ctx.header_level, 4);
     assert_eq!(ctx.outputs.len(), 1);
-    assert_eq!(ctx.outputs[0], "ERROR: HEADER TAKES 0 (NAV ONLY), 1 (NAV + METERS), 2 (NAV + TR + METERS), 3 (FULL NAV + TR + METERS), OR 4 (FULL NAV + TR + METERS + CPU)");
+    assert_eq!(ctx.outputs[0], "ERROR: HEADER TAKES 0-4");
 }

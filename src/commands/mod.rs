@@ -62,6 +62,8 @@ pub fn process_command<F>(
     show_grid_view: &mut bool,
     show_seq_highlight: &mut bool,
     grid_mode: &mut u8,
+    current_scene_name: &mut Option<String>,
+    title_mode: &mut u8,
     input: &str,
     mut output: F,
 ) -> Result<Vec<usize>>
@@ -538,43 +540,43 @@ where
         "SLEW.ALL" => {
             slew::handle_slew_all(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
         }
-        "AENV.ATK" => {
+        "AENV.ATK" | "AA" => {
             synth_params::handle_aenv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
-        "AENV.CRV" => {
+        "AENV.CRV" | "AC" => {
             synth_params::handle_aenv_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
-        "PENV.ATK" => {
+        "PENV.ATK" | "PAA" => {
             synth_params::handle_penv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
-        "PENV.CRV" => {
+        "PENV.CRV" | "PC" => {
             synth_params::handle_penv_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
-        "FMEV.ATK" => {
+        "FMEV.ATK" | "FAA" => {
             synth_params::handle_fmev_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FMEV.CRV" => {
             synth_params::handle_fmev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
-        "DENV.ATK" => {
+        "DENV.ATK" | "DAA" => {
             synth_params::handle_denv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "DENV.CRV" => {
             synth_params::handle_denv_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
-        "FBEV.ATK" => {
+        "FBEV.ATK" | "FBAA" => {
             synth_params::handle_fbev_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
-        "FBEV.CRV" => {
+        "FBEV.CRV" | "FBC" => {
             synth_params::handle_fbev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "FBEV.AMT" => {
             synth_params::handle_fba(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
-        "FLEV.ATK" => {
+        "FLEV.ATK" | "FLAA" => {
             synth_params::handle_flev_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
-        "FLEV.CRV" => {
+        "FLEV.CRV" | "FLC" => {
             synth_params::handle_flev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "RST" => {
@@ -653,13 +655,13 @@ where
             return misc::handle_script(&parts, variables, patterns, counters, scripts, script_index, scale);
         }
         "SAVE" => {
-            scene_cmds::handle_save(&parts, scripts, patterns, notes, output);
+            scene_cmds::handle_save(&parts, scripts, patterns, notes, current_scene_name, output);
         }
         "LOAD" => {
             if *load_rst {
                 misc::handle_rst(metro_tx, *debug_level, &mut |_| {})?;
             }
-            if scene_cmds::handle_load(&parts, variables, scripts, patterns, notes, output) {
+            if scene_cmds::handle_load(&parts, variables, scripts, patterns, notes, current_scene_name, output) {
                 return Ok(vec![9]);
             }
         }
@@ -781,6 +783,9 @@ where
         }
         "GRID.MODE" => {
             misc::handle_grid_mode(&parts, grid_mode, output);
+        }
+        "TITLE" => {
+            misc::handle_title(&parts, title_mode, output);
         }
         "N1" => {
             counters::handle_n1(counters, output);

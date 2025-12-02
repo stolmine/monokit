@@ -185,9 +185,25 @@ pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
         ));
     }
 
+    // Add BPM indicator: show at level 1 and above
+    if app.header_level >= 1 {
+        if let Ok(metro) = app.metro_state.try_lock() {
+            // Add separator if REC is also showing
+            if !title_parts.is_empty() {
+                title_parts.push(Span::raw("  "));
+            }
+
+            let bpm = (15000.0 / metro.interval_ms as f32).round() as u32;
+            title_parts.push(Span::styled(
+                format!("BPM {}", bpm),
+                Style::default().fg(app.theme.secondary),
+            ));
+        }
+    }
+
     // Add CPU indicator: show at level 4 OR if show_cpu is explicitly enabled
     if app.show_cpu || app.header_level >= 4 {
-        // Add separator if REC is also showing
+        // Add separator if REC or BPM is also showing
         if !title_parts.is_empty() {
             title_parts.push(Span::raw("  "));
         }
@@ -205,10 +221,26 @@ pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
         ));
     }
 
+    let header_title = match app.title_mode {
+        0 => " MONOKIT ".to_string(),
+        1 => match &app.current_scene_name {
+            Some(name) => {
+                let truncated = if name.len() > 15 {
+                    format!(" {}... ", &name[..12])
+                } else {
+                    format!(" {} ", name)
+                };
+                truncated
+            }
+            None => " [UNSAVED] ".to_string(),
+        },
+        _ => " MONOKIT ".to_string(),
+    };
+
     let mut block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::default().fg(app.theme.border))
-        .title(" MONOKIT ")
+        .title(header_title)
         .title_style(Style::default().fg(app.theme.foreground));
 
     // Add right-aligned title if there are parts to show

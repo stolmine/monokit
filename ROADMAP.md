@@ -728,41 +728,51 @@ Individual override commands to toggle visual elements independently.
 - [x] Each toggle state persists to config.toml
 - [x] Works independently and on top of global UI modes
 
-### Scene Name Header Display [Low]
+### Dynamic Grid Layout [Medium]
+Intelligent UI response for Live tab page - dynamically adjust spacing and layout based on visible elements.
+
+- [ ] Calculate available width based on meter visibility (METER.GRID)
+- [ ] Calculate available height based on spectrum visibility (SPECTRUM)
+- [ ] Adjust grid icon/label spacing dynamically to fill available space
+- [ ] Maintain proper alignment and centering as elements toggle
+- [ ] Consider font-width-aware spacing for different terminal emulators
+- [ ] Optimize visual density without crowding
+
+### Scene Name Header Display [Low] - COMPLETE (December 2025)
 Toggleable display of current scene name in header, replacing "MONOKIT" title.
 
-- [ ] `TITLE <0|1>` - Toggle between "MONOKIT" (0) and scene name (1)
-- [ ] Display current scene name when loaded via LOAD command
-- [ ] Show "MONOKIT" or "[UNSAVED]" when no scene loaded
-- [ ] Truncate long scene names to fit header width
-- [ ] State persists to config.toml
-- [ ] Update display immediately on SAVE/LOAD
+- [x] `TITLE <0|1>` - Toggle between "MONOKIT" (0) and scene name (1)
+- [x] Display current scene name when loaded via LOAD command
+- [x] Show "MONOKIT" or "[UNSAVED]" when no scene loaded
+- [x] Truncate long scene names to fit header width (15 chars max, 12 chars + "...")
+- [x] State persists to config.toml
+- [x] Update display immediately on SAVE/LOAD
 - [ ] Optional "Matrix" style character replacement lerp animation on save/load/change
 
-### BPM Header Display [Medium]
+### BPM Header Display [Medium] - COMPLETE (December 2025)
 Add BPM readout to header border alongside CPU and REC indicators.
 
-- [ ] Add BPM display to header upper border
-- [ ] Format: "BPM: 120" (right-aligned or center)
-- [ ] Integrate with HEADER command verbosity levels:
+- [x] Add BPM display to header upper border
+- [x] Format: "BPM 120" (right-aligned)
+- [x] Integrate with HEADER command verbosity levels:
   - HEADER 0: no BPM display
-  - HEADER 1: BPM display
-  - HEADER 2: BPM + CPU + REC
-- [ ] Update BPM display when metro tempo changes (M.BPM command)
-- [ ] Calculate BPM from metro period_ms (60000 / period_ms)
+  - HEADER 1-4: BPM display
+- [x] Update BPM display when metro tempo changes (automatically reads from metro_state)
+- [x] Calculate BPM from metro interval_ms (15000 / interval_ms, rounded)
 
-### Global Text Audit [High]
-Ensure all UI text fits within 50x18 terminal window constraints.
+### Global Text Audit [High] - COMPLETE (December 2025)
+Ensure all UI text fits within 50x18 terminal window constraints (46-char safe content width).
 
-- [ ] Audit all pages for text overflow beyond 50 columns
-- [ ] Check Help pages for line wrapping
-- [ ] Verify REPL history doesn't trail off screen
-- [ ] Test all error messages fit within bounds
-- [ ] Validate grid layouts don't exceed boundaries
-- [ ] Check header/footer borders stay within limits
-- [ ] Test with longest possible command outputs
+**All UI text elements verified to fit within 46-character safe content width:**
 
-### Initial Window Sizing [Low]
+- [x] Audit all pages for text overflow beyond 50 columns
+- [x] Check Help pages for line wrapping
+- [x] Test all error messages fit within bounds
+- [x] Validate grid layouts don't exceed boundaries
+- [x] Check header/footer borders stay within limits
+- [x] All identified violations fixed (completed December 2025)
+
+### Initial Window Sizing [Low] - ON HOLD INDEFINITELY (UNENFORCEABLE)
 Provide terminal window sizing defaults/recommendations.
 
 - [ ] Document recommended terminal size (50x18 minimum)
@@ -817,18 +827,33 @@ Review codebase for silent failures, add proper error reporting.
 - [ ] Pattern operation bounds and args checking
 - [ ] Expression evaluation error messages
 - [ ] Uniformity between live and script error feedback
+- [ ] Illegality enforcement and validation - user should not be able to enter unvalidated expressions
 
-### Help Coverage Audit [Low]
+### Help Coverage Audit [Low] - COMPLETE (December 2025)
 Update help system with all new commands and features.
 
-- [ ] Review all Phase 1-5 completed features
-- [ ] Add missing commands to help pages
-- [ ] Document all config options
-- [ ] Update examples with new operators
-- [ ] Add SEQ notation examples
-- [ ] Document all UI toggles (CPU, HEADER, etc.)
-- [ ] Add MIDI sync commands to help
-- [ ] Verify help page navigation works correctly
+- [x] Review all Phase 1-6 completed features
+- [x] Add missing commands to help pages
+- [x] Document all UI toggles (METER.HDR, METER.GRID, SPECTRUM, ACTIVITY, GRID, GRID.MODE, HL.SEQ, HL.COND, CPU)
+- [x] Document HEADER levels 0-4 with CPU display option
+- [x] Document DEBUG levels 0-2
+- [x] Add NOTE and NOTE.CLR commands
+- [x] Add FLASH command
+- [x] Add CLEAR command
+- [x] Document Alt+key navigation shortcuts (Alt+L, Alt+1-8, Alt+M, Alt+I, Alt+P, Alt+S, Alt+V, Alt+H)
+- [x] Document Tab key for grid view toggle
+- [x] Reorganize navigation documentation for clarity (function keys vs alt keys)
+- [x] Document all SCOPE commands (SCOPE.TIME, SCOPE.CLR, SCOPE.MODE, SCOPE.UNI)
+- [x] All SEQ notation examples already documented
+- [x] All MIDI sync commands already documented
+- [x] Help page navigation functional
+
+**Files Modified:**
+- `src/ui/pages/help_content.rs` - Added missing documentation for all Phase 6 features
+
+### File Size and DRY Audit [Medium]
+- [ ] Ensure all files are within agent readable line limits
+- [ ] Ensure we are staying DRY across the system, as much code generation as possible should be handled via macro
 
 ---
 

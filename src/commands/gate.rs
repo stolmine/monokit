@@ -19,7 +19,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: GATE REQUIRES A TIME VALUE (0-10000 MS)".to_string());
+        output("ERROR: GATE NEEDS TIME 0-10000 MS".to_string());
         return Ok(());
     }
     let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -30,7 +30,7 @@ where
             .context("Failed to parse gate time value")?
     };
     if !(0.0..=10000.0).contains(&value_ms) {
-        output("ERROR: GATE TIME MUST BE BETWEEN 0 AND 10000 MS".to_string());
+        output("ERROR: GATE TIME 0-10000 MS".to_string());
         return Ok(());
     }
     let time_sec = value_ms / 1000.0;
@@ -59,7 +59,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: AENV.GATE REQUIRES A TIME VALUE (0-10000 MS)".to_string());
+        output("ERROR: AENV.GATE NEEDS TIME 0-10000 MS".to_string());
         return Ok(());
     }
     let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -70,7 +70,7 @@ where
             .context("Failed to parse amp env gate time")?
     };
     if !(0.0..=10000.0).contains(&value_ms) {
-        output("ERROR: AMP ENV GATE MUST BE BETWEEN 0 AND 10000 MS".to_string());
+        output("ERROR: AMP ENV GATE TIME 0-10000 MS".to_string());
         return Ok(());
     }
     let time_sec = value_ms / 1000.0;
@@ -99,7 +99,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: PENV.GATE REQUIRES A TIME VALUE (0-10000 MS)".to_string());
+        output("ERROR: PENV.GATE NEEDS TIME 0-10000 MS".to_string());
         return Ok(());
     }
     let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -110,7 +110,7 @@ where
             .context("Failed to parse pitch env gate time")?
     };
     if !(0.0..=10000.0).contains(&value_ms) {
-        output("ERROR: PITCH ENV GATE MUST BE BETWEEN 0 AND 10000 MS".to_string());
+        output("ERROR: PITCH ENV GATE TIME 0-10000 MS".to_string());
         return Ok(());
     }
     let time_sec = value_ms / 1000.0;
@@ -139,7 +139,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: FMEV.GATE REQUIRES A TIME VALUE (0-10000 MS)".to_string());
+        output("ERROR: FMEV.GATE NEEDS TIME 0-10000 MS".to_string());
         return Ok(());
     }
     let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -150,7 +150,7 @@ where
             .context("Failed to parse FM env gate time")?
     };
     if !(0.0..=10000.0).contains(&value_ms) {
-        output("ERROR: FM ENV GATE MUST BE BETWEEN 0 AND 10000 MS".to_string());
+        output("ERROR: FM ENV GATE TIME 0-10000 MS".to_string());
         return Ok(());
     }
     let time_sec = value_ms / 1000.0;
@@ -179,7 +179,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: DENV.GATE REQUIRES A TIME VALUE (0-10000 MS)".to_string());
+        output("ERROR: DENV.GATE NEEDS TIME 0-10000 MS".to_string());
         return Ok(());
     }
     let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -190,7 +190,7 @@ where
             .context("Failed to parse DC env gate time")?
     };
     if !(0.0..=10000.0).contains(&value_ms) {
-        output("ERROR: DC ENV GATE MUST BE BETWEEN 0 AND 10000 MS".to_string());
+        output("ERROR: DC ENV GATE TIME 0-10000 MS".to_string());
         return Ok(());
     }
     let time_sec = value_ms / 1000.0;
@@ -219,7 +219,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: FBEV.GATE REQUIRES A TIME VALUE (0-10000 MS)".to_string());
+        output("ERROR: FBEV.GATE NEEDS TIME 0-10000 MS".to_string());
         return Ok(());
     }
     let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -230,7 +230,7 @@ where
             .context("Failed to parse feedback env gate time")?
     };
     if !(0.0..=10000.0).contains(&value_ms) {
-        output("ERROR: FEEDBACK ENV GATE MUST BE BETWEEN 0 AND 10000 MS".to_string());
+        output("ERROR: FEEDBACK ENV GATE TIME 0-10000 MS".to_string());
         return Ok(());
     }
     let time_sec = value_ms / 1000.0;
@@ -259,7 +259,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: FLEV.GATE REQUIRES A TIME VALUE (0-10000 MS)".to_string());
+        output("ERROR: FLEV.GATE NEEDS TIME 0-10000 MS".to_string());
         return Ok(());
     }
     let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -270,7 +270,7 @@ where
             .context("Failed to parse filter env gate time")?
     };
     if !(0.0..=10000.0).contains(&value_ms) {
-        output("ERROR: FILTER ENV GATE MUST BE BETWEEN 0 AND 10000 MS".to_string());
+        output("ERROR: FILTER ENV GATE TIME 0-10000 MS".to_string());
         return Ok(());
     }
     let time_sec = value_ms / 1000.0;

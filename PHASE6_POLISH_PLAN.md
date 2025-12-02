@@ -99,7 +99,7 @@ New commands for granular UI control:
 
 ## 2. HEADER ENHANCEMENTS
 
-### 2.1 Scene Name Header Display
+### 2.1 Scene Name Header Display [COMPLETE]
 
 **Command:** `TITLE <0|1>`
 - 0 = Show "MONOKIT" (default)
@@ -145,7 +145,7 @@ New commands for granular UI control:
 
 ---
 
-### 2.2 BPM Header Display
+### 2.2 BPM Header Display [COMPLETE]
 
 **Automatic display** - No command needed, integrates with HEADER levels.
 
@@ -214,7 +214,7 @@ if app.header_level >= 1 {
 
 ---
 
-### 3.2 Global Text Audit
+### 3.2 Global Text Audit [COMPLETE]
 
 **Constraint:** 50 columns × 18 rows minimum terminal
 
@@ -490,10 +490,10 @@ if app.header_level >= 1 {
 
 - [✓] All new commands persist to config.toml
 - [✓] UI toggles work independently and together
-- [ ] Scene name displays correctly (truncation, [UNSAVED])
-- [ ] BPM updates in real-time in header
+- [✓] Scene name displays correctly (truncation, [UNSAVED])
+- [✓] BPM updates in real-time in header
 - [✓] All aliases documented and working
-- [ ] No text overflow at 50×18 terminal
+- [✓] No text overflow at 50×18 terminal
 - [✓] Help covers all Phase 1-5 features
 - [ ] Error messages are user-friendly and actionable
 - [ ] Audio device selection works on macOS/Linux/Windows

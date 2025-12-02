@@ -77,6 +77,8 @@ pub struct App {
     pub search_current_match: usize,
     pub conditional_segments: [[LineSegmentActivity; 8]; 10],
     pub show_conditional_highlight: bool,
+    pub current_scene_name: Option<String>,
+    pub title_mode: u8,
 }
 
 impl App {
@@ -148,6 +150,8 @@ impl App {
             search_current_match: 0,
             conditional_segments: Default::default(),
             show_conditional_highlight: true,
+            current_scene_name: None,
+            title_mode: config.display.title_mode,
         }
     }
 
@@ -281,6 +285,8 @@ impl App {
             &mut self.show_grid_view,
             &mut self.show_seq_highlight,
             &mut self.grid_mode,
+            &mut self.current_scene_name,
+            &mut self.title_mode,
             command,
             |msg| {
                 output_messages.push(msg);

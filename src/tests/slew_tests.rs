@@ -183,7 +183,7 @@ fn test_slew_time_range_validation() {
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());
-    assert!(outputs.iter().any(|s| s.contains("ERROR: SLEW TIME MUST BE BETWEEN")));
+    assert!(outputs.iter().any(|s| s.contains("ERROR: SLEW TIME 0-10000 MS")));
 
     outputs.clear();
     let parts_negative = vec!["SLEW", "FB", "-1"];
@@ -200,7 +200,7 @@ fn test_slew_time_range_validation() {
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());
-    assert!(outputs.iter().any(|s| s.contains("ERROR: SLEW TIME MUST BE BETWEEN")));
+    assert!(outputs.iter().any(|s| s.contains("ERROR: SLEW TIME 0-10000 MS")));
 }
 
 #[test]
@@ -248,7 +248,7 @@ fn test_slew_all_time_range_validation() {
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());
-    assert!(outputs.iter().any(|s| s.contains("ERROR: SLEW TIME MUST BE BETWEEN")));
+    assert!(outputs.iter().any(|s| s.contains("ERROR: SLEW TIME 0-10000 MS")));
 }
 
 #[test]

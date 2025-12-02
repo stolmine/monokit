@@ -51,7 +51,28 @@ Added envelope parameter aliases for consistency:
 - FBC → FBEV.CRV (Feedback envelope curve)
 - FLC → FLEV.CRV (Filter envelope curve)
 
-Note: FMEV.CRV and DENV.CRV have no aliases (consistency with missing FA.CRV, DA.CRV patterns)
+Note: FMEV.CRV and DENV.CRV have no short aliases (FC=FILT.CUT, DC=DISC.AMT conflicts)
+
+**Scene Name Header Display (December 2025)**
+- TITLE <0|1> command toggles header between "MONOKIT" and scene name
+- Shows "[UNSAVED]" when no scene loaded
+- Scene names truncated to 15 characters in header
+- Setting persists to config.toml
+
+**BPM Header Display (December 2025)**
+- "BPM XXX" shown in header at HEADER levels 1-4
+- Real-time updates with formula: 15000 / interval_ms
+- Displays current tempo based on metro interval
+
+**Global Text Audit (December 2025)**
+- All UI text now complies with 46-char width limit
+- Fixed 70+ violations across system (errors, help, footer, startup)
+- Common term abbreviations: DEF, MS, ENV, etc.
+
+**Envelope ATK/CRV Alias Integration (December 2025)**
+- ATK/CRV aliases fully integrated with validator and handlers
+- Short forms work: AA, PAA, FAA, DAA, FBAA, FLAA, AC, PC, FBC, FLC
+- Complete alias system for envelope parameters
 
 **Help System Updates (December 2025)**
 - Added "UI & DISPLAY" category documenting all UI toggle commands

@@ -93,6 +93,8 @@ pub struct TestContext {
     pub show_grid_view: bool,
     pub show_seq_highlight: bool,
     pub grid_mode: u8,
+    pub current_scene_name: Option<String>,
+    pub title_mode: u8,
     pub outputs: Vec<String>,
 }
 
@@ -133,6 +135,8 @@ impl Default for TestContext {
             show_grid_view: false,
             show_seq_highlight: true,
             grid_mode: 1,
+            current_scene_name: None,
+            title_mode: 0,
             outputs: Vec::new(),
         }
     }
@@ -177,6 +181,8 @@ impl TestContext {
             &mut self.show_grid_view,
             &mut self.show_seq_highlight,
             &mut self.grid_mode,
+            &mut self.current_scene_name,
+            &mut self.title_mode,
             input,
             |msg| {
                 self.outputs.push(msg);

@@ -415,37 +415,37 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "AENV.ATK" | "AENV.CRV" | "AENV.MODE" | "AENV.GATE" => {
+        "AENV.ATK" | "AA" | "AENV.CRV" | "AC" | "AENV.GATE" => {
             if argc != 1 {
                 return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
             }
             Ok(())
         }
-        "PENV.ATK" | "PENV.CRV" | "PENV.MODE" | "PENV.GATE" => {
+        "PENV.ATK" | "PAA" | "PENV.CRV" | "PC" | "PENV.GATE" => {
             if argc != 1 {
                 return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
             }
             Ok(())
         }
-        "FMEV.ATK" | "FMEV.CRV" | "FMEV.MODE" | "FMEV.GATE" => {
+        "FMEV.ATK" | "FAA" | "FMEV.CRV" | "FMEV.GATE" => {
             if argc != 1 {
                 return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
             }
             Ok(())
         }
-        "DENV.ATK" | "DENV.CRV" | "DENV.MODE" | "DENV.GATE" => {
+        "DENV.ATK" | "DAA" | "DENV.CRV" | "DENV.GATE" => {
             if argc != 1 {
                 return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
             }
             Ok(())
         }
-        "FBEV.ATK" | "FBEV.CRV" | "FBEV.MODE" | "FBEV.GATE" => {
+        "FBEV.ATK" | "FBAA" | "FBEV.CRV" | "FBC" | "FBEV.GATE" => {
             if argc != 1 {
                 return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
             }
             Ok(())
         }
-        "FLEV.ATK" | "FLEV.CRV" | "FLEV.MODE" | "FLEV.GATE" => {
+        "FLEV.ATK" | "FLAA" | "FLEV.CRV" | "FLC" | "FLEV.GATE" => {
             if argc != 1 {
                 return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
             }

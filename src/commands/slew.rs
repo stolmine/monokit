@@ -24,7 +24,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 3 {
-        output("ERROR: SLEW REQUIRES A PARAMETER NAME AND TIME VALUE".to_string());
+        output("ERROR: SLEW NEEDS PARAM AND TIME".to_string());
         return Ok(());
     }
     let param_input = parts[1].to_uppercase();
@@ -43,7 +43,7 @@ where
             .context("Failed to parse slew time value")?
     };
     if !(0.0..=10000.0).contains(&value_ms) {
-        output("ERROR: SLEW TIME MUST BE BETWEEN 0 AND 10000 MS".to_string());
+        output("ERROR: SLEW TIME 0-10000 MS".to_string());
         return Ok(());
     }
     let time_sec = value_ms / 1000.0;
@@ -72,7 +72,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: SLEW.ALL REQUIRES A TIME VALUE (0-10000 MS)".to_string());
+        output("ERROR: SLEW.ALL NEEDS TIME 0-10000 MS".to_string());
         return Ok(());
     }
     let value_ms: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -83,7 +83,7 @@ where
             .context("Failed to parse slew time value")?
     };
     if !(0.0..=10000.0).contains(&value_ms) {
-        output("ERROR: SLEW TIME MUST BE BETWEEN 0 AND 10000 MS".to_string());
+        output("ERROR: SLEW TIME 0-10000 MS".to_string());
         return Ok(());
     }
     let time_sec = value_ms / 1000.0;

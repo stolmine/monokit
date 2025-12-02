@@ -486,7 +486,7 @@ pub fn handle_debug<F>(
                 output("DEBUG LEVEL: 2 (VERBOSE)".to_string());
             }
             _ => {
-                output("ERROR: DEBUG TAKES 0 (SILENT), 1 (IMPORTANT), OR 2 (VERBOSE)".to_string());
+                output("ERROR: DEBUG TAKES 0-2".to_string());
             }
         }
     }
@@ -557,7 +557,7 @@ pub fn handle_header<F>(
                 output("HEADER LEVEL: 4 (FULL NAV + TR + METERS + CPU)".to_string());
             }
             _ => {
-                output("ERROR: HEADER TAKES 0 (NAV ONLY), 1 (NAV + METERS), 2 (NAV + TR + METERS), 3 (FULL NAV + TR + METERS), OR 4 (FULL NAV + TR + METERS + CPU)".to_string());
+                output("ERROR: HEADER TAKES 0-4".to_string());
             }
         }
     }
@@ -627,7 +627,7 @@ pub fn handle_load_rst<F>(
                 output("LOAD.RST: ON (RESET BEFORE LOAD)".to_string());
             }
             _ => {
-                output("ERROR: LOAD.RST TAKES 0 (PERSIST) OR 1 (RESET)".to_string());
+                output("ERROR: LOAD.RST TAKES 0-1".to_string());
             }
         }
     }
@@ -731,7 +731,7 @@ pub fn handle_scope_clr<F>(
                 }
             }
             _ => {
-                output("ERROR: SCOPE.CLR TAKES 0 (SUCCESS), 1 (ERROR), 2 (FOREGROUND), OR 3 (ACCENT)".to_string());
+                output("ERROR: SCOPE.CLR TAKES 0-3".to_string());
             }
         }
     }
@@ -789,7 +789,7 @@ pub fn handle_scope_mode<F>(
                 if debug_level >= 2 { output("SCOPE.MODE: 4 (QUADRANT)".to_string()); }
             }
             _ => {
-                output("ERROR: SCOPE.MODE TAKES 0 (BRAILLE), 1 (BLOCK), 2 (LINE), 3 (DOT), OR 4 (QUADRANT)".to_string());
+                output("ERROR: SCOPE.MODE TAKES 0-4".to_string());
             }
         }
     }
@@ -828,7 +828,7 @@ pub fn handle_scope_uni<F>(
                 if debug_level >= 2 { output("SCOPE.UNI: 1 (UNIPOLAR)".to_string()); }
             }
             _ => {
-                output("ERROR: SCOPE.UNI TAKES 0 (BIPOLAR) OR 1 (UNIPOLAR)".to_string());
+                output("ERROR: SCOPE.UNI TAKES 0-1".to_string());
             }
         }
     }
@@ -1091,7 +1091,37 @@ pub fn handle_grid_mode<F>(
                 output("GRID.MODE: 1 (ICONS)".to_string());
             }
             _ => {
-                output("ERROR: GRID.MODE TAKES 0 (LABELS) OR 1 (ICONS)".to_string());
+                output("ERROR: GRID.MODE TAKES 0-1".to_string());
+            }
+        }
+    }
+}
+
+pub fn handle_title<F>(
+    parts: &[&str],
+    title_mode: &mut u8,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        let mode_name = if *title_mode == 0 { "MONOKIT" } else { "SCENE" };
+        output(format!("TITLE: {} ({})", title_mode, mode_name));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *title_mode = 0;
+                let _ = config::save_title_mode(*title_mode);
+                output("TITLE: 0 (MONOKIT)".to_string());
+            }
+            "1" => {
+                *title_mode = 1;
+                let _ = config::save_title_mode(*title_mode);
+                output("TITLE: 1 (SCENE NAME)".to_string());
+            }
+            _ => {
+                output("ERROR: TITLE TAKES 0 (MONOKIT) OR 1 (SCENE)".to_string());
             }
         }
     }

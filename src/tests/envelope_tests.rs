@@ -148,16 +148,6 @@ fn test_aenv_crv_missing_arg() {
     assert!(validate_script_command("AENV.CRV").is_err());
 }
 
-#[test]
-fn test_aenv_mode_valid() {
-    assert!(validate_script_command("AENV.MODE 0").is_ok());
-    assert!(validate_script_command("AENV.MODE 1").is_ok());
-}
-
-#[test]
-fn test_aenv_mode_missing_arg() {
-    assert!(validate_script_command("AENV.MODE").is_err());
-}
 
 #[test]
 fn test_penv_atk_valid() {
@@ -179,15 +169,6 @@ fn test_penv_crv_missing_arg() {
     assert!(validate_script_command("PENV.CRV").is_err());
 }
 
-#[test]
-fn test_penv_mode_valid() {
-    assert!(validate_script_command("PENV.MODE 2").is_ok());
-}
-
-#[test]
-fn test_penv_mode_missing_arg() {
-    assert!(validate_script_command("PENV.MODE").is_err());
-}
 
 #[test]
 fn test_fmev_atk_valid() {
@@ -209,15 +190,6 @@ fn test_fmev_crv_missing_arg() {
     assert!(validate_script_command("FMEV.CRV").is_err());
 }
 
-#[test]
-fn test_fmev_mode_valid() {
-    assert!(validate_script_command("FMEV.MODE 1").is_ok());
-}
-
-#[test]
-fn test_fmev_mode_missing_arg() {
-    assert!(validate_script_command("FMEV.MODE").is_err());
-}
 
 #[test]
 fn test_denv_atk_valid() {
@@ -239,15 +211,6 @@ fn test_denv_crv_missing_arg() {
     assert!(validate_script_command("DENV.CRV").is_err());
 }
 
-#[test]
-fn test_denv_mode_valid() {
-    assert!(validate_script_command("DENV.MODE 0").is_ok());
-}
-
-#[test]
-fn test_denv_mode_missing_arg() {
-    assert!(validate_script_command("DENV.MODE").is_err());
-}
 
 #[test]
 fn test_fbev_atk_valid() {
@@ -269,15 +232,6 @@ fn test_fbev_crv_missing_arg() {
     assert!(validate_script_command("FBEV.CRV").is_err());
 }
 
-#[test]
-fn test_fbev_mode_valid() {
-    assert!(validate_script_command("FBEV.MODE 2").is_ok());
-}
-
-#[test]
-fn test_fbev_mode_missing_arg() {
-    assert!(validate_script_command("FBEV.MODE").is_err());
-}
 
 #[test]
 fn test_flev_atk_valid() {
@@ -299,15 +253,6 @@ fn test_flev_crv_missing_arg() {
     assert!(validate_script_command("FLEV.CRV").is_err());
 }
 
-#[test]
-fn test_flev_mode_valid() {
-    assert!(validate_script_command("FLEV.MODE 1").is_ok());
-}
-
-#[test]
-fn test_flev_mode_missing_arg() {
-    assert!(validate_script_command("FLEV.MODE").is_err());
-}
 
 #[test]
 fn test_gate_valid() {
@@ -395,6 +340,61 @@ fn test_flev_gate_missing_arg() {
 
 #[test]
 fn test_all_envelope_commands_in_sequence() {
-    assert!(validate_script_command("ENV.ATK 100; ENV.DEC 500; ENV.MODE 1").is_ok());
+    assert!(validate_script_command("ENV.ATK 100; ENV.DEC 500; ENV.CRV 2").is_ok());
     assert!(validate_script_command("AENV.ATK 50; PENV.ATK 75; GATE 200").is_ok());
+}
+
+#[test]
+fn test_aa_alias_valid() {
+    assert!(validate_script_command("AA 100").is_ok());
+}
+
+#[test]
+fn test_aa_alias_missing_arg() {
+    assert!(validate_script_command("AA").is_err());
+}
+
+#[test]
+fn test_paa_alias_valid() {
+    assert!(validate_script_command("PAA 75").is_ok());
+}
+
+#[test]
+fn test_faa_alias_valid() {
+    assert!(validate_script_command("FAA 200").is_ok());
+}
+
+#[test]
+fn test_daa_alias_valid() {
+    assert!(validate_script_command("DAA 150").is_ok());
+}
+
+#[test]
+fn test_fbaa_alias_valid() {
+    assert!(validate_script_command("FBAA 300").is_ok());
+}
+
+#[test]
+fn test_flaa_alias_valid() {
+    assert!(validate_script_command("FLAA 250").is_ok());
+}
+
+#[test]
+fn test_ac_alias_valid() {
+    assert!(validate_script_command("AC 2").is_ok());
+}
+
+#[test]
+fn test_pc_alias_valid() {
+    assert!(validate_script_command("PC -3").is_ok());
+}
+
+#[test]
+fn test_fbc_alias_valid() {
+    assert!(validate_script_command("FBC -6").is_ok());
+}
+
+#[test]
+fn test_flc_alias_valid() {
+    assert!(validate_script_command("FLC 3").is_ok());
 }

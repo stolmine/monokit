@@ -291,6 +291,10 @@ pub fn handle_help<F>(
     output("-- REPL UTILITIES --".to_string());
     output("CLEAR           CLEAR OUTPUT HISTORY".to_string());
     output("DEBUG <0-2>     SET VERBOSITY (0=SILENT, 1=IMPORTANT, 2=VERBOSE)".to_string());
+    output("HEADER          SHOW CURRENT HEADER VERBOSITY LEVEL".to_string());
+    output("HEADER <0-4>    SET HEADER VERBOSITY".to_string());
+    output("                0=NAV ONLY, 1=+METERS, 2=+TR".to_string());
+    output("                3=FULL NAV, 4=+CPU (DEFAULT)".to_string());
     output("PRINT \"TEXT\"    OUTPUT LITERAL STRING".to_string());
     output("PRINT <EXPR>    EVALUATE AND PRINT EXPRESSION".to_string());
     output("".to_string());
@@ -509,6 +513,50 @@ pub fn handle_cpu<F>(
             }
             _ => {
                 output("ERROR: CPU TAKES 0 (OFF) OR 1 (ON)".to_string());
+            }
+        }
+    }
+}
+
+pub fn handle_header<F>(
+    parts: &[&str],
+    header_level: &mut u8,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("HEADER LEVEL: {}", header_level));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *header_level = 0;
+                let _ = config::save_header_level(*header_level);
+                output("HEADER LEVEL: 0 (NAV ONLY)".to_string());
+            }
+            "1" => {
+                *header_level = 1;
+                let _ = config::save_header_level(*header_level);
+                output("HEADER LEVEL: 1 (NAV + METERS)".to_string());
+            }
+            "2" => {
+                *header_level = 2;
+                let _ = config::save_header_level(*header_level);
+                output("HEADER LEVEL: 2 (NAV + TR + METERS)".to_string());
+            }
+            "3" => {
+                *header_level = 3;
+                let _ = config::save_header_level(*header_level);
+                output("HEADER LEVEL: 3 (FULL NAV + TR + METERS)".to_string());
+            }
+            "4" => {
+                *header_level = 4;
+                let _ = config::save_header_level(*header_level);
+                output("HEADER LEVEL: 4 (FULL NAV + TR + METERS + CPU)".to_string());
+            }
+            _ => {
+                output("ERROR: HEADER TAKES 0 (NAV ONLY), 1 (NAV + METERS), 2 (NAV + TR + METERS), 3 (FULL NAV + TR + METERS), OR 4 (FULL NAV + TR + METERS + CPU)".to_string());
             }
         }
     }

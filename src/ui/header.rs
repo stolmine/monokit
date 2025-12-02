@@ -51,8 +51,25 @@ fn page_to_activity_index(page: &Page) -> Option<usize> {
     }
 }
 
+fn calculate_full_nav_width() -> usize {
+    let mut width = 0;
+    for (idx, page) in NAVIGABLE_PAGES.iter().enumerate() {
+        let name = page.name();
+        if idx == 0 {
+            width += name.len() + 2;
+        } else {
+            width += name.len();
+        }
+        width += 1;
+    }
+    width
+}
+
 pub fn render_header(app: &crate::App) -> Paragraph<'static> {
     let mut spans = vec![Span::raw(" ")];
+
+    // Navigation label rendering based on header_level
+    let full_nav_width = calculate_full_nav_width();
 
     if app.current_page == Page::Help {
         spans.push(Span::styled(
@@ -61,7 +78,30 @@ pub fn render_header(app: &crate::App) -> Paragraph<'static> {
                 .fg(app.theme.accent)
                 .add_modifier(Modifier::BOLD),
         ));
+        // Pad to match full nav width
+        let current_width = 6;
+        if current_width < full_nav_width {
+            spans.push(Span::raw(" ".repeat(full_nav_width - current_width)));
+        }
+    } else if app.header_level <= 2 {
+        // Levels 0-2: Show only current page name dynamically
+        let activity = page_to_activity_index(&app.current_page)
+            .and_then(|idx| app.script_activity[idx]);
+        let color = app.theme.activity_color(activity, true, app.activity_hold_ms);
+        let label = format!("[{}]", app.current_page.name());
+        let label_width = label.len();
+        spans.push(Span::styled(
+            label,
+            Style::default()
+                .fg(color)
+                .add_modifier(Modifier::BOLD),
+        ));
+        // Pad to match full nav width
+        if label_width < full_nav_width {
+            spans.push(Span::raw(" ".repeat(full_nav_width - label_width)));
+        }
     } else {
+        // Levels 3-4: Show full navigation
         for page in NAVIGABLE_PAGES.iter() {
             let is_selected = *page == app.current_page;
             let activity = page_to_activity_index(page)
@@ -85,16 +125,21 @@ pub fn render_header(app: &crate::App) -> Paragraph<'static> {
         }
     }
 
-    let tr_color = app.theme.activity_color(app.trigger_activity, false, app.activity_hold_ms);
-    spans.push(Span::raw("  "));
-    spans.push(Span::styled(
-        "TR",
-        Style::default().fg(tr_color),
-    ));
+    // TR indicator: show at level 2 and above
+    if app.header_level >= 2 {
+        let tr_color = app.theme.activity_color(app.trigger_activity, false, app.activity_hold_ms);
+        spans.push(Span::raw("  "));
+        spans.push(Span::styled(
+            "TR",
+            Style::default().fg(tr_color),
+        ));
+    }
 
-    // Add meters after TR
-    spans.push(Span::raw("  "));
-    spans.extend(render_meters(&app.meter_data, &app.theme));
+    // Meters: show at level 1 and above
+    if app.header_level >= 1 {
+        spans.push(Span::raw("  "));
+        spans.extend(render_meters(&app.meter_data, &app.theme));
+    }
 
     // Build right-aligned border title parts
     let mut title_parts = Vec::new();
@@ -112,8 +157,8 @@ pub fn render_header(app: &crate::App) -> Paragraph<'static> {
         ));
     }
 
-    // Add CPU indicator if enabled
-    if app.show_cpu {
+    // Add CPU indicator: show at level 4 OR if show_cpu is explicitly enabled
+    if app.show_cpu || app.header_level >= 4 {
         // Add separator if REC is also showing
         if !title_parts.is_empty() {
             title_parts.push(Span::raw("  "));

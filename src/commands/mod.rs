@@ -46,6 +46,7 @@ pub fn process_command<F>(
     debug_level: &mut u8,
     activity_hold_ms: &mut f32,
     show_cpu: &mut bool,
+    header_level: &mut u8,
     limiter_enabled: &mut bool,
     notes: &mut String,
     input: &str,
@@ -687,6 +688,9 @@ where
         }
         "CPU" => {
             misc::handle_cpu(&parts, show_cpu, output);
+        }
+        "HEADER" => {
+            misc::handle_header(&parts, header_level, output);
         }
         "LIMIT" => {
             misc::handle_limit(&parts, limiter_enabled, metro_tx, *debug_level, output)?;

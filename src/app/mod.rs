@@ -55,13 +55,14 @@ pub struct App {
     pub spectrum_data: SpectrumData,
     pub cpu_data: CpuData,
     pub show_cpu: bool,
+    pub header_level: u8,
     pub limiter_enabled: bool,
     pub notes: String,
     pub notes_cursor: usize,
 }
 
 impl App {
-    pub fn new(metro_tx: Sender<MetroCommand>, metro_state: Arc<Mutex<MetroState>>, theme: Theme) -> Self {
+    pub fn new(metro_tx: Sender<MetroCommand>, metro_state: Arc<Mutex<MetroState>>, theme: Theme, config: &crate::config::Config) -> Self {
         Self {
             current_page: Page::Live,
             previous_page: Page::Live,
@@ -107,6 +108,7 @@ impl App {
             spectrum_data: SpectrumData::default(),
             cpu_data: CpuData::default(),
             show_cpu: false,
+            header_level: config.display.header_level,
             limiter_enabled: true,
             notes: String::new(),
             notes_cursor: 0,
@@ -227,6 +229,7 @@ impl App {
             &mut self.debug_level,
             &mut self.activity_hold_ms,
             &mut self.show_cpu,
+            &mut self.header_level,
             &mut self.limiter_enabled,
             &mut self.notes,
             command,

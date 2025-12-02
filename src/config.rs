@@ -18,6 +18,8 @@ pub struct Config {
 pub struct DisplayConfig {
     #[serde(default = "default_theme_mode")]
     pub theme: String,
+    #[serde(default = "default_header_level")]
+    pub header_level: u8,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -55,10 +57,15 @@ fn default_theme_mode() -> String {
     "dark".to_string()
 }
 
+fn default_header_level() -> u8 {
+    4
+}
+
 impl Default for DisplayConfig {
     fn default() -> Self {
         Self {
             theme: default_theme_mode(),
+            header_level: default_header_level(),
         }
     }
 }
@@ -172,6 +179,13 @@ pub fn list_themes(config: &Config) -> Vec<String> {
 pub fn save_theme_mode(mode: &str) -> Result<()> {
     let mut config = load_config()?;
     config.display.theme = mode.to_string();
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_header_level(level: u8) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.header_level = level;
     save_config(&config)?;
     Ok(())
 }

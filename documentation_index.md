@@ -1056,6 +1056,15 @@ PS.TARG 0         // Process input signal
 - `CPU` - Show current CPU display state (0 or 1)
 - `CPU 0` - Hide CPU meter in header border
 - `CPU 1` - Show CPU meter in header border
+- `HEADER <0-4>` - Set header verbosity level (persists to config):
+  - `HEADER 0` - Dynamic nav label only (just current page, e.g., [LIVE])
+  - `HEADER 1` - Dynamic nav label + L/R meters
+  - `HEADER 2` - Dynamic nav label + TR indicator + meters
+  - `HEADER 3` - Full nav (all page labels) + TR + meters (no CPU)
+  - `HEADER 4` - Full nav + TR + meters + CPU (default)
+  - REC indicator always visible at all levels (safety-critical)
+  - CPU 1 command works as override at any level
+  - UI elements maintain consistent positioning across all levels
 - `q`, `quit`, or `exit` - Quit application (typed in REPL)
 
 #### Themes

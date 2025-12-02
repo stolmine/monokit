@@ -5,7 +5,7 @@ pub mod state_highlight;
 
 use anyhow::Result;
 use crossterm::event::{self, Event, KeyCode, KeyModifiers};
-use ratatui::prelude::*;
+use ratatui::{prelude::*, widgets::Block};
 use std::sync::mpsc;
 use std::time::Duration;
 
@@ -20,15 +20,12 @@ use pages::{
 
 pub fn ui(f: &mut Frame, app: &crate::App) {
     let area = f.area();
-    let bg = app.theme.background;
-    let fg = app.theme.foreground;
-    for y in area.top()..area.bottom() {
-        for x in area.left()..area.right() {
-            let cell = f.buffer_mut().get_mut(x, y);
-            cell.set_bg(bg);
-            cell.set_fg(fg);
-        }
-    }
+
+    // Clear and set background for entire terminal area
+    f.render_widget(
+        Block::default().style(Style::default().bg(app.theme.background).fg(app.theme.foreground)),
+        area
+    );
 
     let is_help = app.current_page == Page::Help;
     let is_pattern = app.current_page == Page::Pattern;

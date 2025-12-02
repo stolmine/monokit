@@ -577,14 +577,23 @@ Real-time amplitude and CPU display (requires bidirectional OSC).
 - [ ] CPU percentage from SC `/status` command
 - [ ] Peak hold and clip indicator
 
+### Global Search [Medium] - NOT STARTED
+Search functionality across scripts and patterns.
+
+- [ ] `Ctrl+F` transforms input bar into search mode
+- [ ] Search bar shows `/` prefix to indicate search mode
+- [ ] `Enter` jumps to next match (cycles through all instances)
+- [ ] `Escape` exits search mode
+- [ ] Search across: script content, pattern values, help text
+- [ ] Highlight matching text on current page
+- [ ] Show match count indicator (e.g., "2/5")
+
 ### Help System [Low] - PARTIAL
 - [x] Add explicit `#` prefix marker to section headers
 - [x] Marker-based styling (replaces fragile heuristic)
 - [x] Paginated help with category pages (10 pages)
 - [x] `[` / `]` navigate help pages when help is active
-- [ ] Help search: `Ctrl+F` opens search input
-- [ ] Sequential search with `Enter`, highlight matches
-- [ ] Jump to match location within help pages
+- [ ] Help search integrated with global search
 
 ### Waveform Preview [Medium] (Optional/Future)
 - [ ] Mini oscilloscope on Live page

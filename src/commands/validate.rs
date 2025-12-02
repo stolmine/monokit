@@ -268,7 +268,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "THEME" | "DEBUG" | "OUT.ERR" | "OUT.ESS" | "OUT.QRY" | "OUT.CFM" => {
+        "THEME" | "DEBUG" | "OUT.ERR" | "OUT.ESS" | "OUT.QRY" | "OUT.CFM" | "REPL.DUMP" => {
             if argc > 1 {
                 return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
             }

@@ -30,6 +30,31 @@ impl App {
             return;
         }
 
+        if cmd_upper.starts_with("REPL.DUMP") {
+            let parts: Vec<&str> = cmd_upper.split_whitespace().collect();
+            let filename = if parts.len() > 1 {
+                parts[1].to_lowercase()
+            } else {
+                "repl_dump.txt".to_string()
+            };
+            match std::fs::File::create(&filename) {
+                Ok(mut file) => {
+                    use std::io::Write;
+                    for line in &self.output {
+                        if let Err(e) = writeln!(file, "{}", line) {
+                            self.add_output(format!("ERROR: WRITE FAILED: {}", e));
+                            return;
+                        }
+                    }
+                    self.add_output(format!("DUMPED {} LINES TO {}", self.output.len() - 1, filename));
+                }
+                Err(e) => {
+                    self.add_output(format!("ERROR: FILE CREATE FAILED: {}", e));
+                }
+            }
+            return;
+        }
+
         let mut metro_interval = {
             let state = self.metro_state.lock().unwrap();
             state.interval_ms

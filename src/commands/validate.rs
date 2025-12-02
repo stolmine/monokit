@@ -89,7 +89,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         }
         "P.SCALE" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("P.SCALE requires at least 2 arguments (min and max)", ));
+                return Err(anyhow::anyhow!("ERROR: P.SCALE NEEDS MIN AND MAX"));
             }
             Ok(())
         }
@@ -110,7 +110,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         }
         "PN.HERE" | "PN.NEXT" | "PN.PREV" | "PN.POP" | "PN.REV" | "PN.SHUF" | "PN.SORT" | "PN.MIN" | "PN.MAX" | "PN.SUM" | "PN.AVG" => {
             if argc < 1 {
-                return Err(anyhow::anyhow!("{} requires at least 1 argument (pattern number)", command));
+                return Err(anyhow::anyhow!("ERROR: {} NEEDS PAT NUM", command));
             }
             Ok(())
         }
@@ -122,37 +122,37 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         }
         "PN.PUSH" | "PN.ADD" | "PN.SUB" | "PN.MUL" | "PN.DIV" | "PN.MOD" | "PN.FND" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("{} requires at least 2 arguments (pattern number and value)", command));
+                return Err(anyhow::anyhow!("ERROR: {} NEEDS PAT NUM AND VAL", command));
             }
             Ok(())
         }
         "PN.RM" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("PN.RM requires at least 2 arguments (pattern number and index)"));
+                return Err(anyhow::anyhow!("ERROR: PN.RM NEEDS PAT NUM AND IDX"));
             }
             Ok(())
         }
         "PN.ROT" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("PN.ROT requires at least 2 arguments (pattern number and rotation amount)"));
+                return Err(anyhow::anyhow!("ERROR: PN.ROT NEEDS PAT NUM AND AMT"));
             }
             Ok(())
         }
         "PN.INS" => {
             if argc < 3 {
-                return Err(anyhow::anyhow!("PN.INS requires at least 3 arguments (pattern number, index, and value)"));
+                return Err(anyhow::anyhow!("ERROR: PN.INS NEEDS PAT NUM, IDX, VAL"));
             }
             Ok(())
         }
         "PN.SCALE" => {
             if argc < 3 {
-                return Err(anyhow::anyhow!("PN.SCALE requires at least 3 arguments (pattern number, min, and max)"));
+                return Err(anyhow::anyhow!("ERROR: PN.SCALE NEEDS PAT, MIN, MAX"));
             }
             Ok(())
         }
         "PN.RND" => {
             if argc < 1 {
-                return Err(anyhow::anyhow!("PN.RND requires at least 1 argument (pattern number)"));
+                return Err(anyhow::anyhow!("ERROR: PN.RND NEEDS PAT NUM"));
             }
             Ok(())
         }
@@ -246,13 +246,13 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         }
         "PSET" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("PSET requires script number and preset name"));
+                return Err(anyhow::anyhow!("ERROR: PSET NEEDS SCRIPT NUM AND NAME"));
             }
             Ok(())
         }
         "PSET.SAVE" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("PSET.SAVE requires script number and preset name"));
+                return Err(anyhow::anyhow!("ERROR: PSET.SAVE NEEDS NUM AND NAME"));
             }
             Ok(())
         }
@@ -268,7 +268,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "THEME" | "DEBUG" => {
+        "THEME" | "DEBUG" | "OUT.ERR" | "OUT.ESS" | "OUT.QRY" | "OUT.CFM" => {
             if argc > 1 {
                 return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
             }
@@ -312,13 +312,13 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         }
         "RND.P" | "RND.PALL" => {
             if argc != 0 && argc != 2 {
-                return Err(anyhow::anyhow!("{} takes 0 or 2 arguments (min and max)", command));
+                return Err(anyhow::anyhow!("ERROR: {} NEEDS 0 OR 2 ARGS", command));
             }
             Ok(())
         }
         "RND.PN" => {
             if argc != 1 && argc != 3 {
-                return Err(anyhow::anyhow!("RND.PN takes 1 argument (pattern number) or 3 arguments (pattern number, min, max)"));
+                return Err(anyhow::anyhow!("ERROR: RND.PN NEEDS 1 OR 3 ARGS"));
             }
             Ok(())
         }
@@ -342,7 +342,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         }
         "SLEW" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("SLEW requires at least 2 arguments (param name and time value)"));
+                return Err(anyhow::anyhow!("ERROR: SLEW NEEDS PARAM NAME AND TIME"));
             }
             Ok(())
         }
@@ -465,7 +465,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         }
         "Q.BIT" => {
             if argc != 1 {
-                return Err(anyhow::anyhow!("Q.BIT takes exactly 1 argument (binary string)"));
+                return Err(anyhow::anyhow!("ERROR: Q.BIT NEEDS 1 ARG"));
             }
             Ok(())
         }

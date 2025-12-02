@@ -1,7 +1,8 @@
 use crate::midi::{MidiConnection, MidiTimingStats};
 use crate::theme::Theme;
 use crate::types::{
-    Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, NotesStorage, Page, ParamActivity, PatternStorage, ScaleState, ScopeData, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
+    Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, NotesStorage, OutputCategory, Page, ParamActivity, PatternStorage, ScaleState, ScopeData, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
+    TIER_CONFIRMS, TIER_ERRORS, TIER_ESSENTIAL, TIER_QUERIES, TIER_VERBOSE,
 };
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -81,6 +82,10 @@ pub struct App {
     pub show_conditional_highlight: bool,
     pub current_scene_name: Option<String>,
     pub title_mode: u8,
+    pub out_err: bool,
+    pub out_ess: bool,
+    pub out_qry: bool,
+    pub out_cfm: bool,
 }
 
 impl App {
@@ -156,6 +161,10 @@ impl App {
             show_conditional_highlight: config.display.show_conditional_highlight,
             current_scene_name: None,
             title_mode: config.display.title_mode,
+            out_err: config.display.out_err,
+            out_ess: config.display.out_ess,
+            out_qry: config.display.out_qry,
+            out_cfm: config.display.out_cfm,
         }
     }
 
@@ -243,6 +252,26 @@ impl App {
         self.output_scroll = 0;
     }
 
+    /// Check if output should be shown based on tier and category overrides
+    pub fn should_output(&self, category: OutputCategory) -> bool {
+        let tier = match category {
+            OutputCategory::Error => TIER_ERRORS,
+            OutputCategory::Essential => TIER_ESSENTIAL,
+            OutputCategory::Query => TIER_QUERIES,
+            OutputCategory::Confirm => TIER_CONFIRMS,
+            OutputCategory::Verbose => TIER_VERBOSE,
+        };
+
+        // Tier check OR category override
+        self.debug_level >= tier || match category {
+            OutputCategory::Error => self.out_err,
+            OutputCategory::Essential => self.out_ess,
+            OutputCategory::Query => self.out_qry,
+            OutputCategory::Confirm => self.out_cfm,
+            OutputCategory::Verbose => false, // No override for verbose
+        }
+    }
+
     pub fn execute_script(&mut self, script_index: usize) {
         self.if_else_condition = true;
         self.execute_script_with_depth(script_index, 0);
@@ -293,6 +322,10 @@ impl App {
             &mut self.grid_mode,
             &mut self.current_scene_name,
             &mut self.title_mode,
+            &mut self.out_err,
+            &mut self.out_ess,
+            &mut self.out_qry,
+            &mut self.out_cfm,
             command,
             |msg| {
                 output_messages.push(msg);

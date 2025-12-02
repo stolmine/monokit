@@ -14,21 +14,21 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
     let socket = match Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::UDP)) {
         Ok(s) => s,
         Err(e) => {
-            eprintln!("Meter thread: Failed to create socket: {}", e);
+            let _ = event_tx.send(MetroEvent::Error(format!("ERROR: SOCKET CREATE FAILED: {}", e)));
             return;
         }
     };
 
     let bind_addr: SocketAddr = format!("0.0.0.0:{}", METER_PORT).parse().unwrap();
     if let Err(e) = socket.bind(&bind_addr.into()) {
-        eprintln!("Meter thread: Failed to bind UDP socket on port {}: {}", METER_PORT, e);
+        let _ = event_tx.send(MetroEvent::Error(format!("ERROR: METER BIND PORT {} FAIL: {}", METER_PORT, e)));
         return;
     }
 
     let socket: UdpSocket = socket.into();
 
     if let Err(e) = socket.set_read_timeout(Some(Duration::from_millis(RECV_TIMEOUT_MS))) {
-        eprintln!("Meter thread: Failed to set socket timeout: {}", e);
+        let _ = event_tx.send(MetroEvent::Error(format!("ERROR: METER SOCKET TIMEOUT FAIL: {}", e)));
         return;
     }
 
@@ -46,7 +46,7 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
                                 apply_meter_update(&mut meter_data, update);
 
                                 if let Err(e) = event_tx.send(MetroEvent::MeterUpdate(meter_data.clone())) {
-                                    eprintln!("Meter thread: Failed to send MeterUpdate: {}", e);
+                                    let _ = event_tx.send(MetroEvent::Error(format!("ERROR: METER UPDATE SEND FAIL: {}", e)));
                                     return;
                                 }
                             }
@@ -55,14 +55,14 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
                                 apply_spectrum_update(&mut spectrum_data, update);
 
                                 if let Err(e) = event_tx.send(MetroEvent::SpectrumUpdate(spectrum_data.clone())) {
-                                    eprintln!("Meter thread: Failed to send SpectrumUpdate: {}", e);
+                                    let _ = event_tx.send(MetroEvent::Error(format!("ERROR: SPECTRUM UPDATE SEND FAIL: {}", e)));
                                     return;
                                 }
                             }
                         } else if msg.addr == "/monokit/cpu" {
                             if let Some(cpu_data) = parse_cpu_message(&msg.args) {
                                 if let Err(e) = event_tx.send(MetroEvent::CpuUpdate(cpu_data)) {
-                                    eprintln!("Meter thread: Failed to send CpuUpdate: {}", e);
+                                    let _ = event_tx.send(MetroEvent::Error(format!("ERROR: CPU UPDATE SEND FAIL: {}", e)));
                                     return;
                                 }
                             }
@@ -80,7 +80,7 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
                 decay_peak_holds(&mut meter_data);
             }
             Err(e) => {
-                eprintln!("Meter thread: Socket recv error: {}", e);
+                let _ = event_tx.send(MetroEvent::Error(format!("ERROR: METER SOCKET RECV: {}", e)));
                 return;
             }
         }

@@ -1,15 +1,17 @@
 use crate::preset::{self, Preset, PresetType};
-use crate::types::ScriptStorage;
+use crate::types::{ScriptStorage, TIER_ERRORS, TIER_ESSENTIAL, TIER_QUERIES, TIER_CONFIRMS, TIER_VERBOSE};
 
 pub fn handle_pset<F>(
     parts: &[&str],
     scripts: &mut ScriptStorage,
+    debug_level: u8,
+    out_ess: bool,
     mut output: F,
 ) where
     F: FnMut(String),
 {
     if parts.len() < 3 {
-        output("ERROR: PSET NEEDS SCRIPT# AND NAME".to_string());
+        output("ERROR: PSET REQUIRES SCRIPT# AND NAME".to_string());
         return;
     }
 
@@ -44,7 +46,9 @@ pub fn handle_pset<F>(
                 PresetType::Factory => "[F]",
                 PresetType::User => "[U]",
             };
-            output(format!("LOADED PRESET {} {} INTO SCRIPT {}", type_marker, name, script_num + 1));
+            if debug_level >= TIER_ESSENTIAL || out_ess {
+                output(format!("LOADED PRESET {} {} INTO SCRIPT {}", type_marker, name, script_num + 1));
+            }
         }
         Err(preset::PresetError::NotFound(_)) => {
             output(format!("ERROR: PRESET '{}' NOT FOUND", name));
@@ -58,12 +62,14 @@ pub fn handle_pset<F>(
 pub fn handle_pset_save<F>(
     parts: &[&str],
     scripts: &ScriptStorage,
+    debug_level: u8,
+    out_ess: bool,
     mut output: F,
 ) where
     F: FnMut(String),
 {
     if parts.len() < 3 {
-        output("ERROR: PSET.SAVE NEEDS SCRIPT# AND NAME".to_string());
+        output("ERROR: PSET.SAVE REQUIRES SCRIPT# AND NAME".to_string());
         return;
     }
 
@@ -94,13 +100,19 @@ pub fn handle_pset_save<F>(
     };
 
     match preset::save_preset(&name, &preset) {
-        Ok(()) => output(format!("SAVED PRESET: {}", name)),
+        Ok(()) => {
+            if debug_level >= TIER_ESSENTIAL || out_ess {
+                output(format!("SAVED PRESET: {}", name));
+            }
+        }
         Err(e) => output(format!("ERROR: {:?}", e)),
     }
 }
 
 pub fn handle_pset_del<F>(
     parts: &[&str],
+    debug_level: u8,
+    out_ess: bool,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -118,7 +130,11 @@ pub fn handle_pset_del<F>(
     }
 
     match preset::delete_preset(&name) {
-        Ok(()) => output(format!("DELETED PRESET: {}", name)),
+        Ok(()) => {
+            if debug_level >= TIER_ESSENTIAL || out_ess {
+                output(format!("DELETED PRESET: {}", name));
+            }
+        }
         Err(preset::PresetError::NotFound(_)) => {
             output(format!("ERROR: PRESET '{}' NOT FOUND", name));
         }
@@ -127,35 +143,39 @@ pub fn handle_pset_del<F>(
 }
 
 pub fn handle_psets<F>(
+    debug_level: u8,
+    out_qry: bool,
     mut output: F,
 ) where
     F: FnMut(String),
 {
-    let factory_presets = preset::factory::list_factory_presets();
-    let user_presets = preset::list_user_presets().unwrap_or_default();
+    if debug_level >= TIER_QUERIES || out_qry {
+        let factory_presets = preset::factory::list_factory_presets();
+        let user_presets = preset::list_user_presets().unwrap_or_default();
 
-    if factory_presets.is_empty() && user_presets.is_empty() {
-        output("NO PRESETS AVAILABLE".to_string());
-        return;
-    }
+        if factory_presets.is_empty() && user_presets.is_empty() {
+            output("NO PRESETS AVAILABLE".to_string());
+            return;
+        }
 
-    output("PRESETS:".to_string());
+        output("PRESETS:".to_string());
 
-    if !factory_presets.is_empty() {
-        output("".to_string());
-        output("FACTORY:".to_string());
-        for name in factory_presets {
-            if let Some(preset) = preset::factory::get_factory_preset(&name) {
-                output(format!("  [F] {} - {}", name, preset.description));
+        if !factory_presets.is_empty() {
+            output("".to_string());
+            output("FACTORY:".to_string());
+            for name in factory_presets {
+                if let Some(preset) = preset::factory::get_factory_preset(&name) {
+                    output(format!("  [F] {} - {}", name, preset.description));
+                }
             }
         }
-    }
 
-    if !user_presets.is_empty() {
-        output("".to_string());
-        output("USER:".to_string());
-        for (name, _size) in user_presets {
-            output(format!("  [U] {}", name));
+        if !user_presets.is_empty() {
+            output("".to_string());
+            output("USER:".to_string());
+            for (name, _size) in user_presets {
+                output(format!("  [U] {}", name));
+            }
         }
     }
 }

@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_CONFIRMS};
 use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
@@ -16,6 +16,7 @@ macro_rules! define_int_param {
             metro_tx: &Sender<MetroCommand>,
             debug_level: u8,
             scale: &ScaleState,
+            out_cfm: bool,
             mut output: F,
         ) -> Result<()>
         where
@@ -39,7 +40,7 @@ macro_rules! define_int_param {
             metro_tx
                 .send(MetroCommand::SendParam($osc_param.to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            if debug_level >= 2 {
+            if debug_level >= TIER_CONFIRMS || out_cfm {
                 output(format!("SET {} TO {}", $display_name, value));
             }
             Ok(())
@@ -59,6 +60,7 @@ macro_rules! define_int_param_ms {
             metro_tx: &Sender<MetroCommand>,
             debug_level: u8,
             scale: &ScaleState,
+            out_cfm: bool,
             mut output: F,
         ) -> Result<()>
         where
@@ -82,7 +84,7 @@ macro_rules! define_int_param_ms {
             metro_tx
                 .send(MetroCommand::SendParam($osc_param.to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            if debug_level >= 2 {
+            if debug_level >= TIER_CONFIRMS || out_cfm {
                 output(format!("SET {} TO {} MS", $display_name, value));
             }
             Ok(())
@@ -102,6 +104,7 @@ macro_rules! define_float_param {
             metro_tx: &Sender<MetroCommand>,
             debug_level: u8,
             scale: &ScaleState,
+            out_cfm: bool,
             mut output: F,
         ) -> Result<()>
         where
@@ -127,7 +130,7 @@ macro_rules! define_float_param {
             metro_tx
                 .send(MetroCommand::SendParam($osc_param.to_string(), OscType::Float(value)))
                 .context("Failed to send param to metro thread")?;
-            if debug_level >= 2 {
+            if debug_level >= TIER_CONFIRMS || out_cfm {
                 output(format!("SET {} TO {} {}", $display_name, value, $unit));
             }
             Ok(())
@@ -147,6 +150,7 @@ macro_rules! define_bool_param {
             metro_tx: &Sender<MetroCommand>,
             debug_level: u8,
             scale: &ScaleState,
+            out_cfm: bool,
             mut output: F,
         ) -> Result<()>
         where
@@ -170,7 +174,7 @@ macro_rules! define_bool_param {
             metro_tx
                 .send(MetroCommand::SendParam($osc_param.to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            if debug_level >= 2 {
+            if debug_level >= TIER_CONFIRMS || out_cfm {
                 output(format!("SET {} TO {}", $display_name, value));
             }
             Ok(())
@@ -190,6 +194,7 @@ macro_rules! define_mode_param {
             metro_tx: &Sender<MetroCommand>,
             debug_level: u8,
             scale: &ScaleState,
+            out_cfm: bool,
             mut output: F,
         ) -> Result<()>
         where
@@ -213,7 +218,7 @@ macro_rules! define_mode_param {
             metro_tx
                 .send(MetroCommand::SendParam($osc_param.to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            if debug_level >= 2 {
+            if debug_level >= TIER_CONFIRMS || out_cfm {
                 output(format!("SET {} TO {}", $display_name, value));
             }
             Ok(())
@@ -233,6 +238,7 @@ macro_rules! define_mode_param_with_names {
             metro_tx: &Sender<MetroCommand>,
             debug_level: u8,
             scale: &ScaleState,
+            out_cfm: bool,
             mut output: F,
         ) -> Result<()>
         where
@@ -256,7 +262,7 @@ macro_rules! define_mode_param_with_names {
             metro_tx
                 .send(MetroCommand::SendParam($osc_param.to_string(), OscType::Int(value)))
                 .context("Failed to send param to metro thread")?;
-            if debug_level >= 2 {
+            if debug_level >= TIER_CONFIRMS || out_cfm {
                 let mode_name = $mode_names.get(value as usize).unwrap_or(&"UNKNOWN");
                 output(format!("SET {} TO {} ({})", $display_name, value, mode_name));
             }

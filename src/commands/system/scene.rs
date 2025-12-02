@@ -1,4 +1,4 @@
-use crate::types::{NotesStorage, PatternStorage, ScriptStorage, Variables};
+use crate::types::{NotesStorage, PatternStorage, ScriptStorage, Variables, TIER_ERRORS, TIER_ESSENTIAL, TIER_QUERIES, TIER_CONFIRMS, TIER_VERBOSE};
 
 pub fn handle_save<F>(
     parts: &[&str],
@@ -6,6 +6,8 @@ pub fn handle_save<F>(
     patterns: &PatternStorage,
     notes: &NotesStorage,
     current_scene_name: &mut Option<String>,
+    debug_level: u8,
+    out_ess: bool,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -19,7 +21,9 @@ pub fn handle_save<F>(
     match crate::scene::save_scene(&name, &scene) {
         Ok(()) => {
             *current_scene_name = Some(name.clone());
-            output(format!("SAVED SCENE: {}", name));
+            if debug_level >= TIER_ESSENTIAL || out_ess {
+                output(format!("SAVED SCENE: {}", name));
+            }
         }
         Err(e) => output(format!("ERROR: {:?}", e)),
     }
@@ -32,6 +36,8 @@ pub fn handle_load<F>(
     patterns: &mut PatternStorage,
     notes: &mut NotesStorage,
     current_scene_name: &mut Option<String>,
+    debug_level: u8,
+    out_ess: bool,
     mut output: F,
 ) -> bool
 where
@@ -47,7 +53,9 @@ where
             scene.apply_to_app_state(scripts, patterns, notes);
             *variables = crate::types::Variables::default();
             *current_scene_name = Some(name.clone());
-            output(format!("LOADED SCENE: {}", name));
+            if debug_level >= TIER_ESSENTIAL || out_ess {
+                output(format!("LOADED SCENE: {}", name));
+            }
             true
         }
         Err(crate::scene::SceneError::NotFound(_)) => {
@@ -62,28 +70,34 @@ where
 }
 
 pub fn handle_scenes<F>(
+    debug_level: u8,
+    out_qry: bool,
     mut output: F,
 ) where
     F: FnMut(String),
 {
-    match crate::scene::list_scenes() {
-        Ok(scenes) => {
-            if scenes.is_empty() {
-                output("NO SCENES SAVED".to_string());
-            } else {
-                output("SCENES:".to_string());
-                for (name, size) in scenes {
-                    let size_kb = size as f64 / 1024.0;
-                    output(format!("  {} ({:.1} KB)", name, size_kb));
+    if debug_level >= TIER_QUERIES || out_qry {
+        match crate::scene::list_scenes() {
+            Ok(scenes) => {
+                if scenes.is_empty() {
+                    output("NO SCENES SAVED".to_string());
+                } else {
+                    output("SCENES:".to_string());
+                    for (name, size) in scenes {
+                        let size_kb = size as f64 / 1024.0;
+                        output(format!("  {} ({:.1} KB)", name, size_kb));
+                    }
                 }
             }
+            Err(e) => output(format!("ERROR: {:?}", e)),
         }
-        Err(e) => output(format!("ERROR: {:?}", e)),
     }
 }
 
 pub fn handle_delete<F>(
     parts: &[&str],
+    debug_level: u8,
+    out_ess: bool,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -94,7 +108,11 @@ pub fn handle_delete<F>(
     }
     let name = parts[1..].join(" ");
     match crate::scene::delete_scene(&name) {
-        Ok(()) => output(format!("DELETED SCENE: {}", name)),
+        Ok(()) => {
+            if debug_level >= TIER_ESSENTIAL || out_ess {
+                output(format!("DELETED SCENE: {}", name));
+            }
+        }
         Err(crate::scene::SceneError::NotFound(_)) => {
             output(format!("ERROR: SCENE '{}' NOT FOUND", name));
         }

@@ -72,6 +72,10 @@ impl App {
             &mut self.grid_mode,
             &mut self.current_scene_name,
             &mut self.title_mode,
+            &mut self.out_err,
+            &mut self.out_ess,
+            &mut self.out_qry,
+            &mut self.out_cfm,
             cmd_to_run,
             |msg| {
                 output_messages.push(msg);

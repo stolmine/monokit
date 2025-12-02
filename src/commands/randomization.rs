@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_ERRORS, TIER_ESSENTIAL, TIER_QUERIES, TIER_CONFIRMS, TIER_VERBOSE};
 use anyhow::{Context, Result};
 use rand::Rng;
 use rosc::OscType;
@@ -33,9 +33,9 @@ where
     metro_tx.send(MetroCommand::SendParam("fba".to_string(), OscType::Int(fba)))?;
     metro_tx.send(MetroCommand::SendParam("fbd".to_string(), OscType::Int(fbd)))?;
 
-    if debug_level >= 2 {
-        output(format!("RANDOMIZED VOICE: PF={:.1} PW={} MF={:.1} MW={} FM={} FB={} FBA={} FBD={}",
-            pf, pw, mf, mw, fm, fb, fba, fbd));
+    if debug_level >= TIER_VERBOSE {
+        output(format!("RND.VOICE: PF={:.1} PW={} MF={:.1} MW={}",
+            pf, pw, mf, mw));
     }
 
     Ok(())
@@ -61,8 +61,8 @@ where
     metro_tx.send(MetroCommand::SendParam("mf".to_string(), OscType::Float(mf)))?;
     metro_tx.send(MetroCommand::SendParam("mw".to_string(), OscType::Int(mw)))?;
 
-    if debug_level >= 2 {
-        output(format!("RANDOMIZED OSCILLATORS: PF={:.1} PW={} MF={:.1} MW={}", pf, pw, mf, mw));
+    if debug_level >= TIER_VERBOSE {
+        output(format!("RND.OSC: PF={:.1} PW={} MF={:.1} MW={}", pf, pw, mf, mw));
     }
 
     Ok(())
@@ -88,7 +88,7 @@ where
     metro_tx.send(MetroCommand::SendParam("fba".to_string(), OscType::Int(fba)))?;
     metro_tx.send(MetroCommand::SendParam("fbd".to_string(), OscType::Int(fbd)))?;
 
-    if debug_level >= 2 {
+    if debug_level >= TIER_VERBOSE {
         output(format!("RANDOMIZED FM: FM={} FB={} FBA={} FBD={}", fm, fb, fba, fbd));
     }
 
@@ -119,7 +119,7 @@ where
     metro_tx.send(MetroCommand::SendParam("mt".to_string(), OscType::Int(mt)))?;
     metro_tx.send(MetroCommand::SendParam("ma".to_string(), OscType::Int(ma)))?;
 
-    if debug_level >= 2 {
+    if debug_level >= TIER_VERBOSE {
         output(format!(
             "RANDOMIZED MODULATION: MB={} TK={} MP={} MD={} MT={} MA={}",
             mb, tk, mp, md, mt, ma
@@ -157,7 +157,7 @@ where
     metro_tx.send(MetroCommand::SendParam("fa".to_string(), OscType::Int(fa)))?;
     metro_tx.send(MetroCommand::SendParam("da".to_string(), OscType::Int(da)))?;
 
-    if debug_level >= 2 {
+    if debug_level >= TIER_VERBOSE {
         output(format!(
             "RANDOMIZED ENVELOPES: ATK={}ms DEC={}ms CRV={:.2} MODE={} PA={:.2} FA={} DA={}",
             env_atk, env_dec, env_crv, env_mode, pa, fa, da
@@ -175,6 +175,7 @@ pub fn handle_rnd_p<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     scale: &ScaleState,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -207,7 +208,9 @@ where
     for i in 0..pattern.length {
         pattern.data[i] = rng.gen_range(min..=max);
     }
-    output(format!("RANDOMIZED PATTERN {} (RANGE {} TO {})", patterns.working, min, max));
+    if debug_level >= TIER_VERBOSE {
+        output(format!("RANDOMIZED PATTERN {} (RANGE {} TO {})", patterns.working, min, max));
+    }
     Ok(())
 }
 
@@ -219,6 +222,7 @@ pub fn handle_rnd_pn<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     scale: &ScaleState,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -266,7 +270,9 @@ where
     for i in 0..pattern.length {
         pattern.data[i] = rng.gen_range(min..=max);
     }
-    output(format!("RANDOMIZED PATTERN {} (RANGE {} TO {})", pat, min, max));
+    if debug_level >= TIER_VERBOSE {
+        output(format!("RANDOMIZED PATTERN {} (RANGE {} TO {})", pat, min, max));
+    }
     Ok(())
 }
 
@@ -278,6 +284,7 @@ pub fn handle_rnd_pall<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     scale: &ScaleState,
+    debug_level: u8,
     mut output: F,
 ) -> Result<()>
 where
@@ -312,7 +319,9 @@ where
             pattern.data[i] = rng.gen_range(min..=max);
         }
     }
-    output(format!("RANDOMIZED ALL PATTERNS (RANGE {} TO {})", min, max));
+    if debug_level >= TIER_VERBOSE {
+        output(format!("RANDOMIZED ALL PATTERNS (RANGE {} TO {})", min, max));
+    }
     Ok(())
 }
 
@@ -362,7 +371,7 @@ where
     let rw = rng.gen_range(0..=8000);
     metro_tx.send(MetroCommand::SendParam("rw".to_string(), OscType::Int(rw)))?;
 
-    if debug_level >= 2 {
+    if debug_level >= TIER_VERBOSE {
         output(format!(
             "RANDOMIZED ALL FX: FC={:.1} FQ={} FT={} FE={} DT={} DF={} DLP={:.1} DW={} RV={} RP={} RH={} RW={}",
             fc, fq, ft, fe, dt, df, dlp, dw, rv, rp, rh, rw
@@ -394,7 +403,7 @@ where
     let fe = rng.gen_range(0..=8000);
     metro_tx.send(MetroCommand::SendParam("fe".to_string(), OscType::Int(fe)))?;
 
-    if debug_level >= 2 {
+    if debug_level >= TIER_VERBOSE {
         output(format!(
             "RANDOMIZED FILTER: FC={:.1} FQ={} FT={} FE={}",
             fc, fq, ft, fe
@@ -426,7 +435,7 @@ where
     let dw = rng.gen_range(0..=8000);
     metro_tx.send(MetroCommand::SendParam("dw".to_string(), OscType::Int(dw)))?;
 
-    if debug_level >= 2 {
+    if debug_level >= TIER_VERBOSE {
         output(format!(
             "RANDOMIZED DELAY: DT={} DF={} DLP={:.1} DW={}",
             dt, df, dlp, dw
@@ -458,7 +467,7 @@ where
     let rw = rng.gen_range(0..=8000);
     metro_tx.send(MetroCommand::SendParam("rw".to_string(), OscType::Int(rw)))?;
 
-    if debug_level >= 2 {
+    if debug_level >= TIER_VERBOSE {
         output(format!(
             "RANDOMIZED REVERB: RV={} RP={} RH={} RW={}",
             rv, rp, rh, rw

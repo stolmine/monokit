@@ -19,7 +19,7 @@ fn test_rnd_mod_sends_all_params() {
     let (metro_tx, metro_rx) = mpsc::channel::<MetroCommand>();
     let mut outputs: Vec<String> = Vec::new();
 
-    let result = handle_rnd_mod(&metro_tx, 2, |output: String| outputs.push(output));
+    let result = handle_rnd_mod(&metro_tx, 5, |output: String| outputs.push(output));
     assert!(result.is_ok());
 
     let mut param_count = 0;
@@ -46,7 +46,7 @@ fn test_rnd_env_sends_all_params() {
     let (metro_tx, metro_rx) = mpsc::channel::<MetroCommand>();
     let mut outputs: Vec<String> = Vec::new();
 
-    let result = handle_rnd_env(&metro_tx, 2, |output: String| outputs.push(output));
+    let result = handle_rnd_env(&metro_tx, 5, |output: String| outputs.push(output));
     assert!(result.is_ok());
 
     let mut param_count = 0;
@@ -150,7 +150,7 @@ fn test_rnd_mod_produces_output_in_debug_mode() {
     let (metro_tx, _metro_rx) = mpsc::channel::<MetroCommand>();
     let mut outputs: Vec<String> = Vec::new();
 
-    let result = handle_rnd_mod(&metro_tx, 2, |output: String| outputs.push(output));
+    let result = handle_rnd_mod(&metro_tx, 5, |output: String| outputs.push(output));
     assert!(result.is_ok());
     assert_eq!(outputs.len(), 1);
     assert!(outputs[0].contains("RANDOMIZED MODULATION"));
@@ -164,7 +164,7 @@ fn test_rnd_env_produces_output_in_debug_mode() {
     let (metro_tx, _metro_rx) = mpsc::channel::<MetroCommand>();
     let mut outputs: Vec<String> = Vec::new();
 
-    let result = handle_rnd_env(&metro_tx, 2, |output: String| outputs.push(output));
+    let result = handle_rnd_env(&metro_tx, 5, |output: String| outputs.push(output));
     assert!(result.is_ok());
     assert_eq!(outputs.len(), 1);
     assert!(outputs[0].contains("RANDOMIZED ENVELOPES"));

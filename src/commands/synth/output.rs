@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_CONFIRMS};
 use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
@@ -60,7 +60,7 @@ where
             .context("Failed to parse pan position")?
     };
     if !(-16383..=16383).contains(&value) {
-        output("ERROR: PAN POSITION MUST BE BETWEEN -16383 AND 16383".to_string());
+        output("ERROR: PAN MUST BE -16383 TO 16383".to_string());
         return Ok(());
     }
     metro_tx

@@ -97,6 +97,10 @@ pub struct TestContext {
     pub grid_mode: u8,
     pub current_scene_name: Option<String>,
     pub title_mode: u8,
+    pub out_err: bool,
+    pub out_ess: bool,
+    pub out_qry: bool,
+    pub out_cfm: bool,
     pub outputs: Vec<String>,
 }
 
@@ -141,6 +145,10 @@ impl Default for TestContext {
             grid_mode: 1,
             current_scene_name: None,
             title_mode: 0,
+            out_err: false,
+            out_ess: false,
+            out_qry: false,
+            out_cfm: false,
             outputs: Vec::new(),
         }
     }
@@ -189,6 +197,10 @@ impl TestContext {
             &mut self.grid_mode,
             &mut self.current_scene_name,
             &mut self.title_mode,
+            &mut self.out_err,
+            &mut self.out_ess,
+            &mut self.out_qry,
+            &mut self.out_cfm,
             input,
             |msg| {
                 self.outputs.push(msg);

@@ -792,16 +792,29 @@ Review parameter ranges for consistency and user-friendliness.
 - [ ] Add MAP operators if needed (MAP7, MAP14)
 - [ ] Ensure backwards compatibility or migration path
 
-### REPL/DEBUG Level Audit [Medium]
-Review what information is sent to REPL at each DEBUG level, add granularity.
+### REPL/DEBUG Level Audit [Medium] - COMPLETE (December 2025)
+Comprehensive tiered verbosity system with category overrides.
 
-- [ ] Document current DEBUG 0/1/2 behavior
-- [ ] Identify missing debug information
-- [ ] Add DEBUG 3 level for verbose diagnostics
-- [ ] Per-subsystem debug flags (DEBUG.MIDI, DEBUG.OSC, DEBUG.METRO)
-- [ ] Ensure no sensitive data in debug output
-- [ ] Log timing information at higher levels
-- [ ] Balance verbosity vs usefulness
+**Tier System (DEBUG 0-5):**
+- [x] Tier 0: SILENT - Nothing (use category overrides)
+- [x] Tier 1: ERRORS - All error messages
+- [x] Tier 2: ESSENTIAL - State changes (scene, metro, recording)
+- [x] Tier 3: QUERIES - Value read responses
+- [x] Tier 4: CONFIRMS - Set confirmations
+- [x] Tier 5: VERBOSE - All output (randomization, slew, etc.)
+
+**Category Override Commands:**
+- [x] `OUT.ERR <0|1>` - Override: show errors
+- [x] `OUT.ESS <0|1>` - Override: show essential
+- [x] `OUT.QRY <0|1>` - Override: show queries
+- [x] `OUT.CFM <0|1>` - Override: show confirms
+
+**Additional Fixes:**
+- [x] Fixed 21 messages exceeding 46-char limit
+- [x] Standardized message formats (ERROR:, SET...TO, etc.)
+- [x] Routed meter/MIDI errors to REPL (was stderr)
+- [x] All output calls tagged with categories
+- [x] All 527 tests pass
 
 ### Audio Device Selection [High]
 Add runtime command to choose SuperCollider audio output device.
@@ -852,8 +865,48 @@ Update help system with all new commands and features.
 - `src/ui/pages/help_content.rs` - Added missing documentation for all Phase 6 features
 
 ### File Size and DRY Audit [Medium]
-- [ ] Ensure all files are within agent readable line limits
-- [ ] Ensure we are staying DRY across the system, as much code generation as possible should be handled via macro
+Comprehensive audit to reduce parameter sprawl and improve maintainability.
+
+**File Size Limits:**
+- [ ] Ensure all files are within agent readable line limits (~500 lines ideal)
+- [ ] Split large files into logical modules
+- [ ] Audit src/commands/mod.rs (currently large dispatch file)
+
+**Command Context Refactor:**
+- [ ] Create `CommandContext` struct to bundle shared parameters:
+  ```rust
+  pub struct CommandContext {
+      pub debug_level: u8,
+      pub out_err: bool,
+      pub out_ess: bool,
+      pub out_qry: bool,
+      pub out_cfm: bool,
+      // future: osc_client ref, metro_state ref, etc.
+  }
+  ```
+- [ ] Replace individual parameters in handler signatures with `&CommandContext`
+- [ ] Update all call sites in process_command (one-time cost)
+- [ ] Future additions become 1-line struct changes vs 100+ signature changes
+
+**Smart Output Closure:**
+- [ ] Create category-aware output helper:
+  ```rust
+  let output = |cat: OutputCategory, msg: String| {
+      if ctx.should_output(cat) { raw_output(msg); }
+  };
+  ```
+- [ ] Replace tier checks throughout codebase with `output(Confirm, msg)`
+- [ ] Eliminates repeated `if debug_level >= TIER_X || out_x` pattern
+
+**Macro Consolidation:**
+- [ ] Audit synth param macros for shared patterns
+- [ ] Consider trait-based approach for common handler patterns
+- [ ] Reduce macro duplication in patterns/common.rs
+
+**Estimated Impact:**
+- Reduces future feature additions from hours to minutes
+- Eliminates parameter sprawl across 100+ function signatures
+- Single point of change for output control logic
 
 ---
 

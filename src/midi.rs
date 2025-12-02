@@ -347,7 +347,7 @@ pub fn connect_midi_input(
                             if *stats.enabled.lock().unwrap() {
                                 let send_duration = send_time.elapsed().as_micros();
                                 if send_duration > 100 {
-                                    eprintln!("WARNING: metro_tx.send took {}us", send_duration);
+                                    let _ = metro_tx.send(MetroCommand::Error(format!("WARN: METRO_TX SEND {}US", send_duration)));
                                 }
                             }
                         }

@@ -40,7 +40,7 @@ where
                 output("TRIGGER COUNTER RESET".to_string());
             }
             _ => {
-                output("INVALID ARGUMENT. USE 1, 0, REPORT, TRIGGERS, OR RST".to_string());
+                output("ERROR: USE 1, 0, REPORT, TRIGGERS, RST".to_string());
             }
         }
     }

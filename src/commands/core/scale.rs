@@ -66,7 +66,7 @@ pub fn handle_q_root<F>(
     use crate::eval::eval_expression;
 
     if parts.len() < 2 {
-        output("Q.ROOT REQUIRES A VALUE".to_string());
+        output("ERROR: Q.ROOT REQUIRES A VALUE".to_string());
         return;
     }
 
@@ -84,7 +84,7 @@ pub fn handle_q_root<F>(
 
     let max_root = (scale.divisions as i16) - 1;
     if value < 0 || value > max_root {
-        output(format!("ERROR: Q.ROOT MUST BE BETWEEN 0 AND {} FOR {}-DIVISION SCALE", max_root, scale.divisions));
+        output(format!("ERROR: Q.ROOT MUST BE 0-{}", max_root));
         return;
     }
 
@@ -110,7 +110,7 @@ pub fn handle_q_scale<F>(
     use crate::eval::eval_expression;
 
     if parts.len() < 2 {
-        output("Q.SCALE REQUIRES A VALUE".to_string());
+        output("ERROR: Q.SCALE REQUIRES A VALUE".to_string());
         return;
     }
 
@@ -127,7 +127,7 @@ pub fn handle_q_scale<F>(
     };
 
     if value < 0 || value > 11 {
-        output("ERROR: Q.SCALE PRESET MUST BE BETWEEN 0 AND 11".to_string());
+        output("ERROR: Q.SCALE MUST BE 0-11".to_string());
         return;
     }
 
@@ -155,7 +155,7 @@ pub fn handle_q_bit<F>(
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("Q.BIT REQUIRES A BINARY STRING ARGUMENT".to_string());
+        output("ERROR: Q.BIT NEEDS BINARY STR ARG".to_string());
         return;
     }
 
@@ -172,7 +172,7 @@ pub fn handle_q_bit<F>(
             }
         }
         None => {
-            output("ERROR: Q.BIT REQUIRES A VALID BINARY STRING (ONLY 0 AND 1)".to_string());
+            output("ERROR: Q.BIT NEEDS BINARY STR (0,1)".to_string());
         }
     }
 }

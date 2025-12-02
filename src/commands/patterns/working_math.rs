@@ -1,8 +1,6 @@
 use anyhow::Context;
 use crate::commands::patterns::common::{
     define_pattern_op_1val, define_pattern_op_2val,
-    pattern_add_impl, pattern_sub_impl, pattern_mul_impl,
-    pattern_div_impl, pattern_mod_impl, pattern_scale_impl,
 };
 
 define_pattern_op_1val!(handle_pattern_add, handle_pn_add, pattern_add_impl, "ADD", direct);

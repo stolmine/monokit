@@ -1,9 +1,9 @@
 use crate::commands::common::parse_i16_expr;
-use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables};
+use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_ERRORS, TIER_QUERIES, TIER_CONFIRMS};
 
 macro_rules! define_counter_read {
     ($fn_name:ident, $counter_idx:expr) => {
-        pub fn $fn_name<F>(counters: &mut Counters, mut output: F)
+        pub fn $fn_name<F>(counters: &mut Counters, debug_level: u8, out_qry: bool, mut output: F)
         where
             F: FnMut(String),
         {
@@ -16,19 +16,23 @@ macro_rules! define_counter_read {
                 let next = current + 1;
                 if next > max { min } else { next }
             };
-            output(format!("{}", current));
+            if debug_level >= TIER_QUERIES || out_qry {
+                output(format!("{}", current));
+            }
         }
     };
 }
 
 macro_rules! define_counter_reset {
     ($fn_name:ident, $counter_name:literal, $counter_idx:expr) => {
-        pub fn $fn_name<F>(counters: &mut Counters, mut output: F)
+        pub fn $fn_name<F>(counters: &mut Counters, debug_level: u8, out_cfm: bool, mut output: F)
         where
             F: FnMut(String),
         {
             counters.values[$counter_idx] = counters.min[$counter_idx];
-            output(format!("{} RESET TO {}", $counter_name, counters.min[$counter_idx]));
+            if debug_level >= TIER_CONFIRMS || out_cfm {
+                output(format!("RESET {} TO {}", $counter_name, counters.min[$counter_idx]));
+            }
         }
     };
 }
@@ -43,6 +47,9 @@ macro_rules! define_counter_max {
             scripts: &ScriptStorage,
             script_index: usize,
             scale: &ScaleState,
+            debug_level: u8,
+            out_err: bool,
+            out_cfm: bool,
             mut output: F,
         ) where
             F: FnMut(String),
@@ -55,19 +62,23 @@ macro_rules! define_counter_max {
             };
 
             if value > 0 && value < counters.min[$counter_idx] {
-                output(format!(
-                    "ERROR: MAX ({}) MUST BE >= MIN ({})",
-                    value,
-                    counters.min[$counter_idx]
-                ));
+                if debug_level >= TIER_ERRORS || out_err {
+                    output(format!(
+                        "ERROR: MAX ({}) MUST BE >= MIN ({})",
+                        value,
+                        counters.min[$counter_idx]
+                    ));
+                }
                 return;
             }
 
             counters.max[$counter_idx] = value;
-            if value == 0 {
-                output(format!("{}.MAX DISABLED (NO WRAP)", $counter_name));
-            } else {
-                output(format!("{}.MAX SET TO {}", $counter_name, value));
+            if debug_level >= TIER_CONFIRMS || out_cfm {
+                if value == 0 {
+                    output(format!("SET {}.MAX TO 0 (NO WRAP)", $counter_name));
+                } else {
+                    output(format!("SET {}.MAX TO {}", $counter_name, value));
+                }
             }
         }
     };
@@ -83,6 +94,8 @@ macro_rules! define_counter_min {
             scripts: &ScriptStorage,
             script_index: usize,
             scale: &ScaleState,
+            debug_level: u8,
+            out_cfm: bool,
             mut output: F,
         ) where
             F: FnMut(String),
@@ -95,7 +108,9 @@ macro_rules! define_counter_min {
             };
 
             counters.min[$counter_idx] = value;
-            output(format!("{}.MIN SET TO {}", $counter_name, value));
+            if debug_level >= TIER_CONFIRMS || out_cfm {
+                output(format!("SET {}.MIN TO {}", $counter_name, value));
+            }
         }
     };
 }

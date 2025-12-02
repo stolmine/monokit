@@ -26,11 +26,11 @@ fn test_del_parses_delay_time() {
         0,
         &metro_tx,
         &create_test_scale(),
-        1,
+        4,
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());
-    assert!(outputs.iter().any(|s| s.contains("SCHEDULED COMMAND IN 500MS")));
+    assert!(outputs.iter().any(|s| s.contains("DELAYED 500MS: TR")));
 
     let msg = metro_rx.try_recv();
     assert!(msg.is_ok());
@@ -61,7 +61,7 @@ fn test_del_requires_colon() {
         0,
         &metro_tx,
         &create_test_scale(),
-        1,
+        4,
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());
@@ -89,11 +89,11 @@ fn test_del_max_16000ms() {
         0,
         &metro_tx,
         &create_test_scale(),
-        1,
+        4,
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());
-    assert!(outputs.iter().any(|s| s.contains("ERROR: DELAY TIME EXCEEDS MAXIMUM OF 16000MS")));
+    assert!(outputs.iter().any(|s| s.contains("ERROR: DELAY TIME MAX 16000MS")));
 }
 
 #[test]
@@ -103,7 +103,8 @@ fn test_del_clr_clears_buffer() {
 
     let result = handle_del_clr(
         &metro_tx,
-        1,
+        255,
+        true,
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());
@@ -135,11 +136,11 @@ fn test_del_x_parses_count_and_ms() {
         0,
         &metro_tx,
         &create_test_scale(),
-        1,
+        4,
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());
-    assert!(outputs.iter().any(|s| s.contains("SCHEDULED COMMAND 4 TIMES AT 100MS INTERVALS")));
+    assert!(outputs.iter().any(|s| s.contains("REPEAT 4x @100MS: TR")));
 
     let msg = metro_rx.try_recv();
     assert!(msg.is_ok());
@@ -171,7 +172,7 @@ fn test_del_r_parses_count_and_ms() {
         0,
         &metro_tx,
         &create_test_scale(),
-        1,
+        4,
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());
@@ -215,11 +216,11 @@ fn test_del_with_expression() {
         0,
         &metro_tx,
         &create_test_scale(),
-        1,
+        4,
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());
-    assert!(outputs.iter().any(|s| s.contains("SCHEDULED COMMAND IN 1000MS")));
+    assert!(outputs.iter().any(|s| s.contains("DELAYED 1000MS: TR")));
 
     let msg = metro_rx.try_recv();
     assert!(msg.is_ok());

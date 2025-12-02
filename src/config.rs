@@ -60,6 +60,14 @@ pub struct DisplayConfig {
     pub scope_display_mode: u8,
     #[serde(default)]
     pub scope_unipolar: bool,
+    #[serde(default)]
+    pub out_err: bool,
+    #[serde(default)]
+    pub out_ess: bool,
+    #[serde(default)]
+    pub out_qry: bool,
+    #[serde(default)]
+    pub out_cfm: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -174,6 +182,10 @@ impl Default for DisplayConfig {
             scope_color_mode: 0,
             scope_display_mode: 0,
             scope_unipolar: false,
+            out_err: false,
+            out_ess: false,
+            out_qry: false,
+            out_cfm: false,
         }
     }
 }
@@ -444,6 +456,34 @@ pub fn save_scope_settings(timespan: u32, color: u8, mode: u8, unipolar: bool) -
     config.display.scope_color_mode = color;
     config.display.scope_display_mode = mode;
     config.display.scope_unipolar = unipolar;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_out_err(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.out_err = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_out_ess(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.out_ess = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_out_qry(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.out_qry = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_out_cfm(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.out_cfm = enabled;
     save_config(&config)?;
     Ok(())
 }

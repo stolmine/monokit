@@ -5,7 +5,7 @@ use crate::commands::randomization::{handle_rnd_fx, handle_rnd_filt, handle_rnd_
 fn test_rnd_fx_executes() {
     let (metro_tx, _rx) = create_test_metro_tx();
     let mut output_called = false;
-    let result = handle_rnd_fx(&metro_tx, 2, |msg| {
+    let result = handle_rnd_fx(&metro_tx, 5, |msg| {
         output_called = true;
         assert!(msg.contains("RANDOMIZED ALL FX"));
     });
@@ -17,7 +17,7 @@ fn test_rnd_fx_executes() {
 fn test_rnd_filt_executes() {
     let (metro_tx, _rx) = create_test_metro_tx();
     let mut output_called = false;
-    let result = handle_rnd_filt(&metro_tx, 2, |msg| {
+    let result = handle_rnd_filt(&metro_tx, 5, |msg| {
         output_called = true;
         assert!(msg.contains("RANDOMIZED FILTER"));
     });
@@ -29,7 +29,7 @@ fn test_rnd_filt_executes() {
 fn test_rnd_dly_executes() {
     let (metro_tx, _rx) = create_test_metro_tx();
     let mut output_called = false;
-    let result = handle_rnd_dly(&metro_tx, 2, |msg| {
+    let result = handle_rnd_dly(&metro_tx, 5, |msg| {
         output_called = true;
         assert!(msg.contains("RANDOMIZED DELAY"));
     });
@@ -41,7 +41,7 @@ fn test_rnd_dly_executes() {
 fn test_rnd_verb_executes() {
     let (metro_tx, _rx) = create_test_metro_tx();
     let mut output_called = false;
-    let result = handle_rnd_verb(&metro_tx, 2, |msg| {
+    let result = handle_rnd_verb(&metro_tx, 5, |msg| {
         output_called = true;
         assert!(msg.contains("RANDOMIZED REVERB"));
     });
@@ -116,7 +116,7 @@ fn test_rnd_fx_no_output_when_debug_low() {
 fn test_rnd_fx_output_when_debug_high() {
     let (metro_tx, _rx) = create_test_metro_tx();
     let mut output_called = false;
-    let result = handle_rnd_fx(&metro_tx, 2, |_| {
+    let result = handle_rnd_fx(&metro_tx, 5, |_| {
         output_called = true;
     });
     assert!(result.is_ok());

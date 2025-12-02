@@ -24,7 +24,7 @@ fn test_rnd_voice_sends_all_params() {
     let (metro_tx, metro_rx) = mpsc::channel::<MetroCommand>();
     let mut outputs: Vec<String> = Vec::new();
 
-    let result = handle_rnd_voice(&metro_tx, 2, |output: String| outputs.push(output));
+    let result = handle_rnd_voice(&metro_tx, 5, |output: String| outputs.push(output));
     assert!(result.is_ok());
 
     let mut param_count = 0;
@@ -53,7 +53,7 @@ fn test_rnd_osc_sends_osc_params() {
     let (metro_tx, metro_rx) = mpsc::channel::<MetroCommand>();
     let mut outputs: Vec<String> = Vec::new();
 
-    let result = handle_rnd_osc(&metro_tx, 2, |output: String| outputs.push(output));
+    let result = handle_rnd_osc(&metro_tx, 5, |output: String| outputs.push(output));
     assert!(result.is_ok());
 
     let mut param_count = 0;
@@ -78,7 +78,7 @@ fn test_rnd_fm_sends_fm_params() {
     let (metro_tx, metro_rx) = mpsc::channel::<MetroCommand>();
     let mut outputs: Vec<String> = Vec::new();
 
-    let result = handle_rnd_fm(&metro_tx, 2, |output: String| outputs.push(output));
+    let result = handle_rnd_fm(&metro_tx, 5, |output: String| outputs.push(output));
     assert!(result.is_ok());
 
     let mut param_count = 0;
@@ -237,14 +237,12 @@ fn test_rnd_voice_produces_output_in_debug_mode() {
     let (metro_tx, _metro_rx) = mpsc::channel::<MetroCommand>();
     let mut outputs: Vec<String> = Vec::new();
 
-    let result = handle_rnd_voice(&metro_tx, 2, |output: String| outputs.push(output));
+    let result = handle_rnd_voice(&metro_tx, 5, |output: String| outputs.push(output));
     assert!(result.is_ok());
     assert_eq!(outputs.len(), 1);
-    assert!(outputs[0].contains("RANDOMIZED VOICE"));
+    assert!(outputs[0].contains("RND.VOICE:"));
     assert!(outputs[0].contains("PF="));
     assert!(outputs[0].contains("MF="));
-    assert!(outputs[0].contains("FM="));
-    assert!(outputs[0].contains("FB="));
 }
 
 #[test]
@@ -252,10 +250,10 @@ fn test_rnd_osc_produces_output_in_debug_mode() {
     let (metro_tx, _metro_rx) = mpsc::channel::<MetroCommand>();
     let mut outputs: Vec<String> = Vec::new();
 
-    let result = handle_rnd_osc(&metro_tx, 2, |output: String| outputs.push(output));
+    let result = handle_rnd_osc(&metro_tx, 5, |output: String| outputs.push(output));
     assert!(result.is_ok());
     assert_eq!(outputs.len(), 1);
-    assert!(outputs[0].contains("RANDOMIZED OSCILLATORS"));
+    assert!(outputs[0].contains("RND.OSC:"));
 }
 
 #[test]
@@ -263,7 +261,7 @@ fn test_rnd_fm_produces_output_in_debug_mode() {
     let (metro_tx, _metro_rx) = mpsc::channel::<MetroCommand>();
     let mut outputs: Vec<String> = Vec::new();
 
-    let result = handle_rnd_fm(&metro_tx, 2, |output: String| outputs.push(output));
+    let result = handle_rnd_fm(&metro_tx, 5, |output: String| outputs.push(output));
     assert!(result.is_ok());
     assert_eq!(outputs.len(), 1);
     assert!(outputs[0].contains("RANDOMIZED FM"));

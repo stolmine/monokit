@@ -111,6 +111,11 @@ pub fn run_app<B: ratatui::backend::Backend>(
                 MetroEvent::CpuUpdate(cpu_data) => {
                     app.cpu_data = cpu_data;
                 }
+                MetroEvent::Error(msg) => {
+                    if app.should_output(crate::types::OutputCategory::Error) {
+                        app.add_output(msg);
+                    }
+                }
             }
         }
 

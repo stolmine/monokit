@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables};
+use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_ERRORS};
 use anyhow::{Context, Result};
 use rand::seq::SliceRandom;
 use rand::Rng;
@@ -24,7 +24,7 @@ pub fn pattern_add_impl(pat_ref: PatternRef, val: i16, patterns: &mut PatternSto
     for i in 0..pattern.length {
         pattern.data[i] = pattern.data[i].saturating_add(val);
     }
-    format!("ADDED {} TO PATTERN {}", val, pat_idx)
+    format!("ADDED {} TO PAT {}", val, pat_idx)
 }
 
 pub fn pattern_sub_impl(pat_ref: PatternRef, val: i16, patterns: &mut PatternStorage) -> String {
@@ -33,7 +33,7 @@ pub fn pattern_sub_impl(pat_ref: PatternRef, val: i16, patterns: &mut PatternSto
     for i in 0..pattern.length {
         pattern.data[i] = pattern.data[i].saturating_sub(val);
     }
-    format!("SUBTRACTED {} FROM PATTERN {}", val, pat_idx)
+    format!("SUBTRACTED {} FROM PAT {}", val, pat_idx)
 }
 
 pub fn pattern_mul_impl(pat_ref: PatternRef, val: i16, patterns: &mut PatternStorage) -> String {
@@ -42,7 +42,7 @@ pub fn pattern_mul_impl(pat_ref: PatternRef, val: i16, patterns: &mut PatternSto
     for i in 0..pattern.length {
         pattern.data[i] = pattern.data[i].saturating_mul(val);
     }
-    format!("MULTIPLIED PATTERN {} BY {}", pat_idx, val)
+    format!("MULTIPLIED PAT {} BY {}", pat_idx, val)
 }
 
 pub fn pattern_div_impl(pat_ref: PatternRef, val: i16, patterns: &mut PatternStorage) -> Result<String, &'static str> {
@@ -54,7 +54,7 @@ pub fn pattern_div_impl(pat_ref: PatternRef, val: i16, patterns: &mut PatternSto
     for i in 0..pattern.length {
         pattern.data[i] = pattern.data[i] / val;
     }
-    Ok(format!("DIVIDED PATTERN {} BY {}", pat_idx, val))
+    Ok(format!("DIVIDED PAT {} BY {}", pat_idx, val))
 }
 
 pub fn pattern_mod_impl(pat_ref: PatternRef, val: i16, patterns: &mut PatternStorage) -> Result<String, &'static str> {
@@ -66,17 +66,17 @@ pub fn pattern_mod_impl(pat_ref: PatternRef, val: i16, patterns: &mut PatternSto
     for i in 0..pattern.length {
         pattern.data[i] = pattern.data[i] % val;
     }
-    Ok(format!("MODULO PATTERN {} BY {}", pat_idx, val))
+    Ok(format!("MODULO PAT {} BY {}", pat_idx, val))
 }
 
 pub fn pattern_scale_impl(pat_ref: PatternRef, new_min: i16, new_max: i16, patterns: &mut PatternStorage) -> Result<String, String> {
     if new_min == new_max {
-        return Err("ERROR: SCALE MIN AND MAX CANNOT BE EQUAL".to_string());
+        return Err("ERROR: MIN AND MAX CANNOT BE EQUAL".to_string());
     }
     let pat_idx = pat_ref.index(patterns);
     let pattern = &mut patterns.patterns[pat_idx];
     if pattern.length == 0 {
-        return Err("ERROR: PATTERN LENGTH IS ZERO".to_string());
+        return Err("ERROR: PAT LENGTH IS ZERO".to_string());
     }
     let old_min = pattern.data[..pattern.length].iter().copied().min().unwrap_or(0);
     let old_max = pattern.data[..pattern.length].iter().copied().max().unwrap_or(0);
@@ -91,27 +91,27 @@ pub fn pattern_scale_impl(pat_ref: PatternRef, new_min: i16, new_max: i16, patte
             pattern.data[i] = scaled.clamp(i16::MIN as i32, i16::MAX as i32) as i16;
         }
     }
-    Ok(format!("SCALED PATTERN {} TO RANGE {} TO {}", pat_idx, new_min, new_max))
+    Ok(format!("SCALED PAT {} TO {}-{}", pat_idx, new_min, new_max))
 }
 
 pub fn pattern_push_impl(pat_ref: PatternRef, val: i16, patterns: &mut PatternStorage) -> Result<String, &'static str> {
     let pat_idx = pat_ref.index(patterns);
     let pattern = &mut patterns.patterns[pat_idx];
     if pattern.length == 0 {
-        return Err("ERROR: CANNOT OPERATE ON EMPTY PATTERN");
+        return Err("ERROR: CANNOT OPERATE ON EMPTY PAT");
     }
     for i in 0..pattern.length - 1 {
         pattern.data[i] = pattern.data[i + 1];
     }
     pattern.data[pattern.length - 1] = val;
-    Ok(format!("PUSHED {} TO PATTERN {}", val, pat_idx))
+    Ok(format!("PUSHED {} TO PAT {}", val, pat_idx))
 }
 
 pub fn pattern_pop_impl(pat_ref: PatternRef, patterns: &PatternStorage) -> Result<(i16, usize), &'static str> {
     let pat_idx = pat_ref.index(patterns);
     let pattern = &patterns.patterns[pat_idx];
     if pattern.length == 0 {
-        return Err("ERROR: PATTERN LENGTH IS ZERO");
+        return Err("ERROR: PAT LENGTH IS ZERO");
     }
     let val = pattern.data[pattern.length - 1];
     Ok((val, pat_idx))
@@ -121,27 +121,27 @@ pub fn pattern_ins_impl(pat_ref: PatternRef, idx: usize, val: i16, patterns: &mu
     let pat_idx = pat_ref.index(patterns);
     let pattern = &mut patterns.patterns[pat_idx];
     if idx >= pattern.length {
-        return Err(format!("ERROR: INDEX {} OUT OF RANGE (LENGTH {})", idx, pattern.length));
+        return Err(format!("ERROR: IDX {} OUT OF RANGE (LEN {})", idx, pattern.length));
     }
     for i in (idx..pattern.length - 1).rev() {
         pattern.data[i + 1] = pattern.data[i];
     }
     pattern.data[idx] = val;
-    Ok(format!("INSERTED {} AT INDEX {} IN PATTERN {}", val, idx, pat_idx))
+    Ok(format!("INSERTED {} AT IDX {} IN PAT {}", val, idx, pat_idx))
 }
 
 pub fn pattern_rm_impl(pat_ref: PatternRef, idx: usize, patterns: &mut PatternStorage) -> Result<String, String> {
     let pat_idx = pat_ref.index(patterns);
     let pattern = &mut patterns.patterns[pat_idx];
     if idx >= pattern.length {
-        return Err(format!("ERROR: INDEX {} OUT OF RANGE (LENGTH {})", idx, pattern.length));
+        return Err(format!("ERROR: IDX {} OUT OF RANGE (LEN {})", idx, pattern.length));
     }
     let removed = pattern.data[idx];
     for i in idx..pattern.length - 1 {
         pattern.data[i] = pattern.data[i + 1];
     }
     pattern.data[pattern.length - 1] = 0;
-    Ok(format!("REMOVED {} FROM INDEX {} IN PATTERN {}", removed, idx, pat_idx))
+    Ok(format!("REMOVED {} FROM IDX {} IN PAT {}", removed, idx, pat_idx))
 }
 
 pub fn pattern_rev_impl(pat_ref: PatternRef, patterns: &mut PatternStorage) -> usize {
@@ -159,11 +159,11 @@ pub fn pattern_rot_impl(pat_ref: PatternRef, n: i16, patterns: &mut PatternStora
     let pattern = &mut patterns.patterns[pat_idx];
     let len = pattern.length as i16;
     if len == 0 {
-        return Err("ERROR: PATTERN LENGTH IS ZERO");
+        return Err("ERROR: PAT LENGTH IS ZERO");
     }
     let n = ((n % len) + len) % len;
     if n == 0 {
-        return Ok(format!("PATTERN {} UNCHANGED (ROTATION 0)", pat_idx));
+        return Ok(format!("PAT {} UNCHANGED (ROT 0)", pat_idx));
     }
     let mut temp = [0i16; 64];
     for i in 0..pattern.length {
@@ -172,14 +172,14 @@ pub fn pattern_rot_impl(pat_ref: PatternRef, n: i16, patterns: &mut PatternStora
     for i in 0..pattern.length {
         pattern.data[i] = temp[(i + pattern.length - n as usize) % pattern.length];
     }
-    Ok(format!("ROTATED PATTERN {} BY {}", pat_idx, n))
+    Ok(format!("ROTATED PAT {} BY {}", pat_idx, n))
 }
 
 pub fn pattern_shuf_impl(pat_ref: PatternRef, patterns: &mut PatternStorage) -> Result<usize, &'static str> {
     let pat_idx = pat_ref.index(patterns);
     let pattern = &mut patterns.patterns[pat_idx];
     if pattern.length == 0 {
-        return Err("ERROR: CANNOT OPERATE ON EMPTY PATTERN");
+        return Err("ERROR: CANNOT OPERATE ON EMPTY PAT");
     }
     let len = pattern.length;
     let mut rng = rand::thread_rng();
@@ -209,7 +209,7 @@ pub fn pattern_min_impl(pat_ref: PatternRef, patterns: &PatternStorage) -> Resul
     let pat_idx = pat_ref.index(patterns);
     let pattern = &patterns.patterns[pat_idx];
     if pattern.length == 0 {
-        return Err("ERROR: PATTERN LENGTH IS ZERO");
+        return Err("ERROR: PAT LENGTH IS ZERO");
     }
     let min_val = pattern.data[..pattern.length].iter().copied().min().unwrap_or(0);
     Ok(min_val)
@@ -219,7 +219,7 @@ pub fn pattern_max_impl(pat_ref: PatternRef, patterns: &PatternStorage) -> Resul
     let pat_idx = pat_ref.index(patterns);
     let pattern = &patterns.patterns[pat_idx];
     if pattern.length == 0 {
-        return Err("ERROR: PATTERN LENGTH IS ZERO");
+        return Err("ERROR: PAT LENGTH IS ZERO");
     }
     let max_val = pattern.data[..pattern.length].iter().copied().max().unwrap_or(0);
     Ok(max_val)
@@ -235,7 +235,7 @@ pub fn pattern_avg_impl(pat_ref: PatternRef, patterns: &PatternStorage) -> Resul
     let pat_idx = pat_ref.index(patterns);
     let pattern = &patterns.patterns[pat_idx];
     if pattern.length == 0 {
-        return Err("ERROR: PATTERN LENGTH IS ZERO");
+        return Err("ERROR: PAT LENGTH IS ZERO");
     }
     let sum: i32 = pattern.data[..pattern.length].iter().map(|&x| x as i32).sum();
     let avg = sum / pattern.length as i32;
@@ -289,6 +289,8 @@ pub fn parse_pattern_num<F>(
     script_index: usize,
     scale: &ScaleState,
     output: &mut F,
+    debug_level: u8,
+    out_err: bool,
 ) -> Result<Option<usize>>
 where
     F: FnMut(String),
@@ -299,7 +301,9 @@ where
         parts[idx].parse().context("Failed to parse pattern number")?
     };
     if pat > 5 {
-        output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
+        if debug_level >= TIER_ERRORS || out_err {
+            output("ERROR: PAT NUM MUST BE 0-5".to_string());
+        }
         return Ok(None);
     }
     Ok(Some(pat))
@@ -350,17 +354,23 @@ macro_rules! define_pattern_op_1val {
             scripts: &$crate::types::ScriptStorage,
             script_index: usize,
             scale: &$crate::types::ScaleState,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) -> $crate::anyhow::Result<()>
         where
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                output(format!("ERROR: P.{} REQUIRES A VALUE", $cmd_name));
+                if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                    output(format!("ERROR: P.{} REQUIRES A VALUE", $cmd_name));
+                }
                 return Ok(());
             }
             let val = $crate::commands::patterns::common::parse_i16_expr(parts, 1, variables, patterns, counters, scripts, script_index, scale)?;
-            define_pattern_op_1val!(@output $result_type, $impl_fn, $crate::commands::patterns::common::PatternRef::Working, val, patterns, output);
+            define_pattern_op_1val!(@output $result_type, $impl_fn, $crate::commands::patterns::common::PatternRef::Working, val, patterns, output, debug_level, out_err, out_cfm);
             Ok(())
         }
 
@@ -372,31 +382,47 @@ macro_rules! define_pattern_op_1val {
             scripts: &$crate::types::ScriptStorage,
             script_index: usize,
             scale: &$crate::types::ScaleState,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) -> $crate::anyhow::Result<()>
         where
             F: FnMut(String),
         {
             if parts.len() < 3 {
-                output(format!("ERROR: PN.{} REQUIRES PATTERN NUMBER AND VALUE", $cmd_name));
+                if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                    output(format!("ERROR: PN.{} NEEDS PAT NUM AND VAL", $cmd_name));
+                }
                 return Ok(());
             }
-            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output)?;
+            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output, debug_level, out_err)?;
             let pat = match pat { Some(p) => p, None => return Ok(()) };
             let val = $crate::commands::patterns::common::parse_i16_expr(parts, 2, variables, patterns, counters, scripts, script_index, scale)?;
-            define_pattern_op_1val!(@output $result_type, $impl_fn, $crate::commands::patterns::common::PatternRef::Explicit(pat), val, patterns, output);
+            define_pattern_op_1val!(@output $result_type, $impl_fn, $crate::commands::patterns::common::PatternRef::Explicit(pat), val, patterns, output, debug_level, out_err, out_cfm);
             Ok(())
         }
     };
 
-    (@output direct, $impl_fn:ident, $pat_ref:expr, $val:expr, $patterns:expr, $output:expr) => {
-        $output($crate::commands::patterns::common::$impl_fn($pat_ref, $val, $patterns));
+    (@output direct, $impl_fn:ident, $pat_ref:expr, $val:expr, $patterns:expr, $output:expr, $debug_level:expr, $out_err:expr, $out_cfm:expr) => {
+        if $debug_level >= $crate::types::TIER_CONFIRMS || $out_cfm {
+            $output($crate::commands::patterns::common::$impl_fn($pat_ref, $val, $patterns));
+        }
     };
 
-    (@output result, $impl_fn:ident, $pat_ref:expr, $val:expr, $patterns:expr, $output:expr) => {
+    (@output result, $impl_fn:ident, $pat_ref:expr, $val:expr, $patterns:expr, $output:expr, $debug_level:expr, $out_err:expr, $out_cfm:expr) => {
         match $crate::commands::patterns::common::$impl_fn($pat_ref, $val, $patterns) {
-            Ok(msg) => $output(msg),
-            Err(e) => $output(e.to_string()),
+            Ok(msg) => {
+                if $debug_level >= $crate::types::TIER_CONFIRMS || $out_cfm {
+                    $output(msg);
+                }
+            }
+            Err(e) => {
+                if $debug_level >= $crate::types::TIER_ERRORS || $out_err {
+                    $output(e.to_string());
+                }
+            }
         }
     };
 }
@@ -406,11 +432,15 @@ macro_rules! define_pattern_op_noarg {
     ($working_fn:ident, $explicit_fn:ident, $impl_fn:ident, $cmd_name:literal, $result_type:tt) => {
         pub fn $working_fn<F>(
             patterns: &mut $crate::types::PatternStorage,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) where
             F: FnMut(String),
         {
-            define_pattern_op_noarg!(@output $result_type, $impl_fn, $crate::commands::patterns::common::PatternRef::Working, patterns, output, $cmd_name);
+            define_pattern_op_noarg!(@output $result_type, $impl_fn, $crate::commands::patterns::common::PatternRef::Working, patterns, output, $cmd_name, debug_level, out_err, out_cfm);
         }
 
         pub fn $explicit_fn<F>(
@@ -421,31 +451,47 @@ macro_rules! define_pattern_op_noarg {
             scripts: &$crate::types::ScriptStorage,
             script_index: usize,
             scale: &$crate::types::ScaleState,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) -> $crate::anyhow::Result<()>
         where
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                output(format!("ERROR: PN.{} REQUIRES PATTERN NUMBER", $cmd_name));
+                if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                    output(format!("ERROR: PN.{} NEEDS PAT NUM", $cmd_name));
+                }
                 return Ok(());
             }
-            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output)?;
+            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output, debug_level, out_err)?;
             let pat = match pat { Some(p) => p, None => return Ok(()) };
-            define_pattern_op_noarg!(@output $result_type, $impl_fn, $crate::commands::patterns::common::PatternRef::Explicit(pat), patterns, output, $cmd_name);
+            define_pattern_op_noarg!(@output $result_type, $impl_fn, $crate::commands::patterns::common::PatternRef::Explicit(pat), patterns, output, $cmd_name, debug_level, out_err, out_cfm);
             Ok(())
         }
     };
 
-    (@output direct, $impl_fn:ident, $pat_ref:expr, $patterns:expr, $output:expr, $cmd_name:literal) => {
+    (@output direct, $impl_fn:ident, $pat_ref:expr, $patterns:expr, $output:expr, $cmd_name:literal, $debug_level:expr, $out_err:expr, $out_cfm:expr) => {
         let pat_idx = $crate::commands::patterns::common::$impl_fn($pat_ref, $patterns);
-        $output(format!(concat!(stringify!($impl_fn), " PATTERN {}"), pat_idx).replace("_impl", "").to_uppercase());
+        if $debug_level >= $crate::types::TIER_CONFIRMS || $out_cfm {
+            $output(format!(concat!(stringify!($impl_fn), " PATTERN {}"), pat_idx).replace("_impl", "").to_uppercase());
+        }
     };
 
-    (@output result_idx, $impl_fn:ident, $pat_ref:expr, $patterns:expr, $output:expr, $cmd_name:literal) => {
+    (@output result_idx, $impl_fn:ident, $pat_ref:expr, $patterns:expr, $output:expr, $cmd_name:literal, $debug_level:expr, $out_err:expr, $out_cfm:expr) => {
         match $crate::commands::patterns::common::$impl_fn($pat_ref, $patterns) {
-            Ok(pat_idx) => $output(format!(concat!(stringify!($impl_fn), " PATTERN {}"), pat_idx).replace("_impl", "").to_uppercase()),
-            Err(e) => $output(e.to_string()),
+            Ok(pat_idx) => {
+                if $debug_level >= $crate::types::TIER_CONFIRMS || $out_cfm {
+                    $output(format!(concat!(stringify!($impl_fn), " PATTERN {}"), pat_idx).replace("_impl", "").to_uppercase());
+                }
+            }
+            Err(e) => {
+                if $debug_level >= $crate::types::TIER_ERRORS || $out_err {
+                    $output(e.to_string());
+                }
+            }
         }
     };
 }
@@ -461,13 +507,19 @@ macro_rules! define_pattern_op_2val {
             scripts: &$crate::types::ScriptStorage,
             script_index: usize,
             scale: &$crate::types::ScaleState,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) -> $crate::anyhow::Result<()>
         where
             F: FnMut(String),
         {
             if parts.len() < 3 {
-                output(format!("ERROR: P.{} REQUIRES {}", $cmd_name, $err_msg));
+                if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                    output(format!("ERROR: P.{} REQUIRES {}", $cmd_name, $err_msg));
+                }
                 return Ok(());
             }
             let val1 = if let Some((expr_val, _)) = $crate::eval::eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -481,8 +533,16 @@ macro_rules! define_pattern_op_2val {
                 parts[2].parse().context(concat!("Failed to parse ", $err_msg))?
             };
             match $crate::commands::patterns::common::$impl_fn($crate::commands::patterns::common::PatternRef::Working, val1, val2, patterns) {
-                Ok(msg) => output(msg),
-                Err(e) => output(e.to_string()),
+                Ok(msg) => {
+                    if debug_level >= $crate::types::TIER_CONFIRMS || out_cfm {
+                        output(msg);
+                    }
+                }
+                Err(e) => {
+                    if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                        output(e.to_string());
+                    }
+                }
             }
             Ok(())
         }
@@ -495,16 +555,22 @@ macro_rules! define_pattern_op_2val {
             scripts: &$crate::types::ScriptStorage,
             script_index: usize,
             scale: &$crate::types::ScaleState,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) -> $crate::anyhow::Result<()>
         where
             F: FnMut(String),
         {
             if parts.len() < 4 {
-                output(format!("ERROR: PN.{} REQUIRES PATTERN NUMBER, {}", $cmd_name, $err_msg));
+                if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                    output(format!("ERROR: PN.{} NEEDS PAT NUM, {}", $cmd_name, $err_msg));
+                }
                 return Ok(());
             }
-            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output)?;
+            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output, debug_level, out_err)?;
             let pat = match pat { Some(p) => p, None => return Ok(()) };
             let val1 = if let Some((expr_val, _)) = $crate::eval::eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
                 expr_val as $val_type
@@ -517,8 +583,16 @@ macro_rules! define_pattern_op_2val {
                 parts[3].parse().context(concat!("Failed to parse ", $err_msg))?
             };
             match $crate::commands::patterns::common::$impl_fn($crate::commands::patterns::common::PatternRef::Explicit(pat), val1, val2, patterns) {
-                Ok(msg) => output(msg),
-                Err(e) => output(e.to_string()),
+                Ok(msg) => {
+                    if debug_level >= $crate::types::TIER_CONFIRMS || out_cfm {
+                        output(msg);
+                    }
+                }
+                Err(e) => {
+                    if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                        output(e.to_string());
+                    }
+                }
             }
             Ok(())
         }
@@ -536,20 +610,34 @@ macro_rules! define_pattern_op_idx_val {
             scripts: &$crate::types::ScriptStorage,
             script_index: usize,
             scale: &$crate::types::ScaleState,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) -> $crate::anyhow::Result<()>
         where
             F: FnMut(String),
         {
             if parts.len() < 3 {
-                output(format!("ERROR: P.{} REQUIRES INDEX AND VALUE", $cmd_name));
+                if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                    output(format!("ERROR: P.{} REQUIRES INDEX AND VALUE", $cmd_name));
+                }
                 return Ok(());
             }
             let idx = $crate::commands::patterns::common::parse_usize_expr(parts, 1, variables, patterns, counters, scripts, script_index, scale)?;
             let val = $crate::commands::patterns::common::parse_i16_expr(parts, 2, variables, patterns, counters, scripts, script_index, scale)?;
             match $crate::commands::patterns::common::$impl_fn($crate::commands::patterns::common::PatternRef::Working, idx, val, patterns) {
-                Ok(msg) => output(msg),
-                Err(e) => output(e),
+                Ok(msg) => {
+                    if debug_level >= $crate::types::TIER_CONFIRMS || out_cfm {
+                        output(msg);
+                    }
+                }
+                Err(e) => {
+                    if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                        output(e);
+                    }
+                }
             }
             Ok(())
         }
@@ -562,22 +650,36 @@ macro_rules! define_pattern_op_idx_val {
             scripts: &$crate::types::ScriptStorage,
             script_index: usize,
             scale: &$crate::types::ScaleState,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) -> $crate::anyhow::Result<()>
         where
             F: FnMut(String),
         {
             if parts.len() < 4 {
-                output(format!("ERROR: PN.{} REQUIRES PATTERN NUMBER, INDEX, AND VALUE", $cmd_name));
+                if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                    output(format!("ERROR: PN.{} NEEDS PAT NUM, IDX, VAL", $cmd_name));
+                }
                 return Ok(());
             }
-            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output)?;
+            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output, debug_level, out_err)?;
             let pat = match pat { Some(p) => p, None => return Ok(()) };
             let idx = $crate::commands::patterns::common::parse_usize_expr(parts, 2, variables, patterns, counters, scripts, script_index, scale)?;
             let val = $crate::commands::patterns::common::parse_i16_expr(parts, 3, variables, patterns, counters, scripts, script_index, scale)?;
             match $crate::commands::patterns::common::$impl_fn($crate::commands::patterns::common::PatternRef::Explicit(pat), idx, val, patterns) {
-                Ok(msg) => output(msg),
-                Err(e) => output(e),
+                Ok(msg) => {
+                    if debug_level >= $crate::types::TIER_CONFIRMS || out_cfm {
+                        output(msg);
+                    }
+                }
+                Err(e) => {
+                    if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                        output(e);
+                    }
+                }
             }
             Ok(())
         }
@@ -595,19 +697,33 @@ macro_rules! define_pattern_op_idx {
             scripts: &$crate::types::ScriptStorage,
             script_index: usize,
             scale: &$crate::types::ScaleState,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) -> $crate::anyhow::Result<()>
         where
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                output(format!("ERROR: P.{} REQUIRES AN INDEX", $cmd_name));
+                if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                    output(format!("ERROR: P.{} REQUIRES AN INDEX", $cmd_name));
+                }
                 return Ok(());
             }
             let idx = $crate::commands::patterns::common::parse_usize_expr(parts, 1, variables, patterns, counters, scripts, script_index, scale)?;
             match $crate::commands::patterns::common::$impl_fn($crate::commands::patterns::common::PatternRef::Working, idx, patterns) {
-                Ok(msg) => output(msg),
-                Err(e) => output(e),
+                Ok(msg) => {
+                    if debug_level >= $crate::types::TIER_CONFIRMS || out_cfm {
+                        output(msg);
+                    }
+                }
+                Err(e) => {
+                    if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                        output(e);
+                    }
+                }
             }
             Ok(())
         }
@@ -620,21 +736,35 @@ macro_rules! define_pattern_op_idx {
             scripts: &$crate::types::ScriptStorage,
             script_index: usize,
             scale: &$crate::types::ScaleState,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) -> $crate::anyhow::Result<()>
         where
             F: FnMut(String),
         {
             if parts.len() < 3 {
-                output(format!("ERROR: PN.{} REQUIRES PATTERN NUMBER AND INDEX", $cmd_name));
+                if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                    output(format!("ERROR: PN.{} NEEDS PAT NUM AND IDX", $cmd_name));
+                }
                 return Ok(());
             }
-            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output)?;
+            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output, debug_level, out_err)?;
             let pat = match pat { Some(p) => p, None => return Ok(()) };
             let idx = $crate::commands::patterns::common::parse_usize_expr(parts, 2, variables, patterns, counters, scripts, script_index, scale)?;
             match $crate::commands::patterns::common::$impl_fn($crate::commands::patterns::common::PatternRef::Explicit(pat), idx, patterns) {
-                Ok(msg) => output(msg),
-                Err(e) => output(e),
+                Ok(msg) => {
+                    if debug_level >= $crate::types::TIER_CONFIRMS || out_cfm {
+                        output(msg);
+                    }
+                }
+                Err(e) => {
+                    if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                        output(e);
+                    }
+                }
             }
             Ok(())
         }
@@ -646,11 +776,15 @@ macro_rules! define_pattern_query {
     ($working_fn:ident, $explicit_fn:ident, $impl_fn:ident, $cmd_name:literal, $result_type:tt) => {
         pub fn $working_fn<F>(
             patterns: &$crate::types::PatternStorage,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) where
             F: FnMut(String),
         {
-            define_pattern_query!(@output $result_type, $impl_fn, $crate::commands::patterns::common::PatternRef::Working, patterns, output, $cmd_name);
+            define_pattern_query!(@output $result_type, $impl_fn, $crate::commands::patterns::common::PatternRef::Working, patterns, output, $cmd_name, debug_level, out_err, out_qry);
         }
 
         pub fn $explicit_fn<F>(
@@ -661,32 +795,48 @@ macro_rules! define_pattern_query {
             scripts: &$crate::types::ScriptStorage,
             script_index: usize,
             scale: &$crate::types::ScaleState,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) -> $crate::anyhow::Result<()>
         where
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                output(format!("ERROR: PN.{} REQUIRES PATTERN NUMBER", $cmd_name));
+                if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                    output(format!("ERROR: PN.{} NEEDS PAT NUM", $cmd_name));
+                }
                 return Ok(());
             }
-            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output)?;
+            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output, debug_level, out_err)?;
             let pat = match pat { Some(p) => p, None => return Ok(()) };
-            define_pattern_query!(@output $result_type, $impl_fn, $crate::commands::patterns::common::PatternRef::Explicit(pat), patterns, output, $cmd_name);
+            define_pattern_query!(@output $result_type, $impl_fn, $crate::commands::patterns::common::PatternRef::Explicit(pat), patterns, output, $cmd_name, debug_level, out_err, out_qry);
             Ok(())
         }
     };
 
-    (@output result, $impl_fn:ident, $pat_ref:expr, $patterns:expr, $output:expr, $cmd_name:literal) => {
+    (@output result, $impl_fn:ident, $pat_ref:expr, $patterns:expr, $output:expr, $cmd_name:literal, $debug_level:expr, $out_err:expr, $out_qry:expr) => {
         match $crate::commands::patterns::common::$impl_fn($pat_ref, $patterns) {
-            Ok(val) => $output(format!("P.{} = {}", $cmd_name, val)),
-            Err(e) => $output(e.to_string()),
+            Ok(val) => {
+                if $debug_level >= $crate::types::TIER_QUERIES || $out_qry {
+                    $output(format!("P.{} = {}", $cmd_name, val));
+                }
+            }
+            Err(e) => {
+                if $debug_level >= $crate::types::TIER_ERRORS || $out_err {
+                    $output(e.to_string());
+                }
+            }
         }
     };
 
-    (@output direct, $impl_fn:ident, $pat_ref:expr, $patterns:expr, $output:expr, $cmd_name:literal) => {
+    (@output direct, $impl_fn:ident, $pat_ref:expr, $patterns:expr, $output:expr, $cmd_name:literal, $debug_level:expr, $out_err:expr, $out_qry:expr) => {
         let val = $crate::commands::patterns::common::$impl_fn($pat_ref, $patterns);
-        $output(format!("P.{} = {}", $cmd_name, val));
+        if $debug_level >= $crate::types::TIER_QUERIES || $out_qry {
+            $output(format!("P.{} = {}", $cmd_name, val));
+        }
     };
 }
 
@@ -701,18 +851,26 @@ macro_rules! define_pattern_query_1val {
             scripts: &$crate::types::ScriptStorage,
             script_index: usize,
             scale: &$crate::types::ScaleState,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) -> $crate::anyhow::Result<()>
         where
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                output(format!("ERROR: P.{} REQUIRES A VALUE", $cmd_name));
+                if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                    output(format!("ERROR: P.{} REQUIRES A VALUE", $cmd_name));
+                }
                 return Ok(());
             }
             let val = $crate::commands::patterns::common::parse_i16_expr(parts, 1, variables, patterns, counters, scripts, script_index, scale)?;
             let index = $crate::commands::patterns::common::$impl_fn($crate::commands::patterns::common::PatternRef::Working, val, patterns);
-            output(format!("P.{} = {}", $cmd_name, index));
+            if debug_level >= $crate::types::TIER_QUERIES || out_qry {
+                output(format!("P.{} = {}", $cmd_name, index));
+            }
             Ok(())
         }
 
@@ -724,20 +882,28 @@ macro_rules! define_pattern_query_1val {
             scripts: &$crate::types::ScriptStorage,
             script_index: usize,
             scale: &$crate::types::ScaleState,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) -> $crate::anyhow::Result<()>
         where
             F: FnMut(String),
         {
             if parts.len() < 3 {
-                output(format!("ERROR: PN.{} REQUIRES PATTERN NUMBER AND VALUE", $cmd_name));
+                if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                    output(format!("ERROR: PN.{} NEEDS PAT NUM AND VAL", $cmd_name));
+                }
                 return Ok(());
             }
-            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output)?;
+            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output, debug_level, out_err)?;
             let pat = match pat { Some(p) => p, None => return Ok(()) };
             let val = $crate::commands::patterns::common::parse_i16_expr(parts, 2, variables, patterns, counters, scripts, script_index, scale)?;
             let index = $crate::commands::patterns::common::$impl_fn($crate::commands::patterns::common::PatternRef::Explicit(pat), val, patterns);
-            output(format!("PN.{} = {}", $cmd_name, index));
+            if debug_level >= $crate::types::TIER_QUERIES || out_qry {
+                output(format!("PN.{} = {}", $cmd_name, index));
+            }
             Ok(())
         }
     };
@@ -748,11 +914,15 @@ macro_rules! define_pattern_nav {
     ($working_fn:ident, $explicit_fn:ident, $impl_fn:ident, $cmd_name:literal, $nav_type:tt) => {
         pub fn $working_fn<F>(
             patterns: &mut $crate::types::PatternStorage,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) where
             F: FnMut(String),
         {
-            define_pattern_nav!(@output $nav_type, $impl_fn, $crate::commands::patterns::common::PatternRef::Working, patterns, output, $cmd_name);
+            define_pattern_nav!(@output $nav_type, $impl_fn, $crate::commands::patterns::common::PatternRef::Working, patterns, output, $cmd_name, debug_level, out_qry);
         }
 
         pub fn $explicit_fn<F>(
@@ -763,30 +933,40 @@ macro_rules! define_pattern_nav {
             scripts: &$crate::types::ScriptStorage,
             script_index: usize,
             scale: &$crate::types::ScaleState,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) -> $crate::anyhow::Result<()>
         where
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                output(format!("ERROR: PN.{} REQUIRES PATTERN NUMBER", $cmd_name));
+                if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                    output(format!("ERROR: PN.{} NEEDS PAT NUM", $cmd_name));
+                }
                 return Ok(());
             }
-            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output)?;
+            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output, debug_level, out_err)?;
             let pat = match pat { Some(p) => p, None => return Ok(()) };
-            define_pattern_nav!(@output $nav_type, $impl_fn, $crate::commands::patterns::common::PatternRef::Explicit(pat), patterns, output, $cmd_name);
+            define_pattern_nav!(@output $nav_type, $impl_fn, $crate::commands::patterns::common::PatternRef::Explicit(pat), patterns, output, $cmd_name, debug_level, out_qry);
             Ok(())
         }
     };
 
-    (@output here, $impl_fn:ident, $pat_ref:expr, $patterns:expr, $output:expr, $cmd_name:literal) => {
+    (@output here, $impl_fn:ident, $pat_ref:expr, $patterns:expr, $output:expr, $cmd_name:literal, $debug_level:expr, $out_qry:expr) => {
         let (value, _pat_idx) = $crate::commands::patterns::common::$impl_fn($pat_ref, $patterns);
-        $output(format!("P.{} = {}", $cmd_name, value));
+        if $debug_level >= $crate::types::TIER_QUERIES || $out_qry {
+            $output(format!("P.{} = {}", $cmd_name, value));
+        }
     };
 
-    (@output nav, $impl_fn:ident, $pat_ref:expr, $patterns:expr, $output:expr, $cmd_name:literal) => {
+    (@output nav, $impl_fn:ident, $pat_ref:expr, $patterns:expr, $output:expr, $cmd_name:literal, $debug_level:expr, $out_qry:expr) => {
         let (value, _pat_idx, new_index) = $crate::commands::patterns::common::$impl_fn($pat_ref, $patterns);
-        $output(format!("P.{} = {} (INDEX NOW {})", $cmd_name, value, new_index));
+        if $debug_level >= $crate::types::TIER_QUERIES || $out_qry {
+            $output(format!("P.{} = {} (INDEX NOW {})", $cmd_name, value, new_index));
+        }
     };
 }
 
@@ -795,13 +975,25 @@ macro_rules! define_pattern_pop {
     ($working_fn:ident, $explicit_fn:ident, $impl_fn:ident, $cmd_name:literal) => {
         pub fn $working_fn<F>(
             patterns: &mut $crate::types::PatternStorage,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) where
             F: FnMut(String),
         {
             match $crate::commands::patterns::common::$impl_fn($crate::commands::patterns::common::PatternRef::Working, patterns) {
-                Ok((val, _pat_idx)) => output(format!("P.{} = {}", $cmd_name, val)),
-                Err(e) => output(e.to_string()),
+                Ok((val, _pat_idx)) => {
+                    if debug_level >= $crate::types::TIER_QUERIES || out_qry {
+                        output(format!("P.{} = {}", $cmd_name, val));
+                    }
+                }
+                Err(e) => {
+                    if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                        output(e.to_string());
+                    }
+                }
             }
         }
 
@@ -813,20 +1005,34 @@ macro_rules! define_pattern_pop {
             scripts: &$crate::types::ScriptStorage,
             script_index: usize,
             scale: &$crate::types::ScaleState,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) -> $crate::anyhow::Result<()>
         where
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                output(format!("ERROR: PN.{} REQUIRES PATTERN NUMBER", $cmd_name));
+                if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                    output(format!("ERROR: PN.{} NEEDS PAT NUM", $cmd_name));
+                }
                 return Ok(());
             }
-            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output)?;
+            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output, debug_level, out_err)?;
             let pat = match pat { Some(p) => p, None => return Ok(()) };
             match $crate::commands::patterns::common::$impl_fn($crate::commands::patterns::common::PatternRef::Explicit(pat), patterns) {
-                Ok((val, _pat_idx)) => output(format!("PN.{} = {}", $cmd_name, val)),
-                Err(e) => output(e.to_string()),
+                Ok((val, _pat_idx)) => {
+                    if debug_level >= $crate::types::TIER_QUERIES || out_qry {
+                        output(format!("PN.{} = {}", $cmd_name, val));
+                    }
+                }
+                Err(e) => {
+                    if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                        output(e.to_string());
+                    }
+                }
             }
             Ok(())
         }
@@ -844,6 +1050,10 @@ macro_rules! define_pattern_rnd {
             scripts: &$crate::types::ScriptStorage,
             script_index: usize,
             scale: &$crate::types::ScaleState,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) -> $crate::anyhow::Result<()>
         where
@@ -857,7 +1067,9 @@ macro_rules! define_pattern_rnd {
                 (0, 127)
             };
             let pat_idx = $crate::commands::patterns::common::$impl_fn($crate::commands::patterns::common::PatternRef::Working, min, max, patterns);
-            output(format!("RANDOMIZED PATTERN {} (RANGE {} TO {})", pat_idx, min, max));
+            if debug_level >= $crate::types::TIER_CONFIRMS || out_cfm {
+                output(format!("RANDOMIZED PAT {} (RANGE {}-{})", pat_idx, min, max));
+            }
             Ok(())
         }
 
@@ -869,16 +1081,22 @@ macro_rules! define_pattern_rnd {
             scripts: &$crate::types::ScriptStorage,
             script_index: usize,
             scale: &$crate::types::ScaleState,
+            debug_level: u8,
+            out_err: bool,
+            out_qry: bool,
+            out_cfm: bool,
             mut output: F,
         ) -> $crate::anyhow::Result<()>
         where
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                output(format!("ERROR: PN.{} REQUIRES PATTERN NUMBER", $cmd_name));
+                if debug_level >= $crate::types::TIER_ERRORS || out_err {
+                    output(format!("ERROR: PN.{} NEEDS PAT NUM", $cmd_name));
+                }
                 return Ok(());
             }
-            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output)?;
+            let pat = $crate::commands::patterns::common::parse_pattern_num(parts, 1, variables, patterns, counters, scripts, script_index, scale, &mut output, debug_level, out_err)?;
             let pat = match pat { Some(p) => p, None => return Ok(()) };
             let (min, max) = if parts.len() >= 4 {
                 let min_val = $crate::commands::patterns::common::parse_i16_expr(parts, 2, variables, patterns, counters, scripts, script_index, scale)?;
@@ -888,7 +1106,9 @@ macro_rules! define_pattern_rnd {
                 (0, 127)
             };
             let pat_idx = $crate::commands::patterns::common::$impl_fn($crate::commands::patterns::common::PatternRef::Explicit(pat), min, max, patterns);
-            output(format!("RANDOMIZED PATTERN {} (RANGE {} TO {})", pat_idx, min, max));
+            if debug_level >= $crate::types::TIER_CONFIRMS || out_cfm {
+                output(format!("RANDOMIZED PAT {} (RANGE {}-{})", pat_idx, min, max));
+            }
             Ok(())
         }
     };

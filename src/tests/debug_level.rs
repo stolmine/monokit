@@ -52,8 +52,8 @@ fn test_debug_level_1_blocks_params() {
 }
 
 #[test]
-fn test_debug_level_1_allows_metro_status() {
-    let mut ctx = TestContext::new().with_debug_level(1);
+fn test_debug_level_3_allows_metro_status() {
+    let mut ctx = TestContext::new().with_debug_level(3);
 
     let result = ctx.run("M");
 
@@ -63,8 +63,8 @@ fn test_debug_level_1_allows_metro_status() {
 }
 
 #[test]
-fn test_debug_level_2_allows_all() {
-    let mut ctx = TestContext::new().with_debug_level(2);
+fn test_debug_level_5_allows_all() {
+    let mut ctx = TestContext::new().with_debug_level(5);
 
     let result = ctx.run("PF 440");
     assert!(result.is_ok());

@@ -181,27 +181,27 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
     let socket = match Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::UDP)) {
         Ok(s) => s,
         Err(e) => {
-            eprintln!("Metro thread: Failed to create socket: {}", e);
+            let _ = event_tx.send(MetroEvent::Error(format!("ERROR: OSC SOCKET CREATE FAIL: {}", e)));
             return;
         }
     };
 
     // Set large send buffer to prevent packet loss
     if let Err(e) = socket.set_send_buffer_size(OSC_BUFFER_SIZE) {
-        eprintln!("Warning: Failed to set send buffer size: {}", e);
+        let _ = event_tx.send(MetroEvent::Error(format!("WARN: OSC SEND BUFFER SIZE FAIL: {}", e)));
     }
 
     // Bind to any available port
     let bind_addr: SocketAddr = "0.0.0.0:0".parse().unwrap();
     if let Err(e) = socket.bind(&bind_addr.into()) {
-        eprintln!("Metro thread: Failed to bind UDP socket: {}", e);
+        let _ = event_tx.send(MetroEvent::Error(format!("ERROR: OSC SOCKET BIND FAIL: {}", e)));
         return;
     }
 
     // Connect to SuperCollider
     let osc_addr: SocketAddr = OSC_ADDR.parse().unwrap();
     if let Err(e) = socket.connect(&osc_addr.into()) {
-        eprintln!("Metro thread: Failed to connect to OSC address: {}", e);
+        let _ = event_tx.send(MetroEvent::Error(format!("ERROR: OSC CONNECT FAIL: {}", e)));
         return;
     }
 
@@ -372,7 +372,7 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
 
                         // Warn if processing takes too long
                         if metro_timing.enabled && delay_us > 100 {
-                            eprintln!("WARNING: MidiClockTick processing took {}us", delay_us);
+                            let _ = event_tx.send(MetroEvent::Error(format!("WARN: MIDI TICK PROC {}US", delay_us)));
                         }
                     }
                 }
@@ -410,11 +410,11 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                     send_osc(&socket, msg, sync_mode == SyncMode::Internal);
                 }
                 MetroCommand::GetTriggerCount => {
-                    eprintln!("TRIGGERS SENT: {}", metro_timing.trigger_count);
+                    let _ = event_tx.send(MetroEvent::Error(format!("TRIGGERS SENT: {}", metro_timing.trigger_count)));
                 }
                 MetroCommand::ResetTriggerCount => {
                     metro_timing.trigger_count = 0;
-                    eprintln!("TRIGGER COUNTER RESET");
+                    let _ = event_tx.send(MetroEvent::Error("TRIGGER COUNTER RESET".to_string()));
                 }
                 MetroCommand::SendScopeRate(time_ms) => {
                     let msg = OscMessage {
@@ -422,6 +422,9 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                         args: vec![OscType::Float(time_ms)],
                     };
                     send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                }
+                MetroCommand::Error(msg) => {
+                    let _ = event_tx.send(MetroEvent::Error(msg));
                 }
                 MetroCommand::Shutdown => {
                     return; // Exit the metro thread

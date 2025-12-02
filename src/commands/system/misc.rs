@@ -1,7 +1,7 @@
 use crate::config;
 use crate::eval::eval_expression;
 use crate::theme::Theme;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_ERRORS, TIER_ESSENTIAL, TIER_QUERIES, TIER_CONFIRMS, TIER_VERBOSE};
 use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
@@ -9,6 +9,7 @@ use std::sync::mpsc::Sender;
 pub fn handle_tr<F>(
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    out_cfm: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -17,7 +18,7 @@ where
     metro_tx
         .send(MetroCommand::SendTrigger)
         .context("Failed to send trigger to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_CONFIRMS || out_cfm {
         output("SENT TRIGGER".to_string());
     }
     Ok(())
@@ -27,6 +28,7 @@ pub fn handle_vol<F>(
     parts: &[&str],
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    out_cfm: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -46,7 +48,7 @@ where
     metro_tx
         .send(MetroCommand::SendVolume(value))
         .context("Failed to send volume to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_CONFIRMS || out_cfm {
         output(format!("SET VOLUME TO {}", value));
     }
     Ok(())
@@ -55,6 +57,7 @@ where
 pub fn handle_rst<F>(
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    out_ess: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -202,7 +205,7 @@ where
     metro_tx.send(MetroCommand::SendParam("fbev_crv".to_string(), OscType::Int(-100)))?;
     metro_tx.send(MetroCommand::SendParam("flev_crv".to_string(), OscType::Int(-100)))?;
 
-    if debug_level >= 2 {
+    if debug_level >= TIER_ESSENTIAL || out_ess {
         output("RESET TO DEFAULTS".to_string());
     }
     Ok(())
@@ -291,8 +294,8 @@ pub fn handle_help<F>(
     output("".to_string());
     output("-- REPL UTILITIES --".to_string());
     output("CLEAR           CLEAR OUTPUT HISTORY".to_string());
-    output("DEBUG <0-2>     SET VERBOSITY (0=SILENT, 1=IMPORTANT, 2=VERBOSE)".to_string());
-    output("HEADER          SHOW CURRENT HEADER VERBOSITY LEVEL".to_string());
+    output("DEBUG <0-5>  SET VERBOSITY LEVEL".to_string());
+    output("HEADER       SHOW CURRENT HEADER LEVEL".to_string());
     output("HEADER <0-4>    SET HEADER VERBOSITY".to_string());
     output("                0=NAV ONLY, 1=+METERS, 2=+TR".to_string());
     output("                3=FULL NAV, 4=+CPU (DEFAULT)".to_string());
@@ -312,7 +315,7 @@ pub fn handle_help<F>(
     output("DC <0-16383>  DISCONTINUITY".to_string());
     output("DA <0-16383>  DC ENV AMOUNT".to_string());
     output("DD <MS>       DC ENV DECAY".to_string());
-    output("DM <0-6>      DC MODE (FOLD/TANH/SOFT/HARD/ASYM/RECT/CRUSH)".to_string());
+    output("DM <0-6>  DC MODE (FOLD/TANH/SOFT/HARD...)".to_string());
     output("".to_string());
     output("-- ENVELOPES --".to_string());
     output("AD <MS>       AMP DECAY".to_string());
@@ -360,6 +363,7 @@ pub fn handle_help<F>(
 pub fn handle_rec<F>(
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    out_ess: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -373,7 +377,7 @@ where
     metro_tx
         .send(MetroCommand::StartRecording(cwd))
         .context("Failed to send recording command")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_ESSENTIAL || out_ess {
         output("RECORDING STARTED".to_string());
     }
     Ok(())
@@ -382,6 +386,7 @@ where
 pub fn handle_rec_stop<F>(
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    out_ess: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -390,7 +395,7 @@ where
     metro_tx
         .send(MetroCommand::StopRecording)
         .context("Failed to send stop recording command")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_ESSENTIAL || out_ess {
         output("RECORDING STOPPED".to_string());
     }
     Ok(())
@@ -400,6 +405,7 @@ pub fn handle_rec_path<F>(
     parts: &[&str],
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    out_cfm: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -414,7 +420,7 @@ where
     metro_tx
         .send(MetroCommand::SetRecordingPath(path.clone()))
         .context("Failed to send recording path")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_CONFIRMS || out_cfm {
         output(format!("SET RECORDING PATH PREFIX TO: {}", path.to_uppercase()));
     }
     Ok(())
@@ -429,6 +435,7 @@ pub fn handle_print<F>(
     script_index: usize,
     scale: &ScaleState,
     debug_level: u8,
+    out_ess: bool,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -444,7 +451,7 @@ pub fn handle_print<F>(
 
         if joined.starts_with(quote_char) && joined.ends_with(quote_char) && joined.len() > 1 {
             let literal = &joined[1..joined.len() - 1];
-            if debug_level >= 1 {
+            if debug_level >= TIER_ERRORS || out_ess {
                 output(literal.to_string());
             }
         } else {
@@ -452,7 +459,7 @@ pub fn handle_print<F>(
         }
     } else {
         if let Some((result, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-            if debug_level >= 1 {
+            if debug_level >= TIER_ERRORS || out_ess {
                 output(format!("{}", result));
             }
         } else {
@@ -476,20 +483,35 @@ pub fn handle_debug<F>(
             "0" => {
                 *debug_level = 0;
                 let _ = config::save_debug_level(*debug_level);
-                output("DEBUG LEVEL: 0 (SILENT)".to_string());
+                output("DEBUG: 0 (SILENT)".to_string());
             }
             "1" => {
                 *debug_level = 1;
                 let _ = config::save_debug_level(*debug_level);
-                output("DEBUG LEVEL: 1 (IMPORTANT)".to_string());
+                output("DEBUG: 1 (ERRORS)".to_string());
             }
             "2" => {
                 *debug_level = 2;
                 let _ = config::save_debug_level(*debug_level);
-                output("DEBUG LEVEL: 2 (VERBOSE)".to_string());
+                output("DEBUG: 2 (ESSENTIAL)".to_string());
+            }
+            "3" => {
+                *debug_level = 3;
+                let _ = config::save_debug_level(*debug_level);
+                output("DEBUG: 3 (QUERIES)".to_string());
+            }
+            "4" => {
+                *debug_level = 4;
+                let _ = config::save_debug_level(*debug_level);
+                output("DEBUG: 4 (CONFIRMS)".to_string());
+            }
+            "5" => {
+                *debug_level = 5;
+                let _ = config::save_debug_level(*debug_level);
+                output("DEBUG: 5 (VERBOSE)".to_string());
             }
             _ => {
-                output("ERROR: DEBUG TAKES 0-2".to_string());
+                output("ERROR: DEBUG TAKES 0-5".to_string());
             }
         }
     }
@@ -602,13 +624,17 @@ pub fn handle_limit<F>(
     limiter_enabled: &mut bool,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    out_qry: bool,
+    out_cfm: bool,
     mut output: F,
 ) -> Result<()>
 where
     F: FnMut(String),
 {
     if parts.len() == 1 {
-        output(format!("LIMITER: {}", if *limiter_enabled { 1 } else { 0 }));
+        if debug_level >= TIER_QUERIES || out_qry {
+            output(format!("LIMITER: {}", if *limiter_enabled { 1 } else { 0 }));
+        }
     } else {
         let value = parts[1];
         match value {
@@ -618,7 +644,7 @@ where
                     .send(MetroCommand::SendParam("limit".to_string(), OscType::Int(0)))
                     .context("Failed to send limiter param")?;
                 let _ = config::save_limiter_enabled(*limiter_enabled);
-                if debug_level >= 2 {
+                if debug_level >= TIER_CONFIRMS || out_cfm {
                     output("LIMITER: OFF".to_string());
                 }
             }
@@ -628,7 +654,7 @@ where
                     .send(MetroCommand::SendParam("limit".to_string(), OscType::Int(1)))
                     .context("Failed to send limiter param")?;
                 let _ = config::save_limiter_enabled(*limiter_enabled);
-                if debug_level >= 2 {
+                if debug_level >= TIER_CONFIRMS || out_cfm {
                     output("LIMITER: ON".to_string());
                 }
             }
@@ -683,13 +709,16 @@ pub fn handle_scope_time<F>(
     script_index: usize,
     scale: &ScaleState,
     debug_level: u8,
+    out_qry: bool,
     mut output: F,
 ) -> Result<()>
 where
     F: FnMut(String),
 {
     if parts.len() == 1 {
-        output(format!("SCOPE.TIME: {}MS", scope_timespan_ms));
+        if debug_level >= TIER_QUERIES || out_qry {
+            output(format!("SCOPE.TIME: {}MS", scope_timespan_ms));
+        }
     } else {
         let value = if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             val as u32
@@ -710,7 +739,7 @@ where
 
         let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
 
-        if debug_level >= 2 {
+        if debug_level >= TIER_VERBOSE {
             output(format!("SCOPE.TIME: {}MS", value));
         }
     }
@@ -730,18 +759,21 @@ pub fn handle_scope_clr<F>(
     script_index: usize,
     scale: &ScaleState,
     debug_level: u8,
+    out_qry: bool,
     mut output: F,
 ) where
     F: FnMut(String),
 {
     if parts.len() == 1 {
-        let mode_name = match *scope_color_mode {
-            1 => "ERROR",
-            2 => "FOREGROUND",
-            3 => "ACCENT",
-            _ => "SUCCESS",
-        };
-        output(format!("SCOPE.CLR: {} ({})", scope_color_mode, mode_name));
+        if debug_level >= TIER_QUERIES || out_qry {
+            let mode_name = match *scope_color_mode {
+                1 => "ERROR",
+                2 => "FOREGROUND",
+                3 => "ACCENT",
+                _ => "SUCCESS",
+            };
+            output(format!("SCOPE.CLR: {} ({})", scope_color_mode, mode_name));
+        }
     } else {
         let value = if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             val
@@ -753,28 +785,28 @@ pub fn handle_scope_clr<F>(
             0 => {
                 *scope_color_mode = 0;
                 let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
-                if debug_level >= 2 {
+                if debug_level >= TIER_VERBOSE {
                     output("SCOPE.CLR: 0 (SUCCESS)".to_string());
                 }
             }
             1 => {
                 *scope_color_mode = 1;
                 let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
-                if debug_level >= 2 {
+                if debug_level >= TIER_VERBOSE {
                     output("SCOPE.CLR: 1 (ERROR)".to_string());
                 }
             }
             2 => {
                 *scope_color_mode = 2;
                 let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
-                if debug_level >= 2 {
+                if debug_level >= TIER_VERBOSE {
                     output("SCOPE.CLR: 2 (FOREGROUND)".to_string());
                 }
             }
             3 => {
                 *scope_color_mode = 3;
                 let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
-                if debug_level >= 2 {
+                if debug_level >= TIER_VERBOSE {
                     output("SCOPE.CLR: 3 (ACCENT)".to_string());
                 }
             }
@@ -798,19 +830,22 @@ pub fn handle_scope_mode<F>(
     script_index: usize,
     scale: &ScaleState,
     debug_level: u8,
+    out_qry: bool,
     mut output: F,
 ) where
     F: FnMut(String),
 {
     if parts.len() == 1 {
-        let mode_name = match *scope_display_mode {
-            1 => "BLOCK",
-            2 => "LINE",
-            3 => "DOT",
-            4 => "QUADRANT",
-            _ => "BRAILLE",
-        };
-        output(format!("SCOPE.MODE: {} ({})", scope_display_mode, mode_name));
+        if debug_level >= TIER_QUERIES || out_qry {
+            let mode_name = match *scope_display_mode {
+                1 => "BLOCK",
+                2 => "LINE",
+                3 => "DOT",
+                4 => "QUADRANT",
+                _ => "BRAILLE",
+            };
+            output(format!("SCOPE.MODE: {} ({})", scope_display_mode, mode_name));
+        }
     } else {
         let value = if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             val
@@ -822,27 +857,27 @@ pub fn handle_scope_mode<F>(
             0 => {
                 *scope_display_mode = 0;
                 let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
-                if debug_level >= 2 { output("SCOPE.MODE: 0 (BRAILLE)".to_string()); }
+                if debug_level >= TIER_VERBOSE { output("SCOPE.MODE: 0 (BRAILLE)".to_string()); }
             }
             1 => {
                 *scope_display_mode = 1;
                 let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
-                if debug_level >= 2 { output("SCOPE.MODE: 1 (BLOCK)".to_string()); }
+                if debug_level >= TIER_VERBOSE { output("SCOPE.MODE: 1 (BLOCK)".to_string()); }
             }
             2 => {
                 *scope_display_mode = 2;
                 let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
-                if debug_level >= 2 { output("SCOPE.MODE: 2 (LINE)".to_string()); }
+                if debug_level >= TIER_VERBOSE { output("SCOPE.MODE: 2 (LINE)".to_string()); }
             }
             3 => {
                 *scope_display_mode = 3;
                 let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
-                if debug_level >= 2 { output("SCOPE.MODE: 3 (DOT)".to_string()); }
+                if debug_level >= TIER_VERBOSE { output("SCOPE.MODE: 3 (DOT)".to_string()); }
             }
             4 => {
                 *scope_display_mode = 4;
                 let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
-                if debug_level >= 2 { output("SCOPE.MODE: 4 (QUADRANT)".to_string()); }
+                if debug_level >= TIER_VERBOSE { output("SCOPE.MODE: 4 (QUADRANT)".to_string()); }
             }
             _ => {
                 output("ERROR: SCOPE.MODE TAKES 0-4".to_string());
@@ -864,12 +899,15 @@ pub fn handle_scope_uni<F>(
     script_index: usize,
     scale: &ScaleState,
     debug_level: u8,
+    out_qry: bool,
     mut output: F,
 ) where
     F: FnMut(String),
 {
     if parts.len() == 1 {
-        output(format!("SCOPE.UNI: {}", if *scope_unipolar { 1 } else { 0 }));
+        if debug_level >= TIER_QUERIES || out_qry {
+            output(format!("SCOPE.UNI: {}", if *scope_unipolar { 1 } else { 0 }));
+        }
     } else {
         let value = if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             val
@@ -881,12 +919,12 @@ pub fn handle_scope_uni<F>(
             0 => {
                 *scope_unipolar = false;
                 let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
-                if debug_level >= 2 { output("SCOPE.UNI: 0 (BIPOLAR)".to_string()); }
+                if debug_level >= TIER_VERBOSE { output("SCOPE.UNI: 0 (BIPOLAR)".to_string()); }
             }
             1 => {
                 *scope_unipolar = true;
                 let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
-                if debug_level >= 2 { output("SCOPE.UNI: 1 (UNIPOLAR)".to_string()); }
+                if debug_level >= TIER_VERBOSE { output("SCOPE.UNI: 1 (UNIPOLAR)".to_string()); }
             }
             _ => {
                 output("ERROR: SCOPE.UNI TAKES 0-1".to_string());
@@ -899,6 +937,7 @@ pub fn handle_note<F>(
     parts: &[&str],
     notes: &mut crate::types::NotesStorage,
     debug_level: u8,
+    out_cfm: bool,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -927,7 +966,7 @@ pub fn handle_note<F>(
         if notes.lines[i].is_empty() {
             notes.lines[i] = text.clone();
             found_empty = true;
-            if debug_level >= 2 {
+            if debug_level >= TIER_CONFIRMS || out_cfm {
                 output(format!("NOTE ADDED TO LINE {}", i + 1));
             }
             break;
@@ -942,6 +981,7 @@ pub fn handle_note<F>(
 pub fn handle_note_clr<F>(
     notes: &mut crate::types::NotesStorage,
     debug_level: u8,
+    out_cfm: bool,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -949,7 +989,7 @@ pub fn handle_note_clr<F>(
     for i in 0..8 {
         notes.lines[i].clear();
     }
-    if debug_level >= 2 {
+    if debug_level >= TIER_CONFIRMS || out_cfm {
         output("NOTES CLEARED".to_string());
     }
 }
@@ -1212,6 +1252,122 @@ pub fn handle_title<F>(
             }
             _ => {
                 output("ERROR: TITLE TAKES 0 (MONOKIT) OR 1 (SCENE)".to_string());
+            }
+        }
+    }
+}
+
+pub fn handle_out_err<F>(
+    parts: &[&str],
+    out_err: &mut bool,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("OUT.ERR: {}", if *out_err { "ON" } else { "OFF" }));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *out_err = false;
+                let _ = config::save_out_err(*out_err);
+                output("OUT.ERR: OFF".to_string());
+            }
+            "1" => {
+                *out_err = true;
+                let _ = config::save_out_err(*out_err);
+                output("OUT.ERR: ON".to_string());
+            }
+            _ => {
+                output("ERROR: OUT.ERR TAKES 0 (OFF) OR 1 (ON)".to_string());
+            }
+        }
+    }
+}
+
+pub fn handle_out_ess<F>(
+    parts: &[&str],
+    out_ess: &mut bool,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("OUT.ESS: {}", if *out_ess { "ON" } else { "OFF" }));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *out_ess = false;
+                let _ = config::save_out_ess(*out_ess);
+                output("OUT.ESS: OFF".to_string());
+            }
+            "1" => {
+                *out_ess = true;
+                let _ = config::save_out_ess(*out_ess);
+                output("OUT.ESS: ON".to_string());
+            }
+            _ => {
+                output("ERROR: OUT.ESS TAKES 0 (OFF) OR 1 (ON)".to_string());
+            }
+        }
+    }
+}
+
+pub fn handle_out_qry<F>(
+    parts: &[&str],
+    out_qry: &mut bool,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("OUT.QRY: {}", if *out_qry { "ON" } else { "OFF" }));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *out_qry = false;
+                let _ = config::save_out_qry(*out_qry);
+                output("OUT.QRY: OFF".to_string());
+            }
+            "1" => {
+                *out_qry = true;
+                let _ = config::save_out_qry(*out_qry);
+                output("OUT.QRY: ON".to_string());
+            }
+            _ => {
+                output("ERROR: OUT.QRY TAKES 0 (OFF) OR 1 (ON)".to_string());
+            }
+        }
+    }
+}
+
+pub fn handle_out_cfm<F>(
+    parts: &[&str],
+    out_cfm: &mut bool,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("OUT.CFM: {}", if *out_cfm { "ON" } else { "OFF" }));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *out_cfm = false;
+                let _ = config::save_out_cfm(*out_cfm);
+                output("OUT.CFM: OFF".to_string());
+            }
+            "1" => {
+                *out_cfm = true;
+                let _ = config::save_out_cfm(*out_cfm);
+                output("OUT.CFM: ON".to_string());
+            }
+            _ => {
+                output("ERROR: OUT.CFM TAKES 0 (OFF) OR 1 (ON)".to_string());
             }
         }
     }

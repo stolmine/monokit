@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_CONFIRMS};
 use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
@@ -17,6 +17,7 @@ pub fn handle_br_act<F>(
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     scale: &ScaleState,
+    out_cfm: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -59,7 +60,7 @@ where
         .send(MetroCommand::SendParam("br_len_ms".to_string(), OscType::Float(loop_length_ms as f32)))
         .context("Failed to send br_len_ms to metro thread")?;
 
-    if debug_level >= 2 {
+    if debug_level >= TIER_CONFIRMS || out_cfm {
         output(format!("SET BEAT REPEAT ACTIVE TO {}", clipped));
     }
     Ok(())
@@ -77,6 +78,7 @@ pub fn handle_br_len<F>(
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     scale: &ScaleState,
+    out_cfm: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -114,7 +116,7 @@ where
         .send(MetroCommand::SendParam("br_len_ms".to_string(), OscType::Float(loop_length_ms as f32)))
         .context("Failed to send br_len_ms to metro thread")?;
 
-    if debug_level >= 2 {
+    if debug_level >= TIER_CONFIRMS || out_cfm {
         output(format!("SET BEAT REPEAT LENGTH DIVISION TO {}", clipped));
     }
     Ok(())
@@ -130,6 +132,7 @@ pub fn handle_br_rev<F>(
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     scale: &ScaleState,
+    out_cfm: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -150,7 +153,7 @@ where
     metro_tx
         .send(MetroCommand::SendParam("br_rev".to_string(), OscType::Int(clipped)))
         .context("Failed to send param to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_CONFIRMS || out_cfm {
         output(format!("SET BEAT REPEAT REVERSE TO {}", clipped));
     }
     Ok(())
@@ -166,6 +169,7 @@ pub fn handle_br_win<F>(
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     scale: &ScaleState,
+    out_cfm: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -186,7 +190,7 @@ where
     metro_tx
         .send(MetroCommand::SendParam("br_win".to_string(), OscType::Int(clipped)))
         .context("Failed to send param to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_CONFIRMS || out_cfm {
         output(format!("SET BEAT REPEAT CROSSFADE WINDOW TO {} MS", clipped));
     }
     Ok(())
@@ -202,6 +206,7 @@ pub fn handle_br_mix<F>(
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     scale: &ScaleState,
+    out_cfm: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -222,7 +227,7 @@ where
     metro_tx
         .send(MetroCommand::SendParam("br_mix".to_string(), OscType::Int(clipped)))
         .context("Failed to send param to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_CONFIRMS || out_cfm {
         output(format!("SET BEAT REPEAT MIX TO {}", clipped));
     }
     Ok(())

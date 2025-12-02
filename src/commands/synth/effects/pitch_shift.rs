@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_CONFIRMS};
 use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
@@ -15,6 +15,7 @@ pub fn handle_ps_mode<F>(
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     scale: &ScaleState,
+    out_cfm: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -35,7 +36,7 @@ where
     metro_tx
         .send(MetroCommand::SendParam("ps_mode".to_string(), OscType::Int(clipped)))
         .context("Failed to send param to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_CONFIRMS || out_cfm {
         let mode_name = match clipped {
             0 => "GRANULAR",
             1 => "FREQ_SHIFT",
@@ -56,6 +57,7 @@ pub fn handle_ps_semi<F>(
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     scale: &ScaleState,
+    out_cfm: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -76,7 +78,7 @@ where
     metro_tx
         .send(MetroCommand::SendParam("ps_semi".to_string(), OscType::Int(clipped)))
         .context("Failed to send param to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_CONFIRMS || out_cfm {
         output(format!("PS.SEMI: {} SEMITONES", clipped));
     }
     Ok(())
@@ -92,6 +94,7 @@ pub fn handle_ps_grain<F>(
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     scale: &ScaleState,
+    out_cfm: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -112,7 +115,7 @@ where
     metro_tx
         .send(MetroCommand::SendParam("ps_grain".to_string(), OscType::Int(clipped)))
         .context("Failed to send param to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_CONFIRMS || out_cfm {
         output(format!("PS.GRAIN: {} MS", clipped));
     }
     Ok(())
@@ -128,6 +131,7 @@ pub fn handle_ps_mix<F>(
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     scale: &ScaleState,
+    out_cfm: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -148,7 +152,7 @@ where
     metro_tx
         .send(MetroCommand::SendParam("ps_mix".to_string(), OscType::Int(clipped)))
         .context("Failed to send param to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_CONFIRMS || out_cfm {
         output(format!("PS.MIX: {}", clipped));
     }
     Ok(())
@@ -164,6 +168,7 @@ pub fn handle_ps_targ<F>(
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
     scale: &ScaleState,
+    out_cfm: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -184,7 +189,7 @@ where
     metro_tx
         .send(MetroCommand::SendParam("ps_targ".to_string(), OscType::Int(clipped)))
         .context("Failed to send param to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_CONFIRMS || out_cfm {
         let targ_name = match clipped {
             0 => "MAIN",
             1 => "REPEAT_ONLY",

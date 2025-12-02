@@ -8,6 +8,22 @@ pub const OSC_ADDR: &str = "127.0.0.1:57120";
 pub const SPECTRUM_BANDS: usize = 15;
 pub const SCOPE_SAMPLES: usize = 128;
 
+pub const TIER_SILENT: u8 = 0;
+pub const TIER_ERRORS: u8 = 1;
+pub const TIER_ESSENTIAL: u8 = 2;
+pub const TIER_QUERIES: u8 = 3;
+pub const TIER_CONFIRMS: u8 = 4;
+pub const TIER_VERBOSE: u8 = 5;
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum OutputCategory {
+    Error,
+    Essential,
+    Query,
+    Confirm,
+    Verbose,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum SyncMode {
     #[default]
@@ -243,6 +259,7 @@ pub enum MetroCommand {
     GetTriggerCount,       // Get the current trigger count
     ResetTriggerCount,     // Reset the trigger counter to 0
     SendScopeRate(f32),
+    Error(String),         // Forward error to REPL via event channel
 }
 
 #[derive(Debug, Clone, Default)]
@@ -301,6 +318,7 @@ pub enum MetroEvent {
     SpectrumUpdate(SpectrumData),
     ScopeUpdate(ScopeData),
     CpuUpdate(CpuData),
+    Error(String),
 }
 
 #[derive(Debug, Clone)]

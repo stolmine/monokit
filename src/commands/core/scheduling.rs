@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_ERRORS, TIER_ESSENTIAL, TIER_QUERIES, TIER_CONFIRMS, TIER_VERBOSE};
 use anyhow::{Context, Result};
 use std::sync::mpsc::Sender;
 
@@ -54,7 +54,7 @@ where
     };
 
     if delay_ms > 16000 {
-        output("ERROR: DELAY TIME EXCEEDS MAXIMUM OF 16000MS".to_string());
+        output("ERROR: DELAY TIME MAX 16000MS".to_string());
         return Ok(());
     }
 
@@ -62,8 +62,8 @@ where
         .send(MetroCommand::ScheduleDelayed(after_colon.to_string(), delay_ms, script_index))
         .context("Failed to send delayed command to metro thread")?;
 
-    if debug_level >= 1 {
-        output(format!("SCHEDULED COMMAND IN {}MS: {}", delay_ms, after_colon));
+    if debug_level >= TIER_CONFIRMS {
+        output(format!("DELAYED {}MS: {}", delay_ms, after_colon));
     }
 
     Ok(())
@@ -72,6 +72,7 @@ where
 pub fn handle_del_clr<F>(
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    out_ess: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -81,7 +82,7 @@ where
         .send(MetroCommand::ClearDelayed)
         .context("Failed to send clear delayed to metro thread")?;
 
-    if debug_level >= 1 {
+    if debug_level >= TIER_ESSENTIAL || out_ess {
         output("CLEARED ALL DELAYED COMMANDS".to_string());
     }
 
@@ -159,8 +160,8 @@ where
         .send(MetroCommand::ScheduleRepeated(after_colon.to_string(), count, interval_ms, script_index))
         .context("Failed to send repeated command to metro thread")?;
 
-    if debug_level >= 1 {
-        output(format!("SCHEDULED COMMAND {} TIMES AT {}MS INTERVALS: {}", count, interval_ms, after_colon));
+    if debug_level >= TIER_CONFIRMS {
+        output(format!("REPEAT {}x @{}MS: {}", count, interval_ms, after_colon));
     }
 
     Ok(())
@@ -242,12 +243,12 @@ where
             .send(MetroCommand::ScheduleRepeated(after_colon.to_string(), count - 1, interval_ms, script_index))
             .context("Failed to send repeated command to metro thread")?;
 
-        if debug_level >= 1 {
-            output(format!("SCHEDULED IMMEDIATE + {} MORE TIMES AT {}MS INTERVALS: {}", count - 1, interval_ms, after_colon));
+        if debug_level >= TIER_CONFIRMS {
+            output(format!("IMMEDIATE +{}x @{}MS: {}", count - 1, interval_ms, after_colon));
         }
     } else {
-        if debug_level >= 1 {
-            output(format!("SCHEDULED IMMEDIATE EXECUTION: {}", after_colon));
+        if debug_level >= TIER_CONFIRMS {
+            output(format!("IMMEDIATE: {}", after_colon));
         }
     }
 

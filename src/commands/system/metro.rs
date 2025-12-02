@@ -56,7 +56,7 @@ where
         output("ERROR: BPM MUST BE GREATER THAN 0".to_string());
         return Ok(());
     }
-    let interval_ms = (60000.0 / bpm) as u64;
+    let interval_ms = (15000.0 / bpm) as u64; // 16th note interval (60000 / 4)
     metro_tx
         .send(MetroCommand::SetInterval(interval_ms))
         .context("Failed to send interval to metro thread")?;

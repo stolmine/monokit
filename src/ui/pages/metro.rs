@@ -3,7 +3,7 @@ use crate::ui::state_highlight::highlight_stateful_operators;
 
 pub fn render_metro_page(app: &crate::App) -> Paragraph<'static> {
     let state = app.metro_state.lock().unwrap();
-    let bpm = 60000.0 / state.interval_ms as f32;
+    let bpm = 15000.0 / state.interval_ms as f32; // interval is 16th note, so ×4 for quarter note
     let status = if state.active { "ON" } else { "OFF" };
     let status_color = if state.active {
         app.theme.success
@@ -14,21 +14,15 @@ pub fn render_metro_page(app: &crate::App) -> Paragraph<'static> {
     let label_color = app.theme.label;
     let fg = app.theme.foreground;
     let mut text = Vec::new();
+
+    // Single info line: BPM, interval, and status
     text.push(Line::from(vec![
-        Span::styled("  BPM: ", Style::default().fg(label_color)),
-        Span::styled(format!("{:.1}", bpm), Style::default().fg(fg)),
-        Span::raw("  "),
-        Span::styled("INTERVAL: ", Style::default().fg(label_color)),
+        Span::styled("  M ", Style::default().fg(label_color)),
         Span::styled(format!("{}MS", state.interval_ms), Style::default().fg(fg)),
-    ]));
-    text.push(Line::from(""));
-    text.push(Line::from(vec![
-        Span::styled("  STATUS: ", Style::default().fg(label_color)),
+        Span::raw("  "),
+        Span::styled(format!("{}BPM", bpm.round() as u32), Style::default().fg(fg)),
+        Span::raw("  "),
         Span::styled(status, Style::default().fg(status_color).add_modifier(Modifier::BOLD)),
-    ]));
-    text.push(Line::from(""));
-    text.push(Line::from(vec![
-        Span::styled("  M SCRIPT LINES:", Style::default().fg(label_color)),
     ]));
 
     let metro_script = app.scripts.get_script(8);

@@ -576,6 +576,8 @@ Real-time amplitude display via bidirectional OSC.
 - [x] Unicode bargraph display: `L▅▆ R▅▅` in header
 - [x] Clip indicator (meter turns error color on clip)
 - [x] REC indicator moved to right-aligned border title
+- [x] Vertical 8-row meters on grid view (Tab on Live page)
+- [x] 64 levels of resolution per meter
 - [ ] CPU percentage from SC `/status` command (future)
 - [ ] Peak hold decay visualization (future)
 

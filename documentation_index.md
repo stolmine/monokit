@@ -116,11 +116,12 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 
 **Phase 5.5: Audio Metering - COMPLETE**
 - Real-time stereo peak/RMS metering via bidirectional OSC
-- SuperCollider sends meter data at 20Hz via SendPeakRMS
-- Meter thread receives on UDP port 57121
-- Unicode bargraph display in header: `L▅▆ R▅▅`
-- Clip indicator changes meter color to error
+- SuperCollider sends meter data at 20Hz via SendPeakRMS to port 57121
+- Meter thread receives OSC and updates MeterData
+- Header displays compact meters: `L▅▆ R▅▅`
+- Clip indicator (error color) resets when level drops
 - REC indicator moved to right-aligned border title
+- Vertical 8-row meters on grid view (Tab on Live page) with 64 levels of resolution
 
 **Files Created/Changed:**
 - `src/meter.rs` - New receiver thread for meter data
@@ -129,6 +130,7 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 - `src/main.rs` - Spawns meter thread
 - `src/ui/mod.rs` - Handles MeterUpdate events
 - `src/ui/header.rs` - Bargraph rendering, REC in border title
+- `src/ui/pages/live.rs` - Vertical meters on grid view
 - `sc/monokit_server.scd` - Added SendPeakRMS and OSCdef forwarder
 
 ### DRY Refactoring Complete (All Phases)

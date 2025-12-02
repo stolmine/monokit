@@ -347,7 +347,7 @@ Script and metro execution feedback with decay animations (KO II style).
 
 ---
 
-## Phase 6: Audio Metering
+## Phase 6: Audio Metering - COMPLETE (December 2025)
 
 **Goal:** Real-time amplitude and CPU display
 
@@ -373,84 +373,42 @@ Script and metro execution feedback with decay animations (KO II style).
 └─────────┘
 ```
 
-### 5.2 SuperCollider Changes
+### 6.2 Implemented Features
 
-Add to `sc/monokit_server.scd` after final `Out.ar`:
+- [x] Real-time stereo peak/RMS metering via bidirectional OSC
+- [x] SuperCollider sends meter data at 20Hz via SendPeakRMS to port 57121
+- [x] Meter thread receives OSC and updates MeterData
+- [x] Header displays compact meters: `L▅▆ R▅▅`
+- [x] Clip indicator (error color) resets when level drops
+- [x] REC indicator moved to right-aligned border title
+- [x] Vertical 8-row meters on grid view (Tab on Live page) with 64 levels of resolution
+- [ ] CPU percentage from SC `/status` command (future)
+- [ ] Peak hold decay visualization (future)
 
-```supercollider
-// Amplitude metering - send peak/RMS to Rust
-SendPeakRMS.kr(sigL, 20, 3, '/monokit/meter', replyID: 1001);
-SendPeakRMS.kr(sigR, 20, 3, '/monokit/meter', replyID: 1002);
-```
+### 6.3 Files Created/Modified
 
-### 5.3 Rust Receiver
-
-New file `src/meter.rs`:
-
-```rust
-pub struct MeterData {
-    pub peak_l: f32,
-    pub peak_r: f32,
-    pub rms_l: f32,
-    pub rms_r: f32,
-    pub timestamp: Instant,
-}
-
-pub struct CpuData {
-    pub avg_cpu: f32,
-    pub peak_cpu: f32,
-}
-
-pub fn meter_thread(event_tx: Sender<MetroEvent>) {
-    let socket = UdpSocket::bind("127.0.0.1:57121").unwrap();
-    // ... receive loop, parse OSC, send MeterData via channel
-}
-```
-
-### 5.4 Display
-
-```
-Unicode bargraph characters: ▁ ▂ ▃ ▄ ▅ ▆ ▇ █
-
-Display in header or footer:
-  L:▅▆▇█▇▅▃▂  R:▄▅▆▇▆▄▃▂  CPU: 12%
-```
-
-### 5.5 Implementation Steps
-
-- [ ] Add `SendPeakRMS` to SuperCollider SynthDef
-- [ ] Configure SC to send replies to port 57121
-- [ ] Create `src/meter.rs` with receiver thread
-- [ ] Add `MeterData` and `CpuData` types
-- [ ] Add `MetroEvent::MeterUpdate` variant
-- [ ] Spawn meter thread in main.rs
-- [ ] Add meter state to App struct
-- [ ] Create meter rendering component (bargraph)
-- [ ] Integrate into UI (header/footer/live page)
-- [ ] Add CPU polling (SC `/status` command)
-
-### 5.6 Files to Create/Modify
-
-- `sc/monokit_server.scd` - Add SendPeakRMS
-- `src/meter.rs` - NEW: receiver thread
-- `src/types.rs` - Add meter types and events
-- `src/main.rs` - Spawn meter thread
-- `src/app/mod.rs` - Add meter state
-- `src/ui/header.rs` or dedicated component - Render meters
+- `src/meter.rs` - NEW: receiver thread for meter data
+- `src/types.rs` - Added MeterData struct, MetroEvent::MeterUpdate
+- `src/app/mod.rs` - Added meter_data field
+- `src/main.rs` - Spawns meter thread
+- `src/ui/mod.rs` - Handles MeterUpdate events
+- `src/ui/header.rs` - Bargraph rendering, REC in border title
+- `src/ui/pages/live.rs` - Vertical meters on grid view
+- `sc/monokit_server.scd` - Added SendPeakRMS and OSCdef forwarder
 
 ---
 
 ## Implementation Order
 
-| Phase | Feature | Complexity | Dependencies | Priority |
-|-------|---------|------------|--------------|----------|
-| 1 | Activity Indicators | Low | None | **Start here** |
-| 2 | SEQ/TOG Highlighting | Medium | Phase 1 patterns | High |
-| 3 | Variables Page | Medium | None | Medium |
-| 4 | Parameter Activity Grid | Medium | Phase 1 patterns | Medium |
-| 5 | Audio Metering | High | SC changes, new thread | Lower |
+| Phase | Feature | Complexity | Dependencies | Status |
+|-------|---------|------------|--------------|--------|
+| 1 | Activity Indicators | Low | None | ✓ COMPLETE |
+| 2 | SEQ/TOG Highlighting | Medium | Phase 1 patterns | ✓ COMPLETE |
+| 3 | Variables Page | Medium | None | ✓ COMPLETE |
+| 4 | Parameter Activity Grid | Medium | Phase 1 patterns | ✓ COMPLETE |
+| 6 | Audio Metering | High | SC changes, new thread | ✓ COMPLETE |
 
-**Recommended approach:** Complete Phase 1 first - it establishes the decay animation pattern and activity tracking infrastructure that Phases 2 and 4 will reuse.
+**All planned UI refinements complete!** The Monokit interface now features comprehensive visual feedback including activity indicators, state highlighting, variable monitoring, parameter activity tracking, and real-time audio metering.
 
 ---
 

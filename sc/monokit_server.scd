@@ -492,10 +492,14 @@ s.waitForBoot {
     ~voice = Synth(\monokit);
 
     // Forward meter data from SendPeakRMS to Rust app on port 57121
+    // SendPeakRMS msg format: [cmdName, nodeID, replyID, peak, rms]
+    // replyID is our channel (1=L, 2=R)
     ~meterAddr = NetAddr("127.0.0.1", 57121);
     OSCdef(\monokit_meter_fwd, { |msg|
-        // msg format: ['/monokit/meter', channel, peak, rms]
-        ~meterAddr.sendMsg('/monokit/meter', msg[1], msg[2], msg[3]);
+        var channel = msg[2];  // replyID = channel (1 or 2)
+        var peak = msg[3];
+        var rms = msg[4];
+        ~meterAddr.sendMsg('/monokit/meter', channel, peak, rms);
     }, '/monokit/meter');
 
     OSCdef(\monokit_trigger, { |msg|

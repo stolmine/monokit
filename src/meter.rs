@@ -76,18 +76,23 @@ fn parse_meter_message(args: &[OscType]) -> Option<MeterUpdate> {
         return None;
     }
 
+    // Channel can come as Int or Float from SC
     let channel = match &args[0] {
         OscType::Int(i) => *i,
+        OscType::Float(f) => *f as i32,
         _ => return None,
     };
 
+    // Peak and RMS are floats
     let peak = match &args[1] {
         OscType::Float(f) => *f,
+        OscType::Double(d) => *d as f32,
         _ => return None,
     };
 
     let rms = match &args[2] {
         OscType::Float(f) => *f,
+        OscType::Double(d) => *d as f32,
         _ => return None,
     };
 

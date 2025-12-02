@@ -1,4 +1,4 @@
-use crate::types::{CpuData, MeterData, MetroEvent, SpectrumData, SPECTRUM_BANDS};
+use crate::types::{CpuData, MeterData, MetroEvent, ScopeData, SpectrumData, SCOPE_SAMPLES, SPECTRUM_BANDS};
 use rosc::{decoder, OscPacket, OscType};
 use socket2::{Domain, Protocol, Socket, Type};
 use std::net::{SocketAddr, UdpSocket};
@@ -63,6 +63,12 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
                             if let Some(cpu_data) = parse_cpu_message(&msg.args) {
                                 if let Err(e) = event_tx.send(MetroEvent::CpuUpdate(cpu_data)) {
                                     eprintln!("Meter thread: Failed to send CpuUpdate: {}", e);
+                                    return;
+                                }
+                            }
+                        } else if msg.addr == "/monokit/scope" {
+                            if let Some(scope_data) = parse_scope_message(&msg.args) {
+                                if event_tx.send(MetroEvent::ScopeUpdate(scope_data)).is_err() {
                                     return;
                                 }
                             }
@@ -268,4 +274,23 @@ fn parse_cpu_message(args: &[OscType]) -> Option<CpuData> {
     };
 
     Some(CpuData { avg_cpu, peak_cpu })
+}
+
+fn parse_scope_message(args: &[OscType]) -> Option<ScopeData> {
+    if args.len() != SCOPE_SAMPLES {
+        return None;
+    }
+
+    let mut samples = [0.0f32; SCOPE_SAMPLES];
+    for (i, arg) in args.iter().enumerate() {
+        let value = match arg {
+            OscType::Float(f) => *f,
+            OscType::Double(d) => *d as f32,
+            OscType::Int(n) => *n as f32,
+            _ => return None,
+        };
+        samples[i] = value.clamp(-1.0, 1.0);
+    }
+
+    Some(ScopeData { samples })
 }

@@ -51,6 +51,10 @@ pub fn process_command<F>(
     notes: &mut crate::types::NotesStorage,
     load_rst: &mut bool,
     show_conditional_highlight: &mut bool,
+    scope_timespan_ms: &mut u32,
+    scope_color_mode: &mut u8,
+    scope_display_mode: &mut u8,
+    scope_unipolar: &mut bool,
     input: &str,
     mut output: F,
 ) -> Result<Vec<usize>>
@@ -702,6 +706,18 @@ where
         }
         "LIMIT" => {
             misc::handle_limit(&parts, limiter_enabled, metro_tx, *debug_level, output)?;
+        }
+        "SCOPE.TIME" => {
+            misc::handle_scope_time(&parts, scope_timespan_ms, metro_tx, *debug_level, output)?;
+        }
+        "SCOPE.CLR" => {
+            misc::handle_scope_clr(&parts, scope_color_mode, *debug_level, output);
+        }
+        "SCOPE.MODE" => {
+            misc::handle_scope_mode(&parts, scope_display_mode, *debug_level, output);
+        }
+        "SCOPE.UNI" => {
+            misc::handle_scope_uni(&parts, scope_unipolar, *debug_level, output);
         }
         "FLASH" => {
             if parts.len() < 2 {

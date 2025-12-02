@@ -57,6 +57,10 @@ impl App {
             &mut self.notes,
             &mut self.load_rst,
             &mut self.show_conditional_highlight,
+            &mut self.scope_timespan_ms,
+            &mut self.scope_color_mode,
+            &mut self.scope_display_mode,
+            &mut self.scope_unipolar,
             cmd_to_run,
             |msg| {
                 output_messages.push(msg);

@@ -654,17 +654,25 @@ Search functionality with isolated scopes for help and scripts.
 - [x] Show match count indicator (e.g., "2/5")
 - [x] User position preserved when exiting search mode
 
+### Phase 5.8: Scope Page [Medium] - COMPLETE (December 2025)
+Dedicated oscilloscope page with real-time waveform visualization.
+
+- [x] New Scope page showing 128 samples at 20Hz from SuperCollider
+- [x] Multiple character rendering modes (BRAILLE, BLOCK, LINE, DOT, QUADRANT)
+- [x] `SCOPE.TIME <5-500>` - Set waveform timespan in milliseconds
+- [x] `SCOPE.CLR <0|1|2>` - Set waveform color (success/error/foreground)
+- [x] `SCOPE.MODE <0-4>` - Set display mode
+- [x] `SCOPE.UNI <0|1>` - Toggle unipolar/bipolar display
+- [x] `Alt+S` navigation hotkey
+- [x] Info display on bottom border (TIME, SAMPLES)
+- [x] DC blocking via LeakDC in SuperCollider
+- [x] Created `src/ui/pages/scope.rs` and `src/ui/braille.rs`
+
 ### Help System [Low] - PARTIAL
 - [x] Add explicit `#` prefix marker to section headers
 - [x] Marker-based styling (replaces fragile heuristic)
 - [x] Paginated help with category pages (10 pages)
 - [x] `[` / `]` navigate help pages when help is active
-- [ ] Help search integrated with global search
-
-### Waveform Preview [Medium] - ON HOLD INDEFINITELY
-- [ ] Mini oscilloscope on Live page
-- [ ] Real-time output waveform display
-- [ ] Optional: Spectrum analyzer
 
 ---
 

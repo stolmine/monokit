@@ -416,6 +416,13 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                     metro_timing.trigger_count = 0;
                     eprintln!("TRIGGER COUNTER RESET");
                 }
+                MetroCommand::SendScopeRate(time_ms) => {
+                    let msg = OscMessage {
+                        addr: "/monokit/scope/rate".to_string(),
+                        args: vec![OscType::Float(time_ms)],
+                    };
+                    send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                }
                 MetroCommand::Shutdown => {
                     return; // Exit the metro thread
                 }

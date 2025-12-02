@@ -82,6 +82,10 @@ pub struct TestContext {
     pub notes: NotesStorage,
     pub load_rst: bool,
     pub show_conditional_highlight: bool,
+    pub scope_timespan_ms: u32,
+    pub scope_color_mode: u8,
+    pub scope_display_mode: u8,
+    pub scope_unipolar: bool,
     pub outputs: Vec<String>,
 }
 
@@ -111,6 +115,10 @@ impl Default for TestContext {
             notes: NotesStorage::default(),
             load_rst: false,
             show_conditional_highlight: true,
+            scope_timespan_ms: 30,
+            scope_color_mode: 0,
+            scope_display_mode: 0,
+            scope_unipolar: false,
             outputs: Vec::new(),
         }
     }
@@ -144,6 +152,10 @@ impl TestContext {
             &mut self.notes,
             &mut self.load_rst,
             &mut self.show_conditional_highlight,
+            &mut self.scope_timespan_ms,
+            &mut self.scope_color_mode,
+            &mut self.scope_display_mode,
+            &mut self.scope_unipolar,
             input,
             |msg| {
                 self.outputs.push(msg);

@@ -14,19 +14,15 @@ fn level_to_char(level: f32) -> char {
 fn render_meters(meter_data: &MeterData, theme: &crate::theme::Theme) -> Vec<Span<'static>> {
     let mut spans = Vec::new();
 
-    // Left channel
+    // Left channel meter character
     let l_color = if meter_data.clip_l { theme.error } else { theme.success };
-    spans.push(Span::styled("L ", Style::default().fg(theme.secondary)));
     spans.push(Span::styled(
         level_to_char(meter_data.peak_l).to_string(),
         Style::default().fg(l_color),
     ));
 
-    spans.push(Span::raw("  "));
-
-    // Right channel
+    // Right channel meter character (immediately adjacent)
     let r_color = if meter_data.clip_r { theme.error } else { theme.success };
-    spans.push(Span::styled("R ", Style::default().fg(theme.secondary)));
     spans.push(Span::styled(
         level_to_char(meter_data.peak_r).to_string(),
         Style::default().fg(r_color),
@@ -65,7 +61,7 @@ fn calculate_full_nav_width() -> usize {
     width
 }
 
-pub fn render_header(app: &crate::App) -> Paragraph<'static> {
+pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
     let mut spans = vec![Span::raw(" ")];
 
     // Navigation label rendering based on header_level
@@ -125,20 +121,44 @@ pub fn render_header(app: &crate::App) -> Paragraph<'static> {
         }
     }
 
+    // Build right-side content (TR + meters)
+    let mut right_spans: Vec<Span<'static>> = Vec::new();
+    let mut right_width = 0;
+
     // TR indicator: show at level 2 and above
     if app.header_level >= 2 {
         let tr_color = app.theme.activity_color(app.trigger_activity, false, app.activity_hold_ms);
-        spans.push(Span::raw("  "));
-        spans.push(Span::styled(
+        right_spans.push(Span::styled(
             "TR",
             Style::default().fg(tr_color),
         ));
+        right_spans.push(Span::raw(" "));
+        right_width += 3; // "TR" + space
     }
 
     // Meters: show at level 1 and above
     if app.header_level >= 1 {
-        spans.push(Span::raw("  "));
-        spans.extend(render_meters(&app.meter_data, &app.theme));
+        right_spans.extend(render_meters(&app.meter_data, &app.theme));
+        right_width += 2; // Two meter characters
+    }
+
+    // Add padding to push right content to the right side
+    if !right_spans.is_empty() {
+        // Available width inside borders (subtract 2 for left and right border)
+        let inner_width = width.saturating_sub(2) as usize;
+
+        // Current nav width includes the leading space
+        let nav_width = full_nav_width + 1;
+
+        // Calculate padding needed
+        // Leave 1 space after right content for visual separation from border
+        let padding = inner_width.saturating_sub(nav_width + right_width + 1);
+
+        if padding > 0 {
+            spans.push(Span::raw(" ".repeat(padding)));
+        }
+
+        spans.extend(right_spans);
     }
 
     // Build right-aligned border title parts

@@ -632,3 +632,153 @@ pub fn handle_load_rst<F>(
         }
     }
 }
+
+pub fn handle_scope_time<F>(
+    parts: &[&str],
+    scope_timespan_ms: &mut u32,
+    metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("SCOPE.TIME: {}MS", scope_timespan_ms));
+    } else {
+        let value: u32 = parts[1]
+            .parse()
+            .context("Failed to parse timespan value")?;
+
+        if value < 5 || value > 500 {
+            output("ERROR: SCOPE.TIME MUST BE 5-500 MS".to_string());
+            return Ok(());
+        }
+
+        *scope_timespan_ms = value;
+
+        metro_tx
+            .send(MetroCommand::SendScopeRate(value as f32))
+            .context("Failed to send scope rate")?;
+
+        if debug_level >= 2 {
+            output(format!("SCOPE.TIME: {}MS", value));
+        }
+    }
+    Ok(())
+}
+
+pub fn handle_scope_clr<F>(
+    parts: &[&str],
+    scope_color_mode: &mut u8,
+    debug_level: u8,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        let mode_name = match *scope_color_mode {
+            1 => "ERROR",
+            2 => "FOREGROUND",
+            _ => "SUCCESS",
+        };
+        output(format!("SCOPE.CLR: {} ({})", scope_color_mode, mode_name));
+    } else {
+        match parts[1] {
+            "0" => {
+                *scope_color_mode = 0;
+                if debug_level >= 2 {
+                    output("SCOPE.CLR: 0 (SUCCESS)".to_string());
+                }
+            }
+            "1" => {
+                *scope_color_mode = 1;
+                if debug_level >= 2 {
+                    output("SCOPE.CLR: 1 (ERROR)".to_string());
+                }
+            }
+            "2" => {
+                *scope_color_mode = 2;
+                if debug_level >= 2 {
+                    output("SCOPE.CLR: 2 (FOREGROUND)".to_string());
+                }
+            }
+            _ => {
+                output("ERROR: SCOPE.CLR TAKES 0 (SUCCESS), 1 (ERROR), OR 2 (FOREGROUND)".to_string());
+            }
+        }
+    }
+}
+
+pub fn handle_scope_mode<F>(
+    parts: &[&str],
+    scope_display_mode: &mut u8,
+    debug_level: u8,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        let mode_name = match *scope_display_mode {
+            1 => "BLOCK",
+            2 => "LINE",
+            3 => "DOT",
+            4 => "QUADRANT",
+            _ => "BRAILLE",
+        };
+        output(format!("SCOPE.MODE: {} ({})", scope_display_mode, mode_name));
+    } else {
+        match parts[1] {
+            "0" => {
+                *scope_display_mode = 0;
+                if debug_level >= 2 { output("SCOPE.MODE: 0 (BRAILLE)".to_string()); }
+            }
+            "1" => {
+                *scope_display_mode = 1;
+                if debug_level >= 2 { output("SCOPE.MODE: 1 (BLOCK)".to_string()); }
+            }
+            "2" => {
+                *scope_display_mode = 2;
+                if debug_level >= 2 { output("SCOPE.MODE: 2 (LINE)".to_string()); }
+            }
+            "3" => {
+                *scope_display_mode = 3;
+                if debug_level >= 2 { output("SCOPE.MODE: 3 (DOT)".to_string()); }
+            }
+            "4" => {
+                *scope_display_mode = 4;
+                if debug_level >= 2 { output("SCOPE.MODE: 4 (QUADRANT)".to_string()); }
+            }
+            _ => {
+                output("ERROR: SCOPE.MODE TAKES 0 (BRAILLE), 1 (BLOCK), 2 (LINE), 3 (DOT), OR 4 (QUADRANT)".to_string());
+            }
+        }
+    }
+}
+
+pub fn handle_scope_uni<F>(
+    parts: &[&str],
+    scope_unipolar: &mut bool,
+    debug_level: u8,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("SCOPE.UNI: {}", if *scope_unipolar { 1 } else { 0 }));
+    } else {
+        match parts[1] {
+            "0" => {
+                *scope_unipolar = false;
+                if debug_level >= 2 { output("SCOPE.UNI: 0 (BIPOLAR)".to_string()); }
+            }
+            "1" => {
+                *scope_unipolar = true;
+                if debug_level >= 2 { output("SCOPE.UNI: 1 (UNIPOLAR)".to_string()); }
+            }
+            _ => {
+                output("ERROR: SCOPE.UNI TAKES 0 (BIPOLAR) OR 1 (UNIPOLAR)".to_string());
+            }
+        }
+    }
+}

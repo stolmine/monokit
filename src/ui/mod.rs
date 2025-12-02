@@ -1,3 +1,4 @@
+pub mod braille;
 mod footer;
 mod header;
 pub mod pages;
@@ -17,7 +18,7 @@ use footer::render_footer;
 use header::render_header;
 use pages::{
     render_help_page, render_init_page, render_live_page, render_metro_page, render_notes_page,
-    render_pattern_page, render_script_page, render_variables_page, HELP_CATEGORIES,
+    render_pattern_page, render_scope_page, render_script_page, render_variables_page, HELP_CATEGORIES,
 };
 
 pub fn ui(f: &mut Frame, app: &crate::App) {
@@ -52,7 +53,7 @@ pub fn ui(f: &mut Frame, app: &crate::App) {
             .split(f.area())
     };
 
-    let header = render_header(app);
+    let header = render_header(app, chunks[0].width);
     f.render_widget(header, chunks[0]);
 
     let content = match app.current_page {
@@ -70,6 +71,7 @@ pub fn ui(f: &mut Frame, app: &crate::App) {
         Page::Pattern => render_pattern_page(app),
         Page::Variables => render_variables_page(app),
         Page::Notes => render_notes_page(app),
+        Page::Scope => render_scope_page(app, chunks[1]),
         Page::Help => render_help_page(app, chunks[1].height as usize),
     };
     f.render_widget(content, chunks[1]);
@@ -102,6 +104,9 @@ pub fn run_app<B: ratatui::backend::Backend>(
                 }
                 MetroEvent::SpectrumUpdate(spectrum_data) => {
                     app.spectrum_data = spectrum_data;
+                }
+                MetroEvent::ScopeUpdate(scope_data) => {
+                    app.scope_data = scope_data;
                 }
                 MetroEvent::CpuUpdate(cpu_data) => {
                     app.cpu_data = cpu_data;
@@ -254,6 +259,9 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     }
                     KeyCode::Char('n') if has_alt => {
                         app.go_to_page(Page::Notes);
+                    }
+                    KeyCode::Char('s') if has_alt => {
+                        app.go_to_page(Page::Scope);
                     }
                     KeyCode::Char('1') if has_alt => {
                         app.go_to_page(Page::Script1);

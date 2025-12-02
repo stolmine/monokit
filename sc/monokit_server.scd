@@ -487,6 +487,10 @@ s.waitForBoot {
             Limiter.ar([sigL, sigR], 1.0, 0.01)
         ]);
 
+        // DC blocking
+        sigL = LeakDC.ar(sigL);
+        sigR = LeakDC.ar(sigR);
+
         // Send peak/RMS at 20Hz to Rust meter thread
         SendPeakRMS.kr(sigL, 20, 3, '/monokit/meter', 1);
         SendPeakRMS.kr(sigR, 20, 3, '/monokit/meter', 2);
@@ -522,10 +526,33 @@ s.waitForBoot {
         SendReply.kr(Impulse.kr(20), '/monokit/spectrum', data);
     }).add;
 
+    SynthDef(\monokit_scope, {
+        arg scopeRate = 0.1;  // Controls timespan: rate = 128 / (ms * 44.1)
+        var sigL, sigR, mono;
+        var phase, trig;
+        var buf = LocalBuf(128);
+
+        sigL = InFeedback.ar(0);
+        sigR = InFeedback.ar(1);
+        mono = (sigL + sigR) * 0.5;
+
+        // Write continuously to circular buffer at reduced rate
+        // scopeRate 0.1 ≈ 30ms window, 0.05 ≈ 60ms, 0.2 ≈ 15ms
+        phase = Phasor.ar(0, scopeRate, 0, 128);
+        BufWr.ar(mono, buf, phase);
+
+        // Read and send at 20Hz
+        trig = Impulse.kr(20);
+        SendReply.kr(trig, '/monokit/scope',
+            BufRd.kr(1, buf, Array.series(128, 0, 1), 0, 1)
+        );
+    }).add;
+
     s.sync;
 
     ~voice = Synth(\monokit);
     ~spectrum = Synth(\monokit_spectrum, addAction: \addToTail);
+    ~scope = Synth(\monokit_scope, addAction: \addToTail);
 
     // Forward meter data from SendPeakRMS to Rust app on port 57121
     // SendPeakRMS msg format: [cmdName, nodeID, replyID, peak, rms]
@@ -546,6 +573,14 @@ s.waitForBoot {
         var data = msg.copyRange(3, 32);
         ~spectrumAddr.sendMsg('/monokit/spectrum', *data);
     }, '/monokit/spectrum');
+
+    // Forward oscilloscope waveform data to Rust app on port 57121
+    // SendReply msg format: [cmdName, nodeID, replyID, ...values]
+    // With 128 samples, values are at indices 3-130
+    OSCdef(\monokit_scope_fwd, { |msg|
+        var samples = msg.copyRange(3, 130);
+        ~meterAddr.sendMsg('/monokit/scope', *samples);
+    }, '/monokit/scope');
 
     // CPU status sender (2Hz)
     ~cpuRoutine = Routine({
@@ -573,6 +608,13 @@ s.waitForBoot {
         var paramValue = msg[2].asFloat;
         ~voice.set(paramName, paramValue);
     }, '/monokit/param');
+
+    // Scope timespan control: rate = 128 / (ms * 44.1)
+    OSCdef(\monokit_scope_rate, { |msg|
+        var timeMs = msg[1].asFloat.clip(5, 500);  // 5ms to 500ms
+        var rate = 128 / (timeMs * 44.1);
+        ~scope.set(\scopeRate, rate);
+    }, '/monokit/scope/rate');
 
     // Recording support
     ~recPath = nil;  // Custom path prefix (set by REC.PATH)

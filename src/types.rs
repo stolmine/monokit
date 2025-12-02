@@ -6,6 +6,7 @@ use std::time::Instant;
 
 pub const OSC_ADDR: &str = "127.0.0.1:57120";
 pub const SPECTRUM_BANDS: usize = 15;
+pub const SCOPE_SAMPLES: usize = 128;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum SyncMode {
@@ -241,6 +242,7 @@ pub enum MetroCommand {
     SendScDiagReport,      // Send /monokit/diag/report
     GetTriggerCount,       // Get the current trigger count
     ResetTriggerCount,     // Reset the trigger counter to 0
+    SendScopeRate(f32),
 }
 
 #[derive(Debug, Clone, Default)]
@@ -272,6 +274,19 @@ impl Default for SpectrumData {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct ScopeData {
+    pub samples: [f32; SCOPE_SAMPLES],
+}
+
+impl Default for ScopeData {
+    fn default() -> Self {
+        Self {
+            samples: [0.0; SCOPE_SAMPLES],
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct CpuData {
     pub avg_cpu: f32,
@@ -284,6 +299,7 @@ pub enum MetroEvent {
     ExecuteDelayed(String, usize),
     MeterUpdate(MeterData),
     SpectrumUpdate(SpectrumData),
+    ScopeUpdate(ScopeData),
     CpuUpdate(CpuData),
 }
 
@@ -320,10 +336,11 @@ pub enum Page {
     Pattern,
     Variables,
     Notes,
+    Scope,
     Help,
 }
 
-pub const NAVIGABLE_PAGES: [Page; 14] = [
+pub const NAVIGABLE_PAGES: [Page; 15] = [
     Page::Live,
     Page::Script1,
     Page::Script2,
@@ -338,6 +355,7 @@ pub const NAVIGABLE_PAGES: [Page; 14] = [
     Page::Pattern,
     Page::Variables,
     Page::Notes,
+    Page::Scope,
 ];
 
 impl Page {
@@ -357,6 +375,7 @@ impl Page {
             Page::Pattern => "P",
             Page::Variables => "V",
             Page::Notes => "N",
+            Page::Scope => "S",
             Page::Help => "HELP",
         }
     }

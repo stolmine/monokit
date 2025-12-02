@@ -1,7 +1,7 @@
 use crate::midi::{MidiConnection, MidiTimingStats};
 use crate::theme::Theme;
 use crate::types::{
-    Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, NotesStorage, Page, ParamActivity, PatternStorage, ScaleState, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
+    Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, NotesStorage, Page, ParamActivity, PatternStorage, ScaleState, ScopeData, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
 };
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -53,6 +53,11 @@ pub struct App {
     pub show_grid_view: bool,
     pub meter_data: MeterData,
     pub spectrum_data: SpectrumData,
+    pub scope_data: ScopeData,
+    pub scope_timespan_ms: u32,
+    pub scope_color_mode: u8,
+    pub scope_display_mode: u8,  // 0=braille, 1=block, 2=line, 3=dot
+    pub scope_unipolar: bool,  // Rectify waveform and use full height for 0-1 range
     pub cpu_data: CpuData,
     pub show_cpu: bool,
     pub header_level: u8,
@@ -113,6 +118,11 @@ impl App {
             show_grid_view: false,
             meter_data: MeterData::default(),
             spectrum_data: SpectrumData::default(),
+            scope_data: ScopeData::default(),
+            scope_timespan_ms: 30, // Default ~30ms window (matches SC phasor rate 0.1)
+            scope_color_mode: 0,
+            scope_display_mode: 0,
+            scope_unipolar: false,
             cpu_data: CpuData::default(),
             show_cpu: false,
             header_level: config.display.header_level,
@@ -248,6 +258,10 @@ impl App {
             &mut self.notes,
             &mut self.load_rst,
             &mut self.show_conditional_highlight,
+            &mut self.scope_timespan_ms,
+            &mut self.scope_color_mode,
+            &mut self.scope_display_mode,
+            &mut self.scope_unipolar,
             command,
             |msg| {
                 output_messages.push(msg);

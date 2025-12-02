@@ -475,14 +475,17 @@ pub fn handle_debug<F>(
         match value {
             "0" => {
                 *debug_level = 0;
+                let _ = config::save_debug_level(*debug_level);
                 output("DEBUG LEVEL: 0 (SILENT)".to_string());
             }
             "1" => {
                 *debug_level = 1;
+                let _ = config::save_debug_level(*debug_level);
                 output("DEBUG LEVEL: 1 (IMPORTANT)".to_string());
             }
             "2" => {
                 *debug_level = 2;
+                let _ = config::save_debug_level(*debug_level);
                 output("DEBUG LEVEL: 2 (VERBOSE)".to_string());
             }
             _ => {
@@ -506,10 +509,12 @@ pub fn handle_cpu<F>(
         match value {
             "0" => {
                 *show_cpu = false;
+                let _ = config::save_show_cpu(*show_cpu);
                 output("CPU DISPLAY: OFF".to_string());
             }
             "1" => {
                 *show_cpu = true;
+                let _ = config::save_show_cpu(*show_cpu);
                 output("CPU DISPLAY: ON".to_string());
             }
             _ => {
@@ -612,6 +617,7 @@ where
                 metro_tx
                     .send(MetroCommand::SendParam("limit".to_string(), OscType::Int(0)))
                     .context("Failed to send limiter param")?;
+                let _ = config::save_limiter_enabled(*limiter_enabled);
                 if debug_level >= 2 {
                     output("LIMITER: OFF".to_string());
                 }
@@ -621,6 +627,7 @@ where
                 metro_tx
                     .send(MetroCommand::SendParam("limit".to_string(), OscType::Int(1)))
                     .context("Failed to send limiter param")?;
+                let _ = config::save_limiter_enabled(*limiter_enabled);
                 if debug_level >= 2 {
                     output("LIMITER: ON".to_string());
                 }
@@ -665,6 +672,9 @@ pub fn handle_load_rst<F>(
 pub fn handle_scope_time<F>(
     parts: &[&str],
     scope_timespan_ms: &mut u32,
+    scope_color_mode: &u8,
+    scope_display_mode: &u8,
+    scope_unipolar: &bool,
     metro_tx: &Sender<MetroCommand>,
     variables: &Variables,
     patterns: &mut PatternStorage,
@@ -698,6 +708,8 @@ where
             .send(MetroCommand::SendScopeRate(value as f32))
             .context("Failed to send scope rate")?;
 
+        let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
+
         if debug_level >= 2 {
             output(format!("SCOPE.TIME: {}MS", value));
         }
@@ -707,7 +719,10 @@ where
 
 pub fn handle_scope_clr<F>(
     parts: &[&str],
+    scope_timespan_ms: &u32,
     scope_color_mode: &mut u8,
+    scope_display_mode: &u8,
+    scope_unipolar: &bool,
     variables: &Variables,
     patterns: &mut PatternStorage,
     counters: &mut Counters,
@@ -737,24 +752,28 @@ pub fn handle_scope_clr<F>(
         match value {
             0 => {
                 *scope_color_mode = 0;
+                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
                 if debug_level >= 2 {
                     output("SCOPE.CLR: 0 (SUCCESS)".to_string());
                 }
             }
             1 => {
                 *scope_color_mode = 1;
+                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
                 if debug_level >= 2 {
                     output("SCOPE.CLR: 1 (ERROR)".to_string());
                 }
             }
             2 => {
                 *scope_color_mode = 2;
+                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
                 if debug_level >= 2 {
                     output("SCOPE.CLR: 2 (FOREGROUND)".to_string());
                 }
             }
             3 => {
                 *scope_color_mode = 3;
+                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
                 if debug_level >= 2 {
                     output("SCOPE.CLR: 3 (ACCENT)".to_string());
                 }
@@ -768,7 +787,10 @@ pub fn handle_scope_clr<F>(
 
 pub fn handle_scope_mode<F>(
     parts: &[&str],
+    scope_timespan_ms: &u32,
+    scope_color_mode: &u8,
     scope_display_mode: &mut u8,
+    scope_unipolar: &bool,
     variables: &Variables,
     patterns: &mut PatternStorage,
     counters: &mut Counters,
@@ -799,22 +821,27 @@ pub fn handle_scope_mode<F>(
         match value {
             0 => {
                 *scope_display_mode = 0;
+                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
                 if debug_level >= 2 { output("SCOPE.MODE: 0 (BRAILLE)".to_string()); }
             }
             1 => {
                 *scope_display_mode = 1;
+                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
                 if debug_level >= 2 { output("SCOPE.MODE: 1 (BLOCK)".to_string()); }
             }
             2 => {
                 *scope_display_mode = 2;
+                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
                 if debug_level >= 2 { output("SCOPE.MODE: 2 (LINE)".to_string()); }
             }
             3 => {
                 *scope_display_mode = 3;
+                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
                 if debug_level >= 2 { output("SCOPE.MODE: 3 (DOT)".to_string()); }
             }
             4 => {
                 *scope_display_mode = 4;
+                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
                 if debug_level >= 2 { output("SCOPE.MODE: 4 (QUADRANT)".to_string()); }
             }
             _ => {
@@ -826,6 +853,9 @@ pub fn handle_scope_mode<F>(
 
 pub fn handle_scope_uni<F>(
     parts: &[&str],
+    scope_timespan_ms: &u32,
+    scope_color_mode: &u8,
+    scope_display_mode: &u8,
     scope_unipolar: &mut bool,
     variables: &Variables,
     patterns: &mut PatternStorage,
@@ -850,10 +880,12 @@ pub fn handle_scope_uni<F>(
         match value {
             0 => {
                 *scope_unipolar = false;
+                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
                 if debug_level >= 2 { output("SCOPE.UNI: 0 (BIPOLAR)".to_string()); }
             }
             1 => {
                 *scope_unipolar = true;
+                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
                 if debug_level >= 2 { output("SCOPE.UNI: 1 (UNIPOLAR)".to_string()); }
             }
             _ => {

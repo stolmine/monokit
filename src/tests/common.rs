@@ -81,6 +81,7 @@ pub struct TestContext {
     pub limiter_enabled: bool,
     pub notes: NotesStorage,
     pub load_rst: bool,
+    pub show_conditional_highlight: bool,
     pub outputs: Vec<String>,
 }
 
@@ -109,6 +110,7 @@ impl Default for TestContext {
             limiter_enabled: true,
             notes: NotesStorage::default(),
             load_rst: false,
+            show_conditional_highlight: true,
             outputs: Vec::new(),
         }
     }
@@ -141,6 +143,7 @@ impl TestContext {
             &mut self.limiter_enabled,
             &mut self.notes,
             &mut self.load_rst,
+            &mut self.show_conditional_highlight,
             input,
             |msg| {
                 self.outputs.push(msg);

@@ -445,3 +445,15 @@ pub struct SearchMatch {
     pub matched_text: String,
     pub context: String,
 }
+
+#[derive(Debug, Clone)]
+pub struct ConditionalSegment {
+    pub start: usize,
+    pub end: usize,
+    pub timestamp: Instant,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct LineSegmentActivity {
+    pub segments: Vec<ConditionalSegment>,
+}

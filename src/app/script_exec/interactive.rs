@@ -105,7 +105,8 @@ impl App {
                 self.param_activity.mark(cmd);
             }
 
-            self.process_sub_command(sub_cmd, 10, &mut metro_interval, None);
+            // Interactive mode (script_index=10) doesn't need highlighting
+            self.process_sub_command(sub_cmd, 10, &mut metro_interval, None, 0, 0);
         }
     }
 }

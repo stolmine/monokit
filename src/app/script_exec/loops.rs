@@ -14,7 +14,8 @@ impl App {
             if sub_cmd.is_empty() {
                 continue;
             }
-            self.process_sub_command(sub_cmd, script_index, metro_interval, depth);
+            // L loops are not highlighted, so offset doesn't matter for commands inside loops
+            self.process_sub_command(sub_cmd, script_index, metro_interval, depth, 0, 0);
         }
     }
 

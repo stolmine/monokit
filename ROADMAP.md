@@ -620,6 +620,28 @@ Real-time amplitude display via bidirectional OSC.
 - [x] Color scheme: secondary normally, error when >= 80%
 - [ ] Peak hold decay visualization (future)
 
+### Phase 5.7: Conditional Execution Highlighting [Medium] - COMPLETE (December 2025)
+Show visual feedback when conditionals and control flow commands execute their bodies.
+
+**PRE Commands (use `:` separator):**
+- [x] `IF <expr>:` - Highlight when condition is truthy (expr != 0)
+- [x] `ELIF <expr>:` - Highlight when previous IF/ELIF false AND condition truthy
+- [x] `ELSE:` - Highlight when all previous IF/ELIF were false
+- [x] `PROB <n>:` - Highlight when probability check passes (n% chance)
+- [x] `EV <n>:` - Highlight on every Nth tick (when executing)
+- [x] `SKIP <n>:` - Highlight when NOT skipping (inverse of EV)
+- [x] NOT L loops - they would flash constantly
+
+**Implementation Details:**
+- [x] Segment-based highlighting: only the PRE portion highlights, not the entire line
+- [x] Example: `$ 2; IF PN.NEXT 2: TR` - only `IF PN.NEXT 2:` highlights when condition passes
+- [x] Multiple PREs on same line highlight independently
+- [x] Nested PREs (like `EV 4: IF A: TR`) each highlight their own segment
+- [x] Reuses activity_color() decay system from Phase 5.1
+- [x] Color strategy: unselected lines use foreground->secondary decay, selected lines use success->highlight_fg decay
+- [x] `HL.COND <0|1>` command to toggle conditional highlighting on/off
+- [x] State tracked per script line in App struct
+
 ### Global Search [Medium] - COMPLETE (December 2025)
 Search functionality with isolated scopes for help and scripts.
 
@@ -678,8 +700,10 @@ Individual override commands to toggle visual elements independently.
 - [ ] `SPECTRUM <0|1>` - Toggle spectrum analyzer on/off
 - [ ] `ACTIVITY <0|1>` - Toggle script activity indicators on/off
 - [ ] `GRID <0|1>` - Toggle parameter activity grid on/off
+- [ ] `HL.SEQ <0|1>` - Toggle SEQ/TOG state highlighting on/off
+- [ ] `HL.COND <0|1>` - Toggle conditional execution highlighting on/off
 - [ ] Each toggle state persists to config.toml
-- [ ] Works independently of global UI modes
+- [ ] Works independently and on top of global UI modes
 
 ### Activity Grid Label/Icon Toggle [Low]
 Command to switch between text labels and unicode icons on parameter activity grid.
@@ -689,6 +713,17 @@ Command to switch between text labels and unicode icons on parameter activity gr
 - [ ] Label mode shows 2-4 char param names instead of icons
 - [ ] State persists to config.toml
 - [ ] Applies to Live page Tab view grid
+
+### Scene Name Header Display [Low]
+Toggleable display of current scene name in header, replacing "MONOKIT" title.
+
+- [ ] `TITLE <0|1>` - Toggle between "MONOKIT" (0) and scene name (1)
+- [ ] Display current scene name when loaded via LOAD command
+- [ ] Show "MONOKIT" or "[UNSAVED]" when no scene loaded
+- [ ] Truncate long scene names to fit header width
+- [ ] State persists to config.toml
+- [ ] Update display immediately on SAVE/LOAD
+- [ ] Optional "Matrix" style character replacement lerp animation on save/load/change
 
 ### BPM Header Display [Medium]
 Add BPM readout to header border alongside CPU and REC indicators.
@@ -765,8 +800,9 @@ Review codebase for silent failures, add proper error reporting.
 - [ ] File I/O error handling (SAVE/LOAD)
 - [ ] OSC communication error handling
 - [ ] MIDI connection error handling
-- [ ] Pattern operation bounds checking
+- [ ] Pattern operation bounds and args checking
 - [ ] Expression evaluation error messages
+- [ ] Uniformity between live and script error feedback
 
 ### Help Coverage Audit [Low]
 Update help system with all new commands and features.

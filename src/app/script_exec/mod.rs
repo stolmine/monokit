@@ -56,6 +56,7 @@ impl App {
             &mut self.limiter_enabled,
             &mut self.notes,
             &mut self.load_rst,
+            &mut self.show_conditional_highlight,
             cmd_to_run,
             |msg| {
                 output_messages.push(msg);
@@ -174,32 +175,43 @@ impl App {
         }
 
         for (line_num, line) in lines.iter().enumerate() {
-            let line = line.trim();
-            if line.is_empty() {
+            let original_line = line.trim();
+            if original_line.is_empty() {
                 continue;
             }
 
-            self.debug_log(format!("Processing line {}: '{}'", line_num + 1, line));
+            self.debug_log(format!("Processing line {}: '{}'", line_num + 1, original_line));
 
-            if line.to_uppercase().starts_with("L ") {
-                if self.execute_loop(line, script_index, &mut metro_interval, Some(depth)) {
+            if original_line.to_uppercase().starts_with("L ") {
+                if self.execute_loop(original_line, script_index, &mut metro_interval, Some(depth)) {
                     continue;
                 }
             }
 
-            let line_to_process = self.process_ev_skip_prefix(line, script_index, line_num);
+            let line_to_process = self.process_ev_skip_prefix(original_line, script_index, line_num);
             if line_to_process.is_empty() {
                 continue;
             }
 
+            let mut search_start = 0;
             for sub_cmd in line_to_process.split(';') {
-                let sub_cmd = sub_cmd.trim();
-                if sub_cmd.is_empty() {
+                let sub_cmd_trimmed = sub_cmd.trim();
+                if sub_cmd_trimmed.is_empty() {
+                    search_start += sub_cmd.len() + 1; // +1 for semicolon
                     continue;
                 }
 
-                self.debug_log(format!("  sub_cmd: '{}'", sub_cmd));
-                self.process_sub_command(sub_cmd, script_index, &mut metro_interval, Some(depth));
+                // Find where this sub_cmd starts in the original line
+                let sub_cmd_offset = if let Some(pos) = original_line[search_start..].find(sub_cmd_trimmed) {
+                    search_start + pos
+                } else {
+                    search_start
+                };
+
+                self.debug_log(format!("  sub_cmd: '{}'", sub_cmd_trimmed));
+                self.process_sub_command(sub_cmd_trimmed, script_index, &mut metro_interval, Some(depth), line_num, sub_cmd_offset);
+
+                search_start += sub_cmd.len() + 1; // +1 for semicolon
             }
         }
     }

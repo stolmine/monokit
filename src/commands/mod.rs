@@ -50,6 +50,7 @@ pub fn process_command<F>(
     limiter_enabled: &mut bool,
     notes: &mut crate::types::NotesStorage,
     load_rst: &mut bool,
+    show_conditional_highlight: &mut bool,
     input: &str,
     mut output: F,
 ) -> Result<Vec<usize>>
@@ -710,6 +711,25 @@ where
                 output(format!("FLASH HOLD: {}ms", val));
             } else {
                 output("ERROR: FLASH <MS> (0-1000)".to_string());
+            }
+        }
+        "HL.COND" => {
+            if parts.len() == 1 {
+                output(format!("COND HIGHLIGHT: {}", if *show_conditional_highlight { 1 } else { 0 }));
+            } else {
+                match parts[1] {
+                    "0" => {
+                        *show_conditional_highlight = false;
+                        output("COND HIGHLIGHT: OFF".to_string());
+                    }
+                    "1" => {
+                        *show_conditional_highlight = true;
+                        output("COND HIGHLIGHT: ON".to_string());
+                    }
+                    _ => {
+                        output("ERROR: HL.COND 0|1".to_string());
+                    }
+                }
             }
         }
         "N1" => {

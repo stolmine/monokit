@@ -152,6 +152,29 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 - `src/ui/pages/live.rs` - Vertical meters on grid view, spectrum analyzer rendering
 - `sc/monokit_server.scd` - Added SendPeakRMS and OSCdef forwarder, spectrum analysis
 
+### Conditional Execution Highlighting (December 2025)
+
+**Phase 5.7: Conditional Execution Highlighting - COMPLETE**
+- Visual feedback when PRE conditionals pass and execute their body commands
+- Segment-based highlighting: only the PRE portion highlights, not the entire line
+- Supported PREs: IF, ELIF, ELSE, PROB, EV, SKIP (NOT L loops - they would flash constantly)
+- Example: `$ 2; IF PN.NEXT 2: TR` - only `IF PN.NEXT 2:` highlights when condition passes
+- Multiple PREs on same line highlight independently
+- Nested PREs (like `EV 4: IF A: TR`) each highlight their own segment
+- Reuses activity_color() decay animation system from Phase 5.1
+- Color strategy: unselected lines use foreground->secondary decay, selected lines use success->highlight_fg decay
+- `HL.COND <0|1>` command to toggle conditional highlighting on/off
+- State tracked per script line in App struct
+
+**Files Changed:**
+- `src/app/mod.rs` - Added cond_highlight_enabled and conditional activity tracking
+- `src/app/script_exec/control_flow.rs` - Mark conditional segments on execution
+- `src/ui/state_highlight.rs` - Extended with conditional highlighting logic
+- `src/ui/pages/script.rs` - Render conditional highlights on script pages
+- `src/ui/pages/metro.rs` - Render conditional highlights on metro page
+- `src/ui/pages/init.rs` - Render conditional highlights on init page
+- `src/commands/system/misc.rs` - Added HL.COND command handler
+
 ### DRY Refactoring Complete (All Phases)
 
 **Total lines removed: ~5,942 lines**

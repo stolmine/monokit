@@ -1,7 +1,7 @@
 use crate::midi::{MidiConnection, MidiTimingStats};
 use crate::theme::Theme;
 use crate::types::{
-    Counters, CpuData, MeterData, MetroCommand, MetroState, NotesStorage, Page, ParamActivity, PatternStorage, ScaleState, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
+    Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, NotesStorage, Page, ParamActivity, PatternStorage, ScaleState, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
 };
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -64,6 +64,8 @@ pub struct App {
     pub search_cursor: usize,
     pub search_matches: Vec<SearchMatch>,
     pub search_current_match: usize,
+    pub conditional_segments: [[LineSegmentActivity; 8]; 10],
+    pub show_conditional_highlight: bool,
 }
 
 impl App {
@@ -122,6 +124,8 @@ impl App {
             search_cursor: 0,
             search_matches: Vec::new(),
             search_current_match: 0,
+            conditional_segments: Default::default(),
+            show_conditional_highlight: true,
         }
     }
 
@@ -243,6 +247,7 @@ impl App {
             &mut self.limiter_enabled,
             &mut self.notes,
             &mut self.load_rst,
+            &mut self.show_conditional_highlight,
             command,
             |msg| {
                 output_messages.push(msg);

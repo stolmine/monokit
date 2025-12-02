@@ -1,5 +1,5 @@
 use ratatui::{prelude::*, widgets::*};
-use crate::ui::state_highlight::highlight_stateful_operators;
+use crate::ui::state_highlight::{highlight_stateful_operators, apply_conditional_activity};
 use crate::ui::search_highlight::highlight_matches_in_line;
 use crate::types::SearchScope;
 
@@ -79,6 +79,15 @@ pub fn render_script_page(app: &crate::App, num: u8) -> Paragraph<'static> {
                         spans.push(Span::styled(segment_span.content, style));
                     }
                 }
+            } else if app.show_conditional_highlight {
+                let conditional_spans = apply_conditional_activity(
+                    highlighted,
+                    &app.conditional_segments[script_index][i],
+                    &app.theme,
+                    app.activity_hold_ms,
+                    is_selected,
+                );
+                spans.extend(conditional_spans);
             } else {
                 spans.extend(highlighted.to_spans(normal_color, highlight_color));
             }

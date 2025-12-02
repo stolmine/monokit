@@ -233,10 +233,21 @@ pub struct MeterData {
     pub clip_r: bool,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct SpectrumData {
     pub bands: [f32; SPECTRUM_BANDS],
     pub peak_hold: [f32; SPECTRUM_BANDS],
+    pub clip: [bool; SPECTRUM_BANDS],
+}
+
+impl Default for SpectrumData {
+    fn default() -> Self {
+        Self {
+            bands: [0.0; SPECTRUM_BANDS],
+            peak_hold: [0.0; SPECTRUM_BANDS],
+            clip: [false; SPECTRUM_BANDS],
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default)]

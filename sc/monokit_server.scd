@@ -495,7 +495,7 @@ s.waitForBoot {
     }).add;
 
     SynthDef(\monokit_spectrum, {
-        var sigL, sigR, mono, bands, freqs;
+        var sigL, sigR, mono, bands, freqs, clips, data;
 
         sigL = InFeedback.ar(0);
         sigR = InFeedback.ar(1);
@@ -511,7 +511,15 @@ s.waitForBoot {
             Amplitude.kr(filtered, 0.01, 0.1)
         });
 
-        SendReply.kr(Impulse.kr(20), '/monokit/spectrum', bands);
+        // Detect clipping per band (1 if level > 0.95, 0 otherwise)
+        clips = bands.collect({ |level|
+            (level > 0.95).asInteger
+        });
+
+        // Combine bands and clips into single array: [band0, band1, ..., band14, clip0, clip1, ..., clip14]
+        data = bands ++ clips;
+
+        SendReply.kr(Impulse.kr(20), '/monokit/spectrum', data);
     }).add;
 
     s.sync;
@@ -532,11 +540,11 @@ s.waitForBoot {
 
     // Forward spectrum data to Rust app on port 57121
     // SendReply msg format: [cmdName, nodeID, replyID, ...values]
-    // With 15 bands, values are at indices 3-17
+    // With 15 bands + 15 clips, values are at indices 3-32 (30 values total)
     ~spectrumAddr = NetAddr("127.0.0.1", 57121);
     OSCdef(\monokit_spectrum_fwd, { |msg|
-        var bands = msg.copyRange(3, 17);
-        ~spectrumAddr.sendMsg('/monokit/spectrum', *bands);
+        var data = msg.copyRange(3, 32);
+        ~spectrumAddr.sendMsg('/monokit/spectrum', *data);
     }, '/monokit/spectrum');
 
     // CPU status sender (2Hz)

@@ -129,12 +129,14 @@ fn render_grid_view(app: &crate::App, _width: usize, height: usize) -> Paragraph
             // sqrt gives a moderate curve between linear and full log
             let raw = app.spectrum_data.bands[i];
             let scaled = (raw * 3.0).sqrt().min(1.0);
+            let is_clipping = app.spectrum_data.clip[i];
 
             let (spec_char, spec_color) = get_spectrum_char_for_row(
                 scaled,
                 spec_row,
                 spectrum_rows,
                 &spectrum_chars,
+                is_clipping,
                 &app.theme
             );
 
@@ -184,6 +186,7 @@ fn get_spectrum_char_for_row(
     row: usize,
     total_rows: usize,
     chars: &[char; 9],
+    is_clipping: bool,
     theme: &crate::theme::Theme
 ) -> (char, ratatui::style::Color) {
     // Row 0 = top, row (total_rows-1) = bottom
@@ -192,14 +195,16 @@ fn get_spectrum_char_for_row(
     let row_bottom = (total_rows - 1 - row) as f32 * row_height;
     let row_top = row_bottom + row_height;
 
+    let color = if is_clipping { theme.error } else { theme.success };
+
     if level >= row_top {
         // Full block - level is above this row
-        (chars[8], theme.success)
+        (chars[8], color)
     } else if level > row_bottom {
         // Partial block - level is within this row
         let fill = (level - row_bottom) / row_height;
         let char_idx = ((fill * 8.0).round() as usize).clamp(1, 8);
-        (chars[char_idx], theme.success)
+        (chars[char_idx], color)
     } else {
         // Empty
         (' ', theme.secondary)

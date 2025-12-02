@@ -51,8 +51,8 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
                                 }
                             }
                         } else if msg.addr == "/monokit/spectrum" {
-                            if let Some(bands) = parse_spectrum_message(&msg.args) {
-                                apply_spectrum_update(&mut spectrum_data, bands);
+                            if let Some(update) = parse_spectrum_message(&msg.args) {
+                                apply_spectrum_update(&mut spectrum_data, update);
 
                                 if let Err(e) = event_tx.send(MetroEvent::SpectrumUpdate(spectrum_data.clone())) {
                                     eprintln!("Meter thread: Failed to send SpectrumUpdate: {}", e);
@@ -168,13 +168,36 @@ fn decay_peak_holds(meter_data: &mut MeterData) {
     }
 }
 
-fn parse_spectrum_message(args: &[OscType]) -> Option<[f32; SPECTRUM_BANDS]> {
-    if args.len() != SPECTRUM_BANDS {
+struct SpectrumUpdate {
+    bands: [f32; SPECTRUM_BANDS],
+    clips: [bool; SPECTRUM_BANDS],
+}
+
+fn parse_spectrum_message(args: &[OscType]) -> Option<SpectrumUpdate> {
+    // Backwards compatibility: accept just 15 bands (no clip data)
+    if args.len() == SPECTRUM_BANDS {
+        let mut bands = [0.0f32; SPECTRUM_BANDS];
+        for (i, arg) in args.iter().enumerate() {
+            let value = match arg {
+                OscType::Float(f) => *f,
+                OscType::Double(d) => *d as f32,
+                _ => return None,
+            };
+            bands[i] = value;
+        }
+        return Some(SpectrumUpdate {
+            bands,
+            clips: [false; SPECTRUM_BANDS],
+        });
+    }
+
+    // New format: 15 floats (bands) + 15 ints (clip flags)
+    if args.len() != SPECTRUM_BANDS * 2 {
         return None;
     }
 
     let mut bands = [0.0f32; SPECTRUM_BANDS];
-    for (i, arg) in args.iter().enumerate() {
+    for (i, arg) in args.iter().take(SPECTRUM_BANDS).enumerate() {
         let value = match arg {
             OscType::Float(f) => *f,
             OscType::Double(d) => *d as f32,
@@ -183,16 +206,26 @@ fn parse_spectrum_message(args: &[OscType]) -> Option<[f32; SPECTRUM_BANDS]> {
         bands[i] = value;
     }
 
-    Some(bands)
+    let mut clips = [false; SPECTRUM_BANDS];
+    for (i, arg) in args.iter().skip(SPECTRUM_BANDS).enumerate() {
+        let value = match arg {
+            OscType::Int(v) => *v != 0,
+            OscType::Float(f) => *f != 0.0,
+            _ => return None,
+        };
+        clips[i] = value;
+    }
+
+    Some(SpectrumUpdate { bands, clips })
 }
 
 // Decay rate for smooth falloff (higher = slower decay)
 const SPECTRUM_DECAY_RATE: f32 = 0.85;
 const SPECTRUM_PEAK_HOLD_DECAY_RATE: f32 = 0.92;
 
-fn apply_spectrum_update(spectrum_data: &mut SpectrumData, bands: [f32; SPECTRUM_BANDS]) {
+fn apply_spectrum_update(spectrum_data: &mut SpectrumData, update: SpectrumUpdate) {
     for i in 0..SPECTRUM_BANDS {
-        let new_value = bands[i].max(0.0).min(1.0);
+        let new_value = update.bands[i].max(0.0).min(1.0);
 
         // Smooth falloff: if new value is higher, jump to it; otherwise decay slowly
         if new_value > spectrum_data.bands[i] {
@@ -211,6 +244,9 @@ fn apply_spectrum_update(spectrum_data: &mut SpectrumData, bands: [f32; SPECTRUM
         } else {
             spectrum_data.peak_hold[i] *= SPECTRUM_PEAK_HOLD_DECAY_RATE;
         }
+
+        // Set clip flags from update
+        spectrum_data.clip[i] = update.clips[i];
     }
 }
 

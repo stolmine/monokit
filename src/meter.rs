@@ -99,6 +99,8 @@ fn parse_meter_message(args: &[OscType]) -> Option<MeterUpdate> {
     Some(MeterUpdate { channel, peak, rms })
 }
 
+const CLIP_RESET_THRESHOLD: f32 = 0.90;
+
 fn apply_meter_update(meter_data: &mut MeterData, update: MeterUpdate) {
     let peak = update.peak.max(0.0).min(1.0);
     let rms = update.rms.max(0.0).min(1.0);
@@ -112,8 +114,11 @@ fn apply_meter_update(meter_data: &mut MeterData, update: MeterUpdate) {
                 meter_data.peak_hold_l = peak;
             }
 
+            // Set clip on threshold, reset when level drops
             if peak >= CLIP_THRESHOLD {
                 meter_data.clip_l = true;
+            } else if peak < CLIP_RESET_THRESHOLD {
+                meter_data.clip_l = false;
             }
         }
         2 => {
@@ -126,6 +131,8 @@ fn apply_meter_update(meter_data: &mut MeterData, update: MeterUpdate) {
 
             if peak >= CLIP_THRESHOLD {
                 meter_data.clip_r = true;
+            } else if peak < CLIP_RESET_THRESHOLD {
+                meter_data.clip_r = false;
             }
         }
         _ => {}

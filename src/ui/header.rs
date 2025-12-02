@@ -14,17 +14,19 @@ fn level_to_char(level: f32) -> char {
 fn render_meters(meter_data: &MeterData, theme: &crate::theme::Theme) -> Vec<Span<'static>> {
     let mut spans = Vec::new();
 
-    // Left channel - single char meter
+    // Left channel
     let l_color = if meter_data.clip_l { theme.error } else { theme.success };
-    spans.push(Span::styled("L", Style::default().fg(theme.secondary)));
+    spans.push(Span::styled("L ", Style::default().fg(theme.secondary)));
     spans.push(Span::styled(
         level_to_char(meter_data.peak_l).to_string(),
         Style::default().fg(l_color),
     ));
 
-    // Right channel - single char meter
+    spans.push(Span::raw("  "));
+
+    // Right channel
     let r_color = if meter_data.clip_r { theme.error } else { theme.success };
-    spans.push(Span::styled("R", Style::default().fg(theme.secondary)));
+    spans.push(Span::styled("R ", Style::default().fg(theme.secondary)));
     spans.push(Span::styled(
         level_to_char(meter_data.peak_r).to_string(),
         Style::default().fg(r_color),

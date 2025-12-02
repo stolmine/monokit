@@ -126,6 +126,11 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 - Logarithmically-spaced frequency bands (25Hz to 16kHz)
 - Square root scaling for better visual response with smooth decay (0.85 rate)
 - SuperCollider uses BPF filters + Amplitude followers at 20Hz, OSC to port 57121
+- CPU percentage display in header border (right-aligned, toggleable with CPU 1/0 command)
+- CPU percentage text on grid view (bottom-right, aligned with spectrum bottom): right-aligned "   XX%"
+- CPU label on grid view (same row as SPECTRUM label, right side)
+- CPU color scheme: secondary normally, error when >= 80%
+- SuperCollider sends CPU data at 2Hz via /monokit/cpu OSC message
 
 **Files Created/Changed:**
 - `src/meter.rs` - New receiver thread for meter data
@@ -1048,6 +1053,9 @@ PS.TARG 0         // Process input signal
   - `DEBUG 0` - Silent mode (no REPL output except errors and PRINT commands)
   - `DEBUG 1` - Important messages (metro status, PRINT commands) - minimal verbosity
   - `DEBUG 2` - Verbose mode (all parameter changes) - default level
+- `CPU` - Show current CPU display state (0 or 1)
+- `CPU 0` - Hide CPU meter in header border
+- `CPU 1` - Show CPU meter in header border
 - `q`, `quit`, or `exit` - Quit application (typed in REPL)
 
 #### Themes

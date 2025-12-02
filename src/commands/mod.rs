@@ -45,6 +45,7 @@ pub fn process_command<F>(
     theme: &mut Theme,
     debug_level: &mut u8,
     activity_hold_ms: &mut f32,
+    show_cpu: &mut bool,
     input: &str,
     mut output: F,
 ) -> Result<Vec<usize>>
@@ -681,6 +682,9 @@ where
         }
         "DEBUG" => {
             misc::handle_debug(&parts, debug_level, output);
+        }
+        "CPU" => {
+            misc::handle_cpu(&parts, show_cpu, output);
         }
         "FLASH" => {
             if parts.len() < 2 {

@@ -96,17 +96,41 @@ pub fn render_header(app: &crate::App) -> Paragraph<'static> {
     spans.push(Span::raw("  "));
     spans.extend(render_meters(&app.meter_data, &app.theme));
 
-    // Build REC title for border (right-aligned) if recording
-    let rec_title = if app.recording {
+    // Build right-aligned border title parts
+    let mut title_parts = Vec::new();
+
+    // Add REC indicator if recording
+    if app.recording {
         let duration = app.recording_start
             .map(|start| start.elapsed().as_secs())
             .unwrap_or(0);
         let mins = duration / 60;
         let secs = duration % 60;
-        format!(" ● REC {:02}:{:02} ", mins, secs)
-    } else {
-        String::new()
-    };
+        title_parts.push(Span::styled(
+            format!("● REC {:02}:{:02}", mins, secs),
+            Style::default().fg(app.theme.error).add_modifier(Modifier::BOLD),
+        ));
+    }
+
+    // Add CPU indicator if enabled
+    if app.show_cpu {
+        // Add separator if REC is also showing
+        if !title_parts.is_empty() {
+            title_parts.push(Span::raw("  "));
+        }
+
+        let cpu_percent = app.cpu_data.avg_cpu as u32;
+        let cpu_color = if app.cpu_data.avg_cpu >= 80.0 {
+            app.theme.error
+        } else {
+            app.theme.secondary
+        };
+
+        title_parts.push(Span::styled(
+            format!("CPU {}%", cpu_percent),
+            Style::default().fg(cpu_color),
+        ));
+    }
 
     let mut block = Block::default()
         .borders(Borders::ALL)
@@ -114,13 +138,16 @@ pub fn render_header(app: &crate::App) -> Paragraph<'static> {
         .title(" MONOKIT ")
         .title_style(Style::default().fg(app.theme.foreground));
 
-    if app.recording {
+    // Add right-aligned title if there are parts to show
+    if !title_parts.is_empty() {
+        // Add leading space for visual separation
+        let mut title_spans = vec![Span::raw(" ")];
+        title_spans.extend(title_parts);
+        title_spans.push(Span::raw(" "));
+
         block = block.title(
-            ratatui::widgets::block::Title::from(Span::styled(
-                rec_title,
-                Style::default().fg(app.theme.error).add_modifier(Modifier::BOLD),
-            ))
-            .alignment(Alignment::Right)
+            ratatui::widgets::block::Title::from(Line::from(title_spans))
+                .alignment(Alignment::Right)
         );
     }
 

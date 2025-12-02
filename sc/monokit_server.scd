@@ -532,6 +532,14 @@ s.waitForBoot {
         ~spectrumAddr.sendMsg('/monokit/spectrum', *bands);
     }, '/monokit/spectrum');
 
+    // CPU status sender (2Hz)
+    ~cpuRoutine = Routine({
+        inf.do {
+            ~meterAddr.sendMsg('/monokit/cpu', s.avgCPU, s.peakCPU);
+            0.5.wait;
+        };
+    }).play;
+
     OSCdef(\monokit_trigger, { |msg|
         ~voice.set(\gate, 1);
         SystemClock.sched(0.01, {

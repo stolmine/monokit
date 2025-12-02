@@ -1,4 +1,4 @@
-use crate::types::{MeterData, MetroEvent, SpectrumData, SPECTRUM_BANDS};
+use crate::types::{CpuData, MeterData, MetroEvent, SpectrumData, SPECTRUM_BANDS};
 use rosc::{decoder, OscPacket, OscType};
 use socket2::{Domain, Protocol, Socket, Type};
 use std::net::{SocketAddr, UdpSocket};
@@ -56,6 +56,13 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
 
                                 if let Err(e) = event_tx.send(MetroEvent::SpectrumUpdate(spectrum_data.clone())) {
                                     eprintln!("Meter thread: Failed to send SpectrumUpdate: {}", e);
+                                    return;
+                                }
+                            }
+                        } else if msg.addr == "/monokit/cpu" {
+                            if let Some(cpu_data) = parse_cpu_message(&msg.args) {
+                                if let Err(e) = event_tx.send(MetroEvent::CpuUpdate(cpu_data)) {
+                                    eprintln!("Meter thread: Failed to send CpuUpdate: {}", e);
                                     return;
                                 }
                             }
@@ -205,4 +212,24 @@ fn apply_spectrum_update(spectrum_data: &mut SpectrumData, bands: [f32; SPECTRUM
             spectrum_data.peak_hold[i] *= SPECTRUM_PEAK_HOLD_DECAY_RATE;
         }
     }
+}
+
+fn parse_cpu_message(args: &[OscType]) -> Option<CpuData> {
+    if args.len() < 2 {
+        return None;
+    }
+
+    let avg_cpu = match &args[0] {
+        OscType::Float(f) => *f,
+        OscType::Double(d) => *d as f32,
+        _ => return None,
+    };
+
+    let peak_cpu = match &args[1] {
+        OscType::Float(f) => *f,
+        OscType::Double(d) => *d as f32,
+        _ => return None,
+    };
+
+    Some(CpuData { avg_cpu, peak_cpu })
 }

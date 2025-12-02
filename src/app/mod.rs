@@ -1,7 +1,7 @@
 use crate::midi::{MidiConnection, MidiTimingStats};
 use crate::theme::Theme;
 use crate::types::{
-    Counters, MeterData, MetroCommand, MetroState, Page, ParamActivity, PatternStorage, ScaleState, ScriptStorage, SpectrumData, SyncMode, Variables,
+    Counters, CpuData, MeterData, MetroCommand, MetroState, Page, ParamActivity, PatternStorage, ScaleState, ScriptStorage, SpectrumData, SyncMode, Variables,
 };
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -53,6 +53,8 @@ pub struct App {
     pub show_grid_view: bool,
     pub meter_data: MeterData,
     pub spectrum_data: SpectrumData,
+    pub cpu_data: CpuData,
+    pub show_cpu: bool,
 }
 
 impl App {
@@ -100,6 +102,8 @@ impl App {
             show_grid_view: false,
             meter_data: MeterData::default(),
             spectrum_data: SpectrumData::default(),
+            cpu_data: CpuData::default(),
+            show_cpu: false,
         }
     }
 
@@ -216,6 +220,7 @@ impl App {
             &mut self.theme,
             &mut self.debug_level,
             &mut self.activity_hold_ms,
+            &mut self.show_cpu,
             command,
             |msg| {
                 output_messages.push(msg);

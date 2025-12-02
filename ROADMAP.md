@@ -584,7 +584,12 @@ Real-time amplitude display via bidirectional OSC.
 - [x] Smooth decay (0.85 rate) for gentle falloff
 - [x] SuperCollider BPF filters + Amplitude followers at 20Hz
 - [x] OSC messages sent to port 57121 via /monokit/spectrum
-- [ ] CPU percentage from SC `/status` command (future)
+- [x] CPU percentage display in header border (right-aligned, toggleable with CPU 1/0 command)
+- [x] CPU percentage text on grid view (bottom-right, aligned with spectrum bottom)
+- [x] CPU label on grid view (same row as SPECTRUM label, right side)
+- [x] CPU command (CPU 0/1) to toggle header border display
+- [x] SuperCollider CPU sender routine at 2Hz via /monokit/cpu OSC message
+- [x] Color scheme: secondary normally, error when >= 80%
 - [ ] Peak hold decay visualization (future)
 
 ### Global Search [Medium] - NOT STARTED

@@ -51,6 +51,7 @@ impl App {
             &mut self.theme,
             &mut self.debug_level,
             &mut self.activity_hold_ms,
+            &mut self.show_cpu,
             cmd_to_run,
             |msg| {
                 output_messages.push(msg);

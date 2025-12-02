@@ -239,12 +239,19 @@ pub struct SpectrumData {
     pub peak_hold: [f32; SPECTRUM_BANDS],
 }
 
+#[derive(Debug, Clone, Default)]
+pub struct CpuData {
+    pub avg_cpu: f32,
+    pub peak_cpu: f32,
+}
+
 #[derive(Debug, Clone)]
 pub enum MetroEvent {
     ExecuteScript(usize),
     ExecuteDelayed(String, usize),
     MeterUpdate(MeterData),
     SpectrumUpdate(SpectrumData),
+    CpuUpdate(CpuData),
 }
 
 #[derive(Debug, Clone)]

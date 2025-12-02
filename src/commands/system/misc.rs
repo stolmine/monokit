@@ -486,3 +486,30 @@ pub fn handle_debug<F>(
         }
     }
 }
+
+pub fn handle_cpu<F>(
+    parts: &[&str],
+    show_cpu: &mut bool,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("CPU DISPLAY: {}", if *show_cpu { 1 } else { 0 }));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *show_cpu = false;
+                output("CPU DISPLAY: OFF".to_string());
+            }
+            "1" => {
+                *show_cpu = true;
+                output("CPU DISPLAY: ON".to_string());
+            }
+            _ => {
+                output("ERROR: CPU TAKES 0 (OFF) OR 1 (ON)".to_string());
+            }
+        }
+    }
+}

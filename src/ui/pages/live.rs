@@ -109,9 +109,17 @@ fn render_grid_view(app: &crate::App, _width: usize, height: usize) -> Paragraph
 
     // Multi-row spectrum (2 rows tall)
     // 2 rows × 8 sub-levels per char = 16 levels of resolution
-    // Grid+meters width = 36 chars, spectrum = 30 chars, so pad 6 chars on right to align left edges
+    // Grid+meters width = 36 chars, spectrum = 30 chars, CPU = 2 chars, spacing = 1 char
     let spectrum_rows = 2;
     let spectrum_chars: [char; 9] = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+
+    // CPU percentage and color
+    let cpu_percent = app.cpu_data.avg_cpu as u32;
+    let cpu_color = if app.cpu_data.avg_cpu >= 80.0 {
+        app.theme.error
+    } else {
+        app.theme.secondary
+    };
 
     for spec_row in 0..spectrum_rows {
         let mut spectrum_spans = vec![];
@@ -137,16 +145,26 @@ fn render_grid_view(app: &crate::App, _width: usize, height: usize) -> Paragraph
             ));
         }
 
-        // Pad to match grid+meters width (36 chars) so left edges align when centered
-        spectrum_spans.push(Span::raw("      "));  // 6 spaces: 36 - 30 = 6
+        // Right column: CPU percentage on bottom row only (aligned with spectrum bottom)
+        // Layout: spectrum (30) + gap (1) + right-aligned percentage (5) = 36
+        if spec_row == spectrum_rows - 1 {
+            // Bottom row: show CPU percentage, right-aligned
+            let cpu_text = format!("{:>5}%", cpu_percent);
+            spectrum_spans.push(Span::styled(cpu_text, Style::default().fg(cpu_color)));
+        } else {
+            // Top row: empty space
+            spectrum_spans.push(Span::raw("      "));  // 6 spaces
+        }
 
         lines.push(Line::from(spectrum_spans).alignment(Alignment::Center));
     }
 
-    // Spectrum label - pad to match total width (36 chars)
+    // Label row: SPECTRUM on left, CPU on right (same row)
     let mut spec_label = vec![];
     spec_label.push(Span::styled("SPECTRUM", Style::default().fg(app.theme.label)));
-    spec_label.push(Span::raw("                            "));  // 28 spaces: 36 - 8 = 28
+    // Pad between labels: 36 - 8 (SPECTRUM) - 3 (CPU) = 25 spaces
+    spec_label.push(Span::raw("                         "));  // 25 spaces
+    spec_label.push(Span::styled("CPU", Style::default().fg(app.theme.label)));
     lines.push(Line::from(spec_label).alignment(Alignment::Center));
 
     Paragraph::new(lines)
@@ -159,6 +177,7 @@ fn render_grid_view(app: &crate::App, _width: usize, height: usize) -> Paragraph
                 .title_style(Style::default().fg(app.theme.foreground))
         )
 }
+
 
 fn get_spectrum_char_for_row(
     level: f32,

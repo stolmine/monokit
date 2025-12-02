@@ -103,6 +103,9 @@ pub fn run_app<B: ratatui::backend::Backend>(
                 MetroEvent::SpectrumUpdate(spectrum_data) => {
                     app.spectrum_data = spectrum_data;
                 }
+                MetroEvent::CpuUpdate(cpu_data) => {
+                    app.cpu_data = cpu_data;
+                }
             }
         }
 

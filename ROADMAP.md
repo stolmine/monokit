@@ -784,6 +784,15 @@ Provide terminal window sizing defaults/recommendations.
 ### Command Arg Scaling Audit [Medium]
 Review parameter ranges for consistency and user-friendliness.
 
+**⚠️ PREREQUISITE: Complete "File Size and DRY Audit" first!**
+Changing param ranges will touch every synth handler - same sprawl risk as REPL audit.
+
+**DRY Approach:**
+- [ ] Define param metadata (name, range, scale) in single source
+- [ ] Macro generates: validation, OSC scaling, help text
+- [ ] Range change = 1-line edit vs 100+ file changes
+
+**Implementation:**
 - [ ] Review all 0-16383 parameters (14-bit)
 - [ ] Consider 0-100 scaling for mix/level params
 - [ ] Evaluate 0-127 (MIDI-style) for appropriate params
@@ -831,16 +840,22 @@ Add runtime command to choose SuperCollider audio output device.
 ### Global Error Handling Audit [Medium]
 Review codebase for silent failures, add proper error reporting.
 
+**DRY Approach:**
+- [ ] Create `report_error(ctx, msg)` helper that respects OutputCategory::Error
+- [ ] Macro for common error patterns: `try_or_error!(expr, "MSG")`
+- [ ] Centralized error message constants (avoid string duplication)
+
+**Implementation:**
 - [ ] Audit all `.unwrap()` calls
 - [ ] Replace panics with proper error messages
-- [ ] Add error reporting to REPL
+- [ ] Add error reporting to REPL (partially done via MetroEvent::Error)
 - [ ] File I/O error handling (SAVE/LOAD)
 - [ ] OSC communication error handling
 - [ ] MIDI connection error handling
 - [ ] Pattern operation bounds and args checking
 - [ ] Expression evaluation error messages
 - [ ] Uniformity between live and script error feedback
-- [ ] Illegality enforcement and validation - user should not be able to enter unvalidated expressions
+- [ ] Illegality enforcement and validation
 
 ### Help Coverage Audit [Low] - COMPLETE (December 2025)
 Update help system with all new commands and features.

@@ -129,9 +129,10 @@ pub fn render_script_page(app: &crate::App, num: u8) -> Paragraph<'static> {
         .title_style(Style::default().fg(app.theme.foreground));
 
     if let Some(error_msg) = &app.script_error {
+        let display_msg = format!(" ERROR: {} ", error_msg.to_uppercase());
         block = block.title(
             Title::from(Span::styled(
-                format!(" {} ", error_msg),
+                display_msg,
                 Style::default().fg(app.theme.error)
             ))
             .alignment(Alignment::Left)

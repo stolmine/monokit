@@ -23,7 +23,7 @@ where
             .parse()
             .context("Failed to parse interval as milliseconds")?;
         if value == 0 {
-            output("ERROR: INTERVAL MUST BE GREATER THAN 0".to_string());
+            output("INTERVAL MUST BE GREATER THAN 0".to_string());
             return Ok(());
         }
         metro_tx
@@ -49,14 +49,14 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: M.BPM REQUIRES A BPM VALUE".to_string());
+        output("M.BPM REQUIRES A BPM VALUE".to_string());
         return Ok(());
     }
     let bpm: f32 = parts[1]
         .parse()
         .context("Failed to parse BPM value as number")?;
     if bpm <= 0.0 {
-        output("ERROR: BPM MUST BE GREATER THAN 0".to_string());
+        output("BPM MUST BE GREATER THAN 0".to_string());
         return Ok(());
     }
     let interval_ms = (15000.0 / bpm) as u64; // 16th note interval (60000 / 4)
@@ -81,14 +81,14 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: M.ACT REQUIRES 0 OR 1".to_string());
+        output("M.ACT REQUIRES 0 OR 1".to_string());
         return Ok(());
     }
     let value: i32 = parts[1]
         .parse()
         .context("Failed to parse M.ACT value")?;
     if !(0..=1).contains(&value) {
-        output("ERROR: M.ACT VALUE MUST BE 0 OR 1".to_string());
+        output("M.ACT VALUE MUST BE 0 OR 1".to_string());
         return Ok(());
     }
     metro_tx
@@ -118,7 +118,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: M.SCRIPT REQUIRES A SCRIPT NUMBER (1-8 OR M)".to_string());
+        output("M.SCRIPT REQUIRES A SCRIPT NUMBER (1-8 OR M)".to_string());
         return Ok(());
     }
     let value: usize = if parts[1].to_uppercase() == "M" {
@@ -128,7 +128,7 @@ where
             .parse()
             .context("Failed to parse script number")?;
         if !(1..=8).contains(&parsed_value) {
-            output("ERROR: M.SCRIPT VALUE MUST BE 1-8 OR M".to_string());
+            output("M.SCRIPT VALUE MUST BE 1-8 OR M".to_string());
             return Ok(());
         }
         parsed_value
@@ -171,7 +171,7 @@ where
         0 => SyncMode::Internal,
         1 => SyncMode::MidiClock,
         _ => {
-            output("ERROR: M.SYNC MUST BE 0 OR 1".to_string());
+            output("M.SYNC MUST BE 0 OR 1".to_string());
             return Ok(());
         }
     };

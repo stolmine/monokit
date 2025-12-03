@@ -72,6 +72,25 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
                                     return;
                                 }
                             }
+                        } else if msg.addr == "/monokit/ready" {
+                            let _ = event_tx.send(MetroEvent::ScReady);
+                        } else if msg.addr == "/monokit/audio/out/list" {
+                            if let Some(args) = &msg.args.get(0..) {
+                                let mut devices = Vec::new();
+                                let mut current = String::from("default");
+
+                                for (i, arg) in args.iter().enumerate() {
+                                    if let rosc::OscType::String(s) = arg {
+                                        if i == 0 {
+                                            current = s.clone();
+                                        } else {
+                                            devices.push(s.clone());
+                                        }
+                                    }
+                                }
+
+                                let _ = event_tx.send(MetroEvent::AudioDeviceList { current, devices });
+                            }
                         }
                     }
                 }

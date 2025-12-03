@@ -318,6 +318,8 @@ pub enum MetroEvent {
     SpectrumUpdate(SpectrumData),
     ScopeUpdate(ScopeData),
     CpuUpdate(CpuData),
+    ScReady,
+    AudioDeviceList { current: String, devices: Vec<String> },
     Error(String),
 }
 

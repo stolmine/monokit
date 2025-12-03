@@ -6,6 +6,7 @@ use ratatui::style::{Color, Style};
 use crate::eval::seq::{extract_quoted_string, parse_seq_pattern};
 use crate::types::LineSegmentActivity;
 use crate::theme::Theme;
+use crate::utils::split_respecting_quotes;
 
 #[derive(Debug, Clone)]
 pub struct HighlightedSegment {
@@ -40,9 +41,67 @@ pub fn highlight_stateful_operators(
     toggle_state: &HashMap<String, usize>,
 ) -> HighlightedLine {
     let mut segments = Vec::new();
+    let mut line_pos = 0;
+
+    let commands = split_respecting_quotes(line);
+
+    for (cmd_idx, cmd) in commands.iter().enumerate() {
+        let cmd_start = if let Some(pos) = line[line_pos..].find(cmd.as_str()) {
+            line_pos + pos
+        } else {
+            line_pos
+        };
+
+        let cmd_segments = highlight_single_command(cmd, cmd_start, script_index, toggle_state);
+        segments.extend(cmd_segments.segments);
+
+        line_pos = cmd_start + cmd.len();
+
+        if cmd_idx < commands.len() - 1 {
+            if let Some(semi_pos) = line[line_pos..].find(';') {
+                let semi_abs = line_pos + semi_pos;
+                if semi_abs > line_pos {
+                    segments.push(HighlightedSegment {
+                        text: line[line_pos..semi_abs].to_string(),
+                        is_highlighted: false,
+                    });
+                }
+                segments.push(HighlightedSegment {
+                    text: ";".to_string(),
+                    is_highlighted: false,
+                });
+                line_pos = semi_abs + 1;
+            }
+        }
+    }
+
+    if line_pos < line.len() {
+        segments.push(HighlightedSegment {
+            text: line[line_pos..].to_string(),
+            is_highlighted: false,
+        });
+    }
+
+    if segments.is_empty() {
+        segments.push(HighlightedSegment {
+            text: line.to_string(),
+            is_highlighted: false,
+        });
+    }
+
+    HighlightedLine { segments }
+}
+
+fn highlight_single_command(
+    cmd: &str,
+    cmd_start_in_line: usize,
+    script_index: usize,
+    toggle_state: &HashMap<String, usize>,
+) -> HighlightedLine {
+    let mut segments = Vec::new();
     let mut current_pos = 0;
 
-    let parts: Vec<&str> = line.split_whitespace().collect();
+    let parts: Vec<&str> = cmd.split_whitespace().collect();
 
     let mut i = 0;
     while i < parts.len() {
@@ -52,11 +111,11 @@ pub fn highlight_stateful_operators(
         let (is_seq, seq_pattern_direct) = if part == "SEQ" {
             (true, None)
         } else if part.starts_with("SEQ\"") || part.starts_with("SEQ'") {
-            // Handle SEQ"..." without space by extracting from the original line
-            // Find SEQ in the line starting from current_pos
-            let seq_pos = line[current_pos..].find("SEQ").map(|p| current_pos + p);
+            // Handle SEQ"..." without space by extracting from the command
+            // Find SEQ in the command starting from current_pos
+            let seq_pos = cmd[current_pos..].find("SEQ").map(|p| current_pos + p);
             if let Some(seq_start) = seq_pos {
-                let after_seq = &line[seq_start + 3..];
+                let after_seq = &cmd[seq_start + 3..];
                 let quote_char = if after_seq.starts_with('"') { '"' } else if after_seq.starts_with('\'') { '\'' } else { ' ' };
                 if quote_char != ' ' {
                     // Find closing quote
@@ -65,8 +124,8 @@ pub fn highlight_stateful_operators(
                         // Calculate how many parts to consume
                         // SEQ is at seq_start, pattern starts at seq_start + 3 + 1, ends at seq_start + 3 + 1 + close_pos + 1
                         let expr_end = seq_start + 3 + 1 + close_pos + 1 + 1;
-                        let expr_end = expr_end.min(line.len());
-                        let full_expr = &line[seq_start..expr_end];
+                        let expr_end = expr_end.min(cmd.len());
+                        let full_expr = &cmd[seq_start..expr_end];
                         let parts_in_expr: Vec<&str> = full_expr.split_whitespace().collect();
                         let consumed = if parts_in_expr.len() > 1 { parts_in_expr.len() - 1 } else { 0 };
                         (true, Some((pattern, consumed)))
@@ -86,11 +145,11 @@ pub fn highlight_stateful_operators(
         if is_seq {
             let pattern_result = seq_pattern_direct.or_else(|| extract_quoted_string(&parts, i + 1));
             if let Some((pattern, consumed)) = pattern_result {
-                let seq_start = line[current_pos..].find("SEQ").map(|p| current_pos + p);
+                let seq_start = cmd[current_pos..].find("SEQ").map(|p| current_pos + p);
                 if let Some(start_pos) = seq_start {
                     if start_pos > current_pos {
                         segments.push(HighlightedSegment {
-                            text: line[current_pos..start_pos].to_string(),
+                            text: cmd[current_pos..start_pos].to_string(),
                             is_highlighted: false,
                         });
                     }
@@ -99,30 +158,30 @@ pub fn highlight_stateful_operators(
                     let current_index = toggle_state.get(&key).copied().unwrap_or(0);
 
                     if let Some(highlighted_segments) = highlight_seq_pattern(
-                        &line[start_pos..],
+                        &cmd[start_pos..],
                         &pattern,
                         current_index,
                         script_index,
                         toggle_state,
                     ) {
                         segments.extend(highlighted_segments);
-                        let seq_end = line[start_pos..]
+                        let seq_end = cmd[start_pos..]
                             .find(&format!("\"{}\"", pattern))
-                            .or_else(|| line[start_pos..].find(&format!("'{}'", pattern)))
+                            .or_else(|| cmd[start_pos..].find(&format!("'{}'", pattern)))
                             .map(|p| {
                                 start_pos + p + pattern.len() + 2
                             })
                             .unwrap_or(start_pos + 3);
                         current_pos = seq_end;
                     } else {
-                        let full_expr_end = line[start_pos..]
+                        let full_expr_end = cmd[start_pos..]
                             .find(&format!("\"{}\"", pattern))
-                            .or_else(|| line[start_pos..].find(&format!("'{}'", pattern)))
+                            .or_else(|| cmd[start_pos..].find(&format!("'{}'", pattern)))
                             .map(|p| start_pos + p + pattern.len() + 2)
-                            .unwrap_or(line.len());
+                            .unwrap_or(cmd.len());
 
                         segments.push(HighlightedSegment {
-                            text: line[start_pos..full_expr_end].to_string(),
+                            text: cmd[start_pos..full_expr_end].to_string(),
                             is_highlighted: false,
                         });
                         current_pos = full_expr_end;
@@ -137,11 +196,11 @@ pub fn highlight_stateful_operators(
                 let next_idx = i + 3;
                 let key = format!("{}_{}", script_index, parts[i..next_idx].join("_"));
 
-                let tog_start = line[current_pos..].find("TOG").map(|p| current_pos + p);
+                let tog_start = cmd[current_pos..].find("TOG").map(|p| current_pos + p);
                 if let Some(start_pos) = tog_start {
                     if start_pos > current_pos {
                         segments.push(HighlightedSegment {
-                            text: line[current_pos..start_pos].to_string(),
+                            text: cmd[current_pos..start_pos].to_string(),
                             is_highlighted: false,
                         });
                     }
@@ -150,17 +209,17 @@ pub fn highlight_stateful_operators(
                     let active_value_index = current_state % 2;
 
                     if let Some(highlighted_segments) = highlight_tog_expression(
-                        &line[start_pos..],
+                        &cmd[start_pos..],
                         &parts[i+1],
                         &parts[i+2],
                         active_value_index,
                     ) {
                         segments.extend(highlighted_segments);
 
-                        let val2_end = line[start_pos..]
+                        let val2_end = cmd[start_pos..]
                             .find(parts[i+2])
                             .map(|p| start_pos + p + parts[i+2].len())
-                            .unwrap_or(line.len());
+                            .unwrap_or(cmd.len());
                         current_pos = val2_end;
                     }
 
@@ -173,16 +232,16 @@ pub fn highlight_stateful_operators(
         i += 1;
     }
 
-    if current_pos < line.len() {
+    if current_pos < cmd.len() {
         segments.push(HighlightedSegment {
-            text: line[current_pos..].to_string(),
+            text: cmd[current_pos..].to_string(),
             is_highlighted: false,
         });
     }
 
     if segments.is_empty() {
         segments.push(HighlightedSegment {
-            text: line.to_string(),
+            text: cmd.to_string(),
             is_highlighted: false,
         });
     }
@@ -661,6 +720,28 @@ mod tests {
         assert!(!result.segments.is_empty());
         let has_any_highlighted = result.segments.iter().any(|s| s.is_highlighted);
         assert!(!has_any_highlighted, "Unterminated quote should not highlight anything");
+    }
+
+    #[test]
+    fn test_highlight_seq_with_semicolon_separated_commands() {
+        let mut state = HashMap::new();
+        state.insert("seq_0_5000*15 1250".to_string(), 0);
+
+        let line = "PF SEQ \"5000*15 1250\"; AD 5; PA 0";
+        let result = highlight_stateful_operators(line, 0, &state);
+
+        let highlighted_tokens: Vec<_> = result.segments
+            .iter()
+            .filter(|s| s.is_highlighted)
+            .map(|s| s.text.as_str())
+            .collect();
+
+        assert_eq!(highlighted_tokens, vec!["5000*15"]);
+
+        let full_text: String = result.segments.iter().map(|s| s.text.as_str()).collect();
+        assert!(full_text.contains(";"), "Should preserve semicolons in output");
+        assert!(full_text.contains("AD 5"), "Should preserve commands after semicolon");
+        assert!(full_text.contains("PA 0"), "Should preserve all commands");
     }
 }
 

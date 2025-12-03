@@ -7,10 +7,12 @@ mod metro;
 mod midi;
 mod osc_utils;
 mod preset;
+mod sc_process;
 mod scene;
 mod theme;
 mod types;
 mod ui;
+mod utils;
 
 pub use anyhow;
 use anyhow::Result;
@@ -28,6 +30,7 @@ use std::time::Duration;
 use crate::app::App;
 use crate::meter::meter_thread;
 use crate::metro::metro_thread;
+use crate::sc_process::ScProcess;
 use crate::types::{MetroCommand, MetroEvent, MetroState};
 use crate::ui::run_app;
 
@@ -109,6 +112,27 @@ fn run_batch_mode(scene_name: &str, wait_ms: Option<&str>) -> Result<()> {
 
 /// Normal TUI mode
 fn run_tui_mode() -> Result<()> {
+    // Start SuperCollider
+    println!("Starting SuperCollider...");
+    let mut sc_process = match ScProcess::new() {
+        Ok(sc) => sc,
+        Err(e) => {
+            eprintln!("ERROR: {}", e);
+            eprintln!("Please install SuperCollider from https://supercollider.github.io");
+            std::process::exit(1);
+        }
+    };
+
+    // Get saved audio device from config (if any)
+    let audio_device: Option<String> = None; // TODO: Load from config later
+
+    if let Err(e) = sc_process.start(audio_device.as_deref()) {
+        eprintln!("ERROR: Failed to start SuperCollider: {}", e);
+        std::process::exit(1);
+    }
+
+    println!("Waiting for SuperCollider to boot...");
+
     let metro_state = Arc::new(Mutex::new(MetroState::default()));
     let (metro_tx, metro_rx) = mpsc::channel();
     let (metro_event_tx, metro_event_rx) = mpsc::channel::<MetroEvent>();
@@ -123,6 +147,30 @@ fn run_tui_mode() -> Result<()> {
     thread::spawn(move || {
         meter_thread(meter_event_tx);
     });
+
+    // Wait for SC ready (blocking with timeout)
+    println!("Waiting for SuperCollider server...");
+    let start = std::time::Instant::now();
+    let timeout = std::time::Duration::from_secs(20);
+    let mut sc_ready = false;
+
+    while start.elapsed() < timeout {
+        match metro_event_rx.recv_timeout(std::time::Duration::from_millis(100)) {
+            Ok(MetroEvent::ScReady) => {
+                sc_ready = true;
+                println!("SuperCollider ready!");
+                break;
+            }
+            Ok(_) => continue, // Other events, keep waiting
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => continue,
+            Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => break,
+        }
+    }
+
+    if !sc_ready {
+        eprintln!("ERROR: SuperCollider failed to start within 20 seconds");
+        std::process::exit(1);
+    }
 
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -140,11 +188,20 @@ fn run_tui_mode() -> Result<()> {
 
     app.execute_script(9);
 
-    let res = run_app(&mut terminal, &mut app, metro_event_rx);
+    // Wrap sc_process in Arc<Mutex> to share with run_app
+    let sc_process_shared = Arc::new(Mutex::new(sc_process));
+    let sc_process_clone = sc_process_shared.clone();
+
+    let res = run_app(&mut terminal, &mut app, metro_event_rx, sc_process_clone);
 
     // Graceful shutdown: send Shutdown command and wait for metro thread
     let _ = app.metro_tx.send(MetroCommand::Shutdown);
     let _ = metro_handle.join();
+
+    // Shutdown SuperCollider
+    if let Ok(mut sc) = sc_process_shared.lock() {
+        sc.stop();
+    }
 
     disable_raw_mode()?;
     execute!(

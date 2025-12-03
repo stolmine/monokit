@@ -1,4 +1,14 @@
 (
+// Read audio device from environment variable
+var outDev = "MONOKIT_AUDIO_OUT".getenv;
+
+if(outDev.notNil && (outDev.size > 0), {
+    s.options.outDevice = outDev;
+    ("MONOKIT: Using output device: " ++ outDev).postln;
+}, {
+    "MONOKIT: Using default output device".postln;
+});
+
 // Disable input to avoid sample rate mismatch issues
 s.options.numInputBusChannels = 0;
 
@@ -558,6 +568,10 @@ s.waitForBoot {
     // SendPeakRMS msg format: [cmdName, nodeID, replyID, peak, rms]
     // replyID is our channel (1=L, 2=R)
     ~meterAddr = NetAddr("127.0.0.1", 57121);
+
+    // Signal ready to Rust
+    ~meterAddr.sendMsg('/monokit/ready');
+    "MONOKIT_SC_READY".postln;
     OSCdef(\monokit_meter_fwd, { |msg|
         var channel = msg[2];  // replyID = channel (1 or 2)
         var peak = msg[3];
@@ -781,6 +795,15 @@ s.waitForBoot {
             ("SC DIAG: Mean=" ++ avgInterval.round(0.01) ++ "ms, Swing ratio=" ++ swingRatio.round(0.0001)).postln;
         });
     }, '/monokit/diag/report');
+
+    // Audio device query - list available output devices
+    OSCdef(\monokit_audio_out_list, { |msg|
+        var devices = ServerOptions.outDevices;
+        var current = s.options.outDevice ? "default";
+        ("MONOKIT: Sending device list, current=" ++ current).postln;
+        devices.do({ |d| ("  - " ++ d).postln });
+        ~meterAddr.sendMsg('/monokit/audio/out/list', current, *devices);
+    }, '/monokit/audio/out/query');
 
     "monokit server ready".postln;
 };

@@ -17,7 +17,7 @@ where
     F: FnMut(String),
 {
     if idx >= parts.len() {
-        output(format!("ERROR: {} REQUIRES A VALUE", param_name));
+        output(format!("{} REQUIRES A VALUE", param_name));
         return None;
     }
 
@@ -29,7 +29,7 @@ where
         match parts[idx].parse() {
             Ok(v) => Some(v),
             Err(_) => {
-                output(format!("ERROR: FAILED TO PARSE VALUE FOR {}", param_name));
+                output(format!("FAILED TO PARSE VALUE FOR {}", param_name));
                 None
             }
         }
@@ -52,7 +52,7 @@ where
     F: FnMut(String),
 {
     if idx >= parts.len() {
-        output(format!("ERROR: {} REQUIRES A VALUE", param_name));
+        output(format!("{} REQUIRES A VALUE", param_name));
         return None;
     }
 
@@ -64,7 +64,7 @@ where
         match parts[idx].parse() {
             Ok(v) => Some(v),
             Err(_) => {
-                output(format!("ERROR: FAILED TO PARSE VALUE FOR {}", param_name));
+                output(format!("FAILED TO PARSE VALUE FOR {}", param_name));
                 None
             }
         }

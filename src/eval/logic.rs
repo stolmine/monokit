@@ -51,6 +51,9 @@ pub fn eval_logic_expression(
                 return None;
             }
             if let Some((a, a_consumed)) = eval_expr_fn(parts, start_idx + 1, variables, patterns, counters, scripts, script_index, scale) {
+                if start_idx + 1 + a_consumed >= parts.len() {
+                    return None;
+                }
                 if let Some((b, b_consumed)) = eval_expr_fn(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index, scale) {
                     let result = if rand::thread_rng().gen_bool(0.5) { a } else { b };
                     return Some((result, 1 + a_consumed + b_consumed));
@@ -63,6 +66,9 @@ pub fn eval_logic_expression(
                 return None;
             }
             if let Some((a, a_consumed)) = eval_expr_fn(parts, start_idx + 1, variables, patterns, counters, scripts, script_index, scale) {
+                if start_idx + 1 + a_consumed >= parts.len() {
+                    return None;
+                }
                 if let Some((b, b_consumed)) = eval_expr_fn(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index, scale) {
                     let next_idx = start_idx + 1 + a_consumed + b_consumed;
                     let key = format!("{}_{}", script_index, parts[start_idx..next_idx].join("_"));

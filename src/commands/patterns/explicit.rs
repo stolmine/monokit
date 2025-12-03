@@ -45,6 +45,12 @@ where
         }
     } else {
         let value: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
+            if expr_val < 1 || expr_val > 64 {
+                if debug_level >= TIER_ERRORS || out_err {
+                    output("ERROR: PATTERN LENGTH MUST BE 1-64".to_string());
+                }
+                return Ok(());
+            }
             expr_val as usize
         } else {
             parts[2]
@@ -109,6 +115,12 @@ where
         }
     } else {
         let value: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
+            if expr_val < 0 || expr_val > 63 {
+                if debug_level >= TIER_ERRORS || out_err {
+                    output("ERROR: PATTERN INDEX MUST BE 0-63".to_string());
+                }
+                return Ok(());
+            }
             expr_val as usize
         } else {
             parts[2]
@@ -173,6 +185,12 @@ where
         return Ok(());
     }
     let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
+        if expr_val < 0 || expr_val > 63 {
+            if debug_level >= TIER_ERRORS || out_err {
+                output("ERROR: PATTERN INDEX MUST BE 0-63".to_string());
+            }
+            return Ok(());
+        }
         expr_val as usize
     } else {
         parts[2]

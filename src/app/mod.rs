@@ -342,7 +342,7 @@ impl App {
                 }
             }
             Err(e) => {
-                output_messages.push(format!("Error: {}", e));
+                output_messages.push(format!("ERROR: {}", e.to_string().to_uppercase()));
                 for msg in output_messages {
                     self.add_output(msg);
                 }

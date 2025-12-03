@@ -42,7 +42,7 @@ impl App {
                 ) {
                     val
                 } else {
-                    self.add_output(format!("Error: Failed to evaluate loop start value"));
+                    self.add_output("ERROR: FAILED TO EVALUATE LOOP START".to_string());
                     return true;
                 };
                 let end = if let Some((val, _)) = eval_expression(
@@ -57,7 +57,7 @@ impl App {
                 ) {
                     val
                 } else {
-                    self.add_output(format!("Error: Failed to evaluate loop end value"));
+                    self.add_output("ERROR: FAILED TO EVALUATE LOOP END".to_string());
                     return true;
                 };
                 let commands = line[colon_pos + 1..].trim();

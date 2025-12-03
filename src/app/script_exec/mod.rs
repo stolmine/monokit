@@ -5,37 +5,8 @@ mod loops;
 use super::App;
 use crate::commands::process_command;
 use crate::eval::eval_expression;
+use crate::utils::split_respecting_quotes;
 use std::io::Write;
-
-fn split_respecting_quotes(cmd: &str) -> Vec<String> {
-    let mut parts = Vec::new();
-    let mut current = String::new();
-    let mut in_quote = false;
-    let mut quote_char = ' ';
-
-    for c in cmd.chars() {
-        match c {
-            '"' | '\'' if !in_quote => {
-                in_quote = true;
-                quote_char = c;
-                current.push(c);
-            }
-            c if c == quote_char && in_quote => {
-                in_quote = false;
-                current.push(c);
-            }
-            ';' if !in_quote => {
-                parts.push(current.trim().to_string());
-                current.clear();
-            }
-            _ => current.push(c),
-        }
-    }
-    if !current.is_empty() {
-        parts.push(current.trim().to_string());
-    }
-    parts.into_iter().filter(|s| !s.is_empty()).collect()
-}
 
 impl App {
     fn debug_log(&self, msg: String) {
@@ -126,7 +97,7 @@ impl App {
                 }
             }
             Err(e) => {
-                output_messages.push(format!("Error: {}", e));
+                output_messages.push(e.to_string().to_uppercase());
                 for msg in output_messages {
                     self.add_output(msg);
                 }
@@ -193,7 +164,7 @@ impl App {
 
     pub fn execute_script_with_depth(&mut self, script_index: usize, depth: usize) {
         if script_index >= 10 {
-            self.add_output(format!("Error: Invalid script index {}", script_index));
+            self.add_output(format!("INVALID SCRIPT INDEX {}", script_index));
             return;
         }
 
@@ -201,7 +172,7 @@ impl App {
         self.script_activity[script_index] = Some(std::time::Instant::now());
 
         if depth > 10 {
-            self.add_output("Error: Script recursion depth exceeded (max 10)".to_string());
+            self.add_output("SCRIPT RECURSION DEPTH EXCEEDED (MAX 10)".to_string());
             return;
         }
 

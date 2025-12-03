@@ -11,6 +11,44 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ## Recent Updates (December 2025)
 
+### SC Process Management [IN PROGRESS]
+Automatic SuperCollider lifecycle management - monokit spawns sclang on startup.
+
+**Completed (Phases 1-4):**
+- [x] SC process manager (`src/sc_process.rs`) - spawn/stop/restart
+- [x] SC script mods - env var for audio device, ready signal
+- [x] Ready detection in meter thread - `/monokit/ready` OSC
+- [x] Main.rs integration - spawn SC, wait for ready, graceful shutdown
+- [x] Graceful shutdown - `Server.quitAll; 0.exit;` + pkill scsynth
+
+**Pending (Phases 5-8):**
+- [ ] AUDIO.OUT command for device selection
+- [ ] SC restart on device change
+- [ ] Config persistence for audio device
+- [ ] Help system update
+
+**Documentation:**
+- `AUDIO_DEVICE_PLAN.md` - Implementation plan
+- `CROSS_PLATFORM_AUDIO.md` - Future cross-platform design
+
+### Error Display Consistency [COMPLETE]
+Unified error formatting across REPL and script views.
+- [x] All errors use "ERROR:" prefix in uppercase
+- [x] REPL view shows errors in red with consistent formatting
+- [x] Removed duplicate "ERROR: ERROR:" issue
+- [x] Standardized error prefixes across all source files
+
+### Negative Number Handling [COMPLETE]
+Prevent crashes from negative values in expressions.
+- [x] TOG/EITH bounds checking in eval/logic.rs
+- [x] Pattern expression validation (PN.*, P.*)
+- [x] Clear error messages instead of panics
+
+### SEQ Highlight Fix [COMPLETE]
+Fixed highlighting for commands with semicolons after quoted strings.
+- [x] Created shared `split_respecting_quotes()` utility
+- [x] State highlight uses same parsing as execution
+
 ### Command Validation & Error Display Fixes [COMPLETE]
 Comprehensive command validation audit and error display improvements.
 

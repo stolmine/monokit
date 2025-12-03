@@ -18,12 +18,13 @@ pub fn eval_pattern_expression(
                 return None;
             }
             if let Some((pat_val, consumed)) = eval_expr_fn(parts, start_idx + 1, variables, patterns, counters, scripts, script_index, scale) {
-                let pat = pat_val as usize;
-                if pat <= 5 {
-                    let pattern = &mut patterns.patterns[pat];
-                    pattern.index = (pattern.index + 1) % pattern.length;
-                    return Some((pattern.data[pattern.index], 1 + consumed));
+                if pat_val < 0 || pat_val > 5 {
+                    return None;
                 }
+                let pat = pat_val as usize;
+                let pattern = &mut patterns.patterns[pat];
+                pattern.index = (pattern.index + 1) % pattern.length;
+                return Some((pattern.data[pattern.index], 1 + consumed));
             }
             None
         }
@@ -32,16 +33,17 @@ pub fn eval_pattern_expression(
                 return None;
             }
             if let Some((pat_val, consumed)) = eval_expr_fn(parts, start_idx + 1, variables, patterns, counters, scripts, script_index, scale) {
-                let pat = pat_val as usize;
-                if pat <= 5 {
-                    let pattern = &mut patterns.patterns[pat];
-                    if pattern.index == 0 {
-                        pattern.index = pattern.length - 1;
-                    } else {
-                        pattern.index -= 1;
-                    }
-                    return Some((pattern.data[pattern.index], 1 + consumed));
+                if pat_val < 0 || pat_val > 5 {
+                    return None;
                 }
+                let pat = pat_val as usize;
+                let pattern = &mut patterns.patterns[pat];
+                if pattern.index == 0 {
+                    pattern.index = pattern.length - 1;
+                } else {
+                    pattern.index -= 1;
+                }
+                return Some((pattern.data[pattern.index], 1 + consumed));
             }
             None
         }
@@ -50,11 +52,12 @@ pub fn eval_pattern_expression(
                 return None;
             }
             if let Some((pat_val, consumed)) = eval_expr_fn(parts, start_idx + 1, variables, patterns, counters, scripts, script_index, scale) {
-                let pat = pat_val as usize;
-                if pat <= 5 {
-                    let pattern = &patterns.patterns[pat];
-                    return Some((pattern.data[pattern.index], 1 + consumed));
+                if pat_val < 0 || pat_val > 5 {
+                    return None;
                 }
+                let pat = pat_val as usize;
+                let pattern = &patterns.patterns[pat];
+                return Some((pattern.data[pattern.index], 1 + consumed));
             }
             None
         }
@@ -63,11 +66,12 @@ pub fn eval_pattern_expression(
                 return None;
             }
             if let Some((pat_val, consumed)) = eval_expr_fn(parts, start_idx + 1, variables, patterns, counters, scripts, script_index, scale) {
-                let pat = pat_val as usize;
-                if pat <= 5 {
-                    let pattern = &patterns.patterns[pat];
-                    return Some((pattern.data[pattern.index], 1 + consumed));
+                if pat_val < 0 || pat_val > 5 {
+                    return None;
                 }
+                let pat = pat_val as usize;
+                let pattern = &patterns.patterns[pat];
+                return Some((pattern.data[pattern.index], 1 + consumed));
             }
             None
         }
@@ -76,11 +80,12 @@ pub fn eval_pattern_expression(
                 return None;
             }
             if let Some((pat_val, consumed)) = eval_expr_fn(parts, start_idx + 1, variables, patterns, counters, scripts, script_index, scale) {
-                let pat = pat_val as usize;
-                if pat <= 5 {
-                    let pattern = &patterns.patterns[pat];
-                    return Some((pattern.length as i16, 1 + consumed));
+                if pat_val < 0 || pat_val > 5 {
+                    return None;
                 }
+                let pat = pat_val as usize;
+                let pattern = &patterns.patterns[pat];
+                return Some((pattern.length as i16, 1 + consumed));
             }
             None
         }
@@ -89,11 +94,12 @@ pub fn eval_pattern_expression(
                 return None;
             }
             if let Some((pat_val, consumed)) = eval_expr_fn(parts, start_idx + 1, variables, patterns, counters, scripts, script_index, scale) {
-                let pat = pat_val as usize;
-                if pat <= 5 {
-                    let pattern = &patterns.patterns[pat];
-                    return Some((pattern.index as i16, 1 + consumed));
+                if pat_val < 0 || pat_val > 5 {
+                    return None;
                 }
+                let pat = pat_val as usize;
+                let pattern = &patterns.patterns[pat];
+                return Some((pattern.index as i16, 1 + consumed));
             }
             None
         }
@@ -178,12 +184,13 @@ pub fn eval_pattern_expression(
                 return None;
             }
             if let Some((pat_val, consumed)) = eval_expr_fn(parts, start_idx + 1, variables, patterns, counters, scripts, script_index, scale) {
-                let pat = pat_val as usize;
-                if pat <= 5 {
-                    let pattern = &patterns.patterns[pat];
-                    let slice = &pattern.data[..pattern.length];
-                    return Some((*slice.iter().min().unwrap_or(&0), 1 + consumed));
+                if pat_val < 0 || pat_val > 5 {
+                    return None;
                 }
+                let pat = pat_val as usize;
+                let pattern = &patterns.patterns[pat];
+                let slice = &pattern.data[..pattern.length];
+                return Some((*slice.iter().min().unwrap_or(&0), 1 + consumed));
             }
             None
         }
@@ -192,12 +199,13 @@ pub fn eval_pattern_expression(
                 return None;
             }
             if let Some((pat_val, consumed)) = eval_expr_fn(parts, start_idx + 1, variables, patterns, counters, scripts, script_index, scale) {
-                let pat = pat_val as usize;
-                if pat <= 5 {
-                    let pattern = &patterns.patterns[pat];
-                    let slice = &pattern.data[..pattern.length];
-                    return Some((*slice.iter().max().unwrap_or(&0), 1 + consumed));
+                if pat_val < 0 || pat_val > 5 {
+                    return None;
                 }
+                let pat = pat_val as usize;
+                let pattern = &patterns.patterns[pat];
+                let slice = &pattern.data[..pattern.length];
+                return Some((*slice.iter().max().unwrap_or(&0), 1 + consumed));
             }
             None
         }
@@ -206,12 +214,13 @@ pub fn eval_pattern_expression(
                 return None;
             }
             if let Some((pat_val, consumed)) = eval_expr_fn(parts, start_idx + 1, variables, patterns, counters, scripts, script_index, scale) {
-                let pat = pat_val as usize;
-                if pat <= 5 {
-                    let pattern = &patterns.patterns[pat];
-                    let sum: i16 = pattern.data[..pattern.length].iter().sum();
-                    return Some((sum, 1 + consumed));
+                if pat_val < 0 || pat_val > 5 {
+                    return None;
                 }
+                let pat = pat_val as usize;
+                let pattern = &patterns.patterns[pat];
+                let sum: i16 = pattern.data[..pattern.length].iter().sum();
+                return Some((sum, 1 + consumed));
             }
             None
         }
@@ -220,15 +229,16 @@ pub fn eval_pattern_expression(
                 return None;
             }
             if let Some((pat_val, consumed)) = eval_expr_fn(parts, start_idx + 1, variables, patterns, counters, scripts, script_index, scale) {
+                if pat_val < 0 || pat_val > 5 {
+                    return None;
+                }
                 let pat = pat_val as usize;
-                if pat <= 5 {
-                    let pattern = &patterns.patterns[pat];
-                    if pattern.length > 0 {
-                        let sum: i32 = pattern.data[..pattern.length].iter().map(|&x| x as i32).sum();
-                        return Some(((sum / pattern.length as i32) as i16, 1 + consumed));
-                    } else {
-                        return Some((0, 1 + consumed));
-                    }
+                let pattern = &patterns.patterns[pat];
+                if pattern.length > 0 {
+                    let sum: i32 = pattern.data[..pattern.length].iter().map(|&x| x as i32).sum();
+                    return Some(((sum / pattern.length as i32) as i16, 1 + consumed));
+                } else {
+                    return Some((0, 1 + consumed));
                 }
             }
             None
@@ -238,16 +248,17 @@ pub fn eval_pattern_expression(
                 return None;
             }
             if let Some((pat_val, consumed1)) = eval_expr_fn(parts, start_idx + 1, variables, patterns, counters, scripts, script_index, scale) {
+                if pat_val < 0 || pat_val > 5 {
+                    return None;
+                }
                 let pat = pat_val as usize;
-                if pat <= 5 {
-                    if let Some((search_val, consumed2)) = eval_expr_fn(parts, start_idx + 1 + consumed1, variables, patterns, counters, scripts, script_index, scale) {
-                        let pattern = &patterns.patterns[pat];
-                        let slice = &pattern.data[..pattern.length];
-                        let result = slice.iter().position(|&x| x == search_val)
-                            .map(|i| i as i16)
-                            .unwrap_or(-1);
-                        return Some((result, 1 + consumed1 + consumed2));
-                    }
+                if let Some((search_val, consumed2)) = eval_expr_fn(parts, start_idx + 1 + consumed1, variables, patterns, counters, scripts, script_index, scale) {
+                    let pattern = &patterns.patterns[pat];
+                    let slice = &pattern.data[..pattern.length];
+                    let result = slice.iter().position(|&x| x == search_val)
+                        .map(|i| i as i16)
+                        .unwrap_or(-1);
+                    return Some((result, 1 + consumed1 + consumed2));
                 }
             }
             None

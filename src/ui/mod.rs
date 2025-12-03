@@ -86,6 +86,7 @@ pub fn run_app<B: ratatui::backend::Backend>(
     terminal: &mut Terminal<B>,
     app: &mut crate::App,
     metro_event_rx: mpsc::Receiver<MetroEvent>,
+    sc_process: std::sync::Arc<std::sync::Mutex<crate::sc_process::ScProcess>>,
 ) -> Result<()> {
     loop {
         app.clear_expired_error();
@@ -110,6 +111,10 @@ pub fn run_app<B: ratatui::backend::Backend>(
                 }
                 MetroEvent::CpuUpdate(cpu_data) => {
                     app.cpu_data = cpu_data;
+                }
+                MetroEvent::ScReady => {
+                }
+                MetroEvent::AudioDeviceList { current: _, devices: _ } => {
                 }
                 MetroEvent::Error(msg) => {
                     if app.should_output(crate::types::OutputCategory::Error) {
@@ -375,6 +380,10 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     KeyCode::Enter if !is_help && app.current_page != Page::Pattern => {
                         app.execute_command();
                         if app.should_quit {
+                            // Stop SuperCollider before quitting
+                            if let Ok(mut sc) = sc_process.lock() {
+                                sc.stop();
+                            }
                             return Ok(());
                         }
                     }

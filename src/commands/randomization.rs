@@ -233,6 +233,10 @@ where
         return Ok(());
     }
     let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+        if expr_val < 0 || expr_val > 5 {
+            output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
+            return Ok(());
+        }
         expr_val as usize
     } else {
         parts[1]

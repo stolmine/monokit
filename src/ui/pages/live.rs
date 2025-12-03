@@ -24,7 +24,19 @@ fn render_repl_view(app: &crate::App, height: usize) -> Paragraph<'static> {
     let fg = app.theme.foreground;
     let text: Vec<Line> = app.output[start_idx..end_idx]
         .iter()
-        .map(|line| Line::from(Span::styled(format!("  {}", line), Style::default().fg(fg))))
+        .map(|line| {
+            if line.starts_with("ERROR:") || line.starts_with("Error:") {
+                let error_text = if line.starts_with("ERROR:") {
+                    line[6..].trim()
+                } else {
+                    line[6..].trim()
+                };
+                let display_line = format!("  ERROR: {}", error_text.to_uppercase());
+                Line::from(Span::styled(display_line, Style::default().fg(app.theme.error)))
+            } else {
+                Line::from(Span::styled(format!("  {}", line), Style::default().fg(fg)))
+            }
+        })
         .collect();
 
     // Show scroll indicator in title if scrolled up

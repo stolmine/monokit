@@ -148,6 +148,12 @@ where
         return Ok(());
     }
     let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+        if expr_val < 0 || expr_val > 63 {
+            if debug_level >= TIER_ERRORS || out_err {
+                output("ERROR: PATTERN INDEX MUST BE 0-63".to_string());
+            }
+            return Ok(());
+        }
         expr_val as usize
     } else {
         parts[1]

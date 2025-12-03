@@ -47,7 +47,7 @@ pub fn pattern_mul_impl(pat_ref: PatternRef, val: i16, patterns: &mut PatternSto
 
 pub fn pattern_div_impl(pat_ref: PatternRef, val: i16, patterns: &mut PatternStorage) -> Result<String, &'static str> {
     if val == 0 {
-        return Err("ERROR: DIVISION BY ZERO");
+        return Err("DIVISION BY ZERO");
     }
     let pat_idx = pat_ref.index(patterns);
     let pattern = &mut patterns.patterns[pat_idx];
@@ -59,7 +59,7 @@ pub fn pattern_div_impl(pat_ref: PatternRef, val: i16, patterns: &mut PatternSto
 
 pub fn pattern_mod_impl(pat_ref: PatternRef, val: i16, patterns: &mut PatternStorage) -> Result<String, &'static str> {
     if val == 0 {
-        return Err("ERROR: MODULO BY ZERO");
+        return Err("MODULO BY ZERO");
     }
     let pat_idx = pat_ref.index(patterns);
     let pattern = &mut patterns.patterns[pat_idx];
@@ -71,12 +71,12 @@ pub fn pattern_mod_impl(pat_ref: PatternRef, val: i16, patterns: &mut PatternSto
 
 pub fn pattern_scale_impl(pat_ref: PatternRef, new_min: i16, new_max: i16, patterns: &mut PatternStorage) -> Result<String, String> {
     if new_min == new_max {
-        return Err("ERROR: MIN AND MAX CANNOT BE EQUAL".to_string());
+        return Err("MIN AND MAX CANNOT BE EQUAL".to_string());
     }
     let pat_idx = pat_ref.index(patterns);
     let pattern = &mut patterns.patterns[pat_idx];
     if pattern.length == 0 {
-        return Err("ERROR: PAT LENGTH IS ZERO".to_string());
+        return Err("PAT LENGTH IS ZERO".to_string());
     }
     let old_min = pattern.data[..pattern.length].iter().copied().min().unwrap_or(0);
     let old_max = pattern.data[..pattern.length].iter().copied().max().unwrap_or(0);
@@ -98,7 +98,7 @@ pub fn pattern_push_impl(pat_ref: PatternRef, val: i16, patterns: &mut PatternSt
     let pat_idx = pat_ref.index(patterns);
     let pattern = &mut patterns.patterns[pat_idx];
     if pattern.length == 0 {
-        return Err("ERROR: CANNOT OPERATE ON EMPTY PAT");
+        return Err("CANNOT OPERATE ON EMPTY PAT");
     }
     for i in 0..pattern.length - 1 {
         pattern.data[i] = pattern.data[i + 1];
@@ -111,7 +111,7 @@ pub fn pattern_pop_impl(pat_ref: PatternRef, patterns: &PatternStorage) -> Resul
     let pat_idx = pat_ref.index(patterns);
     let pattern = &patterns.patterns[pat_idx];
     if pattern.length == 0 {
-        return Err("ERROR: PAT LENGTH IS ZERO");
+        return Err("PAT LENGTH IS ZERO");
     }
     let val = pattern.data[pattern.length - 1];
     Ok((val, pat_idx))
@@ -121,7 +121,7 @@ pub fn pattern_ins_impl(pat_ref: PatternRef, idx: usize, val: i16, patterns: &mu
     let pat_idx = pat_ref.index(patterns);
     let pattern = &mut patterns.patterns[pat_idx];
     if idx >= pattern.length {
-        return Err(format!("ERROR: IDX {} OUT OF RANGE (LEN {})", idx, pattern.length));
+        return Err(format!("IDX {} OUT OF RANGE (LEN {})", idx, pattern.length));
     }
     for i in (idx..pattern.length - 1).rev() {
         pattern.data[i + 1] = pattern.data[i];
@@ -134,7 +134,7 @@ pub fn pattern_rm_impl(pat_ref: PatternRef, idx: usize, patterns: &mut PatternSt
     let pat_idx = pat_ref.index(patterns);
     let pattern = &mut patterns.patterns[pat_idx];
     if idx >= pattern.length {
-        return Err(format!("ERROR: IDX {} OUT OF RANGE (LEN {})", idx, pattern.length));
+        return Err(format!("IDX {} OUT OF RANGE (LEN {})", idx, pattern.length));
     }
     let removed = pattern.data[idx];
     for i in idx..pattern.length - 1 {
@@ -159,18 +159,19 @@ pub fn pattern_rot_impl(pat_ref: PatternRef, n: i16, patterns: &mut PatternStora
     let pattern = &mut patterns.patterns[pat_idx];
     let len = pattern.length as i16;
     if len == 0 {
-        return Err("ERROR: PAT LENGTH IS ZERO");
+        return Err("PAT LENGTH IS ZERO");
     }
     let n = ((n % len) + len) % len;
     if n == 0 {
         return Ok(format!("PAT {} UNCHANGED (ROT 0)", pat_idx));
     }
+    let n_usize = n as usize;
     let mut temp = [0i16; 64];
     for i in 0..pattern.length {
         temp[i] = pattern.data[i];
     }
     for i in 0..pattern.length {
-        pattern.data[i] = temp[(i + pattern.length - n as usize) % pattern.length];
+        pattern.data[i] = temp[(i + pattern.length - n_usize) % pattern.length];
     }
     Ok(format!("ROTATED PAT {} BY {}", pat_idx, n))
 }
@@ -179,7 +180,7 @@ pub fn pattern_shuf_impl(pat_ref: PatternRef, patterns: &mut PatternStorage) -> 
     let pat_idx = pat_ref.index(patterns);
     let pattern = &mut patterns.patterns[pat_idx];
     if pattern.length == 0 {
-        return Err("ERROR: CANNOT OPERATE ON EMPTY PAT");
+        return Err("CANNOT OPERATE ON EMPTY PAT");
     }
     let len = pattern.length;
     let mut rng = rand::thread_rng();
@@ -209,7 +210,7 @@ pub fn pattern_min_impl(pat_ref: PatternRef, patterns: &PatternStorage) -> Resul
     let pat_idx = pat_ref.index(patterns);
     let pattern = &patterns.patterns[pat_idx];
     if pattern.length == 0 {
-        return Err("ERROR: PAT LENGTH IS ZERO");
+        return Err("PAT LENGTH IS ZERO");
     }
     let min_val = pattern.data[..pattern.length].iter().copied().min().unwrap_or(0);
     Ok(min_val)
@@ -219,7 +220,7 @@ pub fn pattern_max_impl(pat_ref: PatternRef, patterns: &PatternStorage) -> Resul
     let pat_idx = pat_ref.index(patterns);
     let pattern = &patterns.patterns[pat_idx];
     if pattern.length == 0 {
-        return Err("ERROR: PAT LENGTH IS ZERO");
+        return Err("PAT LENGTH IS ZERO");
     }
     let max_val = pattern.data[..pattern.length].iter().copied().max().unwrap_or(0);
     Ok(max_val)
@@ -235,7 +236,7 @@ pub fn pattern_avg_impl(pat_ref: PatternRef, patterns: &PatternStorage) -> Resul
     let pat_idx = pat_ref.index(patterns);
     let pattern = &patterns.patterns[pat_idx];
     if pattern.length == 0 {
-        return Err("ERROR: PAT LENGTH IS ZERO");
+        return Err("PAT LENGTH IS ZERO");
     }
     let sum: i32 = pattern.data[..pattern.length].iter().map(|&x| x as i32).sum();
     let avg = sum / pattern.length as i32;
@@ -296,6 +297,12 @@ where
     F: FnMut(String),
 {
     let pat: usize = if let Some((expr_val, _)) = eval_expression(parts, idx, variables, patterns, counters, scripts, script_index, scale) {
+        if expr_val < 0 || expr_val > 5 {
+            if debug_level >= TIER_ERRORS || out_err {
+                output("ERROR: PAT NUM MUST BE 0-5".to_string());
+            }
+            return Ok(None);
+        }
         expr_val as usize
     } else {
         parts[idx].parse().context("Failed to parse pattern number")?
@@ -337,6 +344,9 @@ pub fn parse_usize_expr(
     scale: &ScaleState,
 ) -> Result<usize> {
     if let Some((expr_val, _)) = eval_expression(parts, idx, variables, patterns, counters, scripts, script_index, scale) {
+        if expr_val < 0 {
+            anyhow::bail!("Value must be non-negative, got {}", expr_val);
+        }
         Ok(expr_val as usize)
     } else {
         parts[idx].parse().context("Failed to parse value")

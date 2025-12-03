@@ -42,7 +42,7 @@ where
         .parse()
         .context("Failed to parse volume value as float")?;
     if !(0.0..=1.0).contains(&value) {
-        output("ERROR: VOLUME MUST BE BETWEEN 0.0 AND 1.0".to_string());
+        output("VOLUME MUST BE BETWEEN 0.0 AND 1.0".to_string());
         return Ok(());
     }
     metro_tx
@@ -221,9 +221,12 @@ pub fn handle_script(
     scale: &ScaleState,
 ) -> Result<Vec<usize>> {
     if parts.len() < 2 {
-        return Err(anyhow::anyhow!("ERROR: SCRIPT REQUIRES NUMBER 1-8"));
+        return Err(anyhow::anyhow!("SCRIPT REQUIRES NUMBER 1-8"));
     }
     let num: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+        if expr_val < 1 || expr_val > 8 {
+            return Err(anyhow::anyhow!("SCRIPT NUMBER MUST BE 1-8"));
+        }
         expr_val as usize
     } else {
         parts[1]
@@ -231,7 +234,7 @@ pub fn handle_script(
             .context("Failed to parse script number")?
     };
     if num < 1 || num > 8 {
-        return Err(anyhow::anyhow!("ERROR: SCRIPT NUMBER MUST BE 1-8"));
+        return Err(anyhow::anyhow!("SCRIPT NUMBER MUST BE 1-8"));
     }
     Ok(vec![num - 1])
 }
@@ -270,12 +273,12 @@ pub fn handle_theme<F>(
                         output(format!("SWITCHED TO {} THEME", theme_name.to_uppercase()));
                     }
                     Err(e) => {
-                        output(format!("ERROR: {}", e.to_string().to_uppercase()));
+                        output(e.to_string().to_uppercase());
                     }
                 }
             }
             Err(e) => {
-                output(format!("ERROR: FAILED TO LOAD CONFIG: {:?}", e));
+                output(format!("FAILED TO LOAD CONFIG: {:?}", e));
             }
         }
     }
@@ -412,7 +415,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: REC.PATH REQUIRES A PATH PREFIX".to_string());
+        output("REC.PATH REQUIRES A PATH PREFIX".to_string());
         return Ok(());
     }
 
@@ -455,7 +458,7 @@ pub fn handle_print<F>(
                 output(literal.to_string());
             }
         } else {
-            output("ERROR: UNTERMINATED STRING LITERAL".to_string());
+            output("UNTERMINATED STRING LITERAL".to_string());
         }
     } else {
         if let Some((result, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -463,7 +466,7 @@ pub fn handle_print<F>(
                 output(format!("{}", result));
             }
         } else {
-            output("ERROR: FAILED TO EVALUATE EXPRESSION".to_string());
+            output("FAILED TO EVALUATE EXPRESSION".to_string());
         }
     }
 }
@@ -727,7 +730,7 @@ where
         };
 
         if value < 5 || value > 500 {
-            output("ERROR: SCOPE.TIME MUST BE 5-500 MS".to_string());
+            output("SCOPE.TIME MUST BE 5-500 MS".to_string());
             return Ok(());
         }
 
@@ -952,12 +955,12 @@ pub fn handle_note<F>(
     let text = if (joined.starts_with('"') && joined.ends_with('"')) ||
                   (joined.starts_with('\'') && joined.ends_with('\'')) {
         if joined.len() < 2 {
-            output("ERROR: NOTE TEXT MUST BE QUOTED".to_string());
+            output("NOTE TEXT MUST BE QUOTED".to_string());
             return;
         }
         joined[1..joined.len()-1].to_string()
     } else {
-        output("ERROR: NOTE TEXT MUST BE QUOTED".to_string());
+        output("NOTE TEXT MUST BE QUOTED".to_string());
         return;
     };
 
@@ -974,7 +977,7 @@ pub fn handle_note<F>(
     }
 
     if !found_empty {
-        output("ERROR: NOTES PAGE FULL (8 LINES MAX)".to_string());
+        output("NOTES PAGE FULL (8 LINES MAX)".to_string());
     }
 }
 

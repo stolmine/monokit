@@ -2,6 +2,59 @@
 
 ## Recent Updates (December 2025)
 
+### SuperCollider Process Management (December 2025)
+
+**Automatic SC Lifecycle:**
+- Monokit now spawns and manages sclang automatically on startup
+- No need to manually start SuperCollider first
+- Graceful shutdown: sends `Server.quitAll; 0.exit;` before killing
+- Kills both sclang and scsynth processes on exit
+- 20-second timeout waiting for SC to boot
+
+**New Files:**
+- `src/sc_process.rs` - SC process spawn/stop/restart management
+- `src/utils.rs` - Shared utilities (quote-respecting string split)
+- `CROSS_PLATFORM_AUDIO.md` - Future cross-platform audio design notes
+- `AUDIO_DEVICE_PLAN.md` - Audio device selection implementation plan
+
+**SC Script Changes (monokit_server.scd):**
+- Reads `MONOKIT_AUDIO_OUT` environment variable for device selection
+- Sends `/monokit/ready` OSC message when server is booted
+- Adds `/monokit/audio/out/query` responder for device enumeration
+
+**Ready Detection:**
+- Meter thread parses `/monokit/ready` and `AudioDeviceList` events
+- Main loop waits for SC ready signal before starting TUI
+
+### Error Display Consistency (December 2025)
+
+**Unified Error Formatting:**
+- All errors now consistently use "ERROR:" prefix in uppercase
+- REPL view: Detects ERROR:/Error:, strips prefix, uppercases, re-adds with red color
+- Script view: Adds "ERROR:" prefix and uppercases validation errors
+- Removed duplicate "ERROR: ERROR:" issue
+
+**Error Sources Fixed:**
+- Removed ERROR: from Err() returns in validate.rs and patterns/common.rs
+- Added ERROR: to all direct output() error calls in misc.rs (25+ messages)
+- Standardized loops.rs and mod.rs to use "ERROR:" not "Error:"
+
+### Negative Number Handling (December 2025)
+
+**Crash Prevention:**
+- TOG/EITH in eval/logic.rs now check bounds before second argument eval
+- Pattern expressions (PN.NEXT, PN.*, etc.) validate negative values before usize conversion
+- Pattern commands validate negative indices/lengths with clear error messages
+- SCRIPT command validates range 1-8
+
+### SEQ Highlight Fix (December 2025)
+
+**Quote-Respecting Split:**
+- Created shared `split_respecting_quotes()` in src/utils.rs
+- State highlight now uses same logic as execution layer
+- Fixes: `PF SEQ "5000*15 1250"; AD 5; PA 0` now highlights correctly
+- Semicolons after quoted strings no longer break highlighting
+
 ### Command Validation & Error Display Fixes (December 2025)
 
 **Command Validation Audit (20+ missing commands):**

@@ -18,7 +18,7 @@ fn validate_pn_expression(parts: &[&str], start_idx: usize) -> Result<Option<usi
         "PN.MIN" | "PN.MAX" | "PN.SUM" | "PN.AVG" | "PN.RND" => {
             // These require exactly 1 argument (pattern number)
             if start_idx + 1 >= parts.len() {
-                return Err(anyhow::anyhow!("ERROR: {} NEEDS PAT NUM", part));
+                return Err(anyhow::anyhow!("{} NEEDS PAT NUM", part));
             }
             // Recursively validate the argument
             if let Some(consumed) = validate_pn_expression(parts, start_idx + 1)? {
@@ -30,7 +30,7 @@ fn validate_pn_expression(parts: &[&str], start_idx: usize) -> Result<Option<usi
         "PN.L" | "PN.I" => {
             // These require at least 1 argument (pattern number)
             if start_idx + 1 >= parts.len() {
-                return Err(anyhow::anyhow!("{} requires at least 1 argument", part));
+                return Err(anyhow::anyhow!("{} REQUIRES AT LEAST 1 ARGUMENT", part));
             }
             // Recursively validate the argument
             if let Some(consumed) = validate_pn_expression(parts, start_idx + 1)? {
@@ -42,7 +42,7 @@ fn validate_pn_expression(parts: &[&str], start_idx: usize) -> Result<Option<usi
         "PN.PUSH" | "PN.ADD" | "PN.SUB" | "PN.MUL" | "PN.DIV" | "PN.MOD" | "PN.FND" | "PN.ROT" => {
             // These require 2 arguments (pattern number and value/amount)
             if start_idx + 2 >= parts.len() {
-                return Err(anyhow::anyhow!("ERROR: {} NEEDS PAT NUM AND VAL", part));
+                return Err(anyhow::anyhow!("{} NEEDS PAT NUM AND VAL", part));
             }
             // Recursively validate both arguments
             let mut consumed = 1; // The command itself
@@ -61,7 +61,7 @@ fn validate_pn_expression(parts: &[&str], start_idx: usize) -> Result<Option<usi
         "PN.SCALE" => {
             // Requires 3 arguments (pattern, min, max)
             if start_idx + 3 >= parts.len() {
-                return Err(anyhow::anyhow!("ERROR: PN.SCALE NEEDS PAT, MIN, MAX"));
+                return Err(anyhow::anyhow!("PN.SCALE NEEDS PAT, MIN, MAX"));
             }
             // Recursively validate all three arguments
             let mut consumed = 1; // The command itself
@@ -224,31 +224,31 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         }
         "N1" | "N2" | "N3" | "N4" => {
             if argc > 0 {
-                return Err(anyhow::anyhow!("{} takes no arguments", command));
+                return Err(anyhow::anyhow!("{} TAKES NO ARGUMENTS", command));
             }
             Ok(())
         }
         "P.HERE" | "P.NEXT" | "P.PREV" | "P.POP" | "P.REV" | "P.SHUF" | "P.SORT" | "P.MIN" | "P.MAX" | "P.SUM" | "P.AVG" => {
             if argc > 0 {
-                return Err(anyhow::anyhow!("{} takes no arguments", command));
+                return Err(anyhow::anyhow!("{} TAKES NO ARGUMENTS", command));
             }
             Ok(())
         }
         "P.PUSH" | "P.ROT" | "P.ADD" | "P.SUB" | "P.MUL" | "P.DIV" | "P.MOD" | "P.FND" => {
             if argc < 1 {
-                return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
+                return Err(anyhow::anyhow!("{} REQUIRES AT LEAST 1 ARGUMENT", command));
             }
             Ok(())
         }
         "P.INS" | "P.RM" => {
             if argc < 1 {
-                return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
+                return Err(anyhow::anyhow!("{} REQUIRES AT LEAST 1 ARGUMENT", command));
             }
             Ok(())
         }
         "P.SCALE" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("ERROR: P.SCALE NEEDS MIN AND MAX"));
+                return Err(anyhow::anyhow!("P.SCALE NEEDS MIN AND MAX"));
             }
             Ok(())
         }
@@ -257,263 +257,263 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         }
         "P.N" | "P.L" | "P.I" => {
             if argc > 1 {
-                return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
+                return Err(anyhow::anyhow!("{} TAKES 0-1 ARGUMENTS", command));
             }
             Ok(())
         }
         "P" => {
             if argc < 1 {
-                return Err(anyhow::anyhow!("P requires at least 1 argument"));
+                return Err(anyhow::anyhow!("P REQUIRES AT LEAST 1 ARGUMENT"));
             }
             Ok(())
         }
         "PN.HERE" | "PN.NEXT" | "PN.PREV" | "PN.POP" | "PN.REV" | "PN.SHUF" | "PN.SORT" | "PN.MIN" | "PN.MAX" | "PN.SUM" | "PN.AVG" => {
             if argc < 1 {
-                return Err(anyhow::anyhow!("ERROR: {} NEEDS PAT NUM", command));
+                return Err(anyhow::anyhow!("{} NEEDS PAT NUM", command));
             }
             Ok(())
         }
         "PN.L" | "PN.I" => {
             if argc < 1 {
-                return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
+                return Err(anyhow::anyhow!("{} REQUIRES AT LEAST 1 ARGUMENT", command));
             }
             Ok(())
         }
         "PN.PUSH" | "PN.ADD" | "PN.SUB" | "PN.MUL" | "PN.DIV" | "PN.MOD" | "PN.FND" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("ERROR: {} NEEDS PAT NUM AND VAL", command));
+                return Err(anyhow::anyhow!("{} NEEDS PAT NUM AND VAL", command));
             }
             Ok(())
         }
         "PN.RM" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("ERROR: PN.RM NEEDS PAT NUM AND IDX"));
+                return Err(anyhow::anyhow!("PN.RM NEEDS PAT NUM AND IDX"));
             }
             Ok(())
         }
         "PN.ROT" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("ERROR: PN.ROT NEEDS PAT NUM AND AMT"));
+                return Err(anyhow::anyhow!("PN.ROT NEEDS PAT NUM AND AMT"));
             }
             Ok(())
         }
         "PN.INS" => {
             if argc < 3 {
-                return Err(anyhow::anyhow!("ERROR: PN.INS NEEDS PAT NUM, IDX, VAL"));
+                return Err(anyhow::anyhow!("PN.INS NEEDS PAT NUM, IDX, VAL"));
             }
             Ok(())
         }
         "PN.SCALE" => {
             if argc < 3 {
-                return Err(anyhow::anyhow!("ERROR: PN.SCALE NEEDS PAT, MIN, MAX"));
+                return Err(anyhow::anyhow!("PN.SCALE NEEDS PAT, MIN, MAX"));
             }
             Ok(())
         }
         "PN.RND" => {
             if argc < 1 {
-                return Err(anyhow::anyhow!("ERROR: PN.RND NEEDS PAT NUM"));
+                return Err(anyhow::anyhow!("PN.RND NEEDS PAT NUM"));
             }
             Ok(())
         }
         "PN" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("PN requires at least 2 arguments"));
+                return Err(anyhow::anyhow!("PN REQUIRES AT LEAST 2 ARGUMENTS"));
             }
             Ok(())
         }
         "ADD" | "SUB" | "MUL" | "DIV" | "MOD" | "+" | "-" | "*" | "/" | "%" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("{} requires at least 2 arguments", command));
+                return Err(anyhow::anyhow!("{} REQUIRES AT LEAST 2 ARGUMENTS", command));
             }
             Ok(())
         }
         "MAP" => {
             if argc < 5 {
-                return Err(anyhow::anyhow!("MAP requires at least 5 arguments"));
+                return Err(anyhow::anyhow!("MAP REQUIRES AT LEAST 5 ARGUMENTS"));
             }
             Ok(())
         }
         "RND" => {
             if argc < 1 {
-                return Err(anyhow::anyhow!("RND requires at least 1 argument"));
+                return Err(anyhow::anyhow!("RND REQUIRES AT LEAST 1 ARGUMENT"));
             }
             Ok(())
         }
         "RRND" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("RRND requires at least 2 arguments"));
+                return Err(anyhow::anyhow!("RRND REQUIRES AT LEAST 2 ARGUMENTS"));
             }
             Ok(())
         }
         "TOSS" => {
             if argc > 0 {
-                return Err(anyhow::anyhow!("TOSS takes no arguments"));
+                return Err(anyhow::anyhow!("TOSS TAKES NO ARGUMENTS"));
             }
             Ok(())
         }
         "EITH" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("EITH requires at least 2 arguments"));
+                return Err(anyhow::anyhow!("EITH REQUIRES AT LEAST 2 ARGUMENTS"));
             }
             Ok(())
         }
         "TOG" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("TOG requires at least 2 arguments"));
+                return Err(anyhow::anyhow!("TOG REQUIRES AT LEAST 2 ARGUMENTS"));
             }
             if argc >= 2 && parts[1] == parts[2] {
-                return Err(anyhow::anyhow!("TOG requires two different values"));
+                return Err(anyhow::anyhow!("TOG REQUIRES TWO DIFFERENT VALUES"));
             }
             Ok(())
         }
         "N" => {
             if argc < 1 {
-                return Err(anyhow::anyhow!("N requires at least 1 argument"));
+                return Err(anyhow::anyhow!("N REQUIRES AT LEAST 1 ARGUMENT"));
             }
             Ok(())
         }
         "EZ" | "NZ" => {
             if argc < 1 {
-                return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
+                return Err(anyhow::anyhow!("{} REQUIRES AT LEAST 1 ARGUMENT", command));
             }
             Ok(())
         }
         // Note: EQ comparison is handled in eval, not here. "EQ" command is for EQ mid-Q parameter
         "NE" | "GT" | "LT" | "GTE" | "LTE" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("{} requires at least 2 arguments", command));
+                return Err(anyhow::anyhow!("{} REQUIRES AT LEAST 2 ARGUMENTS", command));
             }
             Ok(())
         }
         "SCRIPT" | "$" => {
             if argc != 1 {
-                return Err(anyhow::anyhow!("SCRIPT takes exactly 1 argument"));
+                return Err(anyhow::anyhow!("SCRIPT TAKES EXACTLY 1 ARGUMENT"));
             }
             Ok(())
         }
         "SAVE" | "LOAD" | "DELETE" => {
             if argc != 1 {
-                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+                return Err(anyhow::anyhow!("{} TAKES EXACTLY 1 ARGUMENT", command));
             }
             Ok(())
         }
         "SCENES" => {
             if argc > 0 {
-                return Err(anyhow::anyhow!("SCENES takes no arguments"));
+                return Err(anyhow::anyhow!("SCENES TAKES NO ARGUMENTS"));
             }
             Ok(())
         }
         "PSET" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("ERROR: PSET NEEDS SCRIPT NUM AND NAME"));
+                return Err(anyhow::anyhow!("PSET NEEDS SCRIPT NUM AND NAME"));
             }
             Ok(())
         }
         "PSET.SAVE" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("ERROR: PSET.SAVE NEEDS NUM AND NAME"));
+                return Err(anyhow::anyhow!("PSET.SAVE NEEDS NUM AND NAME"));
             }
             Ok(())
         }
         "PSET.DEL" => {
             if argc < 1 {
-                return Err(anyhow::anyhow!("PSET.DEL requires preset name"));
+                return Err(anyhow::anyhow!("PSET.DEL REQUIRES PRESET NAME"));
             }
             Ok(())
         }
         "PSETS" => {
             if argc > 0 {
-                return Err(anyhow::anyhow!("PSETS takes no arguments"));
+                return Err(anyhow::anyhow!("PSETS TAKES NO ARGUMENTS"));
             }
             Ok(())
         }
         "THEME" | "DEBUG" | "HEADER" | "OUT.ERR" | "OUT.ESS" | "OUT.QRY" | "OUT.CFM" | "REPL.DUMP" => {
             if argc > 1 {
-                return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
+                return Err(anyhow::anyhow!("{} TAKES 0-1 ARGUMENTS", command));
             }
             Ok(())
         }
         "N1.RST" | "N2.RST" | "N3.RST" | "N4.RST" => {
             if argc > 0 {
-                return Err(anyhow::anyhow!("{} takes no arguments", command));
+                return Err(anyhow::anyhow!("{} TAKES NO ARGUMENTS", command));
             }
             Ok(())
         }
         "N1.MAX" | "N2.MAX" | "N3.MAX" | "N4.MAX" => {
             if argc > 1 {
-                return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
+                return Err(anyhow::anyhow!("{} TAKES 0-1 ARGUMENTS", command));
             }
             Ok(())
         }
         "N1.MIN" | "N2.MIN" | "N3.MIN" | "N4.MIN" => {
             if argc > 1 {
-                return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
+                return Err(anyhow::anyhow!("{} TAKES 0-1 ARGUMENTS", command));
             }
             Ok(())
         }
         "M" => {
             if argc > 1 {
-                return Err(anyhow::anyhow!("M takes 0-1 arguments"));
+                return Err(anyhow::anyhow!("M TAKES 0-1 ARGUMENTS"));
             }
             Ok(())
         }
         "M.BPM" => {
             if argc > 1 {
-                return Err(anyhow::anyhow!("M.BPM takes 0-1 arguments"));
+                return Err(anyhow::anyhow!("M.BPM TAKES 0-1 ARGUMENTS"));
             }
             Ok(())
         }
         "M.ACT" | "M.SCRIPT" => {
             if argc > 1 {
-                return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
+                return Err(anyhow::anyhow!("{} TAKES 0-1 ARGUMENTS", command));
             }
             Ok(())
         }
         "TR" | "RST" | "HELP" | "REC" | "REC.STOP" | "CLEAR" | "RND.VOICE" | "RND.OSC" | "RND.FM" | "RND.MOD" | "RND.ENV" | "RND.FX" | "RND.FILT" | "RND.DLY" | "RND.VERB" => {
             if argc > 0 {
-                return Err(anyhow::anyhow!("{} takes no arguments", command));
+                return Err(anyhow::anyhow!("{} TAKES NO ARGUMENTS", command));
             }
             Ok(())
         }
         "RND.P" | "RND.PALL" => {
             if argc != 0 && argc != 2 {
-                return Err(anyhow::anyhow!("ERROR: {} NEEDS 0 OR 2 ARGS", command));
+                return Err(anyhow::anyhow!("{} NEEDS 0 OR 2 ARGS", command));
             }
             Ok(())
         }
         "RND.PN" => {
             if argc != 1 && argc != 3 {
-                return Err(anyhow::anyhow!("ERROR: RND.PN NEEDS 1 OR 3 ARGS"));
+                return Err(anyhow::anyhow!("RND.PN NEEDS 1 OR 3 ARGS"));
             }
             Ok(())
         }
         "REC.PATH" => {
             if argc != 1 {
-                return Err(anyhow::anyhow!("REC.PATH takes exactly 1 argument"));
+                return Err(anyhow::anyhow!("REC.PATH TAKES EXACTLY 1 ARGUMENT"));
             }
             Ok(())
         }
         "PRINT" => {
             if argc < 1 {
-                return Err(anyhow::anyhow!("PRINT requires at least 1 argument"));
+                return Err(anyhow::anyhow!("PRINT REQUIRES AT LEAST 1 ARGUMENT"));
             }
             Ok(())
         }
         "VOL" => {
             if argc != 1 {
-                return Err(anyhow::anyhow!("VOL takes exactly 1 argument"));
+                return Err(anyhow::anyhow!("VOL TAKES EXACTLY 1 ARGUMENT"));
             }
             Ok(())
         }
         "SLEW" => {
             if argc < 2 {
-                return Err(anyhow::anyhow!("ERROR: SLEW NEEDS PARAM NAME AND TIME"));
+                return Err(anyhow::anyhow!("SLEW NEEDS PARAM NAME AND TIME"));
             }
             Ok(())
         }
         "SLEW.ALL" => {
             if argc < 1 {
-                return Err(anyhow::anyhow!("SLEW.ALL requires at least 1 argument"));
+                return Err(anyhow::anyhow!("SLEW.ALL REQUIRES AT LEAST 1 ARGUMENT"));
             }
             Ok(())
         }
@@ -570,79 +570,79 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         // Pitch Shift
         "PS.MODE" | "PS.SEMI" | "PS.GRAIN" | "PS.MIX" | "PS.TARG" => {
             if argc < 1 {
-                return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
+                return Err(anyhow::anyhow!("{} REQUIRES AT LEAST 1 ARGUMENT", command));
             }
             Ok(())
         }
         "ENV.ATK" | "ENV.DEC" | "ENV.CRV" | "ENV.MODE" => {
             if argc != 1 {
-                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+                return Err(anyhow::anyhow!("{} TAKES EXACTLY 1 ARGUMENT", command));
             }
             Ok(())
         }
         "AENV.ATK" | "AA" | "AENV.CRV" | "AC" | "AENV.GATE" => {
             if argc != 1 {
-                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+                return Err(anyhow::anyhow!("{} TAKES EXACTLY 1 ARGUMENT", command));
             }
             Ok(())
         }
         "PENV.ATK" | "PAA" | "PENV.CRV" | "PC" | "PENV.GATE" => {
             if argc != 1 {
-                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+                return Err(anyhow::anyhow!("{} TAKES EXACTLY 1 ARGUMENT", command));
             }
             Ok(())
         }
         "FMEV.ATK" | "FAA" | "FMEV.CRV" | "FMEV.GATE" => {
             if argc != 1 {
-                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+                return Err(anyhow::anyhow!("{} TAKES EXACTLY 1 ARGUMENT", command));
             }
             Ok(())
         }
         "DENV.ATK" | "DAA" | "DENV.CRV" | "DENV.GATE" => {
             if argc != 1 {
-                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+                return Err(anyhow::anyhow!("{} TAKES EXACTLY 1 ARGUMENT", command));
             }
             Ok(())
         }
         "FBEV.ATK" | "FBAA" | "FBEV.CRV" | "FBC" | "FBEV.GATE" => {
             if argc != 1 {
-                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+                return Err(anyhow::anyhow!("{} TAKES EXACTLY 1 ARGUMENT", command));
             }
             Ok(())
         }
         "FLEV.ATK" | "FLAA" | "FLEV.CRV" | "FLC" | "FLEV.GATE" => {
             if argc != 1 {
-                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+                return Err(anyhow::anyhow!("{} TAKES EXACTLY 1 ARGUMENT", command));
             }
             Ok(())
         }
         "GATE" => {
             if argc != 1 {
-                return Err(anyhow::anyhow!("GATE takes exactly 1 argument"));
+                return Err(anyhow::anyhow!("GATE TAKES EXACTLY 1 ARGUMENT"));
             }
             Ok(())
         }
         "Q.ROOT" => {
             if argc > 1 {
-                return Err(anyhow::anyhow!("Q.ROOT takes 0-1 arguments"));
+                return Err(anyhow::anyhow!("Q.ROOT TAKES 0-1 ARGUMENTS"));
             }
             Ok(())
         }
         "Q.SCALE" => {
             if argc != 1 {
-                return Err(anyhow::anyhow!("Q.SCALE takes exactly 1 argument"));
+                return Err(anyhow::anyhow!("Q.SCALE TAKES EXACTLY 1 ARGUMENT"));
             }
             Ok(())
         }
         "Q.BIT" => {
             if argc != 1 {
-                return Err(anyhow::anyhow!("ERROR: Q.BIT NEEDS 1 ARG"));
+                return Err(anyhow::anyhow!("Q.BIT NEEDS 1 ARG"));
             }
             Ok(())
         }
         "DEL.CLR" => {
             if argc > 0 {
-                return Err(anyhow::anyhow!("DEL.CLR takes no arguments"));
+                return Err(anyhow::anyhow!("DEL.CLR TAKES NO ARGUMENTS"));
             }
             Ok(())
         }
@@ -652,42 +652,42 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         }
         "NOTE" => {
             if argc < 1 {
-                return Err(anyhow::anyhow!("NOTE requires quoted text"));
+                return Err(anyhow::anyhow!("NOTE REQUIRES QUOTED TEXT"));
             }
             Ok(())
         }
         "NOTE.CLR" => {
             if argc > 0 {
-                return Err(anyhow::anyhow!("NOTE.CLR takes no arguments"));
+                return Err(anyhow::anyhow!("NOTE.CLR TAKES NO ARGUMENTS"));
             }
             Ok(())
         }
         "CPU" | "BPM" => {
             if argc > 1 {
-                return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
+                return Err(anyhow::anyhow!("{} TAKES 0-1 ARGUMENTS", command));
             }
             Ok(())
         }
         "FLASH" | "TITLE" | "LIMIT" => {
             if argc > 1 {
-                return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
+                return Err(anyhow::anyhow!("{} TAKES 0-1 ARGUMENTS", command));
             }
             Ok(())
         }
         "METER.HDR" | "METER.GRID" | "ACTIVITY" | "GRID" | "GRID.DEF" | "GRID.MODE" | "HL.COND" | "HL.SEQ" | "SPECTRUM" => {
             if argc > 1 {
-                return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
+                return Err(anyhow::anyhow!("{} TAKES 0-1 ARGUMENTS", command));
             }
             Ok(())
         }
         "SC.DIAG" | "MIDI.DIAG" => {
             if argc > 2 {
-                return Err(anyhow::anyhow!("{} takes 1-2 arguments", command));
+                return Err(anyhow::anyhow!("{} TAKES 1-2 ARGUMENTS", command));
             }
             Ok(())
         }
         _ => {
-            Err(anyhow::anyhow!("Unknown command: {}", command))
+            Err(anyhow::anyhow!("UNKNOWN COMMAND: {}", command))
         }
     }?;
 

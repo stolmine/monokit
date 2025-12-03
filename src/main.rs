@@ -19,9 +19,11 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use ratatui::prelude::*;
+use std::env;
 use std::io;
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
+use std::time::Duration;
 
 use crate::app::App;
 use crate::meter::meter_thread;
@@ -30,6 +32,83 @@ use crate::types::{MetroCommand, MetroEvent, MetroState};
 use crate::ui::run_app;
 
 fn main() -> Result<()> {
+    let args: Vec<String> = env::args().collect();
+
+    // Check for --run <scene> [wait_ms] mode
+    if args.len() >= 3 && args[1] == "--run" {
+        return run_batch_mode(&args[2], args.get(3).map(|s| s.as_str()));
+    }
+
+    // Normal TUI mode
+    run_tui_mode()
+}
+
+/// Batch mode: load scene, wait for metro, exit (no TUI)
+fn run_batch_mode(scene_name: &str, wait_ms: Option<&str>) -> Result<()> {
+    let wait_duration = wait_ms
+        .and_then(|s| s.parse::<u64>().ok())
+        .unwrap_or(2000);
+
+    let metro_state = Arc::new(Mutex::new(MetroState::default()));
+    let (metro_tx, metro_rx) = mpsc::channel();
+    let (metro_event_tx, metro_event_rx) = mpsc::channel::<MetroEvent>();
+
+    let metro_state_clone = metro_state.clone();
+    let metro_handle = thread::spawn(move || {
+        metro_thread(metro_rx, metro_state_clone, metro_event_tx);
+    });
+
+    let config = config::load_config().unwrap_or_default();
+    let theme = config::load_theme(&config).unwrap_or_default();
+
+    let mut app = App::new(metro_tx, metro_state, theme, &config);
+
+    // Load the scene by setting input and executing
+    app.input = format!("LOAD {}", scene_name);
+    app.execute_command();
+
+    // Check if load failed (look for error in output)
+    if app.output.iter().any(|line| line.contains("ERROR")) {
+        for line in &app.output {
+            eprintln!("{}", line);
+        }
+        let _ = app.metro_tx.send(MetroCommand::Shutdown);
+        let _ = metro_handle.join();
+        return Ok(());
+    }
+
+    // Process metro events for the wait duration
+    let start = std::time::Instant::now();
+    while start.elapsed() < Duration::from_millis(wait_duration) {
+        // Process any pending metro events
+        while let Ok(event) = metro_event_rx.try_recv() {
+            match event {
+                MetroEvent::ExecuteScript(script_idx) => {
+                    app.execute_script(script_idx);
+                }
+                MetroEvent::Error(msg) => {
+                    eprintln!("METRO ERROR: {}", msg);
+                }
+                _ => {}
+            }
+        }
+        thread::sleep(Duration::from_millis(10));
+    }
+
+    // Print REPL output
+    for line in &app.output {
+        println!("{}", line);
+    }
+
+    // Shutdown
+    let _ = app.metro_tx.send(MetroCommand::Shutdown);
+    let _ = metro_handle.join();
+
+    Ok(())
+}
+
+/// Normal TUI mode
+fn run_tui_mode() -> Result<()> {
     let metro_state = Arc::new(Mutex::new(MetroState::default()));
     let (metro_tx, metro_rx) = mpsc::channel();
     let (metro_event_tx, metro_event_rx) = mpsc::channel::<MetroEvent>();

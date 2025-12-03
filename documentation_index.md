@@ -41,6 +41,31 @@
 - 12 dump files: `dump_*.txt` (REPL output from each test)
 - `TEST_FINDINGS.md` (comprehensive analysis and recommendations)
 
+### Error Test Suite & Batch Mode (December 2025)
+
+**Batch Mode Implementation:**
+- Added `--run <scene>` flag to main.rs for automated testing
+- Non-interactive mode: runs scene without TUI
+- Exit after execution completes or on error
+- Enables CI/CD testing and automation workflows
+
+**Error Test Coverage:**
+- 10 comprehensive error test scenes in `repl_tests/`
+- Tests validate error handling across all command categories
+- Systematic coverage of edge cases and invalid inputs
+- Test runner scripts: `run_error_tests.sh`, `analyze_error_tests.sh`
+
+**Key Findings:**
+- Detailed error test report: `repl_tests/ERROR_TEST_REPORT.md`
+- Documents expected vs actual error behavior
+- Identifies validation gaps and improvement opportunities
+- Comprehensive test methodology for regression prevention
+
+**Files:**
+- 10 error scene files: `error_test_*.json`
+- Test automation: `run_error_tests.sh`, `analyze_error_tests.sh`
+- Analysis: `ERROR_TEST_REPORT.md`
+
 ### Tiered REPL Verbosity System (December 2025)
 
 **DEBUG Command Enhancement:**

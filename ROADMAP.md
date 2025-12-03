@@ -883,11 +883,30 @@ Update help system with all new commands and features.
 **Files Modified:**
 - `src/ui/pages/help_content.rs` - Added missing documentation for all Phase 6 features
 
-### REPL Test Suite Issues [Medium] - PENDING ERROR TESTING
+### REPL Test Suite Issues [Medium] - ERROR TESTING COMPLETE
 Address issues discovered during comprehensive REPL command testing (December 2025).
 
-**Test Suite Created:** 12 test scenes covering all command categories
-**Findings Document:** `repl_tests/TEST_FINDINGS.md`
+**Test Suites Created:**
+- 12 test scenes covering all command categories
+- 10 error test scenes covering ~80 error conditions
+- Added `--run` batch mode for automated testing
+
+**Findings Documents:**
+- `repl_tests/TEST_FINDINGS.md` - Command behavior testing
+- `repl_tests/ERROR_TEST_REPORT.md` - Validation testing
+
+**Critical Validation Gaps (P0):**
+- [ ] Semicolon parsing breaks quoted strings: `PRINT "hello;world"` fails
+- [ ] Negative values not validated: `PF -1` accepted silently
+- [ ] Fix: `src/app/script_exec/interactive.rs` and `src/app/script_exec/mod.rs`
+- [ ] Fix: All param handlers in `src/commands/synth/`
+
+**High Priority Validation Gaps (P1):**
+- [ ] SEQ syntax errors not descriptive (all become "UNKNOWN COMMAND")
+- [ ] DEL bounds not enforced: `DEL 17000: TR` accepted (max should be 16000ms)
+- [ ] DEL.X count validation: `DEL.X 0 100: TR` accepted (min should be 1)
+- [ ] Bool params accept values > 1: `BR.REV 2` accepted silently
+- [ ] Pattern bounds bug in eval: `pat <= 3` should be `pat <= 5` in `src/eval/patterns.rs`
 
 **High Priority - Pattern Query Expressions:**
 - [ ] P.N, P.L, P.I not valid in expressions (can't do `A P.N` or `PRINT P.L`)
@@ -899,18 +918,17 @@ Address issues discovered during comprehensive REPL command testing (December 20
 **Medium Priority - Query Commands:**
 - [ ] `M` (metro interval query) not usable in PRINT or variable assignment
 - [ ] `M.SCRIPT M` doesn't parse ("M" not recognized as script identifier)
+- [ ] Extra arguments silently ignored: `TR 1`, `TOSS 1`, `P.HERE 1`, etc.
 
 **Low Priority - Validation Edge Cases:**
-- [ ] Bool param validation in semicolon-chained commands (investigate)
 - [ ] Standardize REPL output formatting (some envelope params lack "SET...TO" prefix)
+- [ ] Error message prefix standardization (some use "Error:", some use "ERROR:")
 
-**Infrastructure Fixes Applied:**
+**Infrastructure Complete:**
 - [x] REPL.DUMP now works in script context (was interactive-only)
 - [x] Scene file validation (structural issues in test scenes)
-
-**Pending:**
-- [ ] Complete error test suite (invalid commands, ranges, types)
-- [ ] Re-evaluate issues after error testing complete
+- [x] Error test suite with 10 test scenes (81% pass rate)
+- [x] Batch mode `--run` for automated testing
 
 ### File Size and DRY Audit [Medium]
 Comprehensive audit to reduce parameter sprawl and improve maintainability.

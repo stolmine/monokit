@@ -686,6 +686,9 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
+        "AUDIO.OUT" | "AUDIO" => {
+            Ok(())
+        }
         _ => {
             Err(anyhow::anyhow!("UNKNOWN COMMAND: {}", command))
         }

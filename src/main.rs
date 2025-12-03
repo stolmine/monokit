@@ -124,7 +124,8 @@ fn run_tui_mode() -> Result<()> {
     };
 
     // Get saved audio device from config (if any)
-    let audio_device: Option<String> = None; // TODO: Load from config later
+    let config = config::load_config().unwrap_or_default();
+    let audio_device = config.display.audio_out_device.clone();
 
     if let Err(e) = sc_process.start(audio_device.as_deref()) {
         eprintln!("ERROR: Failed to start SuperCollider: {}", e);
@@ -179,7 +180,6 @@ fn run_tui_mode() -> Result<()> {
     let mut terminal = Terminal::new(backend)?;
     terminal.clear()?; // Clear alternate screen before first render
 
-    let config = config::load_config().unwrap_or_default();
     let theme = config::load_theme(&config).unwrap_or_default();
 
     let mut app = App::new(metro_tx, metro_state, theme, &config);

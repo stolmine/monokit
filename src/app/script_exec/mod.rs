@@ -77,6 +77,7 @@ impl App {
             &mut self.out_ess,
             &mut self.out_qry,
             &mut self.out_cfm,
+            &self.audio_devices,
             cmd_to_run,
             |msg| {
                 output_messages.push(msg);

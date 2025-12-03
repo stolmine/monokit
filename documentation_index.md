@@ -2,6 +2,34 @@
 
 ## Recent Updates (December 2025)
 
+### Audio Device Selection (December 2025)
+
+**AUDIO.OUT Command:**
+- AUDIO.OUT lists available output devices with numbers
+- AUDIO.OUT <N> selects device by number (1-based)
+- Numbered selection solves case-sensitivity issue
+- Monokit uppercases input, device names are case-sensitive
+- Device change restarts SuperCollider audio engine
+- Selected device saved to config for next launch
+- Also works with direct device name for scripting
+
+**Implementation Details:**
+- Command handler in src/commands/system/audio.rs
+- Validates numbered selection against device list
+- Sends MetroCommand::SetAudioOutDevice to SC
+- src/app/mod.rs: Added audio_devices field
+- src/app/mod.rs: Added audio_device_current field
+- src/ui/mod.rs: Stores device list
+- src/ui/mod.rs: Displays numbered items
+- src/commands/mod.rs: Added audio_devices parameter
+- Help text: Updated in src/ui/pages/help_content.rs
+
+**User Flow:**
+1. Run AUDIO.OUT to see numbered device list
+2. Run AUDIO.OUT 2 to select device #2
+3. SC restarts with new device
+4. Device saved to config automatically
+
 ### SuperCollider Process Management (December 2025)
 
 **Automatic SC Lifecycle:**

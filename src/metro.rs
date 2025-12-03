@@ -423,6 +423,16 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                     };
                     send_osc(&socket, msg, sync_mode == SyncMode::Internal);
                 }
+                MetroCommand::QueryAudioOutDevices => {
+                    let msg = OscMessage {
+                        addr: "/monokit/audio/out/query".to_string(),
+                        args: vec![],
+                    };
+                    send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                }
+                MetroCommand::SetAudioOutDevice(device) => {
+                    let _ = event_tx.send(MetroEvent::RestartScWithDevice(device));
+                }
                 MetroCommand::Error(msg) => {
                     let _ = event_tx.send(MetroEvent::Error(msg));
                 }

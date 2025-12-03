@@ -260,6 +260,8 @@ pub enum MetroCommand {
     ResetTriggerCount,     // Reset the trigger counter to 0
     SendScopeRate(f32),
     Error(String),         // Forward error to REPL via event channel
+    QueryAudioOutDevices,
+    SetAudioOutDevice(String),
 }
 
 #[derive(Debug, Clone, Default)]
@@ -320,6 +322,7 @@ pub enum MetroEvent {
     CpuUpdate(CpuData),
     ScReady,
     AudioDeviceList { current: String, devices: Vec<String> },
+    RestartScWithDevice(String),
     Error(String),
 }
 

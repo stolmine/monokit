@@ -101,6 +101,7 @@ pub struct TestContext {
     pub out_ess: bool,
     pub out_qry: bool,
     pub out_cfm: bool,
+    pub audio_devices: Vec<String>,
     pub outputs: Vec<String>,
 }
 
@@ -149,6 +150,7 @@ impl Default for TestContext {
             out_ess: false,
             out_qry: false,
             out_cfm: false,
+            audio_devices: Vec::new(),
             outputs: Vec::new(),
         }
     }
@@ -201,6 +203,7 @@ impl TestContext {
             &mut self.out_ess,
             &mut self.out_qry,
             &mut self.out_cfm,
+            &self.audio_devices,
             input,
             |msg| {
                 self.outputs.push(msg);

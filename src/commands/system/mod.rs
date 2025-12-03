@@ -1,3 +1,4 @@
+pub mod audio;
 pub mod metro;
 pub mod midi;
 pub mod preset;
@@ -5,6 +6,7 @@ pub mod scene;
 pub mod misc;
 pub mod sc;
 
+pub use audio::*;
 pub use metro::*;
 pub use midi::*;
 pub use preset::*;

@@ -11,7 +11,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ## Recent Updates (December 2025)
 
-### SC Process Management [IN PROGRESS]
+### SC Process Management [COMPLETE]
 Automatic SuperCollider lifecycle management - monokit spawns sclang on startup.
 
 **Completed (Phases 1-4):**
@@ -21,11 +21,14 @@ Automatic SuperCollider lifecycle management - monokit spawns sclang on startup.
 - [x] Main.rs integration - spawn SC, wait for ready, graceful shutdown
 - [x] Graceful shutdown - `Server.quitAll; 0.exit;` + pkill scsynth
 
-**Pending (Phases 5-8):**
-- [ ] AUDIO.OUT command for device selection
-- [ ] SC restart on device change
-- [ ] Config persistence for audio device
-- [ ] Help system update
+**Completed (Phases 5-8):**
+- [x] AUDIO.OUT command for device selection
+- [x] SC restart on device change
+- [x] Config persistence for audio device
+- [x] Help system update
+
+**Implementation Notes:**
+- Numbered device selection (AUDIO.OUT 0-N) implemented to solve case-sensitivity issue with device name matching
 
 **Documentation:**
 - `AUDIO_DEVICE_PLAN.md` - Implementation plan

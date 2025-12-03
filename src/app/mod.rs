@@ -86,6 +86,8 @@ pub struct App {
     pub out_ess: bool,
     pub out_qry: bool,
     pub out_cfm: bool,
+    pub audio_devices: Vec<String>,
+    pub audio_device_current: String,
 }
 
 impl App {
@@ -165,6 +167,8 @@ impl App {
             out_ess: config.display.out_ess,
             out_qry: config.display.out_qry,
             out_cfm: config.display.out_cfm,
+            audio_devices: Vec::new(),
+            audio_device_current: String::new(),
         }
     }
 
@@ -326,6 +330,7 @@ impl App {
             &mut self.out_ess,
             &mut self.out_qry,
             &mut self.out_cfm,
+            &self.audio_devices,
             command,
             |msg| {
                 output_messages.push(msg);

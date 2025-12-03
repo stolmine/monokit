@@ -71,6 +71,7 @@ pub fn process_command<F>(
     out_ess: &mut bool,
     out_qry: &mut bool,
     out_cfm: &mut bool,
+    audio_devices: &[String],
     input: &str,
     mut output: F,
 ) -> Result<Vec<usize>>
@@ -309,6 +310,9 @@ where
         }
         "SC.DIAG" => {
             sc_cmds::handle_sc_diag(&parts, metro_tx, output)?;
+        }
+        "AUDIO.OUT" | "AUDIO" => {
+            system::handle_audio_out(&parts, metro_tx, audio_devices, output)?;
         }
         "PF" => {
             synth_params::handle_pf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;

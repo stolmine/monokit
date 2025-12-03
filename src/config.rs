@@ -68,6 +68,8 @@ pub struct DisplayConfig {
     pub out_qry: bool,
     #[serde(default)]
     pub out_cfm: bool,
+    #[serde(default)]
+    pub audio_out_device: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -186,6 +188,7 @@ impl Default for DisplayConfig {
             out_ess: false,
             out_qry: false,
             out_cfm: false,
+            audio_out_device: None,
         }
     }
 }
@@ -484,6 +487,13 @@ pub fn save_out_qry(enabled: bool) -> Result<()> {
 pub fn save_out_cfm(enabled: bool) -> Result<()> {
     let mut config = load_config()?;
     config.display.out_cfm = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_audio_out_device(device: Option<String>) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.audio_out_device = device;
     save_config(&config)?;
     Ok(())
 }

@@ -7,6 +7,36 @@ use crate::commands::process_command;
 use crate::eval::eval_expression;
 use std::io::Write;
 
+fn split_respecting_quotes(cmd: &str) -> Vec<String> {
+    let mut parts = Vec::new();
+    let mut current = String::new();
+    let mut in_quote = false;
+    let mut quote_char = ' ';
+
+    for c in cmd.chars() {
+        match c {
+            '"' | '\'' if !in_quote => {
+                in_quote = true;
+                quote_char = c;
+                current.push(c);
+            }
+            c if c == quote_char && in_quote => {
+                in_quote = false;
+                current.push(c);
+            }
+            ';' if !in_quote => {
+                parts.push(current.trim().to_string());
+                current.clear();
+            }
+            _ => current.push(c),
+        }
+    }
+    if !current.is_empty() {
+        parts.push(current.trim().to_string());
+    }
+    parts.into_iter().filter(|s| !s.is_empty()).collect()
+}
+
 impl App {
     fn debug_log(&self, msg: String) {
         if let Ok(mut f) = std::fs::OpenOptions::new()
@@ -213,7 +243,7 @@ impl App {
             }
 
             let mut search_start = 0;
-            for sub_cmd in line_to_process.split(';') {
+            for sub_cmd in split_respecting_quotes(&line_to_process) {
                 let sub_cmd_trimmed = sub_cmd.trim();
                 if sub_cmd_trimmed.is_empty() {
                     search_start += sub_cmd.len() + 1; // +1 for semicolon

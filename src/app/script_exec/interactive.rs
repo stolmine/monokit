@@ -114,9 +114,14 @@ impl App {
             cmd.clone()
         };
 
-        for sub_cmd in cmd_to_process.split(';') {
+        for sub_cmd in super::split_respecting_quotes(&cmd_to_process) {
             let sub_cmd = sub_cmd.trim();
             if sub_cmd.is_empty() {
+                continue;
+            }
+
+            if let Err(e) = crate::commands::validate_script_command(sub_cmd) {
+                self.add_output(format!("ERROR: {}", e));
                 continue;
             }
 

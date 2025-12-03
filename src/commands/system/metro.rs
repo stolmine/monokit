@@ -118,16 +118,21 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: M.SCRIPT REQUIRES A SCRIPT NUMBER (1-8)".to_string());
+        output("ERROR: M.SCRIPT REQUIRES A SCRIPT NUMBER (1-8 OR M)".to_string());
         return Ok(());
     }
-    let value: usize = parts[1]
-        .parse()
-        .context("Failed to parse script number")?;
-    if !(1..=8).contains(&value) {
-        output("ERROR: M.SCRIPT VALUE MUST BE 1-8".to_string());
-        return Ok(());
-    }
+    let value: usize = if parts[1].to_uppercase() == "M" {
+        8
+    } else {
+        let parsed_value: usize = parts[1]
+            .parse()
+            .context("Failed to parse script number")?;
+        if !(1..=8).contains(&parsed_value) {
+            output("ERROR: M.SCRIPT VALUE MUST BE 1-8 OR M".to_string());
+            return Ok(());
+        }
+        parsed_value
+    };
     metro_tx
         .send(MetroCommand::SetScriptIndex(value - 1))
         .context("Failed to send script index to metro thread")?;

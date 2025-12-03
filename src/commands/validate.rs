@@ -9,25 +9,70 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
     }
 
     let upper = trimmed.to_uppercase();
+
+    // Check for SEQ" or SEQ' anywhere in command (no space before quote)
     if upper.contains("SEQ\"") || upper.contains("SEQ'") {
-        return Err(anyhow::anyhow!("SEQ requires space before quote: SEQ \"...\""));
+        return Err(anyhow::anyhow!("SEQ REQUIRES SPACE BEFORE QUOTE"));
     }
 
-    if let Some(seq_pos) = upper.find("SEQ ") {
-        let after_seq_start = seq_pos + 4;
-        if after_seq_start < trimmed.len() {
-            let remaining = &trimmed[after_seq_start..];
-            let remaining_trimmed = remaining.trim_start();
-            if remaining_trimmed.starts_with('"') {
-                if !remaining_trimmed.ends_with('"') || remaining_trimmed.len() == 1 {
-                    return Err(anyhow::anyhow!("SEQ has unclosed quote"));
+    // Early SEQ validation - must come before general command parsing
+    if upper.starts_with("SEQ") {
+        // Check for proper SEQ command format
+        if let Some(seq_pos) = upper.find("SEQ ") {
+            let after_seq_start = seq_pos + 4;
+            if after_seq_start < trimmed.len() {
+                let remaining = &trimmed[after_seq_start..];
+                let remaining_trimmed = remaining.trim_start();
+
+                // Check if pattern is empty
+                if remaining_trimmed.is_empty() {
+                    return Err(anyhow::anyhow!("SEQ REQUIRES A QUOTED PATTERN"));
                 }
-            } else if remaining_trimmed.starts_with('\'') {
-                if !remaining_trimmed.ends_with('\'') || remaining_trimmed.len() == 1 {
-                    return Err(anyhow::anyhow!("SEQ has unclosed quote"));
+
+                // Check for proper quote structure
+                if remaining_trimmed.starts_with('"') {
+                    if !remaining_trimmed.ends_with('"') || remaining_trimmed.len() == 1 {
+                        return Err(anyhow::anyhow!("SEQ HAS UNCLOSED QUOTE"));
+                    }
+                    // Check for empty pattern
+                    if remaining_trimmed.len() == 2 {
+                        return Err(anyhow::anyhow!("SEQ REQUIRES A QUOTED PATTERN"));
+                    }
+                    // Check for empty alternation or random choice
+                    let inner = &remaining_trimmed[1..remaining_trimmed.len()-1];
+                    if inner.contains("<>") {
+                        return Err(anyhow::anyhow!("SEQ HAS EMPTY ALTERNATION <>"));
+                    }
+                    if inner.contains("{}") {
+                        return Err(anyhow::anyhow!("SEQ HAS EMPTY RANDOM CHOICE {{}}"));
+                    }
+                } else if remaining_trimmed.starts_with('\'') {
+                    if !remaining_trimmed.ends_with('\'') || remaining_trimmed.len() == 1 {
+                        return Err(anyhow::anyhow!("SEQ HAS UNCLOSED QUOTE"));
+                    }
+                    // Check for empty pattern
+                    if remaining_trimmed.len() == 2 {
+                        return Err(anyhow::anyhow!("SEQ REQUIRES A QUOTED PATTERN"));
+                    }
+                    // Check for empty alternation or random choice
+                    let inner = &remaining_trimmed[1..remaining_trimmed.len()-1];
+                    if inner.contains("<>") {
+                        return Err(anyhow::anyhow!("SEQ HAS EMPTY ALTERNATION <>"));
+                    }
+                    if inner.contains("{}") {
+                        return Err(anyhow::anyhow!("SEQ HAS EMPTY RANDOM CHOICE {{}}"));
+                    }
+                } else {
+                    // No quote at all
+                    return Err(anyhow::anyhow!("SEQ REQUIRES A QUOTED PATTERN"));
                 }
+            } else {
+                return Err(anyhow::anyhow!("SEQ REQUIRES A QUOTED PATTERN"));
             }
         }
+
+        // If all validation passes, SEQ is valid
+        return Ok(());
     }
 
     if trimmed.contains(':') {

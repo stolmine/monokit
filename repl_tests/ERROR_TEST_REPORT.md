@@ -6,6 +6,20 @@
 
 ---
 
+## Fixes Applied (December 2025)
+
+All critical and high-priority issues from this report have been addressed:
+- **P0-1**: Semicolon string parsing - FIXED (quote-aware splitting implemented)
+- **P0-2**: Negative value validation - FIXED (all synth params now reject negatives)
+- **P1-1**: Pattern bounds bug in eval - FIXED (pat <= 3 changed to pat <= 5)
+- **P1-2**: Bool params accept values > 1 - FIXED (strict 0/1 validation)
+- **P1-3**: DEL time upper bound - FIXED (16000ms max enforced)
+- **P1-4**: DEL.X count of 0 - FIXED (count >= 1 required)
+- **P1-5**: SEQ errors not descriptive - FIXED (specific error messages)
+- **P2-1**: Extra argument validation - FIXED (zero-arg commands reject extras)
+
+---
+
 ## Table of Contents
 
 1. [Executive Summary](#executive-summary)

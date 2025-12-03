@@ -33,7 +33,7 @@ macro_rules! define_int_param {
                     .parse()
                     .context($parse_ctx)?
             };
-            if !($min..=$max).contains(&value) {
+            if value < $min || value > $max {
                 output(format!("ERROR: {} MUST BE BETWEEN {} AND {}", $display_name, $min, $max));
                 return Ok(());
             }
@@ -77,7 +77,7 @@ macro_rules! define_int_param_ms {
                     .parse()
                     .context($parse_ctx)?
             };
-            if !($min..=$max).contains(&value) {
+            if value < $min || value > $max {
                 output(format!("ERROR: {} MUST BE BETWEEN {} AND {} MS", $display_name, $min, $max));
                 return Ok(());
             }
@@ -123,7 +123,7 @@ macro_rules! define_float_param {
                     .parse()
                     .context($parse_ctx)?
             };
-            if !($min..=$max).contains(&value) {
+            if value < $min || value > $max {
                 output(format!("ERROR: {} MUST BE BETWEEN {} AND {} {}", $display_name, $min, $max, $unit));
                 return Ok(());
             }
@@ -211,7 +211,7 @@ macro_rules! define_mode_param {
                     .parse()
                     .context($parse_ctx)?
             };
-            if !($min..=$max).contains(&value) {
+            if value < $min || value > $max {
                 output(format!("ERROR: {}", $error_msg));
                 return Ok(());
             }
@@ -255,7 +255,7 @@ macro_rules! define_mode_param_with_names {
                     .parse()
                     .context($parse_ctx)?
             };
-            if !($min..=$max).contains(&value) {
+            if value < $min || value > $max {
                 output(format!("ERROR: {}", $error_msg));
                 return Ok(());
             }

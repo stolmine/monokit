@@ -32,12 +32,15 @@ where
             .parse()
             .context("Failed to parse pitch shift mode")?
     };
-    let clipped = value.clamp(0, 1);
+    if value != 0 && value != 1 {
+        output("ERROR: VALUE MUST BE 0 OR 1".to_string());
+        return Ok(());
+    }
     metro_tx
-        .send(MetroCommand::SendParam("ps_mode".to_string(), OscType::Int(clipped)))
+        .send(MetroCommand::SendParam("ps_mode".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
     if debug_level >= TIER_CONFIRMS || out_cfm {
-        let mode_name = match clipped {
+        let mode_name = match value {
             0 => "GRANULAR",
             1 => "FREQ_SHIFT",
             _ => "UNKNOWN",
@@ -185,12 +188,15 @@ where
             .parse()
             .context("Failed to parse pitch shift target")?
     };
-    let clipped = value.clamp(0, 1);
+    if value != 0 && value != 1 {
+        output("ERROR: VALUE MUST BE 0 OR 1".to_string());
+        return Ok(());
+    }
     metro_tx
-        .send(MetroCommand::SendParam("ps_targ".to_string(), OscType::Int(clipped)))
+        .send(MetroCommand::SendParam("ps_targ".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
     if debug_level >= TIER_CONFIRMS || out_cfm {
-        let targ_name = match clipped {
+        let targ_name = match value {
             0 => "MAIN",
             1 => "REPEAT_ONLY",
             _ => "UNKNOWN",

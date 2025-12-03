@@ -34,12 +34,15 @@ where
             .parse()
             .context("Failed to parse beat repeat active")?
     };
-    let clipped = value.clamp(0, 1);
+    if value != 0 && value != 1 {
+        output("ERROR: VALUE MUST BE 0 OR 1".to_string());
+        return Ok(());
+    }
     metro_tx
-        .send(MetroCommand::SendParam("br_act".to_string(), OscType::Int(clipped)))
+        .send(MetroCommand::SendParam("br_act".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
 
-    if clipped == 1 {
+    if value == 1 {
         metro_tx
             .send(MetroCommand::SendParam("br_mix".to_string(), OscType::Int(16383)))
             .context("Failed to send br_mix to metro thread")?;
@@ -61,7 +64,7 @@ where
         .context("Failed to send br_len_ms to metro thread")?;
 
     if debug_level >= TIER_CONFIRMS || out_cfm {
-        output(format!("SET BEAT REPEAT ACTIVE TO {}", clipped));
+        output(format!("SET BEAT REPEAT ACTIVE TO {}", value));
     }
     Ok(())
 }
@@ -149,12 +152,15 @@ where
             .parse()
             .context("Failed to parse beat repeat reverse")?
     };
-    let clipped = value.clamp(0, 1);
+    if value != 0 && value != 1 {
+        output("ERROR: VALUE MUST BE 0 OR 1".to_string());
+        return Ok(());
+    }
     metro_tx
-        .send(MetroCommand::SendParam("br_rev".to_string(), OscType::Int(clipped)))
+        .send(MetroCommand::SendParam("br_rev".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
     if debug_level >= TIER_CONFIRMS || out_cfm {
-        output(format!("SET BEAT REPEAT REVERSE TO {}", clipped));
+        output(format!("SET BEAT REPEAT REVERSE TO {}", value));
     }
     Ok(())
 }

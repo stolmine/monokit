@@ -42,21 +42,30 @@ where
     }
 
     let delay_ms: u64 = if let Some((expr_val, _)) = eval_expression(&prefix_parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+        if expr_val < 0 {
+            output("ERROR: DELAY TIME CANNOT BE NEGATIVE".to_string());
+            return Ok(());
+        }
+        if expr_val > 16000 {
+            output("ERROR: DELAY TIME MAX 16000MS".to_string());
+            return Ok(());
+        }
         expr_val as u64
     } else {
-        match prefix_parts[1].parse() {
-            Ok(v) => v,
+        match prefix_parts[1].parse::<u64>() {
+            Ok(v) => {
+                if v > 16000 {
+                    output("ERROR: DELAY TIME MAX 16000MS".to_string());
+                    return Ok(());
+                }
+                v
+            }
             Err(_) => {
                 output("ERROR: FAILED TO PARSE DELAY TIME".to_string());
                 return Ok(());
             }
         }
     };
-
-    if delay_ms > 16000 {
-        output("ERROR: DELAY TIME MAX 16000MS".to_string());
-        return Ok(());
-    }
 
     metro_tx
         .send(MetroCommand::ScheduleDelayed(after_colon.to_string(), delay_ms, script_index))
@@ -128,10 +137,20 @@ where
     }
 
     let count: i16 = if let Some((expr_val, _)) = eval_expression(&prefix_parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+        if expr_val < 1 {
+            output("ERROR: COUNT MUST BE AT LEAST 1".to_string());
+            return Ok(());
+        }
         expr_val
     } else {
         match prefix_parts[1].parse() {
-            Ok(v) => v,
+            Ok(v) => {
+                if v < 1 {
+                    output("ERROR: COUNT MUST BE AT LEAST 1".to_string());
+                    return Ok(());
+                }
+                v
+            }
             Err(_) => {
                 output("ERROR: FAILED TO PARSE COUNT".to_string());
                 return Ok(());
@@ -140,21 +159,30 @@ where
     };
 
     let interval_ms: u64 = if let Some((expr_val, _)) = eval_expression(&prefix_parts, 2, variables, patterns, counters, scripts, script_index, scale) {
+        if expr_val < 0 {
+            output("ERROR: INTERVAL CANNOT BE NEGATIVE".to_string());
+            return Ok(());
+        }
+        if expr_val > 16000 {
+            output("ERROR: INTERVAL MAX 16000MS".to_string());
+            return Ok(());
+        }
         expr_val as u64
     } else {
-        match prefix_parts[2].parse() {
-            Ok(v) => v,
+        match prefix_parts[2].parse::<u64>() {
+            Ok(v) => {
+                if v > 16000 {
+                    output("ERROR: INTERVAL MAX 16000MS".to_string());
+                    return Ok(());
+                }
+                v
+            }
             Err(_) => {
                 output("ERROR: FAILED TO PARSE INTERVAL".to_string());
                 return Ok(());
             }
         }
     };
-
-    if count < 1 {
-        output("ERROR: COUNT MUST BE AT LEAST 1".to_string());
-        return Ok(());
-    }
 
     metro_tx
         .send(MetroCommand::ScheduleRepeated(after_colon.to_string(), count, interval_ms, script_index))
@@ -206,10 +234,20 @@ where
     }
 
     let count: i16 = if let Some((expr_val, _)) = eval_expression(&prefix_parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+        if expr_val < 1 {
+            output("ERROR: COUNT MUST BE AT LEAST 1".to_string());
+            return Ok(());
+        }
         expr_val
     } else {
         match prefix_parts[1].parse() {
-            Ok(v) => v,
+            Ok(v) => {
+                if v < 1 {
+                    output("ERROR: COUNT MUST BE AT LEAST 1".to_string());
+                    return Ok(());
+                }
+                v
+            }
             Err(_) => {
                 output("ERROR: FAILED TO PARSE COUNT".to_string());
                 return Ok(());
@@ -218,21 +256,30 @@ where
     };
 
     let interval_ms: u64 = if let Some((expr_val, _)) = eval_expression(&prefix_parts, 2, variables, patterns, counters, scripts, script_index, scale) {
+        if expr_val < 0 {
+            output("ERROR: INTERVAL CANNOT BE NEGATIVE".to_string());
+            return Ok(());
+        }
+        if expr_val > 16000 {
+            output("ERROR: INTERVAL MAX 16000MS".to_string());
+            return Ok(());
+        }
         expr_val as u64
     } else {
-        match prefix_parts[2].parse() {
-            Ok(v) => v,
+        match prefix_parts[2].parse::<u64>() {
+            Ok(v) => {
+                if v > 16000 {
+                    output("ERROR: INTERVAL MAX 16000MS".to_string());
+                    return Ok(());
+                }
+                v
+            }
             Err(_) => {
                 output("ERROR: FAILED TO PARSE INTERVAL".to_string());
                 return Ok(());
             }
         }
     };
-
-    if count < 1 {
-        output("ERROR: COUNT MUST BE AT LEAST 1".to_string());
-        return Ok(());
-    }
 
     metro_tx
         .send(MetroCommand::ScheduleDelayed(after_colon.to_string(), 0, script_index))

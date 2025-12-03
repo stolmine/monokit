@@ -2,6 +2,24 @@
 
 ## Recent Updates (December 2025)
 
+### Error Handling & Validation Fixes (December 2025)
+
+**Parser & Validation Improvements:**
+- Semicolon in quoted strings now preserved (`PRINT "hello;world"` works correctly)
+- Negative parameter values properly validated across all synth parameters
+- DEL/DEL.X/DEL.R bounds validation enforced (max 16000ms, count >= 1)
+- Bool parameters reject values > 1 consistently
+- SEQ syntax errors now descriptive instead of generic "UNKNOWN COMMAND"
+- Extra arguments rejected for zero-arg commands (TOSS, TR, RST, etc.)
+- Pattern bounds fixed in eval (patterns 4-5 now work in expressions)
+- DEL commands with colons no longer parsed as conditionals
+
+**Pattern Query Expression Support:**
+- P.N, P.L, P.I now work in expressions (`A P.N`, `PRINT P.L`)
+- P.MIN, P.MAX, P.SUM, P.AVG, P.FND now expression-compatible
+- PN.MIN, PN.MAX, PN.SUM, PN.AVG, PN.FND for explicit patterns
+- M.SCRIPT M now accepts "M" as alias for script 8
+
 ### REPL Test Suite (December 2025)
 
 **Comprehensive Test Coverage:**

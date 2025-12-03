@@ -6,6 +6,18 @@
 
 ---
 
+## Fixes Applied (December 2025)
+
+All high-priority feature gaps from this report have been addressed:
+- **Pattern Query Expressions**: P.N, P.L, P.I, P.MIN, P.MAX, P.SUM, P.AVG, P.FND now work in expressions
+- **Explicit Pattern Queries**: PN.MIN, PN.MAX, PN.SUM, PN.AVG, PN.FND now expression-compatible
+- **Metro Query Expression**: M now works in expressions (`PRINT M`, `A M`)
+- **M.SCRIPT Alias**: M.SCRIPT M now accepted as alias for M.SCRIPT 8
+
+All test scenes now pass with expected behavior. The original issues documented below have been resolved.
+
+---
+
 ## Executive Summary
 
 12 test scenes were created and executed covering all major Monokit command categories. **7 tests passed fully**, **5 tests passed with minor issues**. No critical bugs found. Several limitations and inconsistencies identified for potential future enhancement.

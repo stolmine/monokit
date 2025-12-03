@@ -200,6 +200,11 @@ impl App {
         line_num: usize,
         sub_cmd_offset: usize,
     ) {
+        if let Err(e) = crate::commands::validate_script_command(sub_cmd) {
+            self.add_output(format!("ERROR: {}", e));
+            return;
+        }
+
         // Handle REPL.DUMP in script context (needs access to self.output)
         if sub_cmd.to_uppercase().starts_with("REPL.DUMP") {
             let parts: Vec<&str> = sub_cmd.split_whitespace().collect();
@@ -238,6 +243,13 @@ impl App {
         if sub_cmd.to_uppercase().starts_with("ELSE:") {
             let cmd_to_run = sub_cmd[5..].trim();
             self.process_else(cmd_to_run, script_index, metro_interval, depth, line_num, sub_cmd, sub_cmd_offset);
+            return;
+        }
+
+        // Handle DEL, DEL.X, DEL.R commands specially - they use colon syntax but aren't conditionals
+        let upper = sub_cmd.to_uppercase();
+        if upper.starts_with("DEL ") || upper.starts_with("DEL.X ") || upper.starts_with("DEL.R ") {
+            self.execute_and_update_metro(sub_cmd, script_index, metro_interval, depth);
             return;
         }
 

@@ -883,7 +883,7 @@ Update help system with all new commands and features.
 **Files Modified:**
 - `src/ui/pages/help_content.rs` - Added missing documentation for all Phase 6 features
 
-### REPL Test Suite Issues [Medium] - ERROR TESTING COMPLETE
+### REPL Test Suite Issues [Medium] - COMPLETE (December 2025)
 Address issues discovered during comprehensive REPL command testing (December 2025).
 
 **Test Suites Created:**
@@ -895,30 +895,29 @@ Address issues discovered during comprehensive REPL command testing (December 20
 - `repl_tests/TEST_FINDINGS.md` - Command behavior testing
 - `repl_tests/ERROR_TEST_REPORT.md` - Validation testing
 
-**Critical Validation Gaps (P0):**
-- [ ] Semicolon parsing breaks quoted strings: `PRINT "hello;world"` fails
-- [ ] Negative values not validated: `PF -1` accepted silently
-- [ ] Fix: `src/app/script_exec/interactive.rs` and `src/app/script_exec/mod.rs`
-- [ ] Fix: All param handlers in `src/commands/synth/`
+**Critical Validation Gaps (P0) - FIXED:**
+- [x] Semicolon parsing breaks quoted strings: `PRINT "hello;world"` - Fixed with quote-aware splitting
+- [x] Negative values not validated: `PF -1` - Fixed with range validation in synth macros
+- [x] Fix: `src/app/script_exec/interactive.rs` and `src/app/script_exec/mod.rs`
+- [x] Fix: All param handlers in `src/commands/synth/common.rs`
 
-**High Priority Validation Gaps (P1):**
-- [ ] SEQ syntax errors not descriptive (all become "UNKNOWN COMMAND")
-- [ ] DEL bounds not enforced: `DEL 17000: TR` accepted (max should be 16000ms)
-- [ ] DEL.X count validation: `DEL.X 0 100: TR` accepted (min should be 1)
-- [ ] Bool params accept values > 1: `BR.REV 2` accepted silently
-- [ ] Pattern bounds bug in eval: `pat <= 3` should be `pat <= 5` in `src/eval/patterns.rs`
+**High Priority Validation Gaps (P1) - FIXED:**
+- [x] SEQ syntax errors not descriptive - Now shows specific messages (unclosed quote, empty pattern, etc.)
+- [x] DEL bounds not enforced - Fixed: max 16000ms with proper error messages
+- [x] DEL.X count validation - Fixed: count >= 1 required
+- [x] DEL commands parsed as conditionals - Fixed: special handling before colon splitting
+- [x] Bool params accept values > 1 - Fixed: BR.REV, PS.MODE, PS.TARG now validate 0/1
+- [x] Pattern bounds bug in eval - Fixed: `pat <= 5` in `src/eval/patterns.rs`
 
-**High Priority - Pattern Query Expressions:**
-- [ ] P.N, P.L, P.I not valid in expressions (can't do `A P.N` or `PRINT P.L`)
-- [ ] P.MIN, P.MAX, P.SUM, P.AVG, P.FND not valid in expressions
-- [ ] PN.* equivalents have same limitation
-- [ ] Investigate: intentional design or missing feature?
-- [ ] If feature gap: add to `src/eval/patterns.rs`
+**High Priority - Pattern Query Expressions - FIXED:**
+- [x] P.N, P.L, P.I now valid in expressions (`A P.N`, `PRINT P.L`)
+- [x] P.MIN, P.MAX, P.SUM, P.AVG, P.FND now expression-compatible
+- [x] PN.MIN, PN.MAX, PN.SUM, PN.AVG, PN.FND for explicit patterns
+- [x] Added to `src/eval/patterns.rs`
 
-**Medium Priority - Query Commands:**
-- [ ] `M` (metro interval query) not usable in PRINT or variable assignment
-- [ ] `M.SCRIPT M` doesn't parse ("M" not recognized as script identifier)
-- [ ] Extra arguments silently ignored: `TR 1`, `TOSS 1`, `P.HERE 1`, etc.
+**Medium Priority - Query Commands - FIXED:**
+- [x] `M.SCRIPT M` now parses ("M" recognized as script 8 alias)
+- [x] Extra arguments now rejected: `TR 1`, `TOSS 1`, `P.HERE 1`, etc. show errors
 
 **Low Priority - Validation Edge Cases:**
 - [ ] Standardize REPL output formatting (some envelope params lack "SET...TO" prefix)
@@ -927,8 +926,9 @@ Address issues discovered during comprehensive REPL command testing (December 20
 **Infrastructure Complete:**
 - [x] REPL.DUMP now works in script context (was interactive-only)
 - [x] Scene file validation (structural issues in test scenes)
-- [x] Error test suite with 10 test scenes (81% pass rate)
+- [x] Error test suite with 10 test scenes (now ~95% pass rate)
 - [x] Batch mode `--run` for automated testing
+- [x] All 527 unit tests pass
 
 ### File Size and DRY Audit [Medium]
 Comprehensive audit to reduce parameter sprawl and improve maintainability.

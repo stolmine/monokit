@@ -2,6 +2,45 @@
 
 ## Recent Updates (December 2025)
 
+### REPL Test Suite (December 2025)
+
+**Comprehensive Test Coverage:**
+- 12 test scenes created in `repl_tests/` directory
+- Each scene exercises specific command categories
+- All scenes include REPL.DUMP commands for output verification
+- Detailed findings documented in `repl_tests/TEST_FINDINGS.md`
+
+**Test Coverage Areas:**
+- Buffer FX: Beat Repeat (BR.*), Pitch Shift (PS.*)
+- Effects: Filter, Resonator, Delay, Reverb, EQ, LoFi, Ring Mod, Compressor, Routing
+- Envelopes: All 6 envelope types (AENV, PENV, FMEV, DENV, FBEV, FLEV) with aliases
+- Math/Logic: ADD/SUB/MUL/DIV/MOD/MAP, comparisons, IF/ELIF/ELSE, PROB/EV/SKIP, L loops
+- Metro/Timing: M, M.BPM, M.ACT, M.SCRIPT, DEL commands
+- Patterns: P.* and PN.* operations (state, query, manipulation, math)
+- Quantize: N operator, Q quantization, Q.ROOT, Q.SCALE, Q.BIT custom scales
+- Randomization: RND.*, pattern randomization, TOG/TOSS/EITH
+- SEQ/Random: Inline sequences with all Phase 2 features (repeat, toggle, random choice)
+- Synth/Osc: Primary/modulator oscillators, FM, feedback, discontinuity, mix controls
+- UI/System: DEBUG tiers, OUT.* overrides, HEADER, CPU, METER.*, SCOPE.*, SLEW
+- Vars/Counters: Variables A-D, X-Z, T, J, K; Counters N1-N4 with MIN/MAX/RST
+
+**Test Results:**
+- 7 tests passed fully
+- 5 tests passed with minor issues (documented in findings)
+- No critical bugs found
+
+**Key Findings:**
+- **REPL.DUMP Fix Applied:** Now works in script context, not just interactive mode
+- **Pattern Query Limitation:** P.MIN, P.MAX, P.SUM, P.AVG, P.FND (and PN.* equivalents) not valid as expressions
+- **Metro Query Issue:** `PRINT M` doesn't work (M query not expression-compatible)
+- **Bool Param Edge Case:** Minor validation issue in command chains
+- Several test script authoring errors identified and documented
+
+**Files:**
+- 12 scene files: `test_*.json` (buffer_fx, effects, envelopes, math_logic, metro_timing, patterns, quantize, randomization, seq_random, synth_osc, ui_system, vars_counters)
+- 12 dump files: `dump_*.txt` (REPL output from each test)
+- `TEST_FINDINGS.md` (comprehensive analysis and recommendations)
+
 ### Tiered REPL Verbosity System (December 2025)
 
 **DEBUG Command Enhancement:**
@@ -532,6 +571,17 @@ Modular Rust implementation (~17,300 total lines across 93 files, after Phase 1 
   - **randomization.rs** - Randomization commands (RND.VOICE, RND.OSC, RND.FM, RND.MOD, RND.ENV, etc.)
 - **src/tests/** - Test suite module (21 files, ~5,288 lines, 411 tests)
   - Organized by category: envelope, counter, slew, tog, rnd, toss_eith, expr, condition, pattern, pattern_ops, variable, validation, math, map, comparison, scene, debug, buffer_effects
+
+### REPL Test Scenes
+
+- **repl_tests/** - Comprehensive REPL command test suite (27 files)
+  - 12 test scene files (.json): buffer_fx, effects, envelopes, math_logic, metro_timing, patterns, quantize, randomization, seq_random, synth_osc, ui_system, vars_counters
+  - 12 dump files (.txt): REPL output verification from each test
+  - TEST_FINDINGS.md: Detailed analysis of test results and issues found
+  - Created December 2025 to validate all major command categories
+  - 7 full passes, 5 partial passes, no critical bugs
+  - Identified REPL.DUMP fix need (now applied)
+  - Documented pattern query expression limitation
 
 Key features:
 - Page-based interface: Live, Script 1-8, Metro (M), Init (I), Pattern (P), Help (paginated with 10 category pages)

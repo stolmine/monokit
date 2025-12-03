@@ -200,6 +200,32 @@ impl App {
         line_num: usize,
         sub_cmd_offset: usize,
     ) {
+        // Handle REPL.DUMP in script context (needs access to self.output)
+        if sub_cmd.to_uppercase().starts_with("REPL.DUMP") {
+            let parts: Vec<&str> = sub_cmd.split_whitespace().collect();
+            let filename = if parts.len() > 1 {
+                parts[1].to_lowercase()
+            } else {
+                "repl_dump.txt".to_string()
+            };
+            match std::fs::File::create(&filename) {
+                Ok(mut file) => {
+                    use std::io::Write;
+                    for line in &self.output {
+                        if let Err(e) = writeln!(file, "{}", line) {
+                            self.add_output(format!("ERROR: WRITE FAILED: {}", e));
+                            return;
+                        }
+                    }
+                    self.add_output(format!("DUMPED {} LINES TO {}", self.output.len(), filename));
+                }
+                Err(e) => {
+                    self.add_output(format!("ERROR: FILE CREATE FAILED: {}", e));
+                }
+            }
+            return;
+        }
+
         if sub_cmd.to_uppercase().starts_with("ELIF ") {
             if let Some(colon_pos) = sub_cmd.find(':') {
                 let elif_cond = sub_cmd[5..colon_pos].trim();

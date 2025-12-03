@@ -883,6 +883,35 @@ Update help system with all new commands and features.
 **Files Modified:**
 - `src/ui/pages/help_content.rs` - Added missing documentation for all Phase 6 features
 
+### REPL Test Suite Issues [Medium] - PENDING ERROR TESTING
+Address issues discovered during comprehensive REPL command testing (December 2025).
+
+**Test Suite Created:** 12 test scenes covering all command categories
+**Findings Document:** `repl_tests/TEST_FINDINGS.md`
+
+**High Priority - Pattern Query Expressions:**
+- [ ] P.N, P.L, P.I not valid in expressions (can't do `A P.N` or `PRINT P.L`)
+- [ ] P.MIN, P.MAX, P.SUM, P.AVG, P.FND not valid in expressions
+- [ ] PN.* equivalents have same limitation
+- [ ] Investigate: intentional design or missing feature?
+- [ ] If feature gap: add to `src/eval/patterns.rs`
+
+**Medium Priority - Query Commands:**
+- [ ] `M` (metro interval query) not usable in PRINT or variable assignment
+- [ ] `M.SCRIPT M` doesn't parse ("M" not recognized as script identifier)
+
+**Low Priority - Validation Edge Cases:**
+- [ ] Bool param validation in semicolon-chained commands (investigate)
+- [ ] Standardize REPL output formatting (some envelope params lack "SET...TO" prefix)
+
+**Infrastructure Fixes Applied:**
+- [x] REPL.DUMP now works in script context (was interactive-only)
+- [x] Scene file validation (structural issues in test scenes)
+
+**Pending:**
+- [ ] Complete error test suite (invalid commands, ranges, types)
+- [ ] Re-evaluate issues after error testing complete
+
 ### File Size and DRY Audit [Medium]
 Comprehensive audit to reduce parameter sprawl and improve maintainability.
 

@@ -1,0 +1,178 @@
+{
+  "version": 1,
+  "scripts": [
+    {
+      "lines": [
+        "A 100; PRINT A",
+        "B ADD A 50; PRINT B",
+        "C MUL B 2; PRINT C",
+        "D DIV C 3; PRINT D",
+        "A SUB D 10; PRINT A",
+        "B MOD A 7; PRINT B",
+        "C 0; D 0",
+        "PRINT \"A-D TEST DONE\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "X RND 100; PRINT X",
+        "Y RRND 50 100; PRINT Y",
+        "Z ADD X Y; PRINT Z",
+        "T EITH 1 0; PRINT T",
+        "X MUL T Z; PRINT X",
+        "Y SUB Z X; PRINT Y",
+        "Z 0; T 0",
+        "PRINT \"X-Z-T TEST DONE\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "J 10; K 20; PRINT J; PRINT K",
+        "J ADD J K; PRINT J",
+        "K MUL J 2; PRINT K",
+        "J DIV K 3; PRINT J",
+        "K MOD J 5; PRINT K",
+        "J 0; K 0",
+        "PRINT \"J-K TEST DONE\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "N1.MIN 0; N1.MAX 5; PRINT N1",
+        "PRINT N1; PRINT N1; PRINT N1",
+        "N2.MIN 10; N2.MAX 15; PRINT N2",
+        "PRINT N2; PRINT N2",
+        "N3.MIN 0; N3.MAX 3; PRINT N3",
+        "N4.MIN 100; N4.MAX 110",
+        "PRINT N4; PRINT N4; PRINT N4",
+        "PRINT \"COUNTERS TEST DONE\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"M TICK\"",
+        "SCRIPT 1",
+        "SCRIPT 2",
+        "SCRIPT 3",
+        "SCRIPT 4",
+        "M.ACT 0",
+        "REPL.DUMP repl_tests/dump_vars_counters.txt",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"INIT: VARS/COUNTERS TEST\"",
+        "M 500",
+        "M.ACT 1",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    }
+  ],
+  "patterns": [
+    {
+      "data": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [200, 202, 204, 206, 208, 210, 212, 214, 216, 218, 220, 222, 224, 226, 228, 230],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125],
+      "length": 16,
+      "index": 0
+    }
+  ],
+  "pattern_working": 0,
+  "notes": [
+    "VARIABLE TEST",
+    "COUNTER TEST",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+  ]
+}

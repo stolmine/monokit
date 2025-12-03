@@ -124,7 +124,7 @@ impl App {
 
             if !self.input.trim().is_empty() {
                 if let Err(e) = crate::commands::validate_script_command(&self.input) {
-                    self.script_error = Some(format!("ERROR: {}", e));
+                    self.script_error = Some(format!("{}", e));
                     self.script_error_time = Some(std::time::Instant::now());
                     return;
                 }

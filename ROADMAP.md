@@ -11,6 +11,32 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ## Recent Updates (December 2025)
 
+### Command Validation & Error Display Fixes [COMPLETE]
+Comprehensive command validation audit and error display improvements.
+
+**Command Validation Audit (20+ missing commands):**
+- [x] CPU, BPM, HEADER - System query commands now validated
+- [x] METER.HDR, METER.GRID, SPECTRUM, ACTIVITY, GRID, GRID.MODE - UI toggles now validated
+- [x] HL.SEQ, HL.COND - Highlighting commands now validated
+- [x] N1, N2, N3, N4 counter queries now validated
+- [x] N1.MIN, N1.MAX (and N2-N4 equivalents) now validated
+- [x] TITLE, FLASH, CLEAR - Utility commands now validated
+- [x] REPL.DUMP - REPL export command now validated
+- [x] OUT.ERR, OUT.ESS, OUT.QRY, OUT.CFM - Output control commands now validated
+
+**PN Expression Validation:**
+- [x] PN.* commands now require pattern argument even when used as expressions
+- [x] Prevents cryptic "not enough arguments" errors during evaluation
+- [x] Examples: PN.NEXT, PN.MIN, PN.MAX, PN.SUM, PN.AVG properly validated
+
+**Error Display Improvements:**
+- [x] Errors now display in bottom border of script blocks (fits 50x18 terminal)
+- [x] Error message prefix fix: "ERROR: ERROR:" duplicate removed
+- [x] Validation errors show immediately on script page line edit
+
+**UI Bug Fixes:**
+- [x] Ctrl+U now works on Notes page (was missing from input handler)
+
 ### Global Search Feature [COMPLETE]
 Unified search functionality with isolated scopes for help pages and scripts.
 

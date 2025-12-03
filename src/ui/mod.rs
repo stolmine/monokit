@@ -390,7 +390,7 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     KeyCode::Delete if !is_help && app.current_page != Page::Pattern && key.modifiers.contains(KeyModifiers::SHIFT) => {
                         app.clear_input();
                     }
-                    KeyCode::Char('u') if !is_help && app.current_page != Page::Pattern && app.current_page != Page::Notes && key.modifiers.contains(KeyModifiers::CONTROL) => {
+                    KeyCode::Char('u') if !is_help && app.current_page != Page::Pattern && key.modifiers.contains(KeyModifiers::CONTROL) => {
                         app.delete_to_start();
                     }
                     KeyCode::Char(c) if !is_help && app.current_page != Page::Pattern => {

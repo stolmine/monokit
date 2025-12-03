@@ -2,6 +2,114 @@ use anyhow::Result;
 
 use super::resolve_alias;
 
+/// Validates PN.* expression fragments that require pattern arguments.
+/// Returns the number of tokens consumed, or None if this is not a PN.* expression.
+fn validate_pn_expression(parts: &[&str], start_idx: usize) -> Result<Option<usize>> {
+    if start_idx >= parts.len() {
+        return Ok(None);
+    }
+
+    let part = parts[start_idx].to_uppercase();
+    let part = resolve_alias(&part);
+
+    // Check for PN.* commands that require pattern number
+    match part.as_str() {
+        "PN.HERE" | "PN.NEXT" | "PN.PREV" | "PN.POP" | "PN.REV" | "PN.SHUF" | "PN.SORT" |
+        "PN.MIN" | "PN.MAX" | "PN.SUM" | "PN.AVG" | "PN.RND" => {
+            // These require exactly 1 argument (pattern number)
+            if start_idx + 1 >= parts.len() {
+                return Err(anyhow::anyhow!("ERROR: {} NEEDS PAT NUM", part));
+            }
+            // Recursively validate the argument
+            if let Some(consumed) = validate_pn_expression(parts, start_idx + 1)? {
+                Ok(Some(1 + consumed))
+            } else {
+                Ok(Some(2)) // Command + its argument
+            }
+        }
+        "PN.L" | "PN.I" => {
+            // These require at least 1 argument (pattern number)
+            if start_idx + 1 >= parts.len() {
+                return Err(anyhow::anyhow!("{} requires at least 1 argument", part));
+            }
+            // Recursively validate the argument
+            if let Some(consumed) = validate_pn_expression(parts, start_idx + 1)? {
+                Ok(Some(1 + consumed))
+            } else {
+                Ok(Some(2)) // Command + at least first argument
+            }
+        }
+        "PN.PUSH" | "PN.ADD" | "PN.SUB" | "PN.MUL" | "PN.DIV" | "PN.MOD" | "PN.FND" | "PN.ROT" => {
+            // These require 2 arguments (pattern number and value/amount)
+            if start_idx + 2 >= parts.len() {
+                return Err(anyhow::anyhow!("ERROR: {} NEEDS PAT NUM AND VAL", part));
+            }
+            // Recursively validate both arguments
+            let mut consumed = 1; // The command itself
+            if let Some(arg1_consumed) = validate_pn_expression(parts, start_idx + 1)? {
+                consumed += arg1_consumed;
+            } else {
+                consumed += 1;
+            }
+            if let Some(arg2_consumed) = validate_pn_expression(parts, start_idx + consumed)? {
+                consumed += arg2_consumed;
+            } else {
+                consumed += 1;
+            }
+            Ok(Some(consumed))
+        }
+        "PN.SCALE" => {
+            // Requires 3 arguments (pattern, min, max)
+            if start_idx + 3 >= parts.len() {
+                return Err(anyhow::anyhow!("ERROR: PN.SCALE NEEDS PAT, MIN, MAX"));
+            }
+            // Recursively validate all three arguments
+            let mut consumed = 1; // The command itself
+            for _ in 0..3 {
+                if let Some(arg_consumed) = validate_pn_expression(parts, start_idx + consumed)? {
+                    consumed += arg_consumed;
+                } else {
+                    consumed += 1;
+                }
+            }
+            Ok(Some(consumed))
+        }
+        "PN" => {
+            // Requires at least 2 arguments (pattern and index)
+            if start_idx + 2 >= parts.len() {
+                return Err(anyhow::anyhow!("PN requires at least 2 arguments"));
+            }
+            // Recursively validate both arguments
+            let mut consumed = 1; // The command itself
+            if let Some(arg1_consumed) = validate_pn_expression(parts, start_idx + 1)? {
+                consumed += arg1_consumed;
+            } else {
+                consumed += 1;
+            }
+            if let Some(arg2_consumed) = validate_pn_expression(parts, start_idx + consumed)? {
+                consumed += arg2_consumed;
+            } else {
+                consumed += 1;
+            }
+            Ok(Some(consumed))
+        }
+        _ => Ok(None)
+    }
+}
+
+/// Validates all PN.* expressions in the argument list
+fn validate_all_pn_expressions(parts: &[&str], start_idx: usize) -> Result<()> {
+    let mut idx = start_idx;
+    while idx < parts.len() {
+        if let Some(consumed) = validate_pn_expression(parts, idx)? {
+            idx += consumed;
+        } else {
+            idx += 1;
+        }
+    }
+    Ok(())
+}
+
 pub fn validate_script_command(cmd: &str) -> Result<()> {
     let trimmed = cmd.trim();
     if trimmed.is_empty() {
@@ -112,6 +220,12 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
 
     match command.as_str() {
         "A" | "B" | "C" | "D" | "I" | "X" | "Y" | "Z" | "T" | "J" | "K" => {
+            Ok(())
+        }
+        "N1" | "N2" | "N3" | "N4" => {
+            if argc > 0 {
+                return Err(anyhow::anyhow!("{} takes no arguments", command));
+            }
             Ok(())
         }
         "P.HERE" | "P.NEXT" | "P.PREV" | "P.POP" | "P.REV" | "P.SHUF" | "P.SORT" | "P.MIN" | "P.MAX" | "P.SUM" | "P.AVG" => {
@@ -313,7 +427,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "THEME" | "DEBUG" | "OUT.ERR" | "OUT.ESS" | "OUT.QRY" | "OUT.CFM" | "REPL.DUMP" => {
+        "THEME" | "DEBUG" | "HEADER" | "OUT.ERR" | "OUT.ESS" | "OUT.QRY" | "OUT.CFM" | "REPL.DUMP" => {
             if argc > 1 {
                 return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
             }
@@ -326,14 +440,14 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             Ok(())
         }
         "N1.MAX" | "N2.MAX" | "N3.MAX" | "N4.MAX" => {
-            if argc < 1 {
-                return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
+            if argc > 1 {
+                return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
             }
             Ok(())
         }
         "N1.MIN" | "N2.MIN" | "N3.MIN" | "N4.MIN" => {
-            if argc < 1 {
-                return Err(anyhow::anyhow!("{} requires at least 1 argument", command));
+            if argc > 1 {
+                return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
             }
             Ok(())
         }
@@ -343,9 +457,15 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "M.BPM" | "M.ACT" | "M.SCRIPT" => {
-            if argc != 1 {
-                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+        "M.BPM" => {
+            if argc > 1 {
+                return Err(anyhow::anyhow!("M.BPM takes 0-1 arguments"));
+            }
+            Ok(())
+        }
+        "M.ACT" | "M.SCRIPT" => {
+            if argc > 1 {
+                return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
             }
             Ok(())
         }
@@ -502,9 +622,15 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "Q.ROOT" | "Q.SCALE" => {
+        "Q.ROOT" => {
+            if argc > 1 {
+                return Err(anyhow::anyhow!("Q.ROOT takes 0-1 arguments"));
+            }
+            Ok(())
+        }
+        "Q.SCALE" => {
             if argc != 1 {
-                return Err(anyhow::anyhow!("{} takes exactly 1 argument", command));
+                return Err(anyhow::anyhow!("Q.SCALE takes exactly 1 argument"));
             }
             Ok(())
         }
@@ -536,8 +662,37 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
+        "CPU" | "BPM" => {
+            if argc > 1 {
+                return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
+            }
+            Ok(())
+        }
+        "FLASH" | "TITLE" | "LIMIT" => {
+            if argc > 1 {
+                return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
+            }
+            Ok(())
+        }
+        "METER.HDR" | "METER.GRID" | "ACTIVITY" | "GRID" | "GRID.DEF" | "GRID.MODE" | "HL.COND" | "HL.SEQ" | "SPECTRUM" => {
+            if argc > 1 {
+                return Err(anyhow::anyhow!("{} takes 0-1 arguments", command));
+            }
+            Ok(())
+        }
+        "SC.DIAG" | "MIDI.DIAG" => {
+            if argc > 2 {
+                return Err(anyhow::anyhow!("{} takes 1-2 arguments", command));
+            }
+            Ok(())
+        }
         _ => {
             Err(anyhow::anyhow!("Unknown command: {}", command))
         }
-    }
+    }?;
+
+    // Validate PN.* expressions used as arguments
+    validate_all_pn_expressions(&parts, 1)?;
+
+    Ok(())
 }

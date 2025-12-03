@@ -1,4 +1,6 @@
 use ratatui::{prelude::*, widgets::*};
+use ratatui::widgets::block::{Title, Position};
+use ratatui::layout::Alignment;
 use crate::ui::state_highlight::{highlight_stateful_operators, apply_conditional_activity};
 use crate::ui::search_highlight::highlight_matches_in_line;
 use crate::types::SearchScope;
@@ -120,20 +122,24 @@ pub fn render_script_page(app: &crate::App, num: u8) -> Paragraph<'static> {
         }
     }
 
+    let mut block = Block::default()
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(app.theme.border))
+        .title(format!(" SCRIPT {} ", num))
+        .title_style(Style::default().fg(app.theme.foreground));
+
     if let Some(error_msg) = &app.script_error {
-        lines.push(Line::from(""));
-        lines.push(Line::from(vec![
-            Span::styled(format!("  {}", error_msg), Style::default().fg(app.theme.error)),
-        ]));
+        block = block.title(
+            Title::from(Span::styled(
+                format!(" {} ", error_msg),
+                Style::default().fg(app.theme.error)
+            ))
+            .alignment(Alignment::Left)
+            .position(Position::Bottom)
+        );
     }
 
     Paragraph::new(lines)
         .style(Style::default().bg(app.theme.background).fg(app.theme.foreground))
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_style(Style::default().fg(app.theme.border))
-                .title(format!(" SCRIPT {} ", num))
-                .title_style(Style::default().fg(app.theme.foreground))
-        )
+        .block(block)
 }

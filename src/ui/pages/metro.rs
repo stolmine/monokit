@@ -1,4 +1,6 @@
 use ratatui::{prelude::*, widgets::*};
+use ratatui::widgets::block::{Title, Position};
+use ratatui::layout::Alignment;
 use crate::ui::state_highlight::{highlight_stateful_operators, apply_conditional_activity};
 use crate::ui::search_highlight::highlight_matches_in_line;
 use crate::types::{Page, SearchScope};
@@ -133,20 +135,24 @@ pub fn render_metro_page(app: &crate::App) -> Paragraph<'static> {
         }
     }
 
+    let mut block = Block::default()
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(app.theme.border))
+        .title(" METRO ")
+        .title_style(Style::default().fg(app.theme.foreground));
+
     if let Some(error_msg) = &app.script_error {
-        text.push(Line::from(""));
-        text.push(Line::from(vec![
-            Span::styled(format!("  {}", error_msg), Style::default().fg(app.theme.error)),
-        ]));
+        block = block.title(
+            Title::from(Span::styled(
+                format!(" {} ", error_msg),
+                Style::default().fg(app.theme.error)
+            ))
+            .alignment(Alignment::Left)
+            .position(Position::Bottom)
+        );
     }
 
     Paragraph::new(text)
         .style(Style::default().bg(app.theme.background).fg(app.theme.foreground))
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_style(Style::default().fg(app.theme.border))
-                .title(" METRO ")
-                .title_style(Style::default().fg(app.theme.foreground))
-        )
+        .block(block)
 }

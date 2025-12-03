@@ -139,3 +139,215 @@ fn test_validate_tog_valid() {
     assert!(validate_script_command("TOG 0 1").is_ok());
     assert!(validate_script_command("TOG A B").is_ok());
 }
+
+#[test]
+fn test_validate_pn_commands_require_pattern_arg() {
+    // Query commands - require pattern number
+    assert!(validate_script_command("PN.NEXT").is_err());
+    assert!(validate_script_command("PN.PREV").is_err());
+    assert!(validate_script_command("PN.HERE").is_err());
+    assert!(validate_script_command("PN.MIN").is_err());
+    assert!(validate_script_command("PN.MAX").is_err());
+    assert!(validate_script_command("PN.SUM").is_err());
+    assert!(validate_script_command("PN.AVG").is_err());
+    assert!(validate_script_command("PN.FND").is_err());
+
+    // State commands - require pattern number
+    assert!(validate_script_command("PN.L").is_err());
+    assert!(validate_script_command("PN.I").is_err());
+
+    // Manipulation commands - require pattern number
+    assert!(validate_script_command("PN.PUSH").is_err());
+    assert!(validate_script_command("PN.POP").is_err());
+    assert!(validate_script_command("PN.REV").is_err());
+    assert!(validate_script_command("PN.ROT").is_err());
+    assert!(validate_script_command("PN.SHUF").is_err());
+    assert!(validate_script_command("PN.SORT").is_err());
+    assert!(validate_script_command("PN.RND").is_err());
+
+    // Math commands - require pattern number and value
+    assert!(validate_script_command("PN.ADD").is_err());
+    assert!(validate_script_command("PN.SUB").is_err());
+    assert!(validate_script_command("PN.MUL").is_err());
+    assert!(validate_script_command("PN.DIV").is_err());
+    assert!(validate_script_command("PN.MOD").is_err());
+    assert!(validate_script_command("PN.SCALE").is_err());
+
+    // Base PN command - requires at least pattern and index
+    assert!(validate_script_command("PN").is_err());
+    assert!(validate_script_command("PN 0").is_err());
+}
+
+#[test]
+fn test_validate_pn_commands_with_valid_args() {
+    // Query commands with pattern number
+    assert!(validate_script_command("PN.NEXT 0").is_ok());
+    assert!(validate_script_command("PN.PREV 3").is_ok());
+    assert!(validate_script_command("PN.HERE 5").is_ok());
+    assert!(validate_script_command("PN.MIN 2").is_ok());
+
+    // State commands with pattern number
+    assert!(validate_script_command("PN.L 0").is_ok());
+    assert!(validate_script_command("PN.I 1").is_ok());
+
+    // Manipulation commands with pattern number
+    assert!(validate_script_command("PN.POP 0").is_ok());
+    assert!(validate_script_command("PN.REV 1").is_ok());
+    assert!(validate_script_command("PN.RND 2").is_ok());
+
+    // Math commands with pattern and value
+    assert!(validate_script_command("PN.PUSH 0 100").is_ok());
+    assert!(validate_script_command("PN.ADD 1 50").is_ok());
+    assert!(validate_script_command("PN.SCALE 2 0 100").is_ok());
+
+    // Base PN with pattern, index, and optional value
+    assert!(validate_script_command("PN 0 0").is_ok());
+    assert!(validate_script_command("PN 1 5 200").is_ok());
+}
+
+#[test]
+fn test_validate_pn_as_expression_without_args() {
+    // These should fail - PN.* used as expressions without required args
+    // PN.NEXT at end of command with no pattern arg
+    assert!(validate_script_command("PF PN.NEXT").is_err());
+    assert!(validate_script_command("PA PN.HERE").is_err());
+
+    // PN.NEXT in middle of expression without its arg
+    // Note: "ADD PN.NEXT 10" is ambiguous - could be interpreted as PN.NEXT taking 10
+    // The simpler case is when PN.* is clearly missing its arg
+    assert!(validate_script_command("MUL PN.NEXT PN.HERE").is_err());
+}
+
+#[test]
+fn test_validate_pn_as_expression_with_args() {
+    // These should pass - PN.* used as expressions WITH required args
+    assert!(validate_script_command("PF PN.NEXT 0").is_ok());
+    assert!(validate_script_command("PA PN.HERE 1").is_ok());
+    assert!(validate_script_command("ADD PN.NEXT 0 10").is_ok());
+    assert!(validate_script_command("MUL PN.HERE 0 PN.NEXT 1").is_ok());
+    assert!(validate_script_command("DC ADD PN.HERE 2 100").is_ok());
+}
+
+#[test]
+fn test_validate_header_command() {
+    // HEADER with no args (query current level)
+    assert!(validate_script_command("HEADER").is_ok());
+
+    // HEADER with valid levels 0-4
+    assert!(validate_script_command("HEADER 0").is_ok());
+    assert!(validate_script_command("HEADER 1").is_ok());
+    assert!(validate_script_command("HEADER 2").is_ok());
+    assert!(validate_script_command("HEADER 3").is_ok());
+    assert!(validate_script_command("HEADER 4").is_ok());
+
+    // HEADER with too many arguments should fail
+    assert!(validate_script_command("HEADER 1 2").is_err());
+}
+
+#[test]
+fn test_validate_cpu_command() {
+    assert!(validate_script_command("CPU").is_ok());
+    assert!(validate_script_command("CPU 0").is_ok());
+    assert!(validate_script_command("CPU 1").is_ok());
+    assert!(validate_script_command("CPU 1 2").is_err());
+}
+
+#[test]
+fn test_validate_bpm_command() {
+    assert!(validate_script_command("BPM").is_ok());
+    assert!(validate_script_command("BPM 1").is_ok());
+    assert!(validate_script_command("BPM 0").is_ok());
+    assert!(validate_script_command("BPM 1 2").is_err());
+}
+
+#[test]
+fn test_validate_counter_commands() {
+    assert!(validate_script_command("N1").is_ok());
+    assert!(validate_script_command("N2").is_ok());
+    assert!(validate_script_command("N3").is_ok());
+    assert!(validate_script_command("N4").is_ok());
+    assert!(validate_script_command("N1 1").is_err());
+
+    assert!(validate_script_command("N1.MAX").is_ok());
+    assert!(validate_script_command("N1.MAX 10").is_ok());
+    assert!(validate_script_command("N1.MAX 10 20").is_err());
+
+    assert!(validate_script_command("N2.MIN").is_ok());
+    assert!(validate_script_command("N2.MIN 5").is_ok());
+    assert!(validate_script_command("N2.MIN 5 10").is_err());
+}
+
+#[test]
+fn test_validate_ui_toggle_commands() {
+    assert!(validate_script_command("METER.HDR").is_ok());
+    assert!(validate_script_command("METER.HDR 1").is_ok());
+    assert!(validate_script_command("METER.HDR 0 1").is_err());
+
+    assert!(validate_script_command("METER.GRID").is_ok());
+    assert!(validate_script_command("METER.GRID 1").is_ok());
+
+    assert!(validate_script_command("ACTIVITY").is_ok());
+    assert!(validate_script_command("ACTIVITY 0").is_ok());
+
+    assert!(validate_script_command("GRID").is_ok());
+    assert!(validate_script_command("GRID 1").is_ok());
+
+    assert!(validate_script_command("GRID.DEF").is_ok());
+    assert!(validate_script_command("GRID.DEF 0").is_ok());
+
+    assert!(validate_script_command("GRID.MODE").is_ok());
+    assert!(validate_script_command("GRID.MODE 1").is_ok());
+
+    assert!(validate_script_command("HL.COND").is_ok());
+    assert!(validate_script_command("HL.COND 1").is_ok());
+
+    assert!(validate_script_command("HL.SEQ").is_ok());
+    assert!(validate_script_command("HL.SEQ 0").is_ok());
+
+    assert!(validate_script_command("SPECTRUM").is_ok());
+    assert!(validate_script_command("SPECTRUM 1").is_ok());
+}
+
+#[test]
+fn test_validate_system_commands() {
+    assert!(validate_script_command("FLASH").is_ok());
+    assert!(validate_script_command("FLASH 500").is_ok());
+    assert!(validate_script_command("FLASH 100 200").is_err());
+
+    assert!(validate_script_command("TITLE").is_ok());
+    assert!(validate_script_command("TITLE 1").is_ok());
+    assert!(validate_script_command("TITLE 1 2").is_err());
+
+    assert!(validate_script_command("LIMIT").is_ok());
+    assert!(validate_script_command("LIMIT 1").is_ok());
+    assert!(validate_script_command("LIMIT 1 0").is_err());
+}
+
+#[test]
+fn test_validate_diag_commands() {
+    assert!(validate_script_command("SC.DIAG 1").is_ok());
+    assert!(validate_script_command("SC.DIAG 1 2").is_ok());
+    assert!(validate_script_command("SC.DIAG 1 2 3").is_err());
+
+    assert!(validate_script_command("MIDI.DIAG 1").is_ok());
+    assert!(validate_script_command("MIDI.DIAG 1 0").is_ok());
+    assert!(validate_script_command("MIDI.DIAG 1 2 3").is_err());
+}
+
+#[test]
+fn test_validate_metro_commands() {
+    assert!(validate_script_command("M.ACT").is_ok());
+    assert!(validate_script_command("M.ACT 1").is_ok());
+    assert!(validate_script_command("M.ACT 1 2").is_err());
+
+    assert!(validate_script_command("M.SCRIPT").is_ok());
+    assert!(validate_script_command("M.SCRIPT 5").is_ok());
+    assert!(validate_script_command("M.SCRIPT 1 2").is_err());
+}
+
+#[test]
+fn test_validate_q_root_command() {
+    assert!(validate_script_command("Q.ROOT").is_ok());
+    assert!(validate_script_command("Q.ROOT 60").is_ok());
+    assert!(validate_script_command("Q.ROOT 60 70").is_err());
+}

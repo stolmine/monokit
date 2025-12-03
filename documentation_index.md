@@ -2,7 +2,30 @@
 
 ## Recent Updates (December 2025)
 
-### Error Handling & Validation Fixes (December 2025)
+### Command Validation & Error Display Fixes (December 2025)
+
+**Command Validation Audit (20+ missing commands):**
+- CPU, BPM, HEADER - System query commands now validated
+- METER.HDR, METER.GRID, SPECTRUM, ACTIVITY, GRID, GRID.MODE - UI toggles now validated
+- HL.SEQ, HL.COND - Highlighting commands now validated
+- N1, N2, N3, N4 counter queries now validated
+- N1.MIN, N1.MAX (and N2-N4 equivalents) now validated
+- TITLE, FLASH, CLEAR - Utility commands now validated
+- REPL.DUMP - REPL export command now validated
+- OUT.ERR, OUT.ESS, OUT.QRY, OUT.CFM - Output control commands now validated
+
+**PN Expression Validation:**
+- PN.* commands now require pattern argument even when used as expressions
+- Prevents cryptic "not enough arguments" errors during evaluation
+- Examples: PN.NEXT, PN.MIN, PN.MAX, PN.SUM, PN.AVG properly validated
+
+**Error Display Improvements:**
+- Errors now display in bottom border of script blocks (fits 50x18 terminal)
+- Error message prefix fix: "ERROR: ERROR:" duplicate removed
+- Validation errors show immediately on script page line edit
+
+**UI Bug Fixes:**
+- Ctrl+U now works on Notes page (was missing from input handler)
 
 **Parser & Validation Improvements:**
 - Semicolon in quoted strings now preserved (`PRINT "hello;world"` works correctly)

@@ -12,6 +12,7 @@
 - Device change restarts SuperCollider audio engine
 - Selected device saved to config for next launch
 - Also works with direct device name for scripting
+- Output always displays (direct command response, not gated by debug level)
 
 **Implementation Details:**
 - Command handler in src/commands/system/audio.rs

@@ -119,12 +119,10 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     app.audio_device_current = current.clone();
                     app.audio_devices = devices.clone();
 
-                    if app.should_output(crate::types::OutputCategory::Query) {
-                        app.add_output(format!("CURRENT: {}", current.to_uppercase()));
-                        app.add_output("AVAILABLE DEVICES:".to_string());
-                        for (i, device) in devices.iter().enumerate() {
-                            app.add_output(format!("  {}: {}", i + 1, device));
-                        }
+                    app.add_output(format!("CURRENT: {}", current.to_uppercase()));
+                    app.add_output("AVAILABLE DEVICES:".to_string());
+                    for (i, device) in devices.iter().enumerate() {
+                        app.add_output(format!("  {}: {}", i + 1, device));
                     }
                 }
                 MetroEvent::RestartScWithDevice(device) => {

@@ -79,6 +79,9 @@ impl App {
             &mut self.out_cfm,
             &self.audio_devices,
             &mut self.header_scramble,
+            &mut self.scramble_enabled,
+            &mut self.scramble_mode,
+            &mut self.scramble_speed,
             cmd_to_run,
             |msg| {
                 output_messages.push(msg);

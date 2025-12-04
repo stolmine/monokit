@@ -40,6 +40,17 @@
 - Rolling reveal effect uses 5-character scramble buffer
 - Integrated into App struct and main event loop
 
+**Commands:**
+- SCRMBL 0/1: Enable or disable scramble effect
+- SCRMBL.MODE 0-3: Set animation style (0=Regular, 1=Smash, 2=Rolling, 3=Overshoot)
+- SCRMBL.SPD 1-10: Control animation speed (1=slowest, 10=fastest)
+- All settings persist to config.toml
+
+**UI Scramble Elements:**
+- CPU and BPM indicators scramble on startup
+- Same animation modes and speed apply to all UI elements
+- Creates cohesive visual identity across interface
+
 **Implementation Details:**
 - Core animation logic in src/scramble.rs
 - TitleScrambler struct with per-character state tracking
@@ -49,12 +60,15 @@
 - TITLE command triggers in src/commands/system/misc.rs
 - Script execution triggers in src/app/script_exec/mod.rs
 - Test infrastructure in src/tests/common.rs
+- Command handlers in src/commands/system/misc.rs
 
 **Animation Behavior:**
 - Each character randomly scrambles with ASCII printables
 - Characters reveal in rolling sequence, not all at once
 - Creates dynamic, organic reveal effect
 - Animation state stored in App for event loop updates
+- Four distinct animation modes provide visual variety
+- Speed control scales animation duration proportionally
 
 ### SuperCollider Process Management (December 2025)
 

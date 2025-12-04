@@ -1234,6 +1234,9 @@ pub fn handle_title<F>(
     parts: &[&str],
     title_mode: &mut u8,
     current_scene_name: &Option<String>,
+    scramble_enabled: bool,
+    scramble_mode: u8,
+    scramble_speed: u8,
     header_scramble: &mut Option<crate::scramble::ScrambleAnimation>,
     mut output: F,
 ) where
@@ -1248,14 +1251,24 @@ pub fn handle_title<F>(
             "0" => {
                 *title_mode = 0;
                 let _ = config::save_title_mode(*title_mode);
-                *header_scramble = Some(crate::scramble::ScrambleAnimation::new("MONOKIT"));
+                *header_scramble = if scramble_enabled {
+                    let mode = crate::scramble::ScrambleMode::from_u8(scramble_mode);
+                    Some(crate::scramble::ScrambleAnimation::new_with_mode("MONOKIT", mode, scramble_speed))
+                } else {
+                    None
+                };
                 output("TITLE: 0 (MONOKIT)".to_string());
             }
             "1" => {
                 *title_mode = 1;
                 let _ = config::save_title_mode(*title_mode);
                 let text = current_scene_name.as_ref().map(|s| s.as_str()).unwrap_or("[UNSAVED]");
-                *header_scramble = Some(crate::scramble::ScrambleAnimation::new(text));
+                *header_scramble = if scramble_enabled {
+                    let mode = crate::scramble::ScrambleMode::from_u8(scramble_mode);
+                    Some(crate::scramble::ScrambleAnimation::new_with_mode(text, mode, scramble_speed))
+                } else {
+                    None
+                };
                 output("TITLE: 1 (SCENE NAME)".to_string());
             }
             _ => {
@@ -1378,5 +1391,70 @@ pub fn handle_out_cfm<F>(
                 output("ERROR: OUT.CFM TAKES 0 (OFF) OR 1 (ON)".to_string());
             }
         }
+    }
+}
+
+pub fn handle_scrmbl<F>(
+    parts: &[&str],
+    scramble_enabled: &mut bool,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("SCRMBL: {}", if *scramble_enabled { "ON" } else { "OFF" }));
+    } else if let Ok(val) = parts[1].parse::<u8>() {
+        *scramble_enabled = val != 0;
+        output(format!("SCRMBL: {}", if *scramble_enabled { "ON" } else { "OFF" }));
+        let _ = config::save_scramble_enabled(*scramble_enabled);
+    } else {
+        output("ERROR: SCRMBL TAKES 0 (OFF) OR 1 (ON)".to_string());
+    }
+}
+
+pub fn handle_scrmbl_mode<F>(
+    parts: &[&str],
+    scramble_mode: &mut u8,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    let mode_names = ["REGULAR", "SMASH", "ROLLING", "OVERSHOOT"];
+    if parts.len() == 1 {
+        let name = mode_names.get(*scramble_mode as usize).unwrap_or(&"UNKNOWN");
+        output(format!("SCRMBL.MODE: {} ({})", scramble_mode, name));
+    } else if let Ok(val) = parts[1].parse::<u8>() {
+        if val <= 3 {
+            *scramble_mode = val;
+            let name = mode_names[val as usize];
+            output(format!("SCRMBL.MODE: {} ({})", val, name));
+            let _ = config::save_scramble_mode(*scramble_mode);
+        } else {
+            output("ERROR: SCRMBL.MODE TAKES 0-3".to_string());
+        }
+    } else {
+        output("ERROR: SCRMBL.MODE TAKES 0-3".to_string());
+    }
+}
+
+pub fn handle_scrmbl_spd<F>(
+    parts: &[&str],
+    scramble_speed: &mut u8,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("SCRMBL.SPD: {}", scramble_speed));
+    } else if let Ok(val) = parts[1].parse::<u8>() {
+        if (1..=10).contains(&val) {
+            *scramble_speed = val;
+            output(format!("SCRMBL.SPD: {}", val));
+            let _ = config::save_scramble_speed(*scramble_speed);
+        } else {
+            output("ERROR: SCRMBL.SPD TAKES 1-10".to_string());
+        }
+    } else {
+        output("ERROR: SCRMBL.SPD TAKES 1-10".to_string());
     }
 }

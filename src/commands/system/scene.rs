@@ -6,6 +6,9 @@ pub fn handle_save<F>(
     patterns: &PatternStorage,
     notes: &NotesStorage,
     current_scene_name: &mut Option<String>,
+    scramble_enabled: bool,
+    scramble_mode: u8,
+    scramble_speed: u8,
     header_scramble: &mut Option<crate::scramble::ScrambleAnimation>,
     debug_level: u8,
     out_ess: bool,
@@ -22,7 +25,12 @@ pub fn handle_save<F>(
     match crate::scene::save_scene(&name, &scene) {
         Ok(()) => {
             *current_scene_name = Some(name.clone());
-            *header_scramble = Some(crate::scramble::ScrambleAnimation::new(&name));
+            *header_scramble = if scramble_enabled {
+                let mode = crate::scramble::ScrambleMode::from_u8(scramble_mode);
+                Some(crate::scramble::ScrambleAnimation::new_with_mode(&name, mode, scramble_speed))
+            } else {
+                None
+            };
             if debug_level >= TIER_ESSENTIAL || out_ess {
                 output(format!("SAVED SCENE: {}", name));
             }
@@ -38,6 +46,9 @@ pub fn handle_load<F>(
     patterns: &mut PatternStorage,
     notes: &mut NotesStorage,
     current_scene_name: &mut Option<String>,
+    scramble_enabled: bool,
+    scramble_mode: u8,
+    scramble_speed: u8,
     header_scramble: &mut Option<crate::scramble::ScrambleAnimation>,
     debug_level: u8,
     out_ess: bool,
@@ -56,7 +67,12 @@ where
             scene.apply_to_app_state(scripts, patterns, notes);
             *variables = crate::types::Variables::default();
             *current_scene_name = Some(name.clone());
-            *header_scramble = Some(crate::scramble::ScrambleAnimation::new(&name));
+            *header_scramble = if scramble_enabled {
+                let mode = crate::scramble::ScrambleMode::from_u8(scramble_mode);
+                Some(crate::scramble::ScrambleAnimation::new_with_mode(&name, mode, scramble_speed))
+            } else {
+                None
+            };
             if debug_level >= TIER_ESSENTIAL || out_ess {
                 output(format!("LOADED SCENE: {}", name));
             }

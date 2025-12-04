@@ -73,6 +73,9 @@ pub fn process_command<F>(
     out_cfm: &mut bool,
     audio_devices: &[String],
     header_scramble: &mut Option<crate::scramble::ScrambleAnimation>,
+    scramble_enabled: &mut bool,
+    scramble_mode: &mut u8,
+    scramble_speed: &mut u8,
     input: &str,
     mut output: F,
 ) -> Result<Vec<usize>>
@@ -667,13 +670,13 @@ where
             return misc::handle_script(&parts, variables, patterns, counters, scripts, script_index, scale);
         }
         "SAVE" => {
-            scene_cmds::handle_save(&parts, scripts, patterns, notes, current_scene_name, header_scramble, *debug_level, *out_ess, output);
+            scene_cmds::handle_save(&parts, scripts, patterns, notes, current_scene_name, *scramble_enabled, *scramble_mode, *scramble_speed, header_scramble, *debug_level, *out_ess, output);
         }
         "LOAD" => {
             if *load_rst {
                 misc::handle_rst(metro_tx, *debug_level, *out_ess, &mut |_| {})?;
             }
-            if scene_cmds::handle_load(&parts, variables, scripts, patterns, notes, current_scene_name, header_scramble, *debug_level, *out_ess, output) {
+            if scene_cmds::handle_load(&parts, variables, scripts, patterns, notes, current_scene_name, *scramble_enabled, *scramble_mode, *scramble_speed, header_scramble, *debug_level, *out_ess, output) {
                 return Ok(vec![9]);
             }
         }
@@ -806,7 +809,16 @@ where
             misc::handle_grid_mode(&parts, grid_mode, output);
         }
         "TITLE" => {
-            misc::handle_title(&parts, title_mode, current_scene_name, header_scramble, output);
+            misc::handle_title(&parts, title_mode, current_scene_name, *scramble_enabled, *scramble_mode, *scramble_speed, header_scramble, output);
+        }
+        "SCRMBL" => {
+            misc::handle_scrmbl(&parts, scramble_enabled, output);
+        }
+        "SCRMBL.MODE" => {
+            misc::handle_scrmbl_mode(&parts, scramble_mode, output);
+        }
+        "SCRMBL.SPD" => {
+            misc::handle_scrmbl_spd(&parts, scramble_speed, output);
         }
         "OUT.ERR" => {
             misc::handle_out_err(&parts, out_err, output);

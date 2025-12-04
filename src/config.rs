@@ -70,6 +70,12 @@ pub struct DisplayConfig {
     pub out_cfm: bool,
     #[serde(default)]
     pub audio_out_device: Option<String>,
+    #[serde(default = "default_true")]
+    pub scramble_enabled: bool,
+    #[serde(default = "default_scramble_mode")]
+    pub scramble_mode: u8,
+    #[serde(default = "default_scramble_speed")]
+    pub scramble_speed: u8,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -101,6 +107,10 @@ fn default_success() -> String {
 
 fn default_label() -> String {
     "#b4b4b4".to_string()
+}
+
+fn default_true() -> bool {
+    true
 }
 
 fn default_theme_mode() -> String {
@@ -159,6 +169,14 @@ fn default_scope_timespan_ms() -> u32 {
     30
 }
 
+fn default_scramble_mode() -> u8 {
+    2
+}
+
+fn default_scramble_speed() -> u8 {
+    5
+}
+
 impl Default for DisplayConfig {
     fn default() -> Self {
         Self {
@@ -189,6 +207,9 @@ impl Default for DisplayConfig {
             out_qry: false,
             out_cfm: false,
             audio_out_device: None,
+            scramble_enabled: default_true(),
+            scramble_mode: default_scramble_mode(),
+            scramble_speed: default_scramble_speed(),
         }
     }
 }
@@ -494,6 +515,27 @@ pub fn save_out_cfm(enabled: bool) -> Result<()> {
 pub fn save_audio_out_device(device: Option<String>) -> Result<()> {
     let mut config = load_config()?;
     config.display.audio_out_device = device;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_scramble_enabled(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.scramble_enabled = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_scramble_mode(mode: u8) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.scramble_mode = mode;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_scramble_speed(speed: u8) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.scramble_speed = speed;
     save_config(&config)?;
     Ok(())
 }

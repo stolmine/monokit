@@ -99,6 +99,12 @@ pub fn run_app<B: ratatui::backend::Backend>(
             }
         }
 
+        // Update UI scrambles
+        app.ui_scrambles.retain_mut(|(_, scramble)| {
+            scramble.update();
+            !scramble.complete
+        });
+
         // Process metro events BEFORE rendering so activity indicators update immediately
         while let Ok(event) = metro_event_rx.try_recv() {
             match event {

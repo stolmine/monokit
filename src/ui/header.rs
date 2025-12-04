@@ -194,8 +194,15 @@ pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
             }
 
             let bpm = (15000.0 / metro.interval_ms as f32).round() as u32;
+
+            let bpm_label = if let Some((_, scramble)) = app.ui_scrambles.iter().find(|(name, _)| name == "BPM") {
+                scramble.current_display.clone()
+            } else {
+                "BPM".to_string()
+            };
+
             title_parts.push(Span::styled(
-                format!("BPM {}", bpm),
+                format!("{} {}", bpm_label, bpm),
                 Style::default().fg(app.theme.secondary),
             ));
         }
@@ -215,8 +222,14 @@ pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
             app.theme.secondary
         };
 
+        let cpu_label = if let Some((_, scramble)) = app.ui_scrambles.iter().find(|(name, _)| name == "CPU") {
+            scramble.current_display.clone()
+        } else {
+            "CPU".to_string()
+        };
+
         title_parts.push(Span::styled(
-            format!("CPU {}%", cpu_percent),
+            format!("{} {}%", cpu_label, cpu_percent),
             Style::default().fg(cpu_color),
         ));
     }

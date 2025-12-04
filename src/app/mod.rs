@@ -89,6 +89,10 @@ pub struct App {
     pub audio_devices: Vec<String>,
     pub audio_device_current: String,
     pub header_scramble: Option<crate::scramble::ScrambleAnimation>,
+    pub scramble_enabled: bool,
+    pub scramble_mode: u8,
+    pub scramble_speed: u8,
+    pub ui_scrambles: Vec<(String, crate::scramble::ScrambleAnimation)>,
 }
 
 impl App {
@@ -170,7 +174,24 @@ impl App {
             out_cfm: config.display.out_cfm,
             audio_devices: Vec::new(),
             audio_device_current: String::new(),
-            header_scramble: Some(crate::scramble::ScrambleAnimation::new("MONOKIT")),
+            header_scramble: if config.display.scramble_enabled {
+                let mode = crate::scramble::ScrambleMode::from_u8(config.display.scramble_mode);
+                Some(crate::scramble::ScrambleAnimation::new_with_mode("MONOKIT", mode, config.display.scramble_speed))
+            } else {
+                None
+            },
+            scramble_enabled: config.display.scramble_enabled,
+            scramble_mode: config.display.scramble_mode,
+            scramble_speed: config.display.scramble_speed,
+            ui_scrambles: {
+                let mut scrambles = Vec::new();
+                if config.display.scramble_enabled {
+                    let mode = crate::scramble::ScrambleMode::from_u8(config.display.scramble_mode);
+                    scrambles.push(("CPU".to_string(), crate::scramble::ScrambleAnimation::new_with_mode("CPU", mode, config.display.scramble_speed)));
+                    scrambles.push(("BPM".to_string(), crate::scramble::ScrambleAnimation::new_with_mode("BPM", mode, config.display.scramble_speed)));
+                }
+                scrambles
+            },
         }
     }
 
@@ -334,6 +355,9 @@ impl App {
             &mut self.out_cfm,
             &self.audio_devices,
             &mut self.header_scramble,
+            &mut self.scramble_enabled,
+            &mut self.scramble_mode,
+            &mut self.scramble_speed,
             command,
             |msg| {
                 output_messages.push(msg);

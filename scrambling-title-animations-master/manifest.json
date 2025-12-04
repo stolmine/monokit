@@ -1,0 +1,11 @@
+{
+	"id": "scrambling-title-animations",
+	"name": "Scrambling Title Animations",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Animates the title of any note you open by scrambling and revealing it in several visually appealing ways.",
+	"author": "HistidineDwarf",
+	"authorUrl": "https://github.com/DvorakDwarf",
+	"fundingUrl": "https://buymeacoffee.com/histidinedwarf",
+	"isDesktopOnly": true
+}

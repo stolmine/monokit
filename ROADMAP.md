@@ -1036,7 +1036,74 @@ Comprehensive audit to reduce parameter sprawl and improve maintainability.
 
 ---
 
-## Phase 6: Advanced DSP
+## Phase 6: Release Preparation
+
+**Focus:** Pre-release tasks for first public release
+
+### Terminal Compatibility [Medium] - PHASE 1 COMPLETE
+Ensure usability across different terminal emulators.
+
+**Phase 1 (Complete):**
+- [x] Terminal capability detection at startup
+- [x] 256-color theme fallback when true color unavailable
+- [x] Startup warning for Terminal.app users
+- [x] COMPAT command to display terminal capabilities
+- [x] COMPAT.MODE command to force compatibility mode
+- [x] METER.ASCII command for ASCII-only meter characters
+- [x] High-contrast cursor fallback for 256-color mode
+
+**Phase 2 (v0.2.0):**
+- [ ] Add ANSI 16-color fallback themes
+- [ ] Character set fallback for scope (ASCII mode)
+- [ ] Config option: `compatibility_mode = "auto"|"full"|"basic"`
+- [ ] Terminal.app user guide
+
+**Phase 3 (v0.3.0):**
+- [ ] Font recommendations at startup
+- [ ] Auto theme selection based on terminal
+- [ ] VT100 alternate charset support
+
+### Release Build & Tag [High]
+Prepare versioned release binaries.
+
+- [ ] Ensure all tests pass (`cargo test`)
+- [ ] Build release binary (`cargo build --release`)
+- [ ] Create version tag (`git tag -a v0.1.0`)
+- [ ] Push tag to origin
+- [ ] Build platform-specific tarballs with sc/ directory
+- [ ] Generate sha256 checksums for each tarball
+
+### GitHub Release [Medium]
+Publish release on GitHub.
+
+- [ ] Create GitHub release for tagged version
+- [ ] Upload platform binaries (aarch64-apple-darwin)
+- [ ] Write release notes documenting features
+- [ ] Link to documentation
+
+### Homebrew Tap [High]
+Create Homebrew distribution for macOS users.
+
+- [ ] Create `homebrew-monokit` repository
+- [ ] Write Formula/monokit.rb with:
+  - Platform-specific URLs and sha256 hashes
+  - SuperCollider as recommended dependency
+  - Proper bin and pkgshare installation
+  - Caveats for SC server file location
+- [ ] Test installation via `brew tap` and `brew install`
+- [ ] Document SC path configuration (homebrew prefix or ~/.monokit/)
+
+### Future Release Workflow
+Document repeatable release process.
+
+- [ ] Write RELEASING.md with step-by-step instructions
+- [ ] Version bump in Cargo.toml
+- [ ] Changelog maintenance process
+- [ ] Binary build automation (optional GitHub Actions)
+
+---
+
+## Phase 7: Advanced DSP
 
 **Focus:** Major architectural changes requiring deep SuperCollider work
 
@@ -1086,9 +1153,9 @@ Comprehensive audit to reduce parameter sprawl and improve maintainability.
 
 ---
 
-## Phase 7: Distribution
+## Phase 8: Distribution
 
-**Focus:** Packaging and deployment infrastructure
+**Focus:** Packaging and deployment infrastructure (post-release expansion)
 
 ### Unified Installer [High]
 - [ ] Single installer package bundling:
@@ -1122,8 +1189,9 @@ Comprehensive audit to reduce parameter sprawl and improve maintainability.
 - **Phase 3** scale quantization needed before mini notation (note name parsing)
 - **Phase 4** UI features can be implemented incrementally, no blocking dependencies
 - **Phase 5** polish items should be implemented after core features complete (helps identify what needs polish)
-- **Phase 6** requires all features complete and stable before voice architecture changes
-- **Phase 7** requires all features complete and tested before packaging
+- **Phase 6** release preparation should happen after core features stable
+- **Phase 7** advanced DSP requires stable release before major voice architecture changes
+- **Phase 8** unified installer builds on Phase 6 release infrastructure
 
 **Note:** Modulation System (LFO, Aux Envelopes) moved to `ON_HOLD.md` due to SuperCollider UGen complexity limits.
 

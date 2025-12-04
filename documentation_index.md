@@ -2,6 +2,37 @@
 
 ## Recent Updates (December 2025)
 
+### Audio Engine Confirmation (December 2025)
+
+**AUDIO.OUT Device Change Feedback:**
+- "AUDIO ENGINE ONLINE" displays after SC restart
+- Confirms SuperCollider audio engine is ready
+- Direct command response, always visible
+- Not gated by DEBUG level
+- Implementation in src/commands/system/audio.rs
+
+### Error Tier Filtering Fixes (December 2025)
+
+**DEBUG Level Compliance:**
+- Fixed 7 error bypass locations at DEBUG 0
+- control_flow.rs: Validation, file I/O errors
+- mod.rs: Command execution, invalid script index, recursion depth errors
+- interactive.rs: Validation, file I/O errors
+- All errors now respect should_output(OutputCategory::Error)
+- Consistent error display across REPL modes
+
+### Phase 6: Release Preparation (December 2025)
+
+**Roadmap Addition:**
+- New phase before Advanced DSP
+- Terminal Compatibility (Phase 1 done)
+- Release Build & Tag process
+- GitHub Release workflow
+- Homebrew Tap setup
+- Future Release Workflow planning
+- Advanced DSP renumbered to Phase 7
+- Distribution renumbered to Phase 8
+
 ### Terminal Compatibility System (December 2025)
 
 **Terminal Capability Detection:**

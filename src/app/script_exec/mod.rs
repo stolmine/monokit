@@ -107,9 +107,11 @@ impl App {
                 }
             }
             Err(e) => {
-                output_messages.push(e.to_string().to_uppercase());
-                for msg in output_messages {
-                    self.add_output(msg);
+                if self.should_output(crate::types::OutputCategory::Error) {
+                    output_messages.push(e.to_string().to_uppercase());
+                    for msg in output_messages {
+                        self.add_output(msg);
+                    }
                 }
             }
         }
@@ -174,7 +176,9 @@ impl App {
 
     pub fn execute_script_with_depth(&mut self, script_index: usize, depth: usize) {
         if script_index >= 10 {
-            self.add_output(format!("INVALID SCRIPT INDEX {}", script_index));
+            if self.should_output(crate::types::OutputCategory::Error) {
+                self.add_output(format!("INVALID SCRIPT INDEX {}", script_index));
+            }
             return;
         }
 
@@ -182,7 +186,9 @@ impl App {
         self.script_activity[script_index] = Some(std::time::Instant::now());
 
         if depth > 10 {
-            self.add_output("SCRIPT RECURSION DEPTH EXCEEDED (MAX 10)".to_string());
+            if self.should_output(crate::types::OutputCategory::Error) {
+                self.add_output("SCRIPT RECURSION DEPTH EXCEEDED (MAX 10)".to_string());
+            }
             return;
         }
 

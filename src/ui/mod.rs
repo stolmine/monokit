@@ -156,6 +156,10 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     app.cpu_data = cpu_data;
                 }
                 MetroEvent::ScReady => {
+                    if app.awaiting_audio_restart {
+                        app.add_output("AUDIO ENGINE ONLINE".to_string());
+                        app.awaiting_audio_restart = false;
+                    }
                 }
                 MetroEvent::AudioDeviceList { current, devices } => {
                     // Store for numbered selection
@@ -184,6 +188,7 @@ pub fn run_app<B: ratatui::backend::Backend>(
                             app.add_output(format!("RESTARTED: {}", device));
                             app.add_output("RUN AUDIO.OUT TO VERIFY".to_string());
                         }
+                        app.awaiting_audio_restart = true;
                     }
                 }
                 MetroEvent::Error(msg) => {

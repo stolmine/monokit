@@ -42,14 +42,18 @@ impl App {
                     use std::io::Write;
                     for line in &self.output {
                         if let Err(e) = writeln!(file, "{}", line) {
-                            self.add_output(format!("WRITE FAILED: {}", e.to_string().to_uppercase()));
+                            if self.should_output(crate::types::OutputCategory::Error) {
+                                self.add_output(format!("WRITE FAILED: {}", e.to_string().to_uppercase()));
+                            }
                             return;
                         }
                     }
                     self.add_output(format!("DUMPED {} LINES TO {}", self.output.len() - 1, filename));
                 }
                 Err(e) => {
-                    self.add_output(format!("FILE CREATE FAILED: {}", e.to_string().to_uppercase()));
+                    if self.should_output(crate::types::OutputCategory::Error) {
+                        self.add_output(format!("FILE CREATE FAILED: {}", e.to_string().to_uppercase()));
+                    }
                 }
             }
             return;
@@ -121,7 +125,9 @@ impl App {
             }
 
             if let Err(e) = crate::commands::validate_script_command(sub_cmd) {
-                self.add_output(format!("ERROR: {}", e.to_string().to_uppercase()));
+                if self.should_output(crate::types::OutputCategory::Error) {
+                    self.add_output(format!("ERROR: {}", e.to_string().to_uppercase()));
+                }
                 continue;
             }
 

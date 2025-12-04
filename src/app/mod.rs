@@ -100,6 +100,7 @@ pub struct App {
     pub ui_scrambles: Vec<(String, crate::scramble::ScrambleAnimation)>,
     pub grid_scrambles: Vec<crate::scramble::ScrambleAnimation>,
     pub ascii_meters: bool,
+    pub awaiting_audio_restart: bool,
 }
 
 impl App {
@@ -212,6 +213,7 @@ impl App {
             },
             grid_scrambles: Vec::new(),
             ascii_meters: config.display.ascii_meters,
+            awaiting_audio_restart: false,
         }
     }
 

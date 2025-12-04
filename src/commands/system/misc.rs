@@ -1233,6 +1233,8 @@ pub fn handle_grid_mode<F>(
 pub fn handle_title<F>(
     parts: &[&str],
     title_mode: &mut u8,
+    current_scene_name: &Option<String>,
+    header_scramble: &mut Option<crate::scramble::ScrambleAnimation>,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -1246,11 +1248,14 @@ pub fn handle_title<F>(
             "0" => {
                 *title_mode = 0;
                 let _ = config::save_title_mode(*title_mode);
+                *header_scramble = Some(crate::scramble::ScrambleAnimation::new("MONOKIT"));
                 output("TITLE: 0 (MONOKIT)".to_string());
             }
             "1" => {
                 *title_mode = 1;
                 let _ = config::save_title_mode(*title_mode);
+                let text = current_scene_name.as_ref().map(|s| s.as_str()).unwrap_or("[UNSAVED]");
+                *header_scramble = Some(crate::scramble::ScrambleAnimation::new(text));
                 output("TITLE: 1 (SCENE NAME)".to_string());
             }
             _ => {

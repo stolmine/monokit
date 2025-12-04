@@ -66,11 +66,18 @@ pub fn highlight_stateful_operators(
                         is_highlighted: false,
                     });
                 }
+
+                let after_semi = semi_abs + 1;
+                let trailing_space_end = line[after_semi..]
+                    .find(|c: char| !c.is_whitespace())
+                    .map(|pos| after_semi + pos)
+                    .unwrap_or(line.len());
+
                 segments.push(HighlightedSegment {
-                    text: ";".to_string(),
+                    text: line[semi_abs..trailing_space_end].to_string(),
                     is_highlighted: false,
                 });
-                line_pos = semi_abs + 1;
+                line_pos = trailing_space_end;
             }
         }
     }

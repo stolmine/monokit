@@ -6,6 +6,7 @@ pub fn handle_save<F>(
     patterns: &PatternStorage,
     notes: &NotesStorage,
     current_scene_name: &mut Option<String>,
+    header_scramble: &mut Option<crate::scramble::ScrambleAnimation>,
     debug_level: u8,
     out_ess: bool,
     mut output: F,
@@ -21,6 +22,7 @@ pub fn handle_save<F>(
     match crate::scene::save_scene(&name, &scene) {
         Ok(()) => {
             *current_scene_name = Some(name.clone());
+            *header_scramble = Some(crate::scramble::ScrambleAnimation::new(&name));
             if debug_level >= TIER_ESSENTIAL || out_ess {
                 output(format!("SAVED SCENE: {}", name));
             }
@@ -36,6 +38,7 @@ pub fn handle_load<F>(
     patterns: &mut PatternStorage,
     notes: &mut NotesStorage,
     current_scene_name: &mut Option<String>,
+    header_scramble: &mut Option<crate::scramble::ScrambleAnimation>,
     debug_level: u8,
     out_ess: bool,
     mut output: F,
@@ -53,6 +56,7 @@ where
             scene.apply_to_app_state(scripts, patterns, notes);
             *variables = crate::types::Variables::default();
             *current_scene_name = Some(name.clone());
+            *header_scramble = Some(crate::scramble::ScrambleAnimation::new(&name));
             if debug_level >= TIER_ESSENTIAL || out_ess {
                 output(format!("LOADED SCENE: {}", name));
             }

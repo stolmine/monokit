@@ -78,6 +78,7 @@ impl App {
             &mut self.out_qry,
             &mut self.out_cfm,
             &self.audio_devices,
+            &mut self.header_scramble,
             cmd_to_run,
             |msg| {
                 output_messages.push(msg);

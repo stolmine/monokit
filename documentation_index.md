@@ -31,6 +31,31 @@
 3. SC restarts with new device
 4. Device saved to config automatically
 
+### Rolling Text Scramble Animation (December 2025)
+
+**Header Animation Feature:**
+- Rolling text scramble effect on header title
+- Each character position has independent scramble timing for visual identity
+- Triggers on: startup, scene load/save, TITLE command
+- Rolling reveal effect uses 5-character scramble buffer
+- Integrated into App struct and main event loop
+
+**Implementation Details:**
+- Core animation logic in src/scramble.rs
+- TitleScrambler struct with per-character state tracking
+- Header rendering in src/ui/header.rs calls scrambler
+- Animation trigger methods in src/app/mod.rs
+- Scene load/save triggers in src/commands/system/scene.rs
+- TITLE command triggers in src/commands/system/misc.rs
+- Script execution triggers in src/app/script_exec/mod.rs
+- Test infrastructure in src/tests/common.rs
+
+**Animation Behavior:**
+- Each character randomly scrambles with ASCII printables
+- Characters reveal in rolling sequence, not all at once
+- Creates dynamic, organic reveal effect
+- Animation state stored in App for event loop updates
+
 ### SuperCollider Process Management (December 2025)
 
 **Automatic SC Lifecycle:**

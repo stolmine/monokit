@@ -72,6 +72,7 @@ pub fn process_command<F>(
     out_qry: &mut bool,
     out_cfm: &mut bool,
     audio_devices: &[String],
+    header_scramble: &mut Option<crate::scramble::ScrambleAnimation>,
     input: &str,
     mut output: F,
 ) -> Result<Vec<usize>>
@@ -666,13 +667,13 @@ where
             return misc::handle_script(&parts, variables, patterns, counters, scripts, script_index, scale);
         }
         "SAVE" => {
-            scene_cmds::handle_save(&parts, scripts, patterns, notes, current_scene_name, *debug_level, *out_ess, output);
+            scene_cmds::handle_save(&parts, scripts, patterns, notes, current_scene_name, header_scramble, *debug_level, *out_ess, output);
         }
         "LOAD" => {
             if *load_rst {
                 misc::handle_rst(metro_tx, *debug_level, *out_ess, &mut |_| {})?;
             }
-            if scene_cmds::handle_load(&parts, variables, scripts, patterns, notes, current_scene_name, *debug_level, *out_ess, output) {
+            if scene_cmds::handle_load(&parts, variables, scripts, patterns, notes, current_scene_name, header_scramble, *debug_level, *out_ess, output) {
                 return Ok(vec![9]);
             }
         }
@@ -805,7 +806,7 @@ where
             misc::handle_grid_mode(&parts, grid_mode, output);
         }
         "TITLE" => {
-            misc::handle_title(&parts, title_mode, output);
+            misc::handle_title(&parts, title_mode, current_scene_name, header_scramble, output);
         }
         "OUT.ERR" => {
             misc::handle_out_err(&parts, out_err, output);

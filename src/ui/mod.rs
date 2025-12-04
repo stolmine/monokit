@@ -91,6 +91,14 @@ pub fn run_app<B: ratatui::backend::Backend>(
     loop {
         app.clear_expired_error();
 
+        // Update header scramble animation
+        if let Some(scramble) = &mut app.header_scramble {
+            scramble.update();
+            if scramble.complete {
+                app.header_scramble = None;
+            }
+        }
+
         // Process metro events BEFORE rendering so activity indicators update immediately
         while let Ok(event) = metro_event_rx.try_recv() {
             match event {

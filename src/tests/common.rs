@@ -102,6 +102,7 @@ pub struct TestContext {
     pub out_qry: bool,
     pub out_cfm: bool,
     pub audio_devices: Vec<String>,
+    pub header_scramble: Option<crate::scramble::ScrambleAnimation>,
     pub outputs: Vec<String>,
 }
 
@@ -151,6 +152,7 @@ impl Default for TestContext {
             out_qry: false,
             out_cfm: false,
             audio_devices: Vec::new(),
+            header_scramble: None,
             outputs: Vec::new(),
         }
     }
@@ -204,6 +206,7 @@ impl TestContext {
             &mut self.out_qry,
             &mut self.out_cfm,
             &self.audio_devices,
+            &mut self.header_scramble,
             input,
             |msg| {
                 self.outputs.push(msg);

@@ -8,6 +8,7 @@ mod midi;
 mod osc_utils;
 mod preset;
 mod sc_process;
+mod scramble;
 mod scene;
 mod theme;
 mod types;

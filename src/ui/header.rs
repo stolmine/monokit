@@ -221,20 +221,24 @@ pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
         ));
     }
 
-    let header_title = match app.title_mode {
-        0 => " MONOKIT ".to_string(),
-        1 => match &app.current_scene_name {
-            Some(name) => {
-                let truncated = if name.len() > 15 {
-                    format!(" {}... ", &name[..12])
-                } else {
-                    format!(" {} ", name)
-                };
-                truncated
-            }
-            None => " [UNSAVED] ".to_string(),
-        },
-        _ => " MONOKIT ".to_string(),
+    let header_title = if let Some(scramble) = &app.header_scramble {
+        format!(" {} ", scramble.current_display)
+    } else {
+        match app.title_mode {
+            0 => " MONOKIT ".to_string(),
+            1 => match &app.current_scene_name {
+                Some(name) => {
+                    let truncated = if name.len() > 15 {
+                        format!(" {}... ", &name[..12])
+                    } else {
+                        format!(" {} ", name)
+                    };
+                    truncated
+                }
+                None => " [UNSAVED] ".to_string(),
+            },
+            _ => " MONOKIT ".to_string(),
+        }
     };
 
     let mut block = Block::default()

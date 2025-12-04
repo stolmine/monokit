@@ -88,6 +88,7 @@ pub struct App {
     pub out_cfm: bool,
     pub audio_devices: Vec<String>,
     pub audio_device_current: String,
+    pub header_scramble: Option<crate::scramble::ScrambleAnimation>,
 }
 
 impl App {
@@ -169,6 +170,7 @@ impl App {
             out_cfm: config.display.out_cfm,
             audio_devices: Vec::new(),
             audio_device_current: String::new(),
+            header_scramble: Some(crate::scramble::ScrambleAnimation::new("MONOKIT")),
         }
     }
 
@@ -331,6 +333,7 @@ impl App {
             &mut self.out_qry,
             &mut self.out_cfm,
             &self.audio_devices,
+            &mut self.header_scramble,
             command,
             |msg| {
                 output_messages.push(msg);

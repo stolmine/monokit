@@ -94,6 +94,7 @@ pub struct App {
     pub scramble_speed: u8,
     pub scramble_curve: u8,
     pub ui_scrambles: Vec<(String, crate::scramble::ScrambleAnimation)>,
+    pub grid_scrambles: Vec<crate::scramble::ScrambleAnimation>,
 }
 
 impl App {
@@ -196,6 +197,32 @@ impl App {
                 }
                 scrambles
             },
+            grid_scrambles: Vec::new(),
+        }
+    }
+
+    pub fn trigger_grid_scramble(&mut self) {
+        use crate::types::{GRID_LABELS, GRID_ICONS};
+        if !self.scramble_enabled {
+            return;
+        }
+        let mode = crate::scramble::ScrambleMode::from_u8(self.scramble_mode);
+        let curve = crate::scramble::ScrambleCurve::from_u8(self.scramble_curve);
+
+        // Use icons or labels based on current grid_mode
+        if self.grid_mode == 1 {
+            self.grid_scrambles = GRID_ICONS
+                .iter()
+                .map(|icon| {
+                    let s: String = icon.to_string();
+                    crate::scramble::ScrambleAnimation::new_with_options(&s, mode, self.scramble_speed, curve)
+                })
+                .collect();
+        } else {
+            self.grid_scrambles = GRID_LABELS
+                .iter()
+                .map(|label| crate::scramble::ScrambleAnimation::new_with_options(label, mode, self.scramble_speed, curve))
+                .collect();
         }
     }
 

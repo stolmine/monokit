@@ -104,13 +104,21 @@ fn render_grid_view(app: &crate::App, _width: usize, height: usize) -> Paragraph
                 let color = app.theme.activity_color(activity, false, app.activity_hold_ms);
 
                 if app.grid_mode == 1 {
-                    // Icon mode
-                    let icon = GRID_ICONS[idx];
-                    spans.push(Span::styled(format!("{}", icon), Style::default().fg(color)));
+                    // Icon mode - use scrambled icon if available
+                    let icon = if idx < app.grid_scrambles.len() {
+                        app.grid_scrambles[idx].current_display.as_str()
+                    } else {
+                        &GRID_ICONS[idx].to_string()
+                    };
+                    spans.push(Span::styled(icon.to_string(), Style::default().fg(color)));
                 } else {
-                    // Label mode
-                    let label = GRID_LABELS[idx];
-                    spans.push(Span::styled(format!("{}", label), Style::default().fg(color)));
+                    // Label mode - use scrambled label if available
+                    let label = if idx < app.grid_scrambles.len() {
+                        app.grid_scrambles[idx].current_display.as_str()
+                    } else {
+                        GRID_LABELS[idx]
+                    };
+                    spans.push(Span::styled(label.to_string(), Style::default().fg(color)));
                 }
 
                 if col < 7 {

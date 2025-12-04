@@ -45,6 +45,7 @@ pub struct ScrambleAnimation {
     pub complete: bool,
     mode: ScrambleMode,
     curve: ScrambleCurve,
+    is_icon_mode: bool, // Single-char icons get special treatment
 }
 
 struct CharState {
@@ -54,6 +55,8 @@ struct CharState {
     change_interval_ms: u64, // Each char has its own scramble speed
     scramble_start: Option<Instant>, // When this char started scrambling
     locked_early: bool,      // Has this char settled on its target early?
+    icon_offset: i32,        // For icon mode: current offset from target
+    icon_start_offset: i32,  // For icon mode: initial offset (to calculate progress)
 }
 
 impl ScrambleAnimation {
@@ -69,9 +72,16 @@ impl ScrambleAnimation {
         let speed = speed.clamp(1, 10);
         let base_ms_per_char = 100;
 
+        let mut rng = rand::thread_rng();
+        let target_chars: Vec<char> = text.chars().collect();
+        let text_len = target_chars.len();
+
+        // Single-char texts are icons - use Unicode traversal instead of random chars
+        let is_icon_mode = text_len == 1;
+
         // Settle curve uses slower base scramble rate for more visible deceleration
         let (base_change_min, base_change_max) = if curve == ScrambleCurve::Expo {
-            (600, 1000) // Slower base rate
+            (600, 1000)
         } else {
             (60, 100)
         };
@@ -80,20 +90,44 @@ impl ScrambleAnimation {
         let change_min = (base_change_min * (11 - speed as u64)) / 5;
         let change_max = (base_change_max * (11 - speed as u64)) / 5;
 
-        let text_len = text.len();
         let scramble_buffer = if mode == ScrambleMode::Rolling { 5 } else { 0 };
-        let total_duration_ms = ms_per_char * (text_len as u64 + scramble_buffer);
 
-        let mut rng = rand::thread_rng();
-        let target_chars: Vec<char> = text.chars().collect();
-        let char_states: Vec<CharState> = (0..text.len())
-            .map(|i| CharState {
-                current_char: random_char(),
-                target_char: target_chars[i],
-                last_change: Instant::now(),
-                change_interval_ms: rng.gen_range(change_min..change_max),
-                scramble_start: None,
-                locked_early: false,
+        // For icons, generate offset first to calculate proportional duration
+        let icon_offset: i32 = if is_icon_mode {
+            if rng.gen_bool(0.5) {
+                rng.gen_range(100..=500)
+            } else {
+                rng.gen_range(-500..=-100)
+            }
+        } else {
+            0
+        };
+
+        // Duration: for text, based on char count; for icons, use same timing as ~7 char title
+        let total_duration_ms = if is_icon_mode {
+            const ICON_REFERENCE_LEN: u64 = 7; // Same as "MONOKIT"
+            ms_per_char * (ICON_REFERENCE_LEN + scramble_buffer)
+        } else {
+            ms_per_char * (text_len as u64 + scramble_buffer)
+        };
+
+        let char_states: Vec<CharState> = (0..text_len)
+            .map(|i| {
+                let initial_char = if is_icon_mode {
+                    char_at_offset(target_chars[i], icon_offset)
+                } else {
+                    random_char()
+                };
+                CharState {
+                    current_char: initial_char,
+                    target_char: target_chars[i],
+                    last_change: Instant::now(),
+                    change_interval_ms: rng.gen_range(change_min..change_max),
+                    scramble_start: None,
+                    locked_early: false,
+                    icon_offset,
+                    icon_start_offset: icon_offset,
+                }
             })
             .collect();
 
@@ -108,6 +142,7 @@ impl ScrambleAnimation {
             complete: false,
             mode,
             curve,
+            is_icon_mode,
         }
     }
 
@@ -136,7 +171,7 @@ impl ScrambleAnimation {
     }
 
     fn update_regular(&mut self) -> &str {
-        let target_len = self.target_text.len();
+        let target_len = self.target_text.chars().count();
         let target_chars: Vec<char> = self.target_text.chars().collect();
 
         let progress = self.eased_progress();
@@ -160,20 +195,37 @@ impl ScrambleAnimation {
         for (idx, i) in (char_pos..target_len).enumerate() {
             if i < self.char_states.len() {
                 let state = &mut self.char_states[i];
-                let effective_interval = if self.curve == ScrambleCurve::Expo {
-                    // idx=0 is next to lock, higher idx = further from reveal
-                    // proximity: 1.0 = about to lock, 0.0 = far from reveal
-                    let proximity = 1.0 - (idx as f32 / remaining.max(1) as f32).min(1.0);
-                    // Dramatic slowdown: up to 50x slower when about to lock
-                    let slowdown = 1.0 + proximity.powi(4) * 49.0;
-                    (state.change_interval_ms as f32 * slowdown) as u128
-                } else {
-                    state.change_interval_ms as u128
-                };
 
-                if now.duration_since(state.last_change).as_millis() >= effective_interval {
-                    state.current_char = random_char();
-                    state.last_change = now;
+                if self.is_icon_mode {
+                    // Icon mode: time-based animation using same duration/curve as text
+                    if state.scramble_start.is_none() {
+                        state.scramble_start = Some(now);
+                    }
+                    let elapsed = now.duration_since(state.scramble_start.unwrap()).as_millis() as f32;
+                    let progress = (elapsed / self.total_duration_ms as f32).min(1.0);
+                    let eased = if self.curve == ScrambleCurve::Expo {
+                        1.0 - (1.0 - progress).powi(3) // Cubic ease-out for settle
+                    } else {
+                        progress // Linear
+                    };
+                    let new_offset = (state.icon_start_offset as f32 * (1.0 - eased)) as i32;
+                    if new_offset != state.icon_offset {
+                        state.icon_offset = new_offset;
+                        state.current_char = char_at_offset(state.target_char, state.icon_offset);
+                    }
+                } else {
+                    let effective_interval = if self.curve == ScrambleCurve::Expo {
+                        let proximity = 1.0 - (idx as f32 / remaining.max(1) as f32).min(1.0);
+                        let slowdown = 1.0 + proximity.powi(4) * 49.0;
+                        (state.change_interval_ms as f32 * slowdown) as u128
+                    } else {
+                        state.change_interval_ms as u128
+                    };
+
+                    if now.duration_since(state.last_change).as_millis() >= effective_interval {
+                        state.current_char = random_char();
+                        state.last_change = now;
+                    }
                 }
                 display.push(state.current_char);
             } else {
@@ -186,7 +238,7 @@ impl ScrambleAnimation {
     }
 
     fn update_smash(&mut self) -> &str {
-        let target_len = self.target_text.len();
+        let target_len = self.target_text.chars().count();
 
         let progress = self.eased_progress();
         let char_pos = (progress * target_len as f32) as usize;
@@ -209,7 +261,7 @@ impl ScrambleAnimation {
 
     fn update_rolling(&mut self) -> &str {
         let scramble_buffer = 5;
-        let target_len = self.target_text.len();
+        let target_len = self.target_text.chars().count();
         let target_chars: Vec<char> = self.target_text.chars().collect();
 
         let progress = self.eased_progress();
@@ -246,7 +298,21 @@ impl ScrambleAnimation {
                     state.scramble_start = Some(now);
                 }
 
-                if self.curve == ScrambleCurve::Expo {
+                if self.is_icon_mode {
+                    // Icon mode: time-based animation using same duration/curve as text
+                    let elapsed = now.duration_since(state.scramble_start.unwrap()).as_millis() as f32;
+                    let progress = (elapsed / self.total_duration_ms as f32).min(1.0);
+                    let eased = if self.curve == ScrambleCurve::Expo {
+                        1.0 - (1.0 - progress).powi(3) // Cubic ease-out for settle
+                    } else {
+                        progress // Linear
+                    };
+                    let new_offset = (state.icon_start_offset as f32 * (1.0 - eased)) as i32;
+                    if new_offset != state.icon_offset {
+                        state.icon_offset = new_offset;
+                        state.current_char = char_at_offset(state.target_char, state.icon_offset);
+                    }
+                } else if self.curve == ScrambleCurve::Expo {
                     // How far through this char's scramble period are we? (0.0 = just started, 1.0 = about to lock)
                     let time_scrambling = now.duration_since(state.scramble_start.unwrap()).as_millis() as f32;
                     let proximity = (time_scrambling / scramble_duration_ms).min(1.0);
@@ -281,7 +347,7 @@ impl ScrambleAnimation {
     fn update_overshoot(&mut self) -> &str {
         let elapsed = self.start_time.elapsed();
         let elapsed_ms = elapsed.as_millis() as f32;
-        let target_len = self.target_text.len();
+        let target_len = self.target_text.chars().count();
         let target_chars: Vec<char> = self.target_text.chars().collect();
 
         let total_duration = self.total_duration_ms as f32 + 200.0;
@@ -306,21 +372,37 @@ impl ScrambleAnimation {
             if i < revealed_count {
                 display.push(target_chars[i]);
             } else if i < target_len {
-                // Apply curve-based slowdown for characters approaching reveal
-                let effective_interval = if self.curve == ScrambleCurve::Expo {
-                    let distance_from_reveal = i - revealed_count;
-                    // proximity: 1.0 = about to lock, 0.0 = far from reveal
-                    let proximity = 1.0 - (distance_from_reveal as f32 / remaining.max(1) as f32).min(1.0);
-                    // Dramatic slowdown: up to 50x slower when about to lock
-                    let slowdown = 1.0 + proximity.powi(4) * 49.0;
-                    (state.change_interval_ms as f32 * slowdown) as u128
+                if self.is_icon_mode {
+                    // Icon mode: time-based animation using same duration/curve as text
+                    if state.scramble_start.is_none() {
+                        state.scramble_start = Some(now);
+                    }
+                    let elapsed = now.duration_since(state.scramble_start.unwrap()).as_millis() as f32;
+                    let progress = (elapsed / self.total_duration_ms as f32).min(1.0);
+                    let eased = if self.curve == ScrambleCurve::Expo {
+                        1.0 - (1.0 - progress).powi(3) // Cubic ease-out for settle
+                    } else {
+                        progress // Linear
+                    };
+                    let new_offset = (state.icon_start_offset as f32 * (1.0 - eased)) as i32;
+                    if new_offset != state.icon_offset {
+                        state.icon_offset = new_offset;
+                        state.current_char = char_at_offset(state.target_char, state.icon_offset);
+                    }
                 } else {
-                    state.change_interval_ms as u128
-                };
+                    let effective_interval = if self.curve == ScrambleCurve::Expo {
+                        let distance_from_reveal = i - revealed_count;
+                        let proximity = 1.0 - (distance_from_reveal as f32 / remaining.max(1) as f32).min(1.0);
+                        let slowdown = 1.0 + proximity.powi(4) * 49.0;
+                        (state.change_interval_ms as f32 * slowdown) as u128
+                    } else {
+                        state.change_interval_ms as u128
+                    };
 
-                if now.duration_since(state.last_change).as_millis() >= effective_interval {
-                    state.current_char = random_char();
-                    state.last_change = now;
+                    if now.duration_since(state.last_change).as_millis() >= effective_interval {
+                        state.current_char = random_char();
+                        state.last_change = now;
+                    }
                 }
                 display.push(state.current_char);
             }
@@ -350,4 +432,11 @@ fn random_char() -> char {
     let mut rng = rand::thread_rng();
     let idx = rng.gen_range(0..SCRAMBLE_CHARS.len());
     SCRAMBLE_CHARS.chars().nth(idx).unwrap()
+}
+
+/// Get a character at a given offset from the target character in Unicode
+fn char_at_offset(target: char, offset: i32) -> char {
+    let target_code = target as u32;
+    let new_code = (target_code as i64 + offset as i64) as u32;
+    char::from_u32(new_code).unwrap_or(target)
 }

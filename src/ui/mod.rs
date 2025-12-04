@@ -105,6 +105,12 @@ pub fn run_app<B: ratatui::backend::Backend>(
             !scramble.complete
         });
 
+        // Update grid scrambles
+        for scramble in &mut app.grid_scrambles {
+            scramble.update();
+        }
+        app.grid_scrambles.retain(|s| !s.complete);
+
         // Process metro events BEFORE rendering so activity indicators update immediately
         while let Ok(event) = metro_event_rx.try_recv() {
             match event {
@@ -237,6 +243,9 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     KeyCode::Tab => {
                         if app.current_page == Page::Live {
                             app.show_grid_view = !app.show_grid_view;
+                            if app.show_grid_view {
+                                app.trigger_grid_scramble();
+                            }
                         } else {
                             app.go_to_page(Page::Live);
                         }

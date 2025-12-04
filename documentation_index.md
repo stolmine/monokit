@@ -52,6 +52,17 @@
 - Same animation modes and speed apply to all UI elements
 - Creates cohesive visual identity across interface
 
+**Grid Scramble Animation:**
+- Grid labels/icons scramble when switching to grid view (Tab key)
+- Gated by SCRMBL 0/1 setting
+- Text mode: Uses same scramble as header
+- Icon mode (GRID.MODE 1): Unicode traversal
+- Icons start 100-500 positions from target
+- Traverse adjacent Unicode chars to target
+- Uses same timing as title (~1.4s at speed 5)
+- Shares SCRMBL.SPD, SCRMBL.CRV, SCRMBL.MODE settings
+- Synchronized duration with title animation
+
 **Implementation Details:**
 - Core animation logic in src/scramble.rs
 - TitleScrambler struct with per-character state tracking

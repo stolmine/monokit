@@ -52,11 +52,9 @@ pub fn process_command<F>(
     limiter_enabled: &mut bool,
     notes: &mut crate::types::NotesStorage,
     load_rst: &mut bool,
+    vca_mode: &mut bool,
     show_conditional_highlight: &mut bool,
-    scope_timespan_ms: &mut u32,
-    scope_color_mode: &mut u8,
-    scope_display_mode: &mut u8,
-    scope_unipolar: &mut bool,
+    scope_settings: &mut crate::types::ScopeSettings,
     show_meters_header: &mut bool,
     show_meters_grid: &mut bool,
     show_spectrum: &mut bool,
@@ -67,6 +65,9 @@ pub fn process_command<F>(
     grid_mode: &mut u8,
     current_scene_name: &mut Option<String>,
     title_mode: &mut u8,
+    title_timer_enabled: &mut bool,
+    title_timer_interval_secs: &mut u16,
+    title_timer_last_toggle: &mut Option<std::time::Instant>,
     out_err: &mut bool,
     out_ess: &mut bool,
     out_qry: &mut bool,
@@ -520,6 +521,9 @@ where
         "PAN" => {
             synth_params::handle_pan(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
+        "VCA" => {
+            synth_params::handle_vca(&parts, vca_mode, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_qry, *out_cfm, output)?;
+        }
         "BR.ACT" => {
             synth_params::handle_br_act(&parts, *metro_interval, br_len, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
@@ -594,6 +598,27 @@ where
         }
         "FLEV.CRV" | "FLC" => {
             synth_params::handle_flev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
+        }
+        "GATE" => {
+            gate::handle_gate(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
+        }
+        "AENV.GATE" => {
+            gate::handle_aenv_gate(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
+        }
+        "PENV.GATE" => {
+            gate::handle_penv_gate(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
+        }
+        "FMEV.GATE" => {
+            gate::handle_fmev_gate(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
+        }
+        "DENV.GATE" => {
+            gate::handle_denv_gate(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
+        }
+        "FBEV.GATE" => {
+            gate::handle_fbev_gate(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
+        }
+        "FLEV.GATE" => {
+            gate::handle_flev_gate(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
         }
         "RST" => {
             misc::handle_rst(metro_tx, *debug_level, *out_ess, output)?;
@@ -736,16 +761,16 @@ where
             misc::handle_limit(&parts, limiter_enabled, metro_tx, *debug_level, *out_qry, *out_cfm, output)?;
         }
         "SCOPE.TIME" => {
-            misc::handle_scope_time(&parts, scope_timespan_ms, scope_color_mode, scope_display_mode, scope_unipolar, metro_tx, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_qry, output)?;
+            misc::handle_scope_time(&parts, scope_settings, metro_tx, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_qry, output)?;
         }
         "SCOPE.CLR" => {
-            misc::handle_scope_clr(&parts, scope_timespan_ms, scope_color_mode, scope_display_mode, scope_unipolar, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_cfm, output);
+            misc::handle_scope_clr(&parts, scope_settings, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_cfm, output);
         }
         "SCOPE.MODE" => {
-            misc::handle_scope_mode(&parts, scope_timespan_ms, scope_color_mode, scope_display_mode, scope_unipolar, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_cfm, output);
+            misc::handle_scope_mode(&parts, scope_settings, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_cfm, output);
         }
         "SCOPE.UNI" => {
-            misc::handle_scope_uni(&parts, scope_timespan_ms, scope_color_mode, scope_display_mode, scope_unipolar, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_cfm, output);
+            misc::handle_scope_uni(&parts, scope_settings, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_cfm, output);
         }
         "NOTE" => {
             misc::handle_note(&parts, notes, *debug_level, *out_cfm, output);
@@ -811,6 +836,9 @@ where
         }
         "TITLE" => {
             misc::handle_title(&parts, title_mode, current_scene_name, *scramble_enabled, *scramble_mode, *scramble_speed, *scramble_curve, header_scramble, output);
+        }
+        "TITLE.TIMER" => {
+            misc::handle_title_timer(&parts, title_timer_enabled, title_timer_interval_secs, title_timer_last_toggle, title_mode, current_scene_name, *scramble_enabled, *scramble_mode, *scramble_speed, *scramble_curve, header_scramble, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "SCRMBL" => {
             misc::handle_scrmbl(&parts, scramble_enabled, output);

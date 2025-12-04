@@ -91,6 +91,29 @@ pub fn run_app<B: ratatui::backend::Backend>(
     loop {
         app.clear_expired_error();
 
+        // Check title timer and toggle if needed
+        if app.title_timer_enabled {
+            if let Some(last_toggle) = app.title_timer_last_toggle {
+                if last_toggle.elapsed().as_secs() >= app.title_timer_interval_secs as u64 {
+                    // Toggle title mode
+                    app.title_mode = if app.title_mode == 0 { 1 } else { 0 };
+                    app.title_timer_last_toggle = Some(std::time::Instant::now());
+
+                    // Trigger scramble animation for new title
+                    let text = if app.title_mode == 0 {
+                        "MONOKIT"
+                    } else {
+                        app.current_scene_name.as_ref().map(|s| s.as_str()).unwrap_or("[UNSAVED]")
+                    };
+                    if app.scramble_enabled {
+                        let mode = crate::scramble::ScrambleMode::from_u8(app.scramble_mode);
+                        let curve = crate::scramble::ScrambleCurve::from_u8(app.scramble_curve);
+                        app.header_scramble = Some(crate::scramble::ScrambleAnimation::new_with_options(text, mode, app.scramble_speed, curve));
+                    }
+                }
+            }
+        }
+
         // Update header scramble animation
         if let Some(scramble) = &mut app.header_scramble {
             scramble.update();

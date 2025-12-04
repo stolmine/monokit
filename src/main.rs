@@ -177,15 +177,25 @@ fn run_tui_mode() -> Result<()> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen)?;
+
+    // Set terminal window title
+    print!("\x1b]0;monokit\x07");
+
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
     terminal.clear()?; // Clear alternate screen before first render
 
     let theme = config::load_theme(&config).unwrap_or_default();
 
-    let mut app = App::new(metro_tx, metro_state, theme, &config);
+    let mut app = App::new(metro_tx.clone(), metro_state, theme, &config);
     app.add_output("MONOKIT - SCRIPTING FOR COMPLEX OSCILLATOR".to_string());
     app.add_output("ENTER CMDS. [ ] NAV PAGES. ESC FOR HELP.".to_string());
+
+    // Send initial VCA mode to SuperCollider
+    let _ = metro_tx.send(MetroCommand::SendParam(
+        "vca_mode".to_string(),
+        rosc::OscType::Int(if config.display.vca_mode { 1 } else { 0 })
+    ));
 
     app.execute_script(9);
 
@@ -210,6 +220,9 @@ fn run_tui_mode() -> Result<()> {
         LeaveAlternateScreen
     )?;
     terminal.show_cursor()?;
+
+    // Reset terminal window title
+    print!("\x1b]0;\x07");
 
     if let Err(err) = res {
         eprintln!("Error: {:?}", err);

@@ -55,7 +55,7 @@ Fixed highlighting for commands with semicolons after quoted strings.
 ### Command Validation & Error Display Fixes [COMPLETE]
 Comprehensive command validation audit and error display improvements.
 
-**Command Validation Audit (20+ missing commands):**
+**Command Validation Audit (29 missing commands):**
 - [x] CPU, BPM, HEADER - System query commands now validated
 - [x] METER.HDR, METER.GRID, SPECTRUM, ACTIVITY, GRID, GRID.MODE - UI toggles now validated
 - [x] HL.SEQ, HL.COND - Highlighting commands now validated
@@ -64,6 +64,8 @@ Comprehensive command validation audit and error display improvements.
 - [x] TITLE, FLASH, CLEAR - Utility commands now validated
 - [x] REPL.DUMP - REPL export command now validated
 - [x] OUT.ERR, OUT.ESS, OUT.QRY, OUT.CFM - Output control commands now validated
+- [x] MIDI.IN, LOAD.RST - Additional missing commands now validated
+- [x] GATE.ATK, GATE.DEC, GATE.SUS, GATE.REL, GATE.CRV, GATE.MODE, GATE - 7 GATE commands now validated
 
 **PN Expression Validation:**
 - [x] PN.* commands now require pattern argument even when used as expressions
@@ -101,6 +103,32 @@ Unified search functionality with isolated scopes for help pages and scripts.
 - Two isolated search result buffers (help_search, script_search)
 - Dynamic scope switching on page navigation
 - Position restoration on ESC
+
+### VCA Mode Command [COMPLETE]
+VCA envelope mode control with DRONE and GATED modes.
+
+- [x] `VCA <0|1>` - Set VCA mode (0=DRONE, 1=GATED)
+- [x] VCA 0 (DRONE): Open VCA, no envelope modulation
+- [x] VCA 1 (GATED): Amplitude envelope controls VCA (default)
+- [x] Expression support in command arguments
+- [x] Config persistence across sessions
+
+### TITLE.TIMER Command [COMPLETE]
+Auto-cycle header title between "MONOKIT" and scene name.
+
+- [x] `TITLE.TIMER <0|1> <secs>` - Enable/disable title timer (1-1800 seconds)
+- [x] TITLE.TIMER 0: Disable auto-cycling
+- [x] TITLE.TIMER 1 <secs>: Enable with specified interval
+- [x] Expression support in timer duration
+- [x] Config persistence across sessions
+- [x] Automatically starts cycling between "MONOKIT" and scene name
+
+### Terminal Window Title [COMPLETE]
+Custom terminal window title for better taskbar/window list identification.
+
+- [x] Terminal window title shows "monokit" instead of "scsynth"
+- [x] Improves task switching and window identification
+- [x] Set via ANSI escape sequences on startup
 
 ---
 
@@ -250,11 +278,21 @@ Consolidated command definitions into a single source of truth to eliminate sync
 - [x] Total Phase 4: **~1,126 lines removed**
 - [x] All 411 tests pass
 
+**Phase 5: Additional DRY Refactors** - COMPLETE (December 2025)
+- [x] Boolean toggle macro (define_bool_toggle!) - **337 lines saved**
+- [x] Integer enum macro (define_enum_select!) - **416 lines saved**
+- [x] F-key handler loop refactor - **36 lines saved**
+- [x] Pattern macros extraction to patterns/macros.rs
+- [x] ScopeSettings struct bundling
+- [x] Context structs defined (OutputSettings, ScrambleSettings, UIToggles)
+- [x] Total Phase 5 reduction: **~800+ lines**
+- [x] All tests pass
+
 **Program Completion Summary:**
-- **Total DRY Reduction (Phases 1-4): ~5,942 lines (28% of original codebase)**
+- **Total DRY Reduction (Phases 1-5): ~6,742 lines (31% of original codebase)**
 - Clear, logical file organization by domain
 - Easier to add new commands (single macro invocation)
-- All 411 tests continue to pass throughout
+- All tests continue to pass throughout
 - Significantly reduced maintenance burden
 
 **Reference:** See `DRY_REFACTOR_PLAN.md` and `DRY_PHASE4_PLAN.md` for comprehensive implementation details.

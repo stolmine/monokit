@@ -122,6 +122,14 @@ impl Default for ScaleState {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct ScopeSettings {
+    pub timespan_ms: u32,
+    pub color_mode: u8,
+    pub display_mode: u8,
+    pub unipolar: bool,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Pattern {
     #[serde(with = "BigArray")]
@@ -507,4 +515,69 @@ pub struct ConditionalSegment {
 #[derive(Debug, Clone, Default)]
 pub struct LineSegmentActivity {
     pub segments: Vec<ConditionalSegment>,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct OutputSettings {
+    pub out_err: bool,
+    pub out_ess: bool,
+    pub out_qry: bool,
+    pub out_cfm: bool,
+}
+
+impl Default for OutputSettings {
+    fn default() -> Self {
+        Self {
+            out_err: false,
+            out_ess: true,
+            out_qry: true,
+            out_cfm: true,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct ScrambleSettings {
+    pub scramble_enabled: bool,
+    pub scramble_mode: u8,
+    pub scramble_speed: u8,
+    pub scramble_curve: u8,
+}
+
+impl Default for ScrambleSettings {
+    fn default() -> Self {
+        Self {
+            scramble_enabled: false,
+            scramble_mode: 0,
+            scramble_speed: 5,
+            scramble_curve: 0,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct UIToggles {
+    pub show_meters_header: bool,
+    pub show_meters_grid: bool,
+    pub show_spectrum: bool,
+    pub show_activity: bool,
+    pub show_grid: bool,
+    pub show_grid_view: bool,
+    pub show_seq_highlight: bool,
+    pub show_conditional_highlight: bool,
+}
+
+impl Default for UIToggles {
+    fn default() -> Self {
+        Self {
+            show_meters_header: true,
+            show_meters_grid: true,
+            show_spectrum: true,
+            show_activity: true,
+            show_grid: true,
+            show_grid_view: false,
+            show_seq_highlight: true,
+            show_conditional_highlight: true,
+        }
+    }
 }

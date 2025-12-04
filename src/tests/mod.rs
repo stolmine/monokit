@@ -17,6 +17,7 @@ mod scene_tests;
 mod preset_tests;
 mod debug_level;
 mod header_tests;
+mod title_timer_tests;
 mod buffer_effects_tests;
 mod slew_tests;
 mod envelope_tests;

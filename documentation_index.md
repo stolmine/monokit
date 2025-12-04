@@ -31,6 +31,118 @@
 3. SC restarts with new device
 4. Device saved to config automatically
 
+### DRY Refactors (December 2025)
+
+**Boolean Toggle Macro:**
+- Created boolean_toggle_handler! macro in src/commands/system/misc.rs
+- Consolidated 15 handler functions (337 lines saved)
+- Handles: HEADER, METER.HDR, METER.GRID, SPECTRUM, ACTIVITY, GRID, GRID.MODE, HL.SEQ, HL.COND, SCRMBL, SCRMBL.MODE, SCRMBL.CRV, SCOPE.VIS, TITLE.TIMER enable/disable
+- Generates validation, execution, config persistence, and confirmation messages
+- Pattern: boolean_toggle_handler!(command, field, on_msg, off_msg)
+
+**Integer Enum Macro:**
+- Created integer_enum_handler! macro in src/commands/system/misc.rs
+- Consolidated 6 handler functions (416 lines saved)
+- Handles: DEBUG, SCRMBL.SPD, SCOPE.MODE, SCOPE.DIV, SCOPE.RES, VCA
+- Generates validation, execution, config persistence, confirmation with mode names
+- Pattern: integer_enum_handler!(command, field, max, mode_names)
+
+**F-Key Handler Refactor:**
+- Refactored F-key input handling in src/ui/mod.rs
+- Added Page::from_script_number() helper function
+- Consolidated duplicate logic (36 lines saved)
+- Handles F1-F8 keys for script page navigation
+
+**Pattern Macros Extraction:**
+- Extracted pattern matching macros to src/commands/patterns/macros.rs
+- Moved from src/commands/patterns/common.rs
+- Reduced common.rs from 1,132 lines to 361 lines
+- Macros: pattern_arg!, optional_pattern_arg!, require_pattern_loaded!
+- Better code organization and reusability
+
+**Settings Struct Bundling:**
+- Created ScopeSettings struct (mode, division, resolution, visible) in src/types.rs
+- Replaced 4 individual parameters with single struct
+- Created OutputSettings struct (err, ess, qry, cfm) in src/types.rs
+- Created ScrambleSettings struct (enabled, mode, speed, curve) in src/types.rs
+- Created UIToggles struct (header, meter_hdr, meter_grid, spectrum, activity, grid, grid_mode, hl_seq, hl_cond) in src/types.rs
+- Reduced function parameter counts across codebase
+- Improved code maintainability and consistency
+
+### VCA Command (December 2025)
+
+**Voice Control Amplifier Mode:**
+- VCA 0 = DRONE mode (VCA stays open, no envelope)
+- VCA 1 = GATED mode (envelope controls amplitude)
+- Default: GATED mode
+- Supports expressions (VCA A, VCA RND 0 1)
+- Config persistence to config.toml
+- Command handler in src/commands/synth/output.rs
+
+**SuperCollider Implementation:**
+- Uses Select.kr(vca_mode, [1.0, ampEnv]) to switch between modes
+- Mode 0: Constant amplitude (1.0)
+- Mode 1: Envelope-controlled amplitude (ampEnv)
+- Updated in monokit_server.scd
+
+**Use Cases:**
+- DRONE mode: Continuous tones, ambient textures, no envelope
+- GATED mode: Standard percussive/gated synthesis
+
+### TITLE.TIMER Command (December 2025)
+
+**Title Cycling System:**
+- TITLE.TIMER - Query current state (enabled/disabled, interval)
+- TITLE.TIMER 0 - Disable cycling
+- TITLE.TIMER 1 <secs> - Enable cycling with interval (1-1800 seconds)
+- Cycles between "MONOKIT" and scene name
+- Triggers scramble animation on each toggle
+- Both arguments support expressions (TITLE.TIMER A B)
+- Config persistence to config.toml
+
+**Implementation Details:**
+- Command handler in src/commands/system/misc.rs
+- Uses integer_enum_handler! macro for state management
+- Validates interval range (1-1800 seconds)
+- Timer state stored in App struct
+- Integrates with existing scramble animation system
+
+**User Flow:**
+1. TITLE.TIMER 1 5 - Enable cycling every 5 seconds
+2. Header alternates between "MONOKIT" and scene name
+3. Each toggle triggers scramble animation
+4. TITLE.TIMER 0 - Disable cycling, stays on current title
+
+### Terminal Window Title (December 2025)
+
+**Window Title Update:**
+- Terminal window title now displays "monokit" instead of "scsynth"
+- Set via ANSI escape sequence in src/main.rs
+- Improves application identity in window manager/taskbar
+- Uses standard ANSI escape sequence: \x1b]0;monokit\x07
+
+### Command Registration Audit (December 2025)
+
+**Missing Command Registrations Fixed:**
+- Fixed MIDI.IN command missing from src/commands/validate.rs
+- Fixed MIDI command missing from src/commands/validate.rs
+- Fixed LOAD.RST command missing from src/commands/validate.rs
+- Fixed 7 GATE commands missing from dispatcher in src/commands/mod.rs:
+  - GATE (global gate)
+  - AENV.GATE (amp envelope gate)
+  - PENV.GATE (pitch envelope gate)
+  - FMEV.GATE (FM envelope gate)
+  - DENV.GATE (discontinuity envelope gate)
+  - FBEV.GATE (feedback envelope gate)
+  - FLEV.GATE (filter envelope gate)
+
+**Impact:**
+- GATE commands now properly validated and dispatched
+- MIDI commands now validate correctly
+- LOAD.RST now validates correctly
+- Prevents "UNKNOWN COMMAND" errors for valid commands
+- Ensures consistent validation across all commands
+
 ### Rolling Text Scramble Animation (December 2025)
 
 **Header Animation Feature:**

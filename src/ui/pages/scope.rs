@@ -18,7 +18,7 @@ pub fn render_scope_page(app: &crate::App, area: Rect) -> Paragraph<'static> {
     let top_padding = 0;
 
     // Prepare samples - apply rectification if unipolar mode
-    let samples: Vec<f32> = if app.scope_unipolar {
+    let samples: Vec<f32> = if app.scope_settings.unipolar {
         // Rectify: take absolute value, map 0-1 to full height
         // We map 0->1 to 1->-1 (top to bottom) for display
         app.scope_data.samples.iter()
@@ -28,7 +28,7 @@ pub fn render_scope_page(app: &crate::App, area: Rect) -> Paragraph<'static> {
         app.scope_data.samples.to_vec()
     };
 
-    let waveform_grid = match app.scope_display_mode {
+    let waveform_grid = match app.scope_settings.display_mode {
         1 => samples_to_blocks(&samples, content_width, waveform_height),
         2 => samples_to_lines(&samples, content_width, waveform_height),
         3 => samples_to_dots(&samples, content_width, waveform_height),
@@ -36,7 +36,7 @@ pub fn render_scope_page(app: &crate::App, area: Rect) -> Paragraph<'static> {
         _ => samples_to_braille(&samples, content_width, waveform_height),
     };
 
-    let waveform_color = match app.scope_color_mode {
+    let waveform_color = match app.scope_settings.color_mode {
         1 => app.theme.error,
         2 => app.theme.foreground,
         3 => app.theme.accent,
@@ -60,7 +60,7 @@ pub fn render_scope_page(app: &crate::App, area: Rect) -> Paragraph<'static> {
     }
 
     // Create info title for bottom border
-    let info_title = format!(" TIME: {}MS  SAMPLES: {} ", app.scope_timespan_ms, SCOPE_SAMPLES);
+    let info_title = format!(" TIME: {}MS  SAMPLES: {} ", app.scope_settings.timespan_ms, SCOPE_SAMPLES);
 
     Paragraph::new(lines)
         .style(Style::default().bg(app.theme.background).fg(app.theme.foreground))

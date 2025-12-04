@@ -6,6 +6,119 @@ use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
 
+macro_rules! define_bool_toggle {
+    ($fn_name:ident, $cmd_name:expr, $save_fn:path) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            state: &mut bool,
+            mut output: F,
+        ) where
+            F: FnMut(String),
+        {
+            if parts.len() == 1 {
+                output(format!("{}: {}", $cmd_name, if *state { "ON" } else { "OFF" }));
+            } else {
+                match parts[1] {
+                    "0" => {
+                        *state = false;
+                        let _ = $save_fn(*state);
+                        output(format!("{}: OFF", $cmd_name));
+                    }
+                    "1" => {
+                        *state = true;
+                        let _ = $save_fn(*state);
+                        output(format!("{}: ON", $cmd_name));
+                    }
+                    _ => output(format!("ERROR: {} TAKES 0 (OFF) OR 1 (ON)", $cmd_name)),
+                }
+            }
+        }
+    };
+    ($fn_name:ident, $cmd_name:expr, $query_fmt:expr, $off_fmt:expr, $on_fmt:expr, $save_fn:path) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            state: &mut bool,
+            mut output: F,
+        ) where
+            F: FnMut(String),
+        {
+            if parts.len() == 1 {
+                output(format!($query_fmt, if *state { 1 } else { 0 }));
+            } else {
+                match parts[1] {
+                    "0" => {
+                        *state = false;
+                        let _ = $save_fn(*state);
+                        output($off_fmt.to_string());
+                    }
+                    "1" => {
+                        *state = true;
+                        let _ = $save_fn(*state);
+                        output($on_fmt.to_string());
+                    }
+                    _ => output(format!("ERROR: {} TAKES 0 (OFF) OR 1 (ON)", $cmd_name)),
+                }
+            }
+        }
+    };
+}
+
+macro_rules! define_enum_select {
+    // Standard variant with labels
+    ($fn_name:ident, $cmd_name:expr, $save_fn:path, $err_msg:expr, $(($value:expr, $label:expr)),+ $(,)?) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            state: &mut u8,
+            mut output: F,
+        ) where
+            F: FnMut(String),
+        {
+            if parts.len() == 1 {
+                output(format!("{}: {}", $cmd_name, *state));
+            } else {
+                let value = parts[1];
+                match value {
+                    $(
+                        stringify!($value) => {
+                            *state = $value;
+                            let _ = $save_fn(*state);
+                            output(format!("{}: {} ({})", $cmd_name, $value, $label));
+                        }
+                    )+
+                    _ => output($err_msg.to_string()),
+                }
+            }
+        }
+    };
+    // Variant without labels - just outputs the numeric value
+    ($fn_name:ident, $cmd_name:expr, $save_fn:path, $err_msg:expr, $($value:expr),+ $(,)?) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            state: &mut u8,
+            mut output: F,
+        ) where
+            F: FnMut(String),
+        {
+            if parts.len() == 1 {
+                output(format!("{}: {}", $cmd_name, *state));
+            } else if let Ok(val) = parts[1].parse::<u8>() {
+                match val {
+                    $(
+                        $value => {
+                            *state = $value;
+                            let _ = $save_fn(*state);
+                            output(format!("{}: {}", $cmd_name, $value));
+                        }
+                    )+
+                    _ => output($err_msg.to_string()),
+                }
+            } else {
+                output($err_msg.to_string());
+            }
+        }
+    };
+}
+
 pub fn handle_tr<F>(
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
@@ -471,156 +584,34 @@ pub fn handle_print<F>(
     }
 }
 
-pub fn handle_debug<F>(
-    parts: &[&str],
-    debug_level: &mut u8,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("DEBUG LEVEL: {}", debug_level));
-    } else {
-        let value = parts[1];
-        match value {
-            "0" => {
-                *debug_level = 0;
-                let _ = config::save_debug_level(*debug_level);
-                output("DEBUG: 0 (SILENT)".to_string());
-            }
-            "1" => {
-                *debug_level = 1;
-                let _ = config::save_debug_level(*debug_level);
-                output("DEBUG: 1 (ERRORS)".to_string());
-            }
-            "2" => {
-                *debug_level = 2;
-                let _ = config::save_debug_level(*debug_level);
-                output("DEBUG: 2 (ESSENTIAL)".to_string());
-            }
-            "3" => {
-                *debug_level = 3;
-                let _ = config::save_debug_level(*debug_level);
-                output("DEBUG: 3 (QUERIES)".to_string());
-            }
-            "4" => {
-                *debug_level = 4;
-                let _ = config::save_debug_level(*debug_level);
-                output("DEBUG: 4 (CONFIRMS)".to_string());
-            }
-            "5" => {
-                *debug_level = 5;
-                let _ = config::save_debug_level(*debug_level);
-                output("DEBUG: 5 (VERBOSE)".to_string());
-            }
-            _ => {
-                output("ERROR: DEBUG TAKES 0-5".to_string());
-            }
-        }
-    }
-}
+define_enum_select!(
+    handle_debug,
+    "DEBUG",
+    config::save_debug_level,
+    "ERROR: DEBUG TAKES 0-5",
+    (0, "SILENT"),
+    (1, "ERRORS"),
+    (2, "ESSENTIAL"),
+    (3, "QUERIES"),
+    (4, "CONFIRMS"),
+    (5, "VERBOSE"),
+);
 
-pub fn handle_cpu<F>(
-    parts: &[&str],
-    show_cpu: &mut bool,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("CPU DISPLAY: {}", if *show_cpu { 1 } else { 0 }));
-    } else {
-        let value = parts[1];
-        match value {
-            "0" => {
-                *show_cpu = false;
-                let _ = config::save_show_cpu(*show_cpu);
-                output("CPU DISPLAY: OFF".to_string());
-            }
-            "1" => {
-                *show_cpu = true;
-                let _ = config::save_show_cpu(*show_cpu);
-                output("CPU DISPLAY: ON".to_string());
-            }
-            _ => {
-                output("ERROR: CPU TAKES 0 (OFF) OR 1 (ON)".to_string());
-            }
-        }
-    }
-}
+define_bool_toggle!(handle_cpu, "CPU", "CPU DISPLAY: {}", "CPU DISPLAY: OFF", "CPU DISPLAY: ON", config::save_show_cpu);
 
-pub fn handle_bpm<F>(
-    parts: &[&str],
-    show_bpm: &mut bool,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("BPM: {}", if *show_bpm { 1 } else { 0 }));
-    } else {
-        let value = parts[1];
-        match value {
-            "0" => {
-                *show_bpm = false;
-                let _ = config::save_show_bpm(*show_bpm);
-                output("BPM: OFF".to_string());
-            }
-            "1" => {
-                *show_bpm = true;
-                let _ = config::save_show_bpm(*show_bpm);
-                output("BPM: ON".to_string());
-            }
-            _ => {
-                output("ERROR: BPM TAKES 0 (OFF) OR 1 (ON)".to_string());
-            }
-        }
-    }
-}
+define_bool_toggle!(handle_bpm, "BPM", "BPM: {}", "BPM: OFF", "BPM: ON", config::save_show_bpm);
 
-pub fn handle_header<F>(
-    parts: &[&str],
-    header_level: &mut u8,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("HEADER LEVEL: {}", header_level));
-    } else {
-        let value = parts[1];
-        match value {
-            "0" => {
-                *header_level = 0;
-                let _ = config::save_header_level(*header_level);
-                output("HEADER LEVEL: 0 (NAV ONLY)".to_string());
-            }
-            "1" => {
-                *header_level = 1;
-                let _ = config::save_header_level(*header_level);
-                output("HEADER LEVEL: 1 (NAV + METERS)".to_string());
-            }
-            "2" => {
-                *header_level = 2;
-                let _ = config::save_header_level(*header_level);
-                output("HEADER LEVEL: 2 (NAV + TR + METERS)".to_string());
-            }
-            "3" => {
-                *header_level = 3;
-                let _ = config::save_header_level(*header_level);
-                output("HEADER LEVEL: 3 (FULL NAV + TR + METERS)".to_string());
-            }
-            "4" => {
-                *header_level = 4;
-                let _ = config::save_header_level(*header_level);
-                output("HEADER LEVEL: 4 (FULL NAV + TR + METERS + CPU)".to_string());
-            }
-            _ => {
-                output("ERROR: HEADER TAKES 0-4".to_string());
-            }
-        }
-    }
-}
+define_enum_select!(
+    handle_header,
+    "HEADER LEVEL",
+    config::save_header_level,
+    "ERROR: HEADER TAKES 0-4",
+    (0, "NAV ONLY"),
+    (1, "NAV + METERS"),
+    (2, "NAV + TR + METERS"),
+    (3, "FULL NAV + TR + METERS"),
+    (4, "FULL NAV + TR + METERS + CPU"),
+);
 
 pub fn handle_limit<F>(
     parts: &[&str],
@@ -669,41 +660,11 @@ where
     Ok(())
 }
 
-pub fn handle_load_rst<F>(
-    parts: &[&str],
-    load_rst: &mut bool,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("LOAD.RST: {}", if *load_rst { 1 } else { 0 }));
-    } else {
-        let value = parts[1];
-        match value {
-            "0" => {
-                *load_rst = false;
-                let _ = config::save_load_rst(*load_rst);
-                output("LOAD.RST: OFF (PERSIST PARAMS)".to_string());
-            }
-            "1" => {
-                *load_rst = true;
-                let _ = config::save_load_rst(*load_rst);
-                output("LOAD.RST: ON (RESET BEFORE LOAD)".to_string());
-            }
-            _ => {
-                output("ERROR: LOAD.RST TAKES 0-1".to_string());
-            }
-        }
-    }
-}
+define_bool_toggle!(handle_load_rst, "LOAD.RST", "LOAD.RST: {}", "LOAD.RST: OFF (PERSIST PARAMS)", "LOAD.RST: ON (RESET BEFORE LOAD)", config::save_load_rst);
 
 pub fn handle_scope_time<F>(
     parts: &[&str],
-    scope_timespan_ms: &mut u32,
-    scope_color_mode: &u8,
-    scope_display_mode: &u8,
-    scope_unipolar: &bool,
+    scope_settings: &mut crate::types::ScopeSettings,
     metro_tx: &Sender<MetroCommand>,
     variables: &Variables,
     patterns: &mut PatternStorage,
@@ -720,7 +681,7 @@ where
 {
     if parts.len() == 1 {
         if debug_level >= TIER_QUERIES || out_qry {
-            output(format!("SCOPE.TIME: {}MS", scope_timespan_ms));
+            output(format!("SCOPE.TIME: {}MS", scope_settings.timespan_ms));
         }
     } else {
         let value = if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -734,13 +695,13 @@ where
             return Ok(());
         }
 
-        *scope_timespan_ms = value;
+        scope_settings.timespan_ms = value;
 
         metro_tx
             .send(MetroCommand::SendScopeRate(value as f32))
             .context("Failed to send scope rate")?;
 
-        let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
+        let _ = config::save_scope_settings(scope_settings);
 
         if debug_level >= TIER_VERBOSE {
             output(format!("SCOPE.TIME: {}MS", value));
@@ -751,10 +712,10 @@ where
 
 pub fn handle_scope_clr<F>(
     parts: &[&str],
-    scope_timespan_ms: &u32,
-    scope_color_mode: &mut u8,
-    scope_display_mode: &u8,
-    scope_unipolar: &bool,
+    scope_settings: &mut crate::types::ScopeSettings,
+    
+    
+    
     variables: &Variables,
     patterns: &mut PatternStorage,
     counters: &mut Counters,
@@ -769,13 +730,13 @@ pub fn handle_scope_clr<F>(
 {
     if parts.len() == 1 {
         if debug_level >= TIER_QUERIES || out_qry {
-            let mode_name = match *scope_color_mode {
+            let mode_name = match scope_settings.color_mode {
                 1 => "ERROR",
                 2 => "FOREGROUND",
                 3 => "ACCENT",
                 _ => "SUCCESS",
             };
-            output(format!("SCOPE.CLR: {} ({})", scope_color_mode, mode_name));
+            output(format!("SCOPE.CLR: {} ({})", scope_settings.color_mode, mode_name));
         }
     } else {
         let value = if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -786,29 +747,29 @@ pub fn handle_scope_clr<F>(
 
         match value {
             0 => {
-                *scope_color_mode = 0;
-                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
+                scope_settings.color_mode = 0;
+                let _ = config::save_scope_settings(scope_settings);
                 if debug_level >= TIER_VERBOSE {
                     output("SCOPE.CLR: 0 (SUCCESS)".to_string());
                 }
             }
             1 => {
-                *scope_color_mode = 1;
-                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
+                scope_settings.color_mode = 1;
+                let _ = config::save_scope_settings(scope_settings);
                 if debug_level >= TIER_VERBOSE {
                     output("SCOPE.CLR: 1 (ERROR)".to_string());
                 }
             }
             2 => {
-                *scope_color_mode = 2;
-                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
+                scope_settings.color_mode = 2;
+                let _ = config::save_scope_settings(scope_settings);
                 if debug_level >= TIER_VERBOSE {
                     output("SCOPE.CLR: 2 (FOREGROUND)".to_string());
                 }
             }
             3 => {
-                *scope_color_mode = 3;
-                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
+                scope_settings.color_mode = 3;
+                let _ = config::save_scope_settings(scope_settings);
                 if debug_level >= TIER_VERBOSE {
                     output("SCOPE.CLR: 3 (ACCENT)".to_string());
                 }
@@ -822,10 +783,10 @@ pub fn handle_scope_clr<F>(
 
 pub fn handle_scope_mode<F>(
     parts: &[&str],
-    scope_timespan_ms: &u32,
-    scope_color_mode: &u8,
-    scope_display_mode: &mut u8,
-    scope_unipolar: &bool,
+    scope_settings: &mut crate::types::ScopeSettings,
+    
+    
+    
     variables: &Variables,
     patterns: &mut PatternStorage,
     counters: &mut Counters,
@@ -840,14 +801,14 @@ pub fn handle_scope_mode<F>(
 {
     if parts.len() == 1 {
         if debug_level >= TIER_QUERIES || out_qry {
-            let mode_name = match *scope_display_mode {
+            let mode_name = match scope_settings.display_mode {
                 1 => "BLOCK",
                 2 => "LINE",
                 3 => "DOT",
                 4 => "QUADRANT",
                 _ => "BRAILLE",
             };
-            output(format!("SCOPE.MODE: {} ({})", scope_display_mode, mode_name));
+            output(format!("SCOPE.MODE: {} ({})", scope_settings.display_mode, mode_name));
         }
     } else {
         let value = if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -858,28 +819,28 @@ pub fn handle_scope_mode<F>(
 
         match value {
             0 => {
-                *scope_display_mode = 0;
-                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
+                scope_settings.display_mode = 0;
+                let _ = config::save_scope_settings(scope_settings);
                 if debug_level >= TIER_VERBOSE { output("SCOPE.MODE: 0 (BRAILLE)".to_string()); }
             }
             1 => {
-                *scope_display_mode = 1;
-                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
+                scope_settings.display_mode = 1;
+                let _ = config::save_scope_settings(scope_settings);
                 if debug_level >= TIER_VERBOSE { output("SCOPE.MODE: 1 (BLOCK)".to_string()); }
             }
             2 => {
-                *scope_display_mode = 2;
-                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
+                scope_settings.display_mode = 2;
+                let _ = config::save_scope_settings(scope_settings);
                 if debug_level >= TIER_VERBOSE { output("SCOPE.MODE: 2 (LINE)".to_string()); }
             }
             3 => {
-                *scope_display_mode = 3;
-                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
+                scope_settings.display_mode = 3;
+                let _ = config::save_scope_settings(scope_settings);
                 if debug_level >= TIER_VERBOSE { output("SCOPE.MODE: 3 (DOT)".to_string()); }
             }
             4 => {
-                *scope_display_mode = 4;
-                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
+                scope_settings.display_mode = 4;
+                let _ = config::save_scope_settings(scope_settings);
                 if debug_level >= TIER_VERBOSE { output("SCOPE.MODE: 4 (QUADRANT)".to_string()); }
             }
             _ => {
@@ -891,10 +852,10 @@ pub fn handle_scope_mode<F>(
 
 pub fn handle_scope_uni<F>(
     parts: &[&str],
-    scope_timespan_ms: &u32,
-    scope_color_mode: &u8,
-    scope_display_mode: &u8,
-    scope_unipolar: &mut bool,
+    scope_settings: &mut crate::types::ScopeSettings,
+    
+    
+    
     variables: &Variables,
     patterns: &mut PatternStorage,
     counters: &mut Counters,
@@ -909,7 +870,7 @@ pub fn handle_scope_uni<F>(
 {
     if parts.len() == 1 {
         if debug_level >= TIER_QUERIES || out_qry {
-            output(format!("SCOPE.UNI: {}", if *scope_unipolar { 1 } else { 0 }));
+            output(format!("SCOPE.UNI: {}", if scope_settings.unipolar { 1 } else { 0 }));
         }
     } else {
         let value = if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -920,13 +881,13 @@ pub fn handle_scope_uni<F>(
 
         match value {
             0 => {
-                *scope_unipolar = false;
-                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
+                scope_settings.unipolar = false;
+                let _ = config::save_scope_settings(scope_settings);
                 if debug_level >= TIER_VERBOSE { output("SCOPE.UNI: 0 (BIPOLAR)".to_string()); }
             }
             1 => {
-                *scope_unipolar = true;
-                let _ = config::save_scope_settings(*scope_timespan_ms, *scope_color_mode, *scope_display_mode, *scope_unipolar);
+                scope_settings.unipolar = true;
+                let _ = config::save_scope_settings(scope_settings);
                 if debug_level >= TIER_VERBOSE { output("SCOPE.UNI: 1 (UNIPOLAR)".to_string()); }
             }
             _ => {
@@ -997,238 +958,28 @@ pub fn handle_note_clr<F>(
     }
 }
 
-pub fn handle_meter_hdr<F>(
-    parts: &[&str],
-    show_meters_header: &mut bool,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("HEADER METERS: {}", if *show_meters_header { 1 } else { 0 }));
-    } else {
-        let value = parts[1];
-        match value {
-            "0" => {
-                *show_meters_header = false;
-                let _ = config::save_show_meters_header(*show_meters_header);
-                output("HEADER METERS: OFF".to_string());
-            }
-            "1" => {
-                *show_meters_header = true;
-                let _ = config::save_show_meters_header(*show_meters_header);
-                output("HEADER METERS: ON".to_string());
-            }
-            _ => {
-                output("ERROR: METER.HDR TAKES 0 (OFF) OR 1 (ON)".to_string());
-            }
-        }
-    }
-}
+define_bool_toggle!(handle_meter_hdr, "METER.HDR", "HEADER METERS: {}", "HEADER METERS: OFF", "HEADER METERS: ON", config::save_show_meters_header);
 
-pub fn handle_meter_grid<F>(
-    parts: &[&str],
-    show_meters_grid: &mut bool,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("GRID METERS: {}", if *show_meters_grid { 1 } else { 0 }));
-    } else {
-        let value = parts[1];
-        match value {
-            "0" => {
-                *show_meters_grid = false;
-                let _ = config::save_show_meters_grid(*show_meters_grid);
-                output("GRID METERS: OFF".to_string());
-            }
-            "1" => {
-                *show_meters_grid = true;
-                let _ = config::save_show_meters_grid(*show_meters_grid);
-                output("GRID METERS: ON".to_string());
-            }
-            _ => {
-                output("ERROR: METER.GRID TAKES 0 (OFF) OR 1 (ON)".to_string());
-            }
-        }
-    }
-}
+define_bool_toggle!(handle_meter_grid, "METER.GRID", "GRID METERS: {}", "GRID METERS: OFF", "GRID METERS: ON", config::save_show_meters_grid);
 
-pub fn handle_spectrum<F>(
-    parts: &[&str],
-    show_spectrum: &mut bool,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("SPECTRUM: {}", if *show_spectrum { 1 } else { 0 }));
-    } else {
-        let value = parts[1];
-        match value {
-            "0" => {
-                *show_spectrum = false;
-                let _ = config::save_show_spectrum(*show_spectrum);
-                output("SPECTRUM: OFF".to_string());
-            }
-            "1" => {
-                *show_spectrum = true;
-                let _ = config::save_show_spectrum(*show_spectrum);
-                output("SPECTRUM: ON".to_string());
-            }
-            _ => {
-                output("ERROR: SPECTRUM TAKES 0 (OFF) OR 1 (ON)".to_string());
-            }
-        }
-    }
-}
+define_bool_toggle!(handle_spectrum, "SPECTRUM", "SPECTRUM: {}", "SPECTRUM: OFF", "SPECTRUM: ON", config::save_show_spectrum);
 
-pub fn handle_activity<F>(
-    parts: &[&str],
-    show_activity: &mut bool,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("ACTIVITY: {}", if *show_activity { 1 } else { 0 }));
-    } else {
-        let value = parts[1];
-        match value {
-            "0" => {
-                *show_activity = false;
-                let _ = config::save_show_activity(*show_activity);
-                output("ACTIVITY: OFF".to_string());
-            }
-            "1" => {
-                *show_activity = true;
-                let _ = config::save_show_activity(*show_activity);
-                output("ACTIVITY: ON".to_string());
-            }
-            _ => {
-                output("ERROR: ACTIVITY TAKES 0 (OFF) OR 1 (ON)".to_string());
-            }
-        }
-    }
-}
+define_bool_toggle!(handle_activity, "ACTIVITY", "ACTIVITY: {}", "ACTIVITY: OFF", "ACTIVITY: ON", config::save_show_activity);
 
-pub fn handle_grid<F>(
-    parts: &[&str],
-    show_grid: &mut bool,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("GRID: {}", if *show_grid { 1 } else { 0 }));
-    } else {
-        let value = parts[1];
-        match value {
-            "0" => {
-                *show_grid = false;
-                let _ = config::save_show_grid(*show_grid);
-                output("GRID: OFF".to_string());
-            }
-            "1" => {
-                *show_grid = true;
-                let _ = config::save_show_grid(*show_grid);
-                output("GRID: ON".to_string());
-            }
-            _ => {
-                output("ERROR: GRID TAKES 0-1".to_string());
-            }
-        }
-    }
-}
+define_bool_toggle!(handle_grid, "GRID", "GRID: {}", "GRID: OFF", "GRID: ON", config::save_show_grid);
 
-pub fn handle_grid_def<F>(
-    parts: &[&str],
-    show_grid_view: &mut bool,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("GRID.DEF: {}", if *show_grid_view { 1 } else { 0 }));
-    } else {
-        let value = parts[1];
-        match value {
-            "0" => {
-                *show_grid_view = false;
-                let _ = config::save_show_grid_view(*show_grid_view);
-                output("GRID.DEF: 0 (REPL)".to_string());
-            }
-            "1" => {
-                *show_grid_view = true;
-                let _ = config::save_show_grid_view(*show_grid_view);
-                output("GRID.DEF: 1 (GRID)".to_string());
-            }
-            _ => {
-                output("ERROR: GRID.DEF TAKES 0-1".to_string());
-            }
-        }
-    }
-}
+define_bool_toggle!(handle_grid_def, "GRID.DEF", "GRID.DEF: {}", "GRID.DEF: 0 (REPL)", "GRID.DEF: 1 (GRID)", config::save_show_grid_view);
 
-pub fn handle_hl_seq<F>(
-    parts: &[&str],
-    show_seq_highlight: &mut bool,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("SEQ HIGHLIGHT: {}", if *show_seq_highlight { 1 } else { 0 }));
-    } else {
-        let value = parts[1];
-        match value {
-            "0" => {
-                *show_seq_highlight = false;
-                let _ = config::save_show_seq_highlight(*show_seq_highlight);
-                output("SEQ HIGHLIGHT: OFF".to_string());
-            }
-            "1" => {
-                *show_seq_highlight = true;
-                let _ = config::save_show_seq_highlight(*show_seq_highlight);
-                output("SEQ HIGHLIGHT: ON".to_string());
-            }
-            _ => {
-                output("ERROR: HL.SEQ TAKES 0 (OFF) OR 1 (ON)".to_string());
-            }
-        }
-    }
-}
+define_bool_toggle!(handle_hl_seq, "HL.SEQ", "SEQ HIGHLIGHT: {}", "SEQ HIGHLIGHT: OFF", "SEQ HIGHLIGHT: ON", config::save_show_seq_highlight);
 
-pub fn handle_grid_mode<F>(
-    parts: &[&str],
-    grid_mode: &mut u8,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        let mode_name = if *grid_mode == 0 { "LABELS" } else { "ICONS" };
-        output(format!("GRID.MODE: {} ({})", grid_mode, mode_name));
-    } else {
-        let value = parts[1];
-        match value {
-            "0" => {
-                *grid_mode = 0;
-                let _ = config::save_grid_mode(*grid_mode);
-                output("GRID.MODE: 0 (LABELS)".to_string());
-            }
-            "1" => {
-                *grid_mode = 1;
-                let _ = config::save_grid_mode(*grid_mode);
-                output("GRID.MODE: 1 (ICONS)".to_string());
-            }
-            _ => {
-                output("ERROR: GRID.MODE TAKES 0-1".to_string());
-            }
-        }
-    }
-}
+define_enum_select!(
+    handle_grid_mode,
+    "GRID.MODE",
+    config::save_grid_mode,
+    "ERROR: GRID.MODE TAKES 0-1",
+    (0, "LABELS"),
+    (1, "ICONS"),
+);
 
 pub fn handle_title<F>(
     parts: &[&str],
@@ -1281,207 +1032,124 @@ pub fn handle_title<F>(
     }
 }
 
-pub fn handle_out_err<F>(
-    parts: &[&str],
-    out_err: &mut bool,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("OUT.ERR: {}", if *out_err { "ON" } else { "OFF" }));
-    } else {
-        let value = parts[1];
-        match value {
-            "0" => {
-                *out_err = false;
-                let _ = config::save_out_err(*out_err);
-                output("OUT.ERR: OFF".to_string());
-            }
-            "1" => {
-                *out_err = true;
-                let _ = config::save_out_err(*out_err);
-                output("OUT.ERR: ON".to_string());
-            }
-            _ => {
-                output("ERROR: OUT.ERR TAKES 0 (OFF) OR 1 (ON)".to_string());
-            }
-        }
-    }
-}
+define_bool_toggle!(handle_out_err, "OUT.ERR", config::save_out_err);
 
-pub fn handle_out_ess<F>(
-    parts: &[&str],
-    out_ess: &mut bool,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("OUT.ESS: {}", if *out_ess { "ON" } else { "OFF" }));
-    } else {
-        let value = parts[1];
-        match value {
-            "0" => {
-                *out_ess = false;
-                let _ = config::save_out_ess(*out_ess);
-                output("OUT.ESS: OFF".to_string());
-            }
-            "1" => {
-                *out_ess = true;
-                let _ = config::save_out_ess(*out_ess);
-                output("OUT.ESS: ON".to_string());
-            }
-            _ => {
-                output("ERROR: OUT.ESS TAKES 0 (OFF) OR 1 (ON)".to_string());
-            }
-        }
-    }
-}
+define_bool_toggle!(handle_out_ess, "OUT.ESS", config::save_out_ess);
 
-pub fn handle_out_qry<F>(
-    parts: &[&str],
-    out_qry: &mut bool,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("OUT.QRY: {}", if *out_qry { "ON" } else { "OFF" }));
-    } else {
-        let value = parts[1];
-        match value {
-            "0" => {
-                *out_qry = false;
-                let _ = config::save_out_qry(*out_qry);
-                output("OUT.QRY: OFF".to_string());
-            }
-            "1" => {
-                *out_qry = true;
-                let _ = config::save_out_qry(*out_qry);
-                output("OUT.QRY: ON".to_string());
-            }
-            _ => {
-                output("ERROR: OUT.QRY TAKES 0 (OFF) OR 1 (ON)".to_string());
-            }
-        }
-    }
-}
+define_bool_toggle!(handle_out_qry, "OUT.QRY", config::save_out_qry);
 
-pub fn handle_out_cfm<F>(
-    parts: &[&str],
-    out_cfm: &mut bool,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("OUT.CFM: {}", if *out_cfm { "ON" } else { "OFF" }));
-    } else {
-        let value = parts[1];
-        match value {
-            "0" => {
-                *out_cfm = false;
-                let _ = config::save_out_cfm(*out_cfm);
-                output("OUT.CFM: OFF".to_string());
-            }
-            "1" => {
-                *out_cfm = true;
-                let _ = config::save_out_cfm(*out_cfm);
-                output("OUT.CFM: ON".to_string());
-            }
-            _ => {
-                output("ERROR: OUT.CFM TAKES 0 (OFF) OR 1 (ON)".to_string());
-            }
-        }
-    }
-}
+define_bool_toggle!(handle_out_cfm, "OUT.CFM", config::save_out_cfm);
 
-pub fn handle_scrmbl<F>(
-    parts: &[&str],
-    scramble_enabled: &mut bool,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("SCRMBL: {}", if *scramble_enabled { "ON" } else { "OFF" }));
-    } else if let Ok(val) = parts[1].parse::<u8>() {
-        *scramble_enabled = val != 0;
-        output(format!("SCRMBL: {}", if *scramble_enabled { "ON" } else { "OFF" }));
-        let _ = config::save_scramble_enabled(*scramble_enabled);
-    } else {
-        output("ERROR: SCRMBL TAKES 0 (OFF) OR 1 (ON)".to_string());
-    }
-}
+define_bool_toggle!(handle_scrmbl, "SCRMBL", config::save_scramble_enabled);
 
-pub fn handle_scrmbl_mode<F>(
+define_enum_select!(
+    handle_scrmbl_mode,
+    "SCRMBL.MODE",
+    config::save_scramble_mode,
+    "ERROR: SCRMBL.MODE TAKES 0-3",
+    (0, "REGULAR"),
+    (1, "SMASH"),
+    (2, "ROLLING"),
+    (3, "OVERSHOOT"),
+);
+
+define_enum_select!(
+    handle_scrmbl_spd,
+    "SCRMBL.SPD",
+    config::save_scramble_speed,
+    "ERROR: SCRMBL.SPD TAKES 1-10",
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+);
+
+define_enum_select!(
+    handle_scrmbl_crv,
+    "SCRMBL.CRV",
+    config::save_scramble_curve,
+    "ERROR: SCRMBL.CRV TAKES 0 (LINEAR) OR 1 (SETTLE)",
+    (0, "LINEAR"),
+    (1, "SETTLE"),
+);
+
+pub fn handle_title_timer<F>(
     parts: &[&str],
-    scramble_mode: &mut u8,
+    title_timer_enabled: &mut bool,
+    title_timer_interval_secs: &mut u16,
+    title_timer_last_toggle: &mut Option<std::time::Instant>,
+    title_mode: &mut u8,
+    current_scene_name: &Option<String>,
+    scramble_enabled: bool,
+    scramble_mode: u8,
+    scramble_speed: u8,
+    scramble_curve: u8,
+    header_scramble: &mut Option<crate::scramble::ScrambleAnimation>,
+    variables: &Variables,
+    patterns: &mut PatternStorage,
+    counters: &mut Counters,
+    scripts: &ScriptStorage,
+    script_index: usize,
+    scale: &ScaleState,
     mut output: F,
 ) where
     F: FnMut(String),
 {
-    let mode_names = ["REGULAR", "SMASH", "ROLLING", "OVERSHOOT"];
     if parts.len() == 1 {
-        let name = mode_names.get(*scramble_mode as usize).unwrap_or(&"UNKNOWN");
-        output(format!("SCRMBL.MODE: {} ({})", scramble_mode, name));
-    } else if let Ok(val) = parts[1].parse::<u8>() {
-        if val <= 3 {
-            *scramble_mode = val;
-            let name = mode_names[val as usize];
-            output(format!("SCRMBL.MODE: {} ({})", val, name));
-            let _ = config::save_scramble_mode(*scramble_mode);
+        if *title_timer_enabled {
+            output(format!("TITLE.TIMER: ON ({}S)", *title_timer_interval_secs));
         } else {
-            output("ERROR: SCRMBL.MODE TAKES 0-3".to_string());
+            output("TITLE.TIMER: OFF".to_string());
         }
     } else {
-        output("ERROR: SCRMBL.MODE TAKES 0-3".to_string());
-    }
-}
-
-pub fn handle_scrmbl_spd<F>(
-    parts: &[&str],
-    scramble_speed: &mut u8,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        output(format!("SCRMBL.SPD: {}", scramble_speed));
-    } else if let Ok(val) = parts[1].parse::<u8>() {
-        if (1..=10).contains(&val) {
-            *scramble_speed = val;
-            output(format!("SCRMBL.SPD: {}", val));
-            let _ = config::save_scramble_speed(*scramble_speed);
+        let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+            expr_val
         } else {
-            output("ERROR: SCRMBL.SPD TAKES 1-10".to_string());
-        }
-    } else {
-        output("ERROR: SCRMBL.SPD TAKES 1-10".to_string());
-    }
-}
+            parts[1].parse().unwrap_or(-1)
+        };
+        match value {
+            0 => {
+                *title_timer_enabled = false;
+                *title_timer_last_toggle = None;
+                let _ = config::save_title_timer_enabled(false);
+                output("TITLE.TIMER: OFF".to_string());
+            }
+            1 => {
+                if parts.len() < 3 {
+                    output("TITLE.TIMER 1 REQUIRES SECONDS (1-1800)".to_string());
+                    return;
+                }
+                let secs: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
+                    expr_val
+                } else {
+                    parts[2].parse().unwrap_or(-1)
+                };
+                if secs < 1 || secs > 1800 {
+                    output("TITLE.TIMER SECONDS MUST BE 1-1800".to_string());
+                    return;
+                }
+                let secs_u16 = secs as u16;
+                *title_timer_enabled = true;
+                *title_timer_interval_secs = secs_u16;
+                *title_timer_last_toggle = Some(std::time::Instant::now());
+                let _ = config::save_title_timer_enabled(true);
+                let _ = config::save_title_timer_interval_secs(secs_u16);
 
-pub fn handle_scrmbl_crv<F>(
-    parts: &[&str],
-    scramble_curve: &mut u8,
-    mut output: F,
-) where
-    F: FnMut(String),
-{
-    if parts.len() == 1 {
-        let curve_name = if *scramble_curve == 0 { "LINEAR" } else { "SETTLE" };
-        output(format!("SCRMBL.CRV: {} ({})", scramble_curve, curve_name));
-    } else if let Ok(val) = parts[1].parse::<u8>() {
-        if val <= 1 {
-            *scramble_curve = val;
-            let curve_name = if val == 0 { "LINEAR" } else { "SETTLE" };
-            output(format!("SCRMBL.CRV: {} ({})", val, curve_name));
-            let _ = config::save_scramble_curve(*scramble_curve);
-        } else {
-            output("ERROR: SCRMBL.CRV TAKES 0 (LINEAR) OR 1 (SETTLE)".to_string());
+                let text = if *title_mode == 0 {
+                    "MONOKIT"
+                } else {
+                    current_scene_name.as_ref().map(|s| s.as_str()).unwrap_or("[UNSAVED]")
+                };
+                *header_scramble = if scramble_enabled {
+                    let mode = crate::scramble::ScrambleMode::from_u8(scramble_mode);
+                    let curve = crate::scramble::ScrambleCurve::from_u8(scramble_curve);
+                    Some(crate::scramble::ScrambleAnimation::new_with_options(text, mode, scramble_speed, curve))
+                } else {
+                    None
+                };
+
+                output(format!("TITLE.TIMER: ON ({}S)", secs_u16));
+            }
+            _ => {
+                output("ERROR: TITLE.TIMER TAKES 0 (OFF) OR 1 <SECONDS>".to_string());
+            }
         }
-    } else {
-        output("ERROR: SCRMBL.CRV TAKES 0 (LINEAR) OR 1 (SETTLE)".to_string());
     }
 }

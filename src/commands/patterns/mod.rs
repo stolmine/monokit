@@ -1,3 +1,5 @@
+#[macro_use]
+mod macros;
 mod common;
 mod working;
 mod working_manip;

@@ -52,6 +52,10 @@ pub struct DisplayConfig {
     pub activity_hold_ms: u32,
     #[serde(default)]
     pub title_mode: u8,
+    #[serde(default)]
+    pub title_timer_enabled: bool,
+    #[serde(default = "default_title_timer_interval_secs")]
+    pub title_timer_interval_secs: u16,
     #[serde(default = "default_scope_timespan_ms")]
     pub scope_timespan_ms: u32,
     #[serde(default)]
@@ -78,6 +82,8 @@ pub struct DisplayConfig {
     pub scramble_speed: u8,
     #[serde(default)]
     pub scramble_curve: u8,
+    #[serde(default)]
+    pub vca_mode: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -179,6 +185,10 @@ fn default_scramble_speed() -> u8 {
     5
 }
 
+fn default_title_timer_interval_secs() -> u16 {
+    5
+}
+
 impl Default for DisplayConfig {
     fn default() -> Self {
         Self {
@@ -200,6 +210,8 @@ impl Default for DisplayConfig {
             limiter_enabled: default_limiter_enabled(),
             activity_hold_ms: default_activity_hold_ms(),
             title_mode: 0,
+            title_timer_enabled: false,
+            title_timer_interval_secs: default_title_timer_interval_secs(),
             scope_timespan_ms: default_scope_timespan_ms(),
             scope_color_mode: 0,
             scope_display_mode: 0,
@@ -213,6 +225,7 @@ impl Default for DisplayConfig {
             scramble_mode: default_scramble_mode(),
             scramble_speed: default_scramble_speed(),
             scramble_curve: 0,
+            vca_mode: false,
         }
     }
 }
@@ -477,12 +490,12 @@ pub fn save_scope_unipolar(enabled: bool) -> Result<()> {
     Ok(())
 }
 
-pub fn save_scope_settings(timespan: u32, color: u8, mode: u8, unipolar: bool) -> Result<()> {
+pub fn save_scope_settings(settings: &crate::types::ScopeSettings) -> Result<()> {
     let mut config = load_config()?;
-    config.display.scope_timespan_ms = timespan;
-    config.display.scope_color_mode = color;
-    config.display.scope_display_mode = mode;
-    config.display.scope_unipolar = unipolar;
+    config.display.scope_timespan_ms = settings.timespan_ms;
+    config.display.scope_color_mode = settings.color_mode;
+    config.display.scope_display_mode = settings.display_mode;
+    config.display.scope_unipolar = settings.unipolar;
     save_config(&config)?;
     Ok(())
 }
@@ -546,6 +559,27 @@ pub fn save_scramble_speed(speed: u8) -> Result<()> {
 pub fn save_scramble_curve(curve: u8) -> Result<()> {
     let mut config = load_config()?;
     config.display.scramble_curve = curve;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_vca_mode(mode: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.vca_mode = mode;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_title_timer_enabled(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.title_timer_enabled = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_title_timer_interval_secs(secs: u16) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.title_timer_interval_secs = secs;
     save_config(&config)?;
     Ok(())
 }

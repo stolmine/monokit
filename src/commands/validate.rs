@@ -397,6 +397,12 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
+        "LOAD.RST" => {
+            if argc > 1 {
+                return Err(anyhow::anyhow!("LOAD.RST TAKES 0-1 ARGUMENTS"));
+            }
+            Ok(())
+        }
         "SCENES" => {
             if argc > 0 {
                 return Err(anyhow::anyhow!("SCENES TAKES NO ARGUMENTS"));
@@ -668,16 +674,30 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "FLASH" | "TITLE" | "LIMIT" => {
+        "FLASH" | "TITLE" | "LIMIT" | "VCA" => {
             if argc > 1 {
                 return Err(anyhow::anyhow!("{} TAKES 0-1 ARGUMENTS", command));
             }
             Ok(())
         }
+        "TITLE.TIMER" => {
+            if argc == 0 {
+                Ok(())
+            } else if argc == 1 {
+                Ok(())
+            } else if argc == 2 {
+                Ok(())
+            } else {
+                Err(anyhow::anyhow!("TITLE.TIMER TAKES 0, 1, OR 2 ARGUMENTS"))
+            }
+        }
         "METER.HDR" | "METER.GRID" | "ACTIVITY" | "GRID" | "GRID.DEF" | "GRID.MODE" | "HL.COND" | "HL.SEQ" | "SPECTRUM" | "SCRMBL" | "SCRMBL.MODE" | "SCRMBL.SPD" | "SCRMBL.CRV" => {
             if argc > 1 {
                 return Err(anyhow::anyhow!("{} TAKES 0-1 ARGUMENTS", command));
             }
+            Ok(())
+        }
+        "MIDI.IN" | "MIDI" => {
             Ok(())
         }
         "SC.DIAG" | "MIDI.DIAG" => {

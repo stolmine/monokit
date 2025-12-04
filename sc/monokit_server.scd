@@ -93,6 +93,7 @@ s.waitForBoot {
             ps_mix = 0,   // Pitch shift mix (0-16383)
             ps_targ = 0,  // Pitch shift target (0=main, 1=repeat)
             limit = 1,    // Limiter enabled (0-1)
+            vca_mode = 0, // VCA mode (0=gated, 1=drone)
             volume = 1,
             gate = 0,
             slew_time = 0,
@@ -291,7 +292,8 @@ s.waitForBoot {
         sig = (sig * (1 - resonatorMix)) + (resonated * resonatorMix);
 
         // Amplitude: base + (modBus * routing)
-        amp = ampEnv * volumeSmooth * (1 + (modBus * ma * 0.5));
+        // VCA mode: 0=drone (always 1.0), 1=gated (uses ampEnv)
+        amp = Select.kr(vca_mode.clip(0, 1), [1.0, ampEnv]) * volumeSmooth * (1 + (modBus * ma * 0.5));
         sig = sig * amp;
 
         // Compressor

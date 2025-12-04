@@ -78,6 +78,9 @@ pub fn process_command<F>(
     scramble_mode: &mut u8,
     scramble_speed: &mut u8,
     scramble_curve: &mut u8,
+    ascii_meters: &mut bool,
+    terminal_caps: &crate::terminal::TerminalCapabilities,
+    color_mode: crate::types::ColorMode,
     input: &str,
     mut output: F,
 ) -> Result<Vec<usize>>
@@ -728,7 +731,7 @@ where
             preset_cmds::handle_psets(*debug_level, *out_qry, output);
         }
         "THEME" => {
-            misc::handle_theme(&parts, theme, output);
+            misc::handle_theme(&parts, theme, color_mode, output);
         }
         "HELP" => {
             misc::handle_help(output);
@@ -819,6 +822,9 @@ where
         "METER.GRID" => {
             misc::handle_meter_grid(&parts, show_meters_grid, output);
         }
+        "METER.ASCII" => {
+            misc::handle_meter_ascii(&parts, ascii_meters, output);
+        }
         "SPECTRUM" => {
             misc::handle_spectrum(&parts, show_spectrum, output);
         }
@@ -863,6 +869,12 @@ where
         }
         "OUT.CFM" => {
             misc::handle_out_cfm(&parts, out_cfm, output);
+        }
+        "COMPAT" => {
+            misc::handle_compat(terminal_caps, color_mode, output);
+        }
+        "COMPAT.MODE" => {
+            misc::handle_compat_mode(&parts, ascii_meters, scope_settings, output);
         }
         "N1" => {
             counters::handle_n1(counters, *debug_level, *out_qry, output);

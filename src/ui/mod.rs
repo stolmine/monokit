@@ -266,9 +266,6 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     KeyCode::Tab => {
                         if app.current_page == Page::Live {
                             app.show_grid_view = !app.show_grid_view;
-                            if app.show_grid_view {
-                                app.trigger_grid_scramble();
-                            }
                         } else {
                             app.go_to_page(Page::Live);
                         }

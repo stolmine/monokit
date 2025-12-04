@@ -19,12 +19,18 @@ pub fn render_footer(app: &crate::App) -> Paragraph<'static> {
         };
         let match_count = format!("[{}/{}]", current_index, total_matches);
 
+        let (cursor_bg, cursor_fg) = if app.color_mode == crate::types::ColorMode::Color256 {
+            (Color::White, Color::Black)
+        } else {
+            (app.theme.highlight_bg, app.theme.highlight_fg)
+        };
+
         let input_line = Line::from(vec![
             Span::styled("/ ", Style::default().fg(accent)),
             Span::styled(before, Style::default().fg(fg)),
             Span::styled(
                 cursor_char.to_string(),
-                Style::default().bg(app.theme.highlight_bg).fg(app.theme.highlight_fg),
+                Style::default().bg(cursor_bg).fg(cursor_fg),
             ),
             Span::styled(after, Style::default().fg(fg)),
             Span::raw("  "),
@@ -47,12 +53,18 @@ pub fn render_footer(app: &crate::App) -> Paragraph<'static> {
         let cursor_char = input.chars().nth(pos).unwrap_or(' ');
         let after: String = input.chars().skip(pos + 1).collect();
 
+        let (cursor_bg, cursor_fg) = if app.color_mode == crate::types::ColorMode::Color256 {
+            (Color::White, Color::Black)
+        } else {
+            (app.theme.highlight_bg, app.theme.highlight_fg)
+        };
+
         let input_line = Line::from(vec![
             Span::styled("> ", Style::default().fg(fg)),
             Span::styled(before, Style::default().fg(fg)),
             Span::styled(
                 cursor_char.to_string(),
-                Style::default().bg(app.theme.highlight_bg).fg(app.theme.highlight_fg),
+                Style::default().bg(cursor_bg).fg(cursor_fg),
             ),
             Span::styled(after, Style::default().fg(fg)),
         ]);

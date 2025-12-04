@@ -10,6 +10,7 @@ mod preset;
 mod sc_process;
 mod scramble;
 mod scene;
+mod terminal;
 mod theme;
 mod types;
 mod ui;
@@ -49,6 +50,8 @@ fn main() -> Result<()> {
 
 /// Batch mode: load scene, wait for metro, exit (no TUI)
 fn run_batch_mode(scene_name: &str, wait_ms: Option<&str>) -> Result<()> {
+    let caps = terminal::detect_capabilities();
+
     let wait_duration = wait_ms
         .and_then(|s| s.parse::<u64>().ok())
         .unwrap_or(2000);
@@ -63,9 +66,19 @@ fn run_batch_mode(scene_name: &str, wait_ms: Option<&str>) -> Result<()> {
     });
 
     let config = config::load_config().unwrap_or_default();
-    let theme = config::load_theme(&config).unwrap_or_default();
+    let loaded_theme = config::load_theme(&config).unwrap_or_default();
+    let theme = if caps.true_color {
+        loaded_theme
+    } else {
+        loaded_theme.to_256_color()
+    };
+    let color_mode = if caps.true_color {
+        types::ColorMode::TrueColor
+    } else {
+        types::ColorMode::Color256
+    };
 
-    let mut app = App::new(metro_tx, metro_state, theme, &config);
+    let mut app = App::new(metro_tx, metro_state, theme, color_mode, &config, caps);
 
     // Load the scene by setting input and executing
     app.input = format!("LOAD {}", scene_name);
@@ -113,6 +126,14 @@ fn run_batch_mode(scene_name: &str, wait_ms: Option<&str>) -> Result<()> {
 
 /// Normal TUI mode
 fn run_tui_mode() -> Result<()> {
+    let caps = terminal::detect_capabilities();
+    if !caps.true_color {
+        eprintln!("Note: Limited color support detected.");
+        eprintln!("For best experience, use iTerm2 or another truecolor terminal.");
+        eprintln!("");
+        std::thread::sleep(std::time::Duration::from_millis(1500));
+    }
+
     // Start SuperCollider
     println!("Starting SuperCollider...");
     let mut sc_process = match ScProcess::new() {
@@ -185,9 +206,19 @@ fn run_tui_mode() -> Result<()> {
     let mut terminal = Terminal::new(backend)?;
     terminal.clear()?; // Clear alternate screen before first render
 
-    let theme = config::load_theme(&config).unwrap_or_default();
+    let loaded_theme = config::load_theme(&config).unwrap_or_default();
+    let theme = if caps.true_color {
+        loaded_theme
+    } else {
+        loaded_theme.to_256_color()
+    };
+    let color_mode = if caps.true_color {
+        types::ColorMode::TrueColor
+    } else {
+        types::ColorMode::Color256
+    };
 
-    let mut app = App::new(metro_tx.clone(), metro_state, theme, &config);
+    let mut app = App::new(metro_tx.clone(), metro_state, theme, color_mode, &config, caps);
     app.add_output("MONOKIT - SCRIPTING FOR COMPLEX OSCILLATOR".to_string());
     app.add_output("ENTER CMDS. [ ] NAV PAGES. ESC FOR HELP.".to_string());
 

@@ -108,6 +108,9 @@ pub struct TestContext {
     pub scramble_mode: u8,
     pub scramble_speed: u8,
     pub scramble_curve: u8,
+    pub ascii_meters: bool,
+    pub terminal_caps: crate::terminal::TerminalCapabilities,
+    pub color_mode: crate::types::ColorMode,
     pub outputs: Vec<String>,
 }
 
@@ -141,7 +144,7 @@ impl Default for TestContext {
             show_conditional_highlight: true,
             scope_settings: crate::types::ScopeSettings {
                 timespan_ms: 30,
-                color_mode: 0,
+                color_mode: crate::types::ScopeColorMode::Success,
                 display_mode: 0,
                 unipolar: false,
             },
@@ -168,6 +171,12 @@ impl Default for TestContext {
             scramble_mode: 2,
             scramble_speed: 5,
             scramble_curve: 0,
+            ascii_meters: false,
+            terminal_caps: crate::terminal::TerminalCapabilities {
+                true_color: true,
+                term_program: Some("iTerm2".to_string()),
+            },
+            color_mode: crate::types::ColorMode::TrueColor,
             outputs: Vec::new(),
         }
     }
@@ -227,6 +236,9 @@ impl TestContext {
             &mut self.scramble_mode,
             &mut self.scramble_speed,
             &mut self.scramble_curve,
+            &mut self.ascii_meters,
+            &self.terminal_caps,
+            self.color_mode,
             input,
             |msg| {
                 self.outputs.push(msg);

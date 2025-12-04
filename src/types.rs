@@ -125,9 +125,101 @@ impl Default for ScaleState {
 #[derive(Debug, Clone, Copy)]
 pub struct ScopeSettings {
     pub timespan_ms: u32,
-    pub color_mode: u8,
+    pub color_mode: ScopeColorMode,
     pub display_mode: u8,
     pub unipolar: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ScopeColorMode {
+    Foreground,
+    Secondary,
+    HighlightBg,
+    HighlightFg,
+    Border,
+    Error,
+    Accent,
+    Success,
+    Label,
+}
+
+impl ScopeColorMode {
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s.to_uppercase().as_str() {
+            "FOREGROUND" | "FG" => Some(Self::Foreground),
+            "SECONDARY" | "SEC" => Some(Self::Secondary),
+            "HIGHLIGHT_BG" | "HL_BG" | "HIGHLIGHTBG" => Some(Self::HighlightBg),
+            "HIGHLIGHT_FG" | "HL_FG" | "HIGHLIGHTFG" => Some(Self::HighlightFg),
+            "BORDER" => Some(Self::Border),
+            "ERROR" | "ERR" => Some(Self::Error),
+            "ACCENT" | "ACC" => Some(Self::Accent),
+            "SUCCESS" | "SUC" => Some(Self::Success),
+            "LABEL" | "LBL" => Some(Self::Label),
+            _ => None,
+        }
+    }
+
+    pub fn from_u8(n: u8) -> Self {
+        match n {
+            1 => Self::Error,
+            2 => Self::Foreground,
+            3 => Self::Accent,
+            4 => Self::Secondary,
+            5 => Self::HighlightBg,
+            6 => Self::HighlightFg,
+            7 => Self::Border,
+            8 => Self::Label,
+            _ => Self::Success,
+        }
+    }
+
+    pub fn to_u8(&self) -> u8 {
+        match self {
+            Self::Success => 0,
+            Self::Error => 1,
+            Self::Foreground => 2,
+            Self::Accent => 3,
+            Self::Secondary => 4,
+            Self::HighlightBg => 5,
+            Self::HighlightFg => 6,
+            Self::Border => 7,
+            Self::Label => 8,
+        }
+    }
+
+    pub fn name(&self) -> &'static str {
+        match self {
+            Self::Foreground => "FOREGROUND",
+            Self::Secondary => "SECONDARY",
+            Self::HighlightBg => "HIGHLIGHT_BG",
+            Self::HighlightFg => "HIGHLIGHT_FG",
+            Self::Border => "BORDER",
+            Self::Error => "ERROR",
+            Self::Accent => "ACCENT",
+            Self::Success => "SUCCESS",
+            Self::Label => "LABEL",
+        }
+    }
+
+    pub fn get_color(&self, theme: &crate::theme::Theme) -> ratatui::style::Color {
+        match self {
+            Self::Foreground => theme.foreground,
+            Self::Secondary => theme.secondary,
+            Self::HighlightBg => theme.highlight_bg,
+            Self::HighlightFg => theme.highlight_fg,
+            Self::Border => theme.border,
+            Self::Error => theme.error,
+            Self::Accent => theme.accent,
+            Self::Success => theme.success,
+            Self::Label => theme.label,
+        }
+    }
+}
+
+impl Default for ScopeColorMode {
+    fn default() -> Self {
+        Self::Success
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -580,4 +672,10 @@ impl Default for UIToggles {
             show_conditional_highlight: true,
         }
     }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum ColorMode {
+    TrueColor,
+    Color256,
 }

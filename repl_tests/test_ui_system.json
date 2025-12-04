@@ -75,8 +75,8 @@
       "lines": [
         "SCOPE.TIME 30; PRINT \"TIME 30\"",
         "SCOPE.TIME 100; PRINT \"TIME 100\"",
-        "SCOPE.CLR 0; PRINT \"GREEN\"",
-        "SCOPE.CLR 1; PRINT \"RED\"",
+        "SCOPE.CLR SUCCESS; PRINT \"GREEN\"",
+        "SCOPE.CLR ERROR; PRINT \"RED\"",
         "SCOPE.MODE 0; PRINT \"BRAILLE\"",
         "SCOPE.MODE 1; PRINT \"BLOCK\"",
         "SCOPE.UNI 0; PRINT \"BIPOLAR\"",

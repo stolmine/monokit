@@ -1,7 +1,8 @@
 use crate::midi::{MidiConnection, MidiTimingStats};
+use crate::terminal::TerminalCapabilities;
 use crate::theme::Theme;
 use crate::types::{
-    Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, NotesStorage, OutputCategory, Page, ParamActivity, PatternStorage, ScaleState, ScopeData, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
+    ColorMode, Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, NotesStorage, OutputCategory, Page, ParamActivity, PatternStorage, ScaleState, ScopeData, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
     TIER_CONFIRMS, TIER_ERRORS, TIER_ESSENTIAL, TIER_QUERIES, TIER_VERBOSE,
 };
 use std::sync::mpsc::Sender;
@@ -38,6 +39,8 @@ pub struct App {
     pub script_error: Option<String>,
     pub script_error_time: Option<Instant>,
     pub theme: Theme,
+    pub color_mode: ColorMode,
+    pub terminal_caps: TerminalCapabilities,
     pub recording: bool,
     pub recording_start: Option<Instant>,
     pub debug_level: u8,
@@ -96,10 +99,11 @@ pub struct App {
     pub scramble_curve: u8,
     pub ui_scrambles: Vec<(String, crate::scramble::ScrambleAnimation)>,
     pub grid_scrambles: Vec<crate::scramble::ScrambleAnimation>,
+    pub ascii_meters: bool,
 }
 
 impl App {
-    pub fn new(metro_tx: Sender<MetroCommand>, metro_state: Arc<Mutex<MetroState>>, theme: Theme, config: &crate::config::Config) -> Self {
+    pub fn new(metro_tx: Sender<MetroCommand>, metro_state: Arc<Mutex<MetroState>>, theme: Theme, color_mode: ColorMode, config: &crate::config::Config, terminal_caps: TerminalCapabilities) -> Self {
         Self {
             current_page: Page::Live,
             previous_page: Page::Live,
@@ -127,6 +131,8 @@ impl App {
             script_error: None,
             script_error_time: None,
             theme,
+            color_mode,
+            terminal_caps,
             recording: false,
             recording_start: None,
             debug_level: config.display.debug_level,
@@ -146,7 +152,7 @@ impl App {
             scope_data: ScopeData::default(),
             scope_settings: crate::types::ScopeSettings {
                 timespan_ms: config.display.scope_timespan_ms,
-                color_mode: config.display.scope_color_mode,
+                color_mode: crate::types::ScopeColorMode::from_u8(config.display.scope_color_mode),
                 display_mode: config.display.scope_display_mode,
                 unipolar: config.display.scope_unipolar,
             },
@@ -205,6 +211,7 @@ impl App {
                 scrambles
             },
             grid_scrambles: Vec::new(),
+            ascii_meters: config.display.ascii_meters,
         }
     }
 
@@ -398,6 +405,9 @@ impl App {
             &mut self.scramble_mode,
             &mut self.scramble_speed,
             &mut self.scramble_curve,
+            &mut self.ascii_meters,
+            &self.terminal_caps,
+            self.color_mode,
             command,
             |msg| {
                 output_messages.push(msg);

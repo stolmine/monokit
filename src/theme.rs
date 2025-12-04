@@ -1,6 +1,27 @@
 use ratatui::style::Color;
 use std::time::Instant;
 
+pub fn rgb_to_256(r: u8, g: u8, b: u8) -> u8 {
+    if r == g && g == b {
+        if r < 8 { return 16; }
+        if r > 248 { return 231; }
+        return 232 + ((r - 8) / 10);
+    }
+
+    let r_idx = (r as u16 * 5 / 255) as u8;
+    let g_idx = (g as u16 * 5 / 255) as u8;
+    let b_idx = (b as u16 * 5 / 255) as u8;
+
+    16 + 36 * r_idx + 6 * g_idx + b_idx
+}
+
+pub fn color_to_256(color: Color) -> Color {
+    match color {
+        Color::Rgb(r, g, b) => Color::Indexed(rgb_to_256(r, g, b)),
+        other => other,
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Theme {
     pub name: String,
@@ -104,5 +125,79 @@ impl Theme {
         } else {
             Self::lerp_color(self.foreground, self.secondary, progress)
         }
+    }
+
+    pub fn to_256_color(&self) -> Self {
+        Self {
+            name: format!("{}_256", self.name),
+            background: color_to_256(self.background),
+            foreground: color_to_256(self.foreground),
+            secondary: color_to_256(self.secondary),
+            highlight_bg: color_to_256(self.highlight_bg),
+            highlight_fg: color_to_256(self.highlight_fg),
+            border: color_to_256(self.border),
+            error: color_to_256(self.error),
+            accent: color_to_256(self.accent),
+            success: color_to_256(self.success),
+            label: color_to_256(self.label),
+            font: self.font.clone(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_rgb_to_256_black() {
+        assert_eq!(rgb_to_256(0, 0, 0), 16);
+    }
+
+    #[test]
+    fn test_rgb_to_256_white() {
+        assert_eq!(rgb_to_256(255, 255, 255), 231);
+    }
+
+    #[test]
+    fn test_rgb_to_256_grayscale() {
+        assert_eq!(rgb_to_256(128, 128, 128), 244);
+    }
+
+    #[test]
+    fn test_rgb_to_256_red() {
+        assert_eq!(rgb_to_256(255, 0, 0), 196);
+    }
+
+    #[test]
+    fn test_rgb_to_256_green() {
+        assert_eq!(rgb_to_256(0, 255, 0), 46);
+    }
+
+    #[test]
+    fn test_rgb_to_256_blue() {
+        assert_eq!(rgb_to_256(0, 0, 255), 21);
+    }
+
+    #[test]
+    fn test_color_to_256_rgb() {
+        let color = Color::Rgb(255, 0, 0);
+        assert_eq!(color_to_256(color), Color::Indexed(196));
+    }
+
+    #[test]
+    fn test_color_to_256_indexed() {
+        let color = Color::Indexed(42);
+        assert_eq!(color_to_256(color), Color::Indexed(42));
+    }
+
+    #[test]
+    fn test_theme_to_256_color() {
+        let theme = Theme::dark();
+        let theme_256 = theme.to_256_color();
+
+        assert_eq!(theme_256.name, "dark_256");
+        assert_eq!(theme_256.background, Color::Indexed(16));
+        assert_eq!(theme_256.foreground, Color::Indexed(231));
     }
 }

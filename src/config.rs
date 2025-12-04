@@ -84,6 +84,8 @@ pub struct DisplayConfig {
     pub scramble_curve: u8,
     #[serde(default)]
     pub vca_mode: bool,
+    #[serde(default)]
+    pub ascii_meters: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -226,6 +228,7 @@ impl Default for DisplayConfig {
             scramble_speed: default_scramble_speed(),
             scramble_curve: 0,
             vca_mode: false,
+            ascii_meters: false,
         }
     }
 }
@@ -476,6 +479,10 @@ pub fn save_scope_color_mode(mode: u8) -> Result<()> {
     Ok(())
 }
 
+pub fn load_scope_color_mode_from_u8(mode: u8) -> crate::types::ScopeColorMode {
+    crate::types::ScopeColorMode::from_u8(mode)
+}
+
 pub fn save_scope_display_mode(mode: u8) -> Result<()> {
     let mut config = load_config()?;
     config.display.scope_display_mode = mode;
@@ -493,7 +500,7 @@ pub fn save_scope_unipolar(enabled: bool) -> Result<()> {
 pub fn save_scope_settings(settings: &crate::types::ScopeSettings) -> Result<()> {
     let mut config = load_config()?;
     config.display.scope_timespan_ms = settings.timespan_ms;
-    config.display.scope_color_mode = settings.color_mode;
+    config.display.scope_color_mode = settings.color_mode.to_u8();
     config.display.scope_display_mode = settings.display_mode;
     config.display.scope_unipolar = settings.unipolar;
     save_config(&config)?;
@@ -580,6 +587,13 @@ pub fn save_title_timer_enabled(enabled: bool) -> Result<()> {
 pub fn save_title_timer_interval_secs(secs: u16) -> Result<()> {
     let mut config = load_config()?;
     config.display.title_timer_interval_secs = secs;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_ascii_meters(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.ascii_meters = enabled;
     save_config(&config)?;
     Ok(())
 }

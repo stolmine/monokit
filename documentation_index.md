@@ -2,6 +2,49 @@
 
 ## Recent Updates (December 2025)
 
+### Terminal Compatibility System (December 2025)
+
+**Terminal Capability Detection:**
+- Detects terminal capabilities at startup
+- 256-color theme fallback when true color unavailable
+- Startup warning for Terminal.app users
+- High-contrast cursor (white/black) in 256-color mode
+- Implementation in src/terminal.rs
+
+**COMPAT Command:**
+- COMPAT shows terminal capabilities
+- Displays color support, terminal type
+- Command handler in src/commands/system/misc.rs
+
+**COMPAT.MODE Command:**
+- COMPAT.MODE 0 = standard mode (true color)
+- COMPAT.MODE 1 = compatibility mode (256-color)
+- Bundles compatibility settings
+- Theme changes apply 256-color conversion
+
+**METER.ASCII Command:**
+- METER.ASCII 0 = Unicode block characters
+- METER.ASCII 1 = ASCII characters (.:-=+#)
+- Applies to both grid and header mini-meters
+- Consistent meter rendering across UI
+
+### SCOPE.CLR Color Labels (December 2025)
+
+**Color Name Support:**
+- Accepts color names instead of just numbers
+- Valid names: FOREGROUND, SECONDARY, HIGHLIGHT_BG, HIGHLIGHT_FG, BORDER, ERROR, ACCENT, SUCCESS, LABEL
+- Aliases: FG, SEC, HL_BG, HL_FG, ERR, ACC, SUC, LBL
+- Backwards compatible with 0-8
+- All 9 theme colors now available (was only 4)
+- Command handler in src/commands/scope/mod.rs
+
+### Grid Scramble Disabled (December 2025)
+
+**Grid Icon Behavior:**
+- Grid icons no longer scramble on tab switch
+- Title scramble remains active
+- Implementation in src/ui/mod.rs
+
 ### Audio Device Selection (December 2025)
 
 **AUDIO.OUT Command:**

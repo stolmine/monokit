@@ -355,6 +355,7 @@ pub fn handle_script(
 pub fn handle_theme<F>(
     parts: &[&str],
     theme: &mut Theme,
+    color_mode: crate::types::ColorMode,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -379,7 +380,12 @@ pub fn handle_theme<F>(
                 match config::load_theme_by_name(name, &cfg) {
                     Ok(new_theme) => {
                         let theme_name = new_theme.name.clone();
-                        *theme = new_theme;
+                        // Apply 256-color conversion if needed
+                        *theme = if color_mode == crate::types::ColorMode::Color256 {
+                            new_theme.to_256_color()
+                        } else {
+                            new_theme
+                        };
                         if let Err(e) = config::save_theme_mode(&theme_name) {
                             output(format!("WARNING: FAILED TO SAVE THEME: {:?}", e));
                         }
@@ -713,9 +719,9 @@ where
 pub fn handle_scope_clr<F>(
     parts: &[&str],
     scope_settings: &mut crate::types::ScopeSettings,
-    
-    
-    
+
+
+
     variables: &Variables,
     patterns: &mut PatternStorage,
     counters: &mut Counters,
@@ -730,53 +736,42 @@ pub fn handle_scope_clr<F>(
 {
     if parts.len() == 1 {
         if debug_level >= TIER_QUERIES || out_qry {
-            let mode_name = match scope_settings.color_mode {
-                1 => "ERROR",
-                2 => "FOREGROUND",
-                3 => "ACCENT",
-                _ => "SUCCESS",
-            };
-            output(format!("SCOPE.CLR: {} ({})", scope_settings.color_mode, mode_name));
+            output(format!("SCOPE.CLR: {}", scope_settings.color_mode.name()));
         }
     } else {
-        let value = if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-            val
-        } else {
-            parts[1].parse().unwrap_or(-1)
-        };
+        let input = parts[1];
 
-        match value {
-            0 => {
-                scope_settings.color_mode = 0;
+        if let Some(mode) = crate::types::ScopeColorMode::from_str(input) {
+            scope_settings.color_mode = mode;
+            let _ = config::save_scope_settings(scope_settings);
+            if debug_level >= TIER_VERBOSE {
+                output(format!("SCOPE.CLR: {}", mode.name()));
+            }
+        } else if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+            if val >= 0 && val <= 8 {
+                scope_settings.color_mode = crate::types::ScopeColorMode::from_u8(val as u8);
                 let _ = config::save_scope_settings(scope_settings);
                 if debug_level >= TIER_VERBOSE {
-                    output("SCOPE.CLR: 0 (SUCCESS)".to_string());
+                    output(format!("SCOPE.CLR: {} ({})", val, scope_settings.color_mode.name()));
                 }
+            } else {
+                output("ERROR: SCOPE.CLR NUMBER MUST BE 0-8".to_string());
             }
-            1 => {
-                scope_settings.color_mode = 1;
+        } else if let Ok(val) = input.parse::<i16>() {
+            if val >= 0 && val <= 8 {
+                scope_settings.color_mode = crate::types::ScopeColorMode::from_u8(val as u8);
                 let _ = config::save_scope_settings(scope_settings);
                 if debug_level >= TIER_VERBOSE {
-                    output("SCOPE.CLR: 1 (ERROR)".to_string());
+                    output(format!("SCOPE.CLR: {} ({})", val, scope_settings.color_mode.name()));
                 }
+            } else {
+                output("ERROR: SCOPE.CLR NUMBER MUST BE 0-8".to_string());
             }
-            2 => {
-                scope_settings.color_mode = 2;
-                let _ = config::save_scope_settings(scope_settings);
-                if debug_level >= TIER_VERBOSE {
-                    output("SCOPE.CLR: 2 (FOREGROUND)".to_string());
-                }
-            }
-            3 => {
-                scope_settings.color_mode = 3;
-                let _ = config::save_scope_settings(scope_settings);
-                if debug_level >= TIER_VERBOSE {
-                    output("SCOPE.CLR: 3 (ACCENT)".to_string());
-                }
-            }
-            _ => {
-                output("ERROR: SCOPE.CLR TAKES 0-3".to_string());
-            }
+        } else {
+            output("ERROR: INVALID COLOR NAME OR NUMBER".to_string());
+            output("VALID: FOREGROUND SECONDARY HIGHLIGHT_BG".to_string());
+            output("       HIGHLIGHT_FG BORDER ERROR ACCENT".to_string());
+            output("       SUCCESS LABEL OR 0-8".to_string());
         }
     }
 }
@@ -961,6 +956,8 @@ pub fn handle_note_clr<F>(
 define_bool_toggle!(handle_meter_hdr, "METER.HDR", "HEADER METERS: {}", "HEADER METERS: OFF", "HEADER METERS: ON", config::save_show_meters_header);
 
 define_bool_toggle!(handle_meter_grid, "METER.GRID", "GRID METERS: {}", "GRID METERS: OFF", "GRID METERS: ON", config::save_show_meters_grid);
+
+define_bool_toggle!(handle_meter_ascii, "METER.ASCII", "ASCII METERS: {}", "ASCII METERS: OFF", "ASCII METERS: ON", config::save_ascii_meters);
 
 define_bool_toggle!(handle_spectrum, "SPECTRUM", "SPECTRUM: {}", "SPECTRUM: OFF", "SPECTRUM: ON", config::save_show_spectrum);
 
@@ -1151,5 +1148,55 @@ pub fn handle_title_timer<F>(
                 output("ERROR: TITLE.TIMER TAKES 0 (OFF) OR 1 <SECONDS>".to_string());
             }
         }
+    }
+}
+
+pub fn handle_compat<F>(
+    terminal_caps: &crate::terminal::TerminalCapabilities,
+    color_mode: crate::types::ColorMode,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    let term = terminal_caps.term_program.as_deref().unwrap_or("unknown");
+    let color = match color_mode {
+        crate::types::ColorMode::TrueColor => "TRUECOLOR (24-BIT)",
+        crate::types::ColorMode::Color256 => "256-COLOR",
+    };
+    output(format!("TERMINAL: {}", term.to_uppercase()));
+    output(format!("COLOR MODE: {}", color));
+    if !terminal_caps.true_color {
+        output("TIP: USE ITERM2 FOR BEST RESULTS".to_string());
+    }
+}
+
+pub fn handle_compat_mode<F>(
+    parts: &[&str],
+    ascii_meters: &mut bool,
+    scope_settings: &mut crate::types::ScopeSettings,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        let mode = if *ascii_meters { 1 } else { 0 };
+        output(format!("COMPAT.MODE: {}", mode));
+        return;
+    }
+
+    match parts[1] {
+        "0" => {
+            *ascii_meters = false;
+            let _ = config::save_ascii_meters(false);
+            output("COMPAT.MODE: 0 (FULL)".to_string());
+        }
+        "1" => {
+            *ascii_meters = true;
+            scope_settings.display_mode = 1;
+            let _ = config::save_ascii_meters(true);
+            let _ = config::save_scope_settings(scope_settings);
+            output("COMPAT.MODE: 1 (BASIC)".to_string());
+        }
+        _ => output("ERROR: COMPAT.MODE TAKES 0 OR 1".to_string()),
     }
 }

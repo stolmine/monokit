@@ -691,7 +691,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
                 Err(anyhow::anyhow!("TITLE.TIMER TAKES 0, 1, OR 2 ARGUMENTS"))
             }
         }
-        "METER.HDR" | "METER.GRID" | "ACTIVITY" | "GRID" | "GRID.DEF" | "GRID.MODE" | "HL.COND" | "HL.SEQ" | "SPECTRUM" | "SCRMBL" | "SCRMBL.MODE" | "SCRMBL.SPD" | "SCRMBL.CRV" => {
+        "METER.HDR" | "METER.GRID" | "METER.ASCII" | "ACTIVITY" | "GRID" | "GRID.DEF" | "GRID.MODE" | "HL.COND" | "HL.SEQ" | "SPECTRUM" | "SCRMBL" | "SCRMBL.MODE" | "SCRMBL.SPD" | "SCRMBL.CRV" | "COMPAT.MODE" => {
             if argc > 1 {
                 return Err(anyhow::anyhow!("{} TAKES 0-1 ARGUMENTS", command));
             }
@@ -707,6 +707,12 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             Ok(())
         }
         "AUDIO.OUT" | "AUDIO" => {
+            Ok(())
+        }
+        "COMPAT" => {
+            if argc > 0 {
+                return Err(anyhow::anyhow!("COMPAT TAKES NO ARGUMENTS"));
+            }
             Ok(())
         }
         _ => {

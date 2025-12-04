@@ -139,8 +139,8 @@ fn render_grid_view(app: &crate::App, _width: usize, height: usize) -> Paragraph
             spans.push(Span::raw("  "));
 
             // Add 2-char wide L/R meters (full height, matching grid)
-            let (l_char, l_color) = get_meter_char_and_color_scaled(app.meter_data.peak_l, row, meter_rows, app.meter_data.clip_l, &app.theme);
-            let (r_char, r_color) = get_meter_char_and_color_scaled(app.meter_data.peak_r, row, meter_rows, app.meter_data.clip_r, &app.theme);
+            let (l_char, l_color) = get_meter_char_and_color_scaled(app.meter_data.peak_l, row, meter_rows, app.meter_data.clip_l, &app.theme, app.ascii_meters);
+            let (r_char, r_color) = get_meter_char_and_color_scaled(app.meter_data.peak_r, row, meter_rows, app.meter_data.clip_r, &app.theme, app.ascii_meters);
 
             spans.push(Span::styled(format!("{}{}", l_char, l_char), Style::default().fg(l_color)));
             spans.push(Span::raw(" "));
@@ -193,7 +193,8 @@ fn render_grid_view(app: &crate::App, _width: usize, height: usize) -> Paragraph
                     spectrum_rows,
                     &spectrum_chars,
                     is_clipping,
-                    &app.theme
+                    &app.theme,
+                    app.ascii_meters
                 );
 
                 // Double each character for 2-char width
@@ -244,8 +245,12 @@ fn get_spectrum_char_for_row(
     total_rows: usize,
     chars: &[char; 9],
     is_clipping: bool,
-    theme: &crate::theme::Theme
+    theme: &crate::theme::Theme,
+    ascii_mode: bool
 ) -> (char, ratatui::style::Color) {
+    const ASCII_CHARS: [char; 9] = [' ', '.', ':', '-', '=', '+', '#', '#', '#'];
+    let active_chars = if ascii_mode { &ASCII_CHARS } else { chars };
+
     // Row 0 = top, row (total_rows-1) = bottom
     // Each row covers 1/total_rows of the range
     let row_height = 1.0 / total_rows as f32;
@@ -256,12 +261,12 @@ fn get_spectrum_char_for_row(
 
     if level >= row_top {
         // Full block - level is above this row
-        (chars[8], color)
+        (active_chars[8], color)
     } else if level > row_bottom {
         // Partial block - level is within this row
         let fill = (level - row_bottom) / row_height;
         let char_idx = ((fill * 8.0).round() as usize).clamp(1, 8);
-        (chars[char_idx], color)
+        (active_chars[char_idx], color)
     } else {
         // Empty
         (' ', theme.secondary)
@@ -273,9 +278,12 @@ fn get_meter_char_and_color_scaled(
     meter_row: usize,
     total_rows: usize,
     is_clipping: bool,
-    theme: &crate::theme::Theme
+    theme: &crate::theme::Theme,
+    ascii_mode: bool
 ) -> (char, ratatui::style::Color) {
     const METER_CHARS: [char; 9] = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+    const METER_CHARS_ASCII: [char; 9] = [' ', '.', ':', '-', '=', '+', '#', '#', '#'];
+    let active_chars = if ascii_mode { &METER_CHARS_ASCII } else { &METER_CHARS };
 
     // Each row covers 1/total_rows of the range
     let row_height = 1.0 / total_rows as f32;
@@ -285,11 +293,11 @@ fn get_meter_char_and_color_scaled(
     let color = if is_clipping { theme.error } else { theme.success };
 
     if peak >= row_top {
-        (METER_CHARS[8], color)
+        (active_chars[8], color)
     } else if peak > row_bottom {
         let fill = (peak - row_bottom) / row_height;
         let char_idx = ((fill * 8.0).round() as usize).clamp(1, 8);
-        (METER_CHARS[char_idx], color)
+        (active_chars[char_idx], color)
     } else {
         (' ', theme.secondary)
     }

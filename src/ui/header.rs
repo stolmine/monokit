@@ -4,27 +4,29 @@ use crate::types::{MeterData, Page, NAVIGABLE_PAGES};
 
 // 8-level vertical bar characters for meter display
 const METER_CHARS: [char; 9] = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+const METER_CHARS_ASCII: [char; 9] = [' ', '.', ':', '-', '=', '+', '#', '#', '#'];
 
-fn level_to_char(level: f32) -> char {
+fn level_to_char(level: f32, ascii_mode: bool) -> char {
     let clamped = level.clamp(0.0, 1.0);
     let idx = (clamped * 8.0).round() as usize;
-    METER_CHARS[idx.min(8)]
+    let active_chars = if ascii_mode { &METER_CHARS_ASCII } else { &METER_CHARS };
+    active_chars[idx.min(8)]
 }
 
-fn render_meters(meter_data: &MeterData, theme: &crate::theme::Theme) -> Vec<Span<'static>> {
+fn render_meters(meter_data: &MeterData, theme: &crate::theme::Theme, ascii_mode: bool) -> Vec<Span<'static>> {
     let mut spans = Vec::new();
 
     // Left channel meter character
     let l_color = if meter_data.clip_l { theme.error } else { theme.success };
     spans.push(Span::styled(
-        level_to_char(meter_data.peak_l).to_string(),
+        level_to_char(meter_data.peak_l, ascii_mode).to_string(),
         Style::default().fg(l_color),
     ));
 
     // Right channel meter character (immediately adjacent)
     let r_color = if meter_data.clip_r { theme.error } else { theme.success };
     spans.push(Span::styled(
-        level_to_char(meter_data.peak_r).to_string(),
+        level_to_char(meter_data.peak_r, ascii_mode).to_string(),
         Style::default().fg(r_color),
     ));
 
@@ -146,7 +148,7 @@ pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
 
     // Meters: show at level 1 and above if header meters are enabled
     if app.show_meters_header && app.header_level >= 1 {
-        right_spans.extend(render_meters(&app.meter_data, &app.theme));
+        right_spans.extend(render_meters(&app.meter_data, &app.theme, app.ascii_meters));
         right_width += 2; // Two meter characters
     }
 

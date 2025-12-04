@@ -159,9 +159,7 @@ where
             SyncMode::Internal => "0 (INTERNAL)",
             SyncMode::MidiClock => "1 (MIDI CLOCK)",
         };
-        if debug_level >= TIER_QUERIES || out_qry {
-            output(format!("SYNC MODE: {}", mode_str));
-        }
+        output(format!("SYNC MODE: {}", mode_str));
         return Ok(());
     }
     let value: i32 = parts[1]
@@ -179,12 +177,10 @@ where
         .send(MetroCommand::SetSyncMode(new_mode))
         .context("Failed to send sync mode to metro thread")?;
     *sync_mode = new_mode;
-    if debug_level >= TIER_ESSENTIAL || out_ess {
-        let mode_str = match new_mode {
-            SyncMode::Internal => "INTERNAL",
-            SyncMode::MidiClock => "MIDI CLOCK",
-        };
-        output(format!("SET SYNC MODE TO {}", mode_str));
-    }
+    let mode_str = match new_mode {
+        SyncMode::Internal => "INTERNAL",
+        SyncMode::MidiClock => "MIDI CLOCK",
+    };
+    output(format!("SET SYNC MODE TO {}", mode_str));
     Ok(())
 }

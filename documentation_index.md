@@ -441,7 +441,7 @@
 - On Live page, Tab continues to toggle grid view
 - Dual function improves navigation flow
 
-### Phase 6: Polish & UI Preferences
+### Phase 4: Polish & UI Preferences
 
 **Config Persistence (December 2025)**
 - Added 16 new DisplayConfig fields for UI preferences persistence
@@ -471,11 +471,11 @@
 - METER.HDR <0|1> - Toggle header audio meters
 - METER.GRID <0|1> - Toggle grid view audio meters
 - SPECTRUM <0|1> - Toggle spectrum analyzer in grid view
-- ACTIVITY <0|1> - Toggle script activity indicators (Phase 5.1)
-- GRID <0|1> - Toggle parameter activity grid (Phase 5.4)
-- GRID.MODE <0|1> - Grid display: 0=labels, 1=icons (Phase 5.4)
-- HL.SEQ <0|1> - Toggle SEQ/TOG state highlighting (Phase 5.2)
-- HL.COND <0|1> - Toggle conditional execution highlighting (Phase 5.7)
+- ACTIVITY <0|1> - Toggle script activity indicators (Phase 4.1)
+- GRID <0|1> - Toggle parameter activity grid (Phase 4.4)
+- GRID.MODE <0|1> - Grid display: 0=labels, 1=icons (Phase 4.4)
+- HL.SEQ <0|1> - Toggle SEQ/TOG state highlighting (Phase 4.2)
+- HL.COND <0|1> - Toggle conditional execution highlighting (Phase 4.7)
 
 **Grid View Layout Stability (December 2025)**
 - Fixed spectrum/meters positioning when GRID visibility toggles
@@ -584,11 +584,11 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 - Comprehensive coverage of all system features
 
 **Roadmap Updates:**
-- "Live Sequence State Highlighting" feature added to Phase 5 (UI enhancements)
+- "Live Sequence State Highlighting" feature added to Phase 4 (UI enhancements)
 
 ### SEQ/TOG State Highlighting (December 2025)
 
-**Phase 5.2: State Highlighting - COMPLETE**
+**Phase 4.2: State Highlighting - COMPLETE**
 - Color-only highlighting for current step in SEQ patterns
 - Current TOG option highlighted
 - Nested alternation `<a b>` shows active option based on stored state
@@ -610,7 +610,7 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 
 ### Variables Page (December 2025)
 
-**Phase 5.3: Variable State Monitoring - COMPLETE**
+**Phase 4.3: Variable State Monitoring - COMPLETE**
 - New Variables page shows all variable state in Teletype-style monitor layout
 - Access via `Alt+V` or `[`/`]` navigation
 - Displays global variables: A, B, C, D, X, Y, Z, T
@@ -621,7 +621,7 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 
 **Notes Page (December 2025)
 
-**Phase 5.6: Notes Page Redesign - COMPLETE**
+**Phase 4.6: Notes Page Redesign - COMPLETE**
 - Redesigned to use 8 fixed lines like script pages
 - Line navigation with Up/Down arrows
 - Same editing commands: Ctrl+D/K/C/X/V
@@ -637,7 +637,7 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 
 ### Parameter Activity Grid (December 2025)
 
-**Phase 5.4: Parameter Activity Grid - COMPLETE**
+**Phase 4.4: Parameter Activity Grid - COMPLETE**
 - Alternate view on Live page showing parameter activity as grid
 - Press Tab to toggle between REPL view and Grid view
 - 8x6 grid of 48 unicode icons representing synth parameters
@@ -655,7 +655,7 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 
 ### Audio Metering (December 2025)
 
-**Phase 5.5: Audio Metering - COMPLETE**
+**Phase 4.5: Audio Metering - COMPLETE**
 - Real-time stereo peak/RMS metering via bidirectional OSC
 - SuperCollider sends meter data at 20Hz via SendPeakRMS to port 57121
 - Meter thread receives OSC and updates MeterData
@@ -686,14 +686,14 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 
 ### Conditional Execution Highlighting (December 2025)
 
-**Phase 5.7: Conditional Execution Highlighting - COMPLETE**
+**Phase 4.7: Conditional Execution Highlighting - COMPLETE**
 - Visual feedback when PRE conditionals pass and execute their body commands
 - Segment-based highlighting: only the PRE portion highlights, not the entire line
 - Supported PREs: IF, ELIF, ELSE, PROB, EV, SKIP (NOT L loops - they would flash constantly)
 - Example: `$ 2; IF PN.NEXT 2: TR` - only `IF PN.NEXT 2:` highlights when condition passes
 - Multiple PREs on same line highlight independently
 - Nested PREs (like `EV 4: IF A: TR`) each highlight their own segment
-- Reuses activity_color() decay animation system from Phase 5.1
+- Reuses activity_color() decay animation system from Phase 4.1
 - Color strategy: unselected lines use foreground->secondary decay, selected lines use success->highlight_fg decay
 - `HL.COND <0|1>` command to toggle conditional highlighting on/off
 - State tracked per script line in App struct
@@ -709,7 +709,7 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 
 ### Scope Page (December 2025)
 
-**Phase 5.8: Oscilloscope Page - COMPLETE**
+**Phase 4.8: Oscilloscope Page - COMPLETE**
 - Dedicated oscilloscope page showing real-time waveform display
 - 128 samples at 20Hz from SuperCollider via OSC
 - Multiple character rendering modes with unicode support
@@ -767,7 +767,7 @@ When M.SYNC is enabled (1), the metro follows external MIDI clock. Transport sta
 - `commands/common.rs` - Expression parsing helpers
 - `tests/common.rs` - Test setup macro
 
-All 411 tests pass. Codebase reduced by ~28% while maintaining full functionality.
+All 558 tests pass. Codebase reduced by ~28% while maintaining full functionality.
 
 ---
 
@@ -779,7 +779,7 @@ All 411 tests pass. Codebase reduced by ~28% while maintaining full functionalit
 - Refactored all 6 envelope files to use macros (amp, pitch, fm, disc, feedback, filter)
 - Removed dead code: `handle_*_mode` handlers, `global.rs`
 - Line reduction: ~1,141 lines → 223 lines (~918 line reduction, 81% decrease)
-- All 411 tests pass
+- All 558 tests pass
 
 **Technical Details:**
 - Each envelope file reduced from ~140 lines to ~10-12 lines
@@ -834,6 +834,7 @@ All 411 tests pass. Codebase reduced by ~28% while maintaining full functionalit
 - **CONCEPT.md** - Project overview, architecture, MVP implementation
 - **PLAN.md** - UI refactor plan: Teletype-style interface with page system, script storage, patterns, and control flow
 - **ROADMAP.md** - Single source of truth for all future development plans and roadmap
+- **ON_HOLD.md** - Features deferred indefinitely due to technical constraints (LFO system, Aux Envelopes, Extended Envelopes, MIDI Clock Output, Initial Window Sizing)
 - **DSP_TIER1_IMPLEMENTATION_PLAN.md** - Detailed implementation plan for Filter, Resonator, Delay, and Reverb DSP blocks
 - **DSP_TIER3_BUFFER_EFFECTS_PLAN.md** - Implementation plan for Beat Repeat and Pitch Shift buffer effects
 - **EFFECT_ROUTING_DESIGN.md** - Design document for flexible effect routing system
@@ -933,7 +934,7 @@ Modular Rust implementation (~17,300 total lines across 93 files, after Phase 1 
       - **beat_repeat.rs** - Beat repeat (BR.ACT, BR.LEN, BR.REV, BR.WIN, BR.MIX)
       - **pitch_shift.rs** - Pitch shift (PS.MODE, PS.SEMI, PS.GRAIN, PS.MIX, PS.TARG)
   - **randomization.rs** - Randomization commands (RND.VOICE, RND.OSC, RND.FM, RND.MOD, RND.ENV, etc.)
-- **src/tests/** - Test suite module (21 files, ~5,288 lines, 411 tests)
+- **src/tests/** - Test suite module (21 files, ~5,288 lines, 558 tests)
   - Organized by category: envelope, counter, slew, tog, rnd, toss_eith, expr, condition, pattern, pattern_ops, variable, validation, math, map, comparison, scene, debug, buffer_effects
 
 ### REPL Test Scenes
@@ -1000,14 +1001,14 @@ The codebase contains ~6,500-7,000 lines of systematic duplication (30-33% of to
 - Renamed `delay.rs` → `core/scheduling.rs` (handles DEL commands, not synth delay)
 - Split `effects.rs` into modular effect files (lofi.rs, ring_mod.rs, compressor.rs, etc.)
 - Renamed `synth_params/` → `synth/` for clarity
-- All 411 tests pass
+- All 558 tests pass
 
 **Phase 1: Envelope Handler DRY [COMPLETE - 918 line reduction]**
 - Created `synth/envelopes/common.rs` with `define_int_param!` and `define_float_param!` macros
 - Generated DEC, AMT, ATK, CRV handlers for all 6 envelopes from macro definitions
 - Each envelope file reduced from ~140 lines → ~10-12 lines
 - Total reduction: ~1,141 lines → 223 lines (81% decrease)
-- All 411 tests pass
+- All 558 tests pass
 
 **Phase 2: Pattern Operation DRY [COMPLETE - 1,573 line reduction in wrappers]**
 - Created `patterns/common.rs` (902 lines) with `PatternRef` enum, shared implementations, and macro system
@@ -1015,7 +1016,7 @@ The codebase contains ~6,500-7,000 lines of systematic duplication (30-33% of to
 - Unified P.* (working) and PN.* (explicit) operations via PatternRef::Working/Explicit
 - Wrapper code reduced from 2023 → 450 lines (78% reduction)
 - Explicit files now just re-export from working files (~10 lines each)
-- All 411 tests pass
+- All 558 tests pass
 
 **Phase 3: Synth Parameter DRY [PLANNED - ~2,000 line reduction]**
 - Create `synth/param_macro.rs` with `define_param!` macro
@@ -1028,7 +1029,7 @@ The codebase contains ~6,500-7,000 lines of systematic duplication (30-33% of to
 - 1,573 line reduction in pattern wrappers via macro system (Phase 2)
 - Total reduction: ~2,491 lines
 - Easier to add new commands (single macro invocation for both P.* and PN.*)
-- All 411 tests continue to pass
+- All 558 tests continue to pass
 - Maintains backward compatibility
 
 ### Expected Final Results

@@ -13,7 +13,7 @@ Comprehensive reorganization and DRY refactoring to create a logical, maintainab
 - Clear, logical file organization
 - ~4,000+ line reduction through macro consolidation
 - Easier to add new commands (single location per domain)
-- No loss of functionality (411 tests must pass throughout)
+- No loss of functionality (558 tests must pass throughout)
 
 **Last Updated:** 2025-11-30
 
@@ -217,7 +217,7 @@ src/commands/
 
 **Results:**
 - Line reduction: 918 lines (81% decrease in envelope code)
-- All 411 tests pass
+- All 558 tests pass
 - No loss of functionality
 - Cleaner, more maintainable envelope implementation
 
@@ -422,7 +422,7 @@ pub fn handle_d_mode<F>(...) -> Result<()> {
 
 ### Before Each Phase
 ```bash
-cargo test           # All 411 tests must pass
+cargo test           # All 558 tests must pass
 cargo clippy         # No warnings
 cargo build --release
 ```
@@ -457,7 +457,7 @@ cargo build --release
 **Phase 1 Notes:**
 - Achieved 918 line reduction vs 841 estimated (109% of estimate)
 - Better than expected due to removal of global.rs and mode handlers
-- All 411 tests pass with no loss of functionality
+- All 558 tests pass with no loss of functionality
 
 **Phase 2 Notes:**
 - Created `patterns/common.rs` (902 lines) with `PatternRef` enum, shared implementations, AND macro system
@@ -474,7 +474,7 @@ cargo build --release
   - explicit_query.rs: 197 → 7 lines (96%)
   - working.rs: 168 → 135 lines (nav handlers only, 20%)
   - explicit.rs: 268 → 166 lines (nav handlers only, 38%)
-- All 411 tests pass with no loss of functionality
+- All 558 tests pass with no loss of functionality
 
 ---
 

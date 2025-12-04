@@ -498,7 +498,7 @@ if app.header_level >= 1 {
 - [ ] Error messages are user-friendly and actionable
 - [ ] Audio device selection works on macOS/Linux/Windows
 - [ ] Terminal size warning on startup
-- [ ] All 411+ tests pass
+- [ ] All 558+ tests pass
 
 ---
 

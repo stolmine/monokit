@@ -322,9 +322,9 @@ impl ParamActivity {
 
 ---
 
-## Phase 5: UI Feedback & Activity Indicators
+## Phase 4: UI Feedback & Activity Indicators
 
-### 5.1 Activity Indicators [Medium] - COMPLETE
+### 4.1 Activity Indicators [Medium] - COMPLETE
 
 Script and metro execution feedback with decay animations (KO II style).
 
@@ -347,7 +347,7 @@ Script and metro execution feedback with decay animations (KO II style).
 
 ---
 
-## Phase 6: Audio Metering - COMPLETE (December 2025)
+## Phase 4: Audio Metering - COMPLETE (December 2025)
 
 **Goal:** Real-time amplitude and CPU display
 

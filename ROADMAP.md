@@ -130,6 +130,44 @@ Custom terminal window title for better taskbar/window list identification.
 - [x] Improves task switching and window identification
 - [x] Set via ANSI escape sequences on startup
 
+### Terminal Compatibility System [COMPLETE]
+Automatic detection and fallback for limited terminal capabilities.
+
+- [x] Terminal capability detection at startup (true color vs 256-color)
+- [x] `COMPAT` - Display terminal capabilities
+- [x] `COMPAT.MODE <0|1>` - Toggle compatibility mode (0=standard, 1=256-color)
+- [x] `METER.ASCII <0|1>` - Toggle ASCII meter characters (.:-=+#)
+- [x] 256-color theme fallback when true color unavailable
+- [x] High-contrast cursor (white/black) in 256-color mode
+- [x] Startup warning for Terminal.app users
+
+### SCOPE.CLR Color Labels [COMPLETE]
+Enhanced scope color selection with named colors.
+
+- [x] `SCOPE.CLR <name|0-8>` - Set waveform color by name or number
+- [x] Color names: FOREGROUND, SECONDARY, HIGHLIGHT_BG, HIGHLIGHT_FG, BORDER, ERROR, ACCENT, SUCCESS, LABEL
+- [x] Aliases: FG, SEC, HL_BG, HL_FG, ERR, ACC, SUC, LBL
+- [x] All 9 theme colors now available (was only 4)
+- [x] Backwards compatible with numeric 0-8
+
+### REPL Output Consistency [COMPLETE]
+UI/settings commands always display regardless of DEBUG level.
+
+- [x] Fixed: LIMIT, SCOPE.TIME, SCOPE.CLR, SCOPE.MODE, SCOPE.UNI
+- [x] Direct queries and setting confirmations always visible
+- [x] DEBUG level only gates background/automated output
+
+### Scramble Animation System [COMPLETE]
+Rolling text scramble animation for header with comprehensive controls.
+
+- [x] `SCRMBL <0|1>` - Enable/disable scramble animation
+- [x] `SCRMBL.MODE <0|1>` - Animation mode (0=random, 1=sequential)
+- [x] `SCRMBL.SPD <0-5>` - Animation speed (0=slowest, 5=fastest)
+- [x] `SCRMBL.CRV <0-4>` - Animation curve (linear, ease-in, ease-out, ease-in-out, exponential)
+- [x] Title scramble on scene load/title change
+- [x] Grid icons no longer scramble on tab switch (disabled)
+- [x] Config persistence for all scramble settings
+
 ---
 
 ## Recent Updates (November 2025)
@@ -255,7 +293,7 @@ Consolidated command definitions into a single source of truth to eliminate sync
 - [x] Refactored all 6 envelope files (amp, pitch, fm, disc, feedback, filter)
 - [x] Removed dead code: `handle_*_mode` handlers, `global.rs`
 - [x] Line reduction: ~1,141 lines → 223 lines (**918 line reduction, 81% decrease**)
-- [x] All 411 tests pass
+- [x] All 558 tests pass
 
 **Phase 2: Pattern Operation DRY** - COMPLETE (November 2025)
 - [x] Created `patterns/common.rs` (902 lines) with `PatternRef` enum, shared implementations, and macro system
@@ -263,20 +301,20 @@ Consolidated command definitions into a single source of truth to eliminate sync
 - [x] Unified P.* (working) and PN.* (explicit) operations via PatternRef::Working/Explicit
 - [x] Wrapper code reduced from 2023 → 450 lines (**1,573 line reduction, 78% decrease**)
 - [x] Explicit files now just re-export from working files (~10 lines each)
-- [x] All 411 tests pass
+- [x] All 558 tests pass
 
 **Phase 3: Synth Parameter DRY** - COMPLETE (November 2025)
 - [x] Created `synth/param_macro.rs` with generic parameter macros
 - [x] Consolidated 70+ similar parameter handlers
 - [x] Line reduction: **~2,325 lines**
-- [x] All 411 tests pass
+- [x] All 558 tests pass
 
 **Phase 4: Variables, Counters, and Test Fixtures** - COMPLETE (November 2025)
 - [x] Phase 4A: Variable/Counter macros - **489 lines removed**
 - [x] Phase 4B: Expression helpers - Infrastructure added
 - [x] Phase 4C: Test fixture optimization - **637 lines removed**
 - [x] Total Phase 4: **~1,126 lines removed**
-- [x] All 411 tests pass
+- [x] All 558 tests pass
 
 **Phase 5: Additional DRY Refactors** - COMPLETE (December 2025)
 - [x] Boolean toggle macro (define_bool_toggle!) - **337 lines saved**
@@ -527,10 +565,6 @@ PSETS                        # List all presets
 
 **Technical Details:** See `docs/MIDI_CLOCK_TIMING_LESSONS.md` for comprehensive debugging notes.
 
-**MIDI Clock Output:** - ON HOLD INDEFINITELY
-- [ ] `M.SEND <0|1>` - Send MIDI clock out
-- [ ] Send start/stop/continue messages
-
 **Clock Division/Multiplication:** - NOT IMPLEMENTED
 - [ ] `M.DIV <1-16>` - Divide incoming clock
 - [ ] `M.MUL <1-4>` - Multiply incoming clock
@@ -576,81 +610,13 @@ Scheduled command execution with delay buffer (inspired by Teletype).
 
 ---
 
-## Phase 4: Modulation System - ON HOLD
-
-**Status:** ON HOLD INDEFINITELY - SuperCollider UGen complexity limits
-
-**Issue:** SuperCollider SynthDef complexity limits prevent implementation of freely routable LFO destinations. Extensive testing (December 2025) showed:
-- 2 LFOs × 5 destinations worked initially
-- 3-4 LFOs × 7+ destinations hit UGen limits
-- Architectural attempts (control bus separation, split routers) all failed
-- The InRange.kr routing matrix creates too many UGens regardless of synth splitting
-
-**Attempted Solutions:**
-- Control bus architecture (LFO generation separate from main synth)
-- Pre-computed destination routing in separate synth
-- Split lfo_bank into lfo_gen + lfo_router
-- Split router into two 8-destination synths (lfo_router_a + lfo_router_b)
-- All approaches hit SC's internal optimization/complexity limits
-
-**Conclusion:** Freely routable multi-LFO modulation is not feasible within SuperCollider's SynthDef architecture for a synth of monokit's complexity. Would require either:
-- Fixed LFO→destination assignments (not user-routable)
-- Significant reduction in main synth features
-- Alternative audio engine (not SC)
-
----
-
-### Aux Envelope System [High] - ON HOLD
-Flexible auxiliary envelope that can be routed to any synth parameter.
-Same routing complexity issues as LFO system.
-
-- [ ] `XENV.DEC <ms>` - Aux envelope decay time
-- [ ] `XENV.ATK <ms>` - Aux envelope attack time
-- [ ] `XENV.CRV <-8 to 8>` - Aux envelope curve
-- [ ] `XENV.AMT <0-16383>` - Aux envelope amount
-- [ ] `XENV.DEST <param>` - Set destination parameter (e.g., `XENV.DEST FC`)
-- [ ] Multiple destinations support (optional)
-- [ ] SC implementation: New envelope with routing matrix
-
-### Extended Envelope Coverage [Medium] - ON HOLD
-Dedicated envelopes for synth/FX parameters currently lacking envelope control.
-Blocked by same SC complexity constraints.
-
-**Lo-Fi Effect:**
-- [ ] `LOEV.DEC <ms>` - Lo-Fi envelope decay
-- [ ] `LOEV.ATK <ms>` - Lo-Fi envelope attack
-- [ ] `LOEV.CRV <-8 to 8>` - Lo-Fi envelope curve
-- [ ] `LOEV.AMT <0-16383>` - Lo-Fi envelope amount (modulates LM mix)
-
-**Other candidates (to be evaluated):**
-- [ ] Ring mod envelope (RGM mix)
-- [ ] Resonator envelope (RM mix)
-- [ ] Delay envelope (DW wet)
-- [ ] Reverb envelope (RW wet)
-
-### LFO System [High] - ON HOLD
-- [ ] 2-4 LFO units (L1, L2, L3, L4)
-- [ ] `L1.RATE <hz>` - LFO frequency (0.01-100 Hz)
-- [ ] `L1.WAVE <0-4>` - Waveform (sin, tri, saw, square, random)
-- [ ] `L1.AMP <0-16383>` - Amplitude/depth
-- [ ] `L1.PHASE <0-360>` - Phase offset
-- [ ] `L1.SYNC <0|1>` - Sync to metro
-- [ ] `L1.DEST <param>` - Set destination parameter
-- [ ] `L1.AMT <0-16383>` - Modulation amount
-- [ ] `L1.SLEW <ms>` - Slew/lag on LFO output
-- [ ] `L1.QUANT <steps>` - Quantize LFO to N steps
-- [ ] Multiple destinations per LFO (optional)
-- [ ] SC implementation: New UGens, routing matrix, phase sync
-
----
-
-## Phase 5: UI/Feedback
+## Phase 4: UI/Feedback
 
 **Focus:** Visual enhancements and real-time parameter monitoring
 
 **Reference:** See `UI_REFINEMENT_PLAN.md` for detailed implementation guide.
 
-### Phase 5.1: Activity Indicators [Medium] - COMPLETE (December 2025)
+### Phase 4.1: Activity Indicators [Medium] - COMPLETE (December 2025)
 Script and metro execution feedback with decay animations (KO II style).
 
 - [x] Add activity tracking to App struct (activity_last_active, activity_hold_ms)
@@ -662,7 +628,7 @@ Script and metro execution feedback with decay animations (KO II style).
 - [x] Works for nested SCRIPT calls from metro
 - [x] Theme-aware activity_color() in theme.rs
 
-### Phase 5.2: SEQ/TOG State Highlighting [Medium] - COMPLETE (December 2025)
+### Phase 4.2: SEQ/TOG State Highlighting [Medium] - COMPLETE (December 2025)
 Show current position in stateful operators within script display.
 
 - [x] Color-only highlighting (no bracket markers) for cleaner display
@@ -678,7 +644,7 @@ Show current position in stateful operators within script display.
 - [x] SEQ validation: reject invalid syntax (`SEQ"..."` and `SEQ "...`)
 - [x] Random choice state tracking with `seq_rnd_` keys
 
-### Phase 5.3: Variables Page [Medium] - COMPLETE
+### Phase 4.3: Variables Page [Medium] - COMPLETE
 Dedicated page showing all variable state (Teletype-style monitor).
 
 - [x] Add `Page::Variables` to page enum
@@ -688,7 +654,7 @@ Dedicated page showing all variable state (Teletype-style monitor).
 - [x] Display per-script locals: J, K for all 10 scripts
 - [ ] Optional: highlight recently-changed values
 
-### Phase 5.4: Parameter Activity Grid [Medium] - COMPLETE
+### Phase 4.4: Parameter Activity Grid [Medium] - COMPLETE
 Alternate grid view on Live page showing parameter activity with unicode icons.
 
 - [x] Add `ParamActivity` struct with per-parameter timestamps
@@ -699,7 +665,7 @@ Alternate grid view on Live page showing parameter activity with unicode icons.
 - [x] Grid center-justified with 3-space gaps between icons
 - [x] Same decay timing as script indicators
 
-### Phase 5.5: Audio Metering [High] - COMPLETE
+### Phase 4.5: Audio Metering [High] - COMPLETE
 Real-time amplitude display via bidirectional OSC.
 
 - [x] Add `SendPeakRMS` to SuperCollider SynthDef (20Hz updates)
@@ -725,7 +691,7 @@ Real-time amplitude display via bidirectional OSC.
 - [x] Color scheme: secondary normally, error when >= 80%
 - [ ] Peak hold decay visualization (future)
 
-### Phase 5.6: Notes Page [Medium] - COMPLETE (December 2025)
+### Phase 4.6: Notes Page [Medium] - COMPLETE (December 2025)
 Dedicated notes page with command-based text entry and scene integration.
 
 - [x] Redesigned to use 8 fixed lines like script pages
@@ -737,7 +703,7 @@ Dedicated notes page with command-based text entry and scene integration.
 - [x] Consistent with script page UX
 - [x] Added to validator for script execution
 
-### Phase 5.7: Conditional Execution Highlighting [Medium] - COMPLETE (December 2025)
+### Phase 4.7: Conditional Execution Highlighting [Medium] - COMPLETE (December 2025)
 Show visual feedback when conditionals and control flow commands execute their bodies.
 
 **PRE Commands (use `:` separator):**
@@ -771,7 +737,7 @@ Search functionality with isolated scopes for help and scripts.
 - [x] Show match count indicator (e.g., "2/5")
 - [x] User position preserved when exiting search mode
 
-### Phase 5.8: Scope Page [Medium] - COMPLETE (December 2025)
+### Phase 4.8: Scope Page [Medium] - COMPLETE (December 2025)
 Dedicated oscilloscope page with real-time waveform visualization.
 
 - [x] New Scope page showing 128 samples at 20Hz from SuperCollider
@@ -794,7 +760,7 @@ Dedicated oscilloscope page with real-time waveform visualization.
 
 ---
 
-## Phase 6: Polish & Refinements
+## Phase 5: Polish & Refinements
 
 **Focus:** Cherry-on-top polish items for production readiness and optimal user experience
 
@@ -877,15 +843,6 @@ Ensure all UI text fits within 50x18 terminal window constraints (46-char safe c
 - [x] Check header/footer borders stay within limits
 - [x] All identified violations fixed (completed December 2025)
 
-### Initial Window Sizing [Low] - ON HOLD INDEFINITELY (UNENFORCEABLE)
-Provide terminal window sizing defaults/recommendations.
-
-- [ ] Document recommended terminal size (50x18 minimum)
-- [ ] Detect current terminal size on startup
-- [ ] Warn if terminal too small (< 50x18)
-- [ ] Optional: Set terminal size via ANSI escape sequences (if supported)
-- [ ] Add to README/docs as setup requirement
-
 ### Command Arg Scaling Audit [Medium]
 Review parameter ranges for consistency and user-friendliness.
 
@@ -932,19 +889,7 @@ Comprehensive tiered verbosity system with category overrides.
 - [x] Standardized message formats (ERROR:, SET...TO, etc.)
 - [x] Routed meter/MIDI errors to REPL (was stderr)
 - [x] All output calls tagged with categories
-- [x] All 527 tests pass
-
-### Audio Device Selection [High]
-Add runtime command to choose SuperCollider audio output device.
-
-- [ ] `AUDIO.OUT` - List available audio output devices
-- [ ] `AUDIO.OUT <device>` - Select audio output device
-- [ ] `AUDIO.IN` - List available audio input devices (if needed)
-- [ ] `AUDIO.IN <device>` - Select audio input device (if needed)
-- [ ] Query SC for available devices via OSC
-- [ ] Restart audio subsystem on device change
-- [ ] Persist selection to config.toml
-- [ ] Handle device not available gracefully
+- [x] All 558 tests pass
 
 ### Global Error Handling Audit [Medium] - COMPLETE (December 2025)
 Comprehensive error handling improvements implemented as part of REPL audit and test suite work.
@@ -972,7 +917,7 @@ Comprehensive error handling improvements implemented as part of REPL audit and 
 **Testing:**
 - [x] Error test suite: 10 scenes covering ~80 error conditions
 - [x] ~95% error test pass rate
-- [x] All 527 unit tests pass
+- [x] All 558 unit tests pass
 
 See `repl_tests/ERROR_TEST_REPORT.md` for comprehensive error handling documentation.
 
@@ -1043,7 +988,7 @@ Address issues discovered during comprehensive REPL command testing (December 20
 - [x] Scene file validation (structural issues in test scenes)
 - [x] Error test suite with 10 test scenes (now ~95% pass rate)
 - [x] Batch mode `--run` for automated testing
-- [x] All 527 unit tests pass
+- [x] All 558 unit tests pass
 
 ### File Size and DRY Audit [Medium]
 Comprehensive audit to reduce parameter sprawl and improve maintainability.
@@ -1091,7 +1036,7 @@ Comprehensive audit to reduce parameter sprawl and improve maintainability.
 
 ---
 
-## Phase 7: Advanced DSP
+## Phase 6: Advanced DSP
 
 **Focus:** Major architectural changes requiring deep SuperCollider work
 
@@ -1141,7 +1086,7 @@ Comprehensive audit to reduce parameter sprawl and improve maintainability.
 
 ---
 
-## Phase 8: Distribution
+## Phase 7: Distribution
 
 **Focus:** Packaging and deployment infrastructure
 
@@ -1175,11 +1120,12 @@ Comprehensive audit to reduce parameter sprawl and improve maintainability.
 ### Dependencies Between Phases
 - **Phase 2** can proceed independently (builds on existing pattern system)
 - **Phase 3** scale quantization needed before mini notation (note name parsing)
-- **Phase 4** LFO system may inform additional Phase 3 modulation routing
-- **Phase 5** UI features can be implemented incrementally, no blocking dependencies
-- **Phase 6** polish items should be implemented after core features complete (helps identify what needs polish)
-- **Phase 7** requires all features complete and stable before voice architecture changes
-- **Phase 8** requires all features complete and tested before packaging
+- **Phase 4** UI features can be implemented incrementally, no blocking dependencies
+- **Phase 5** polish items should be implemented after core features complete (helps identify what needs polish)
+- **Phase 6** requires all features complete and stable before voice architecture changes
+- **Phase 7** requires all features complete and tested before packaging
+
+**Note:** Modulation System (LFO, Aux Envelopes) moved to `ON_HOLD.md` due to SuperCollider UGen complexity limits.
 
 ### Complexity Legend
 - **[Low]** - 1-3 days, minimal dependencies, straightforward implementation

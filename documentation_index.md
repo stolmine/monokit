@@ -38,6 +38,15 @@
 - All 9 theme colors now available (was only 4)
 - Command handler in src/commands/scope/mod.rs
 
+### REPL Output Consistency (December 2025)
+
+**UI/Settings Commands Always Display:**
+- UI/settings commands now output regardless of DEBUG level
+- Fixed: LIMIT, SCOPE.TIME, SCOPE.CLR, SCOPE.MODE, SCOPE.UNI
+- Direct queries and setting confirmations always visible
+- DEBUG level only gates background/automated output
+- Implementation in src/commands/scope/mod.rs
+
 ### Grid Scramble Disabled (December 2025)
 
 **Grid Icon Behavior:**

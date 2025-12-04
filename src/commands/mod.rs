@@ -761,19 +761,19 @@ where
             misc::handle_header(&parts, header_level, output);
         }
         "LIMIT" => {
-            misc::handle_limit(&parts, limiter_enabled, metro_tx, *debug_level, *out_qry, *out_cfm, output)?;
+            misc::handle_limit(&parts, limiter_enabled, metro_tx, output)?;
         }
         "SCOPE.TIME" => {
-            misc::handle_scope_time(&parts, scope_settings, metro_tx, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_qry, output)?;
+            misc::handle_scope_time(&parts, scope_settings, metro_tx, variables, patterns, counters, scripts, script_index, scale, output)?;
         }
         "SCOPE.CLR" => {
-            misc::handle_scope_clr(&parts, scope_settings, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_cfm, output);
+            misc::handle_scope_clr(&parts, scope_settings, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "SCOPE.MODE" => {
-            misc::handle_scope_mode(&parts, scope_settings, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_cfm, output);
+            misc::handle_scope_mode(&parts, scope_settings, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "SCOPE.UNI" => {
-            misc::handle_scope_uni(&parts, scope_settings, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_cfm, output);
+            misc::handle_scope_uni(&parts, scope_settings, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "NOTE" => {
             misc::handle_note(&parts, notes, *debug_level, *out_cfm, output);

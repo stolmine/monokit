@@ -623,18 +623,13 @@ pub fn handle_limit<F>(
     parts: &[&str],
     limiter_enabled: &mut bool,
     metro_tx: &Sender<MetroCommand>,
-    debug_level: u8,
-    out_qry: bool,
-    out_cfm: bool,
     mut output: F,
 ) -> Result<()>
 where
     F: FnMut(String),
 {
     if parts.len() == 1 {
-        if debug_level >= TIER_QUERIES || out_qry {
-            output(format!("LIMITER: {}", if *limiter_enabled { 1 } else { 0 }));
-        }
+        output(format!("LIMITER: {}", if *limiter_enabled { 1 } else { 0 }));
     } else {
         let value = parts[1];
         match value {
@@ -644,9 +639,7 @@ where
                     .send(MetroCommand::SendParam("limit".to_string(), OscType::Int(0)))
                     .context("Failed to send limiter param")?;
                 let _ = config::save_limiter_enabled(*limiter_enabled);
-                if debug_level >= TIER_CONFIRMS || out_cfm {
-                    output("LIMITER: OFF".to_string());
-                }
+                output("LIMITER: OFF".to_string());
             }
             "1" => {
                 *limiter_enabled = true;
@@ -654,9 +647,7 @@ where
                     .send(MetroCommand::SendParam("limit".to_string(), OscType::Int(1)))
                     .context("Failed to send limiter param")?;
                 let _ = config::save_limiter_enabled(*limiter_enabled);
-                if debug_level >= TIER_CONFIRMS || out_cfm {
-                    output("LIMITER: ON".to_string());
-                }
+                output("LIMITER: ON".to_string());
             }
             _ => {
                 output("ERROR: LIMIT TAKES 0 (OFF) OR 1 (ON)".to_string());
@@ -678,17 +669,13 @@ pub fn handle_scope_time<F>(
     scripts: &ScriptStorage,
     script_index: usize,
     scale: &ScaleState,
-    debug_level: u8,
-    out_qry: bool,
     mut output: F,
 ) -> Result<()>
 where
     F: FnMut(String),
 {
     if parts.len() == 1 {
-        if debug_level >= TIER_QUERIES || out_qry {
-            output(format!("SCOPE.TIME: {}MS", scope_settings.timespan_ms));
-        }
+        output(format!("SCOPE.TIME: {}MS", scope_settings.timespan_ms));
     } else {
         let value = if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             val as u32
@@ -709,9 +696,7 @@ where
 
         let _ = config::save_scope_settings(scope_settings);
 
-        if debug_level >= TIER_VERBOSE {
-            output(format!("SCOPE.TIME: {}MS", value));
-        }
+        output(format!("SCOPE.TIME: {}MS", value));
     }
     Ok(())
 }
@@ -719,41 +704,30 @@ where
 pub fn handle_scope_clr<F>(
     parts: &[&str],
     scope_settings: &mut crate::types::ScopeSettings,
-
-
-
     variables: &Variables,
     patterns: &mut PatternStorage,
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     scale: &ScaleState,
-    debug_level: u8,
-    out_qry: bool,
     mut output: F,
 ) where
     F: FnMut(String),
 {
     if parts.len() == 1 {
-        if debug_level >= TIER_QUERIES || out_qry {
-            output(format!("SCOPE.CLR: {}", scope_settings.color_mode.name()));
-        }
+        output(format!("SCOPE.CLR: {}", scope_settings.color_mode.name()));
     } else {
         let input = parts[1];
 
         if let Some(mode) = crate::types::ScopeColorMode::from_str(input) {
             scope_settings.color_mode = mode;
             let _ = config::save_scope_settings(scope_settings);
-            if debug_level >= TIER_VERBOSE {
-                output(format!("SCOPE.CLR: {}", mode.name()));
-            }
+            output(format!("SCOPE.CLR: {}", mode.name()));
         } else if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             if val >= 0 && val <= 8 {
                 scope_settings.color_mode = crate::types::ScopeColorMode::from_u8(val as u8);
                 let _ = config::save_scope_settings(scope_settings);
-                if debug_level >= TIER_VERBOSE {
-                    output(format!("SCOPE.CLR: {} ({})", val, scope_settings.color_mode.name()));
-                }
+                output(format!("SCOPE.CLR: {} ({})", val, scope_settings.color_mode.name()));
             } else {
                 output("ERROR: SCOPE.CLR NUMBER MUST BE 0-8".to_string());
             }
@@ -761,9 +735,7 @@ pub fn handle_scope_clr<F>(
             if val >= 0 && val <= 8 {
                 scope_settings.color_mode = crate::types::ScopeColorMode::from_u8(val as u8);
                 let _ = config::save_scope_settings(scope_settings);
-                if debug_level >= TIER_VERBOSE {
-                    output(format!("SCOPE.CLR: {} ({})", val, scope_settings.color_mode.name()));
-                }
+                output(format!("SCOPE.CLR: {} ({})", val, scope_settings.color_mode.name()));
             } else {
                 output("ERROR: SCOPE.CLR NUMBER MUST BE 0-8".to_string());
             }
@@ -779,32 +751,25 @@ pub fn handle_scope_clr<F>(
 pub fn handle_scope_mode<F>(
     parts: &[&str],
     scope_settings: &mut crate::types::ScopeSettings,
-    
-    
-    
     variables: &Variables,
     patterns: &mut PatternStorage,
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     scale: &ScaleState,
-    debug_level: u8,
-    out_qry: bool,
     mut output: F,
 ) where
     F: FnMut(String),
 {
     if parts.len() == 1 {
-        if debug_level >= TIER_QUERIES || out_qry {
-            let mode_name = match scope_settings.display_mode {
-                1 => "BLOCK",
-                2 => "LINE",
-                3 => "DOT",
-                4 => "QUADRANT",
-                _ => "BRAILLE",
-            };
-            output(format!("SCOPE.MODE: {} ({})", scope_settings.display_mode, mode_name));
-        }
+        let mode_name = match scope_settings.display_mode {
+            1 => "BLOCK",
+            2 => "LINE",
+            3 => "DOT",
+            4 => "QUADRANT",
+            _ => "BRAILLE",
+        };
+        output(format!("SCOPE.MODE: {} ({})", scope_settings.display_mode, mode_name));
     } else {
         let value = if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             val
@@ -816,27 +781,27 @@ pub fn handle_scope_mode<F>(
             0 => {
                 scope_settings.display_mode = 0;
                 let _ = config::save_scope_settings(scope_settings);
-                if debug_level >= TIER_VERBOSE { output("SCOPE.MODE: 0 (BRAILLE)".to_string()); }
+                output("SCOPE.MODE: 0 (BRAILLE)".to_string());
             }
             1 => {
                 scope_settings.display_mode = 1;
                 let _ = config::save_scope_settings(scope_settings);
-                if debug_level >= TIER_VERBOSE { output("SCOPE.MODE: 1 (BLOCK)".to_string()); }
+                output("SCOPE.MODE: 1 (BLOCK)".to_string());
             }
             2 => {
                 scope_settings.display_mode = 2;
                 let _ = config::save_scope_settings(scope_settings);
-                if debug_level >= TIER_VERBOSE { output("SCOPE.MODE: 2 (LINE)".to_string()); }
+                output("SCOPE.MODE: 2 (LINE)".to_string());
             }
             3 => {
                 scope_settings.display_mode = 3;
                 let _ = config::save_scope_settings(scope_settings);
-                if debug_level >= TIER_VERBOSE { output("SCOPE.MODE: 3 (DOT)".to_string()); }
+                output("SCOPE.MODE: 3 (DOT)".to_string());
             }
             4 => {
                 scope_settings.display_mode = 4;
                 let _ = config::save_scope_settings(scope_settings);
-                if debug_level >= TIER_VERBOSE { output("SCOPE.MODE: 4 (QUADRANT)".to_string()); }
+                output("SCOPE.MODE: 4 (QUADRANT)".to_string());
             }
             _ => {
                 output("ERROR: SCOPE.MODE TAKES 0-4".to_string());
@@ -848,25 +813,18 @@ pub fn handle_scope_mode<F>(
 pub fn handle_scope_uni<F>(
     parts: &[&str],
     scope_settings: &mut crate::types::ScopeSettings,
-    
-    
-    
     variables: &Variables,
     patterns: &mut PatternStorage,
     counters: &mut Counters,
     scripts: &ScriptStorage,
     script_index: usize,
     scale: &ScaleState,
-    debug_level: u8,
-    out_qry: bool,
     mut output: F,
 ) where
     F: FnMut(String),
 {
     if parts.len() == 1 {
-        if debug_level >= TIER_QUERIES || out_qry {
-            output(format!("SCOPE.UNI: {}", if scope_settings.unipolar { 1 } else { 0 }));
-        }
+        output(format!("SCOPE.UNI: {}", if scope_settings.unipolar { 1 } else { 0 }));
     } else {
         let value = if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             val
@@ -878,12 +836,12 @@ pub fn handle_scope_uni<F>(
             0 => {
                 scope_settings.unipolar = false;
                 let _ = config::save_scope_settings(scope_settings);
-                if debug_level >= TIER_VERBOSE { output("SCOPE.UNI: 0 (BIPOLAR)".to_string()); }
+                output("SCOPE.UNI: 0 (BIPOLAR)".to_string());
             }
             1 => {
                 scope_settings.unipolar = true;
                 let _ = config::save_scope_settings(scope_settings);
-                if debug_level >= TIER_VERBOSE { output("SCOPE.UNI: 1 (UNIPOLAR)".to_string()); }
+                output("SCOPE.UNI: 1 (UNIPOLAR)".to_string());
             }
             _ => {
                 output("ERROR: SCOPE.UNI TAKES 0-1".to_string());

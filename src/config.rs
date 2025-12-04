@@ -76,6 +76,8 @@ pub struct DisplayConfig {
     pub scramble_mode: u8,
     #[serde(default = "default_scramble_speed")]
     pub scramble_speed: u8,
+    #[serde(default)]
+    pub scramble_curve: u8,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -210,6 +212,7 @@ impl Default for DisplayConfig {
             scramble_enabled: default_true(),
             scramble_mode: default_scramble_mode(),
             scramble_speed: default_scramble_speed(),
+            scramble_curve: 0,
         }
     }
 }
@@ -536,6 +539,13 @@ pub fn save_scramble_mode(mode: u8) -> Result<()> {
 pub fn save_scramble_speed(speed: u8) -> Result<()> {
     let mut config = load_config()?;
     config.display.scramble_speed = speed;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_scramble_curve(curve: u8) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.scramble_curve = curve;
     save_config(&config)?;
     Ok(())
 }

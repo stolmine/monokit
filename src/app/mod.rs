@@ -92,6 +92,7 @@ pub struct App {
     pub scramble_enabled: bool,
     pub scramble_mode: u8,
     pub scramble_speed: u8,
+    pub scramble_curve: u8,
     pub ui_scrambles: Vec<(String, crate::scramble::ScrambleAnimation)>,
 }
 
@@ -176,19 +177,22 @@ impl App {
             audio_device_current: String::new(),
             header_scramble: if config.display.scramble_enabled {
                 let mode = crate::scramble::ScrambleMode::from_u8(config.display.scramble_mode);
-                Some(crate::scramble::ScrambleAnimation::new_with_mode("MONOKIT", mode, config.display.scramble_speed))
+                let curve = crate::scramble::ScrambleCurve::from_u8(config.display.scramble_curve);
+                Some(crate::scramble::ScrambleAnimation::new_with_options("MONOKIT", mode, config.display.scramble_speed, curve))
             } else {
                 None
             },
             scramble_enabled: config.display.scramble_enabled,
             scramble_mode: config.display.scramble_mode,
             scramble_speed: config.display.scramble_speed,
+            scramble_curve: config.display.scramble_curve,
             ui_scrambles: {
                 let mut scrambles = Vec::new();
                 if config.display.scramble_enabled {
                     let mode = crate::scramble::ScrambleMode::from_u8(config.display.scramble_mode);
-                    scrambles.push(("CPU".to_string(), crate::scramble::ScrambleAnimation::new_with_mode("CPU", mode, config.display.scramble_speed)));
-                    scrambles.push(("BPM".to_string(), crate::scramble::ScrambleAnimation::new_with_mode("BPM", mode, config.display.scramble_speed)));
+                    let curve = crate::scramble::ScrambleCurve::from_u8(config.display.scramble_curve);
+                    scrambles.push(("CPU".to_string(), crate::scramble::ScrambleAnimation::new_with_options("CPU", mode, config.display.scramble_speed, curve)));
+                    scrambles.push(("BPM".to_string(), crate::scramble::ScrambleAnimation::new_with_options("BPM", mode, config.display.scramble_speed, curve)));
                 }
                 scrambles
             },
@@ -358,6 +362,7 @@ impl App {
             &mut self.scramble_enabled,
             &mut self.scramble_mode,
             &mut self.scramble_speed,
+            &mut self.scramble_curve,
             command,
             |msg| {
                 output_messages.push(msg);

@@ -20,43 +20,80 @@ impl ScrambleMode {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum ScrambleCurve {
+    #[default]
+    Linear = 0,
+    Expo = 1,
+}
+
+impl ScrambleCurve {
+    pub fn from_u8(value: u8) -> Self {
+        match value {
+            1 => ScrambleCurve::Expo,
+            _ => ScrambleCurve::Linear,
+        }
+    }
+}
+
 pub struct ScrambleAnimation {
     pub target_text: String,
     pub current_display: String,
     start_time: Instant,
-    ms_per_char: u64,
+    total_duration_ms: u64,
     char_states: Vec<CharState>,
     pub complete: bool,
     mode: ScrambleMode,
+    curve: ScrambleCurve,
 }
 
 struct CharState {
     current_char: char,
+    target_char: char,       // The final character this will become
     last_change: Instant,
     change_interval_ms: u64, // Each char has its own scramble speed
+    scramble_start: Option<Instant>, // When this char started scrambling
+    locked_early: bool,      // Has this char settled on its target early?
 }
 
 impl ScrambleAnimation {
     pub fn new(text: &str) -> Self {
-        Self::new_with_mode(text, ScrambleMode::Rolling, 5)
+        Self::new_with_options(text, ScrambleMode::Rolling, 5, ScrambleCurve::Linear)
     }
 
     pub fn new_with_mode(text: &str, mode: ScrambleMode, speed: u8) -> Self {
+        Self::new_with_options(text, mode, speed, ScrambleCurve::Linear)
+    }
+
+    pub fn new_with_options(text: &str, mode: ScrambleMode, speed: u8, curve: ScrambleCurve) -> Self {
         let speed = speed.clamp(1, 10);
         let base_ms_per_char = 100;
-        let base_change_min = 60;
-        let base_change_max = 100;
+
+        // Settle curve uses slower base scramble rate for more visible deceleration
+        let (base_change_min, base_change_max) = if curve == ScrambleCurve::Expo {
+            (600, 1000) // Slower base rate
+        } else {
+            (60, 100)
+        };
 
         let ms_per_char = (base_ms_per_char * (11 - speed as u64)) / 5;
         let change_min = (base_change_min * (11 - speed as u64)) / 5;
         let change_max = (base_change_max * (11 - speed as u64)) / 5;
 
+        let text_len = text.len();
+        let scramble_buffer = if mode == ScrambleMode::Rolling { 5 } else { 0 };
+        let total_duration_ms = ms_per_char * (text_len as u64 + scramble_buffer);
+
         let mut rng = rand::thread_rng();
+        let target_chars: Vec<char> = text.chars().collect();
         let char_states: Vec<CharState> = (0..text.len())
-            .map(|_| CharState {
+            .map(|i| CharState {
                 current_char: random_char(),
+                target_char: target_chars[i],
                 last_change: Instant::now(),
                 change_interval_ms: rng.gen_range(change_min..change_max),
+                scramble_start: None,
+                locked_early: false,
             })
             .collect();
 
@@ -66,10 +103,11 @@ impl ScrambleAnimation {
             target_text: text.to_string(),
             current_display: initial_display,
             start_time: Instant::now(),
-            ms_per_char,
+            total_duration_ms,
             char_states,
             complete: false,
             mode,
+            curve,
         }
     }
 
@@ -86,27 +124,61 @@ impl ScrambleAnimation {
         }
     }
 
-    fn update_regular(&mut self) -> &str {
-        let elapsed = self.start_time.elapsed();
-        let char_pos = (elapsed.as_millis() / self.ms_per_char as u128) as usize;
+    /// Calculate eased progress (0.0 to 1.0) based on elapsed time and curve
+    fn eased_progress(&self) -> f32 {
+        let elapsed_ms = self.start_time.elapsed().as_millis() as f32;
+        let t = (elapsed_ms / self.total_duration_ms as f32).min(1.0);
 
+        match self.curve {
+            ScrambleCurve::Linear => t,
+            ScrambleCurve::Expo => ease_out_expo(t),
+        }
+    }
+
+    fn update_regular(&mut self) -> &str {
         let target_len = self.target_text.len();
         let target_chars: Vec<char> = self.target_text.chars().collect();
 
-        if char_pos >= target_len {
+        let progress = self.eased_progress();
+        let char_pos = (progress * target_len as f32) as usize;
+
+        if progress >= 1.0 {
             self.current_display = self.target_text.clone();
             self.complete = true;
             return &self.current_display;
         }
 
         let mut display = String::with_capacity(target_len);
+        let now = Instant::now();
 
         for i in 0..char_pos.min(target_len) {
             display.push(target_chars[i]);
         }
 
-        for _ in char_pos..target_len {
-            display.push(random_char());
+        // Scramble unrevealed characters with curve-based slowdown
+        let remaining = target_len - char_pos;
+        for (idx, i) in (char_pos..target_len).enumerate() {
+            if i < self.char_states.len() {
+                let state = &mut self.char_states[i];
+                let effective_interval = if self.curve == ScrambleCurve::Expo {
+                    // idx=0 is next to lock, higher idx = further from reveal
+                    // proximity: 1.0 = about to lock, 0.0 = far from reveal
+                    let proximity = 1.0 - (idx as f32 / remaining.max(1) as f32).min(1.0);
+                    // Dramatic slowdown: up to 50x slower when about to lock
+                    let slowdown = 1.0 + proximity.powi(4) * 49.0;
+                    (state.change_interval_ms as f32 * slowdown) as u128
+                } else {
+                    state.change_interval_ms as u128
+                };
+
+                if now.duration_since(state.last_change).as_millis() >= effective_interval {
+                    state.current_char = random_char();
+                    state.last_change = now;
+                }
+                display.push(state.current_char);
+            } else {
+                display.push(random_char());
+            }
         }
 
         self.current_display = display;
@@ -114,12 +186,12 @@ impl ScrambleAnimation {
     }
 
     fn update_smash(&mut self) -> &str {
-        let elapsed = self.start_time.elapsed();
-        let char_pos = (elapsed.as_millis() / self.ms_per_char as u128) as usize;
-
         let target_len = self.target_text.len();
 
-        if char_pos >= target_len {
+        let progress = self.eased_progress();
+        let char_pos = (progress * target_len as f32) as usize;
+
+        if progress >= 1.0 {
             self.current_display = self.target_text.clone();
             self.complete = true;
             return &self.current_display;
@@ -136,14 +208,15 @@ impl ScrambleAnimation {
     }
 
     fn update_rolling(&mut self) -> &str {
-        let elapsed = self.start_time.elapsed();
-        let char_pos = (elapsed.as_millis() / self.ms_per_char as u128) as usize;
-
         let scramble_buffer = 5;
         let target_len = self.target_text.len();
         let target_chars: Vec<char> = self.target_text.chars().collect();
 
-        if char_pos >= target_len + scramble_buffer {
+        let progress = self.eased_progress();
+        let total_steps = target_len + scramble_buffer;
+        let char_pos = (progress * total_steps as f32) as usize;
+
+        if progress >= 1.0 {
             self.current_display = self.target_text.clone();
             self.complete = true;
             return &self.current_display;
@@ -155,17 +228,48 @@ impl ScrambleAnimation {
             0
         };
 
+        // How long does each char have to scramble before reveal?
+        let ms_per_step = self.total_duration_ms as f32 / total_steps as f32;
+        let scramble_duration_ms = ms_per_step * scramble_buffer as f32;
+
         let mut display = String::with_capacity(target_len);
         let now = Instant::now();
 
         for (i, state) in self.char_states.iter_mut().enumerate() {
             if i < revealed_count {
+                // Character is revealed
+                state.scramble_start = None;
                 display.push(target_chars[i]);
             } else if i < char_pos + 1 && i < target_len {
-                if now.duration_since(state.last_change).as_millis() >= state.change_interval_ms as u128 {
-                    state.current_char = random_char();
-                    state.last_change = now;
+                // Character is scrambling - track when it started
+                if state.scramble_start.is_none() {
+                    state.scramble_start = Some(now);
                 }
+
+                if self.curve == ScrambleCurve::Expo {
+                    // How far through this char's scramble period are we? (0.0 = just started, 1.0 = about to lock)
+                    let time_scrambling = now.duration_since(state.scramble_start.unwrap()).as_millis() as f32;
+                    let proximity = (time_scrambling / scramble_duration_ms).min(1.0);
+
+                    // At 70% through, lock onto target and stay there
+                    if proximity >= 0.7 {
+                        state.current_char = state.target_char;
+                        state.locked_early = true;
+                    } else if !state.locked_early {
+                        // Still scrambling - use base interval
+                        if now.duration_since(state.last_change).as_millis() >= state.change_interval_ms as u128 {
+                            state.current_char = random_char();
+                            state.last_change = now;
+                        }
+                    }
+                } else {
+                    // Linear mode - just scramble at constant rate
+                    if now.duration_since(state.last_change).as_millis() >= state.change_interval_ms as u128 {
+                        state.current_char = random_char();
+                        state.last_change = now;
+                    }
+                };
+
                 display.push(state.current_char);
             }
         }
@@ -180,7 +284,7 @@ impl ScrambleAnimation {
         let target_len = self.target_text.len();
         let target_chars: Vec<char> = self.target_text.chars().collect();
 
-        let total_duration = (target_len as f32 * self.ms_per_char as f32) + 200.0;
+        let total_duration = self.total_duration_ms as f32 + 200.0;
 
         if elapsed_ms >= total_duration {
             self.current_display = self.target_text.clone();
@@ -197,11 +301,24 @@ impl ScrambleAnimation {
         let mut display = String::with_capacity(target_len);
         let now = Instant::now();
 
+        let remaining = target_len - revealed_count;
         for (i, state) in self.char_states.iter_mut().enumerate() {
             if i < revealed_count {
                 display.push(target_chars[i]);
             } else if i < target_len {
-                if now.duration_since(state.last_change).as_millis() >= state.change_interval_ms as u128 {
+                // Apply curve-based slowdown for characters approaching reveal
+                let effective_interval = if self.curve == ScrambleCurve::Expo {
+                    let distance_from_reveal = i - revealed_count;
+                    // proximity: 1.0 = about to lock, 0.0 = far from reveal
+                    let proximity = 1.0 - (distance_from_reveal as f32 / remaining.max(1) as f32).min(1.0);
+                    // Dramatic slowdown: up to 50x slower when about to lock
+                    let slowdown = 1.0 + proximity.powi(4) * 49.0;
+                    (state.change_interval_ms as f32 * slowdown) as u128
+                } else {
+                    state.change_interval_ms as u128
+                };
+
+                if now.duration_since(state.last_change).as_millis() >= effective_interval {
                     state.current_char = random_char();
                     state.last_change = now;
                 }
@@ -218,6 +335,14 @@ fn ease_out_back(t: f32) -> f32 {
     const C1: f32 = 1.70158;
     const C3: f32 = C1 + 1.0;
     1.0 + C3 * (t - 1.0).powi(3) + C1 * (t - 1.0).powi(2)
+}
+
+fn ease_out_expo(t: f32) -> f32 {
+    if t >= 1.0 {
+        1.0
+    } else {
+        1.0 - 2.0_f32.powf(-10.0 * t)
+    }
 }
 
 fn random_char() -> char {

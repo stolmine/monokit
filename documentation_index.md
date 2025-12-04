@@ -44,6 +44,7 @@
 - SCRMBL 0/1: Enable or disable scramble effect
 - SCRMBL.MODE 0-3: Set animation style (0=Regular, 1=Smash, 2=Rolling, 3=Overshoot)
 - SCRMBL.SPD 1-10: Control animation speed (1=slowest, 10=fastest)
+- SCRMBL.CRV 0/1: Animation curve (0=Linear, 1=Settle - chars land at 70% and pause before reveal)
 - All settings persist to config.toml
 
 **UI Scramble Elements:**
@@ -69,6 +70,7 @@
 - Animation state stored in App for event loop updates
 - Four distinct animation modes provide visual variety
 - Speed control scales animation duration proportionally
+- Curve option: Linear (constant rate) or Settle (chars find target at 70% and hold before lock)
 
 ### SuperCollider Process Management (December 2025)
 

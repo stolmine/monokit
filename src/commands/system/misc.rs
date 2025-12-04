@@ -1237,6 +1237,7 @@ pub fn handle_title<F>(
     scramble_enabled: bool,
     scramble_mode: u8,
     scramble_speed: u8,
+    scramble_curve: u8,
     header_scramble: &mut Option<crate::scramble::ScrambleAnimation>,
     mut output: F,
 ) where
@@ -1253,7 +1254,8 @@ pub fn handle_title<F>(
                 let _ = config::save_title_mode(*title_mode);
                 *header_scramble = if scramble_enabled {
                     let mode = crate::scramble::ScrambleMode::from_u8(scramble_mode);
-                    Some(crate::scramble::ScrambleAnimation::new_with_mode("MONOKIT", mode, scramble_speed))
+                    let curve = crate::scramble::ScrambleCurve::from_u8(scramble_curve);
+                    Some(crate::scramble::ScrambleAnimation::new_with_options("MONOKIT", mode, scramble_speed, curve))
                 } else {
                     None
                 };
@@ -1265,7 +1267,8 @@ pub fn handle_title<F>(
                 let text = current_scene_name.as_ref().map(|s| s.as_str()).unwrap_or("[UNSAVED]");
                 *header_scramble = if scramble_enabled {
                     let mode = crate::scramble::ScrambleMode::from_u8(scramble_mode);
-                    Some(crate::scramble::ScrambleAnimation::new_with_mode(text, mode, scramble_speed))
+                    let curve = crate::scramble::ScrambleCurve::from_u8(scramble_curve);
+                    Some(crate::scramble::ScrambleAnimation::new_with_options(text, mode, scramble_speed, curve))
                 } else {
                     None
                 };
@@ -1456,5 +1459,29 @@ pub fn handle_scrmbl_spd<F>(
         }
     } else {
         output("ERROR: SCRMBL.SPD TAKES 1-10".to_string());
+    }
+}
+
+pub fn handle_scrmbl_crv<F>(
+    parts: &[&str],
+    scramble_curve: &mut u8,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        let curve_name = if *scramble_curve == 0 { "LINEAR" } else { "SETTLE" };
+        output(format!("SCRMBL.CRV: {} ({})", scramble_curve, curve_name));
+    } else if let Ok(val) = parts[1].parse::<u8>() {
+        if val <= 1 {
+            *scramble_curve = val;
+            let curve_name = if val == 0 { "LINEAR" } else { "SETTLE" };
+            output(format!("SCRMBL.CRV: {} ({})", val, curve_name));
+            let _ = config::save_scramble_curve(*scramble_curve);
+        } else {
+            output("ERROR: SCRMBL.CRV TAKES 0 (LINEAR) OR 1 (SETTLE)".to_string());
+        }
+    } else {
+        output("ERROR: SCRMBL.CRV TAKES 0 (LINEAR) OR 1 (SETTLE)".to_string());
     }
 }

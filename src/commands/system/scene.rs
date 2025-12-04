@@ -9,6 +9,7 @@ pub fn handle_save<F>(
     scramble_enabled: bool,
     scramble_mode: u8,
     scramble_speed: u8,
+    scramble_curve: u8,
     header_scramble: &mut Option<crate::scramble::ScrambleAnimation>,
     debug_level: u8,
     out_ess: bool,
@@ -27,7 +28,8 @@ pub fn handle_save<F>(
             *current_scene_name = Some(name.clone());
             *header_scramble = if scramble_enabled {
                 let mode = crate::scramble::ScrambleMode::from_u8(scramble_mode);
-                Some(crate::scramble::ScrambleAnimation::new_with_mode(&name, mode, scramble_speed))
+                let curve = crate::scramble::ScrambleCurve::from_u8(scramble_curve);
+                Some(crate::scramble::ScrambleAnimation::new_with_options(&name, mode, scramble_speed, curve))
             } else {
                 None
             };
@@ -49,6 +51,7 @@ pub fn handle_load<F>(
     scramble_enabled: bool,
     scramble_mode: u8,
     scramble_speed: u8,
+    scramble_curve: u8,
     header_scramble: &mut Option<crate::scramble::ScrambleAnimation>,
     debug_level: u8,
     out_ess: bool,
@@ -69,7 +72,8 @@ where
             *current_scene_name = Some(name.clone());
             *header_scramble = if scramble_enabled {
                 let mode = crate::scramble::ScrambleMode::from_u8(scramble_mode);
-                Some(crate::scramble::ScrambleAnimation::new_with_mode(&name, mode, scramble_speed))
+                let curve = crate::scramble::ScrambleCurve::from_u8(scramble_curve);
+                Some(crate::scramble::ScrambleAnimation::new_with_options(&name, mode, scramble_speed, curve))
             } else {
                 None
             };

@@ -521,6 +521,8 @@ pub const HELP_CATEGORIES: &[HelpCategory] = &[
             "  SCRMBL.MODE <0-3> 0=REG 1=SMASH 2=ROLL 3=OVER",
             "  SCRMBL.SPD        QUERY SCRAMBLE SPEED",
             "  SCRMBL.SPD <1-10> 1=SLOW 10=FAST",
+            "  SCRMBL.CRV        QUERY SCRAMBLE CURVE",
+            "  SCRMBL.CRV <0|1>  0=LINEAR 1=SETTLE",
             "  HEADER <0-4>      HDR VERBOSE",
             "  DEBUG <0-5>       VERBOSITY TIER",
             "",

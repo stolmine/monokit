@@ -82,6 +82,7 @@ impl App {
             &mut self.scramble_enabled,
             &mut self.scramble_mode,
             &mut self.scramble_speed,
+            &mut self.scramble_curve,
             cmd_to_run,
             |msg| {
                 output_messages.push(msg);

@@ -105,6 +105,8 @@ pub struct TestContext {
     pub header_scramble: Option<crate::scramble::ScrambleAnimation>,
     pub scramble_enabled: bool,
     pub scramble_mode: u8,
+    pub scramble_speed: u8,
+    pub scramble_curve: u8,
     pub outputs: Vec<String>,
 }
 
@@ -157,6 +159,8 @@ impl Default for TestContext {
             header_scramble: None,
             scramble_enabled: true,
             scramble_mode: 2,
+            scramble_speed: 5,
+            scramble_curve: 0,
             outputs: Vec::new(),
         }
     }
@@ -213,6 +217,8 @@ impl TestContext {
             &mut self.header_scramble,
             &mut self.scramble_enabled,
             &mut self.scramble_mode,
+            &mut self.scramble_speed,
+            &mut self.scramble_curve,
             input,
             |msg| {
                 self.outputs.push(msg);

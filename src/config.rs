@@ -6,6 +6,8 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 
+const BUNDLED_THEMES_TOML: &str = include_str!("../themes/themes.toml");
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default)]
@@ -275,6 +277,18 @@ pub fn save_config(config: &Config) -> Result<()> {
     Ok(())
 }
 
+fn load_bundled_themes() -> Result<HashMap<String, CustomTheme>> {
+    #[derive(Deserialize)]
+    struct BundledThemes {
+        themes: HashMap<String, CustomTheme>,
+    }
+
+    let parsed: BundledThemes = toml::from_str(BUNDLED_THEMES_TOML)
+        .context("Failed to parse bundled themes")?;
+
+    Ok(parsed.themes)
+}
+
 fn parse_hex_color(hex: &str) -> Result<Color> {
     let hex = hex.trim_start_matches('#');
 
@@ -307,7 +321,7 @@ pub fn load_theme_by_name(name: &str, config: &Config) -> Result<Theme> {
     if let Some(custom) = config.themes.get(&name_lower)
         .or_else(|| config.themes.iter().find(|(k, _)| k.to_lowercase() == name_lower).map(|(_, v)| v))
     {
-        Ok(Theme {
+        return Ok(Theme {
             name: name.to_string(),
             background: parse_hex_color(&custom.background)?,
             foreground: parse_hex_color(&custom.foreground)?,
@@ -320,21 +334,40 @@ pub fn load_theme_by_name(name: &str, config: &Config) -> Result<Theme> {
             success: parse_hex_color(&custom.success)?,
             label: parse_hex_color(&custom.label)?,
             font: custom.font.clone(),
-        })
-    } else {
-        anyhow::bail!("Unknown theme: {}. Available: dark, light, system{}",
-            name,
-            if config.themes.is_empty() {
-                String::new()
-            } else {
-                format!(", {}", config.themes.keys().cloned().collect::<Vec<_>>().join(", "))
-            }
-        )
+        });
     }
+
+    // Check bundled themes as fallback
+    let bundled = load_bundled_themes()?;
+    if let Some(custom) = bundled.get(&name_lower)
+        .or_else(|| bundled.iter().find(|(k, _)| k.to_lowercase() == name_lower).map(|(_, v)| v))
+    {
+        return Ok(Theme {
+            name: name.to_string(),
+            background: parse_hex_color(&custom.background)?,
+            foreground: parse_hex_color(&custom.foreground)?,
+            secondary: parse_hex_color(&custom.secondary)?,
+            highlight_bg: parse_hex_color(&custom.highlight_bg)?,
+            highlight_fg: parse_hex_color(&custom.highlight_fg)?,
+            border: parse_hex_color(&custom.border)?,
+            error: parse_hex_color(&custom.error)?,
+            accent: parse_hex_color(&custom.accent)?,
+            success: parse_hex_color(&custom.success)?,
+            label: parse_hex_color(&custom.label)?,
+            font: custom.font.clone(),
+        });
+    }
+
+    anyhow::bail!("Unknown theme: {}. Use list_themes command to see available themes", name)
 }
 
 pub fn list_themes(config: &Config) -> Vec<String> {
     let mut themes = vec!["dark".to_string(), "light".to_string(), "system".to_string()];
+
+    if let Ok(bundled) = load_bundled_themes() {
+        themes.extend(bundled.keys().cloned());
+    }
+
     themes.extend(config.themes.keys().cloned());
     themes
 }

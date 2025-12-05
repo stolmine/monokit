@@ -31,8 +31,13 @@ pub enum PresetError {
 }
 
 pub fn get_presets_dir() -> PathBuf {
-    let home = env::var("HOME").unwrap_or_else(|_| ".".to_string());
-    PathBuf::from(home).join(".monokit").join("presets")
+    dirs::config_dir()
+        .unwrap_or_else(|| {
+            let home = env::var("HOME").unwrap_or_else(|_| ".".to_string());
+            PathBuf::from(home).join(".config")
+        })
+        .join("monokit")
+        .join("presets")
 }
 
 pub fn ensure_presets_dir() -> Result<(), PresetError> {

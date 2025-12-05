@@ -245,9 +245,9 @@ impl Default for Config {
 }
 
 fn config_path() -> Result<PathBuf> {
-    let config_dir = dirs::home_dir()
-        .context("Failed to find home directory")?
-        .join(".monokit");
+    let config_dir = dirs::config_dir()
+        .context("Failed to find config directory")?
+        .join("monokit");
 
     if !config_dir.exists() {
         fs::create_dir_all(&config_dir).context("Failed to create config directory")?;

@@ -148,8 +148,8 @@ fn find_script() -> Result<PathBuf, String> {
         return Ok(cwd);
     }
 
-    if let Some(home) = dirs::home_dir() {
-        let script = home.join(".monokit/monokit_server.scd");
+    if let Some(config_dir) = dirs::config_dir() {
+        let script = config_dir.join("monokit/monokit_server.scd");
         if script.exists() {
             return Ok(script);
         }

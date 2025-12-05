@@ -496,7 +496,7 @@
 
 **Config Persistence (December 2025)**
 - Added 16 new DisplayConfig fields for UI preferences persistence
-- All UI toggles now save to ~/.monokit/config.toml
+- All UI toggles now save to ~/.config/monokit/config.toml
 - Settings persist across sessions
 - Config automatically created on first launch if missing
 
@@ -1187,7 +1187,7 @@ Monokit uses a **PREFIX.SUFFIX** naming convention for canonical command forms:
 - I script (index 9): Called on startup
 
 #### Scenes
-- `SAVE <name>` - Save current scene (scripts + patterns) to ~/.monokit/scenes/
+- `SAVE <name>` - Save current scene (scripts + patterns) to ~/.config/monokit/scenes/
 - `LOAD <name>` - Load scene from file, resets variables
 - `SCENES` - List available saved scenes
 - `DELETE <name>` - Delete a saved scene
@@ -1349,7 +1349,7 @@ Factory Presets (22 total):
 - **Percussion (3):** metal-hit, conga, tom
 - **FX (3):** noise, zap, rise
 
-User presets stored in `~/.monokit/presets/`
+User presets stored in `~/.config/monokit/presets/`
 
 Examples:
 ```
@@ -1763,7 +1763,7 @@ PS.TARG 0         // Process input signal
 - `THEME` - Show current theme and list all available themes
 - `THEME <name>` - Switch to theme by name (case-insensitive)
 - Built-in themes: `dark`, `light`, `system`
-- Custom themes defined in `~/.monokit/config.toml` under `[themes.name]` sections
+- Custom themes defined in `~/.config/monokit/config.toml` under `[themes.name]` sections
 - Example themes included: dracula, solarized, coral, copper, neo_peachio_dark, nougat_light, and many more
 
 ### Navigation (Keybindings)
@@ -1860,7 +1860,7 @@ foreground = "#fa8072"
 
 **Rendering:** Uses buffer-based background rendering for proper theme support across different terminal emulators. Themes use RGB color values (Color::Rgb) for consistent cross-platform display.
 
-**Config Location:** `~/.monokit/config.toml`
+**Config Location:** `~/.config/monokit/config.toml`
 **Example Config:** See `config.toml.example` in repo for 30+ pre-defined themes
 
 ## OSC Protocol

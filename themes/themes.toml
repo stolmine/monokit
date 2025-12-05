@@ -1,5 +1,5 @@
 # Monokit Bundled Themes
-# Copy themes to ~/.monokit/config.toml or use THEME <name> command
+# Copy themes to ~/.config/monokit/config.toml or use THEME <name> command
 # 48 themes included: light/dark pairs for various styles
 
 [themes.neon]

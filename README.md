@@ -25,7 +25,7 @@ In progress!
 
 ## Configuration
 
-User configuration is stored in `~/.monokit/config.toml`.
+User configuration is stored in `~/.config/monokit/config.toml`.
 
 48 themes are included out of the box. Run `THEMES` to list available themes, or `THEME <name>` to switch.
 
@@ -35,4 +35,4 @@ GPL-2.0
 
 ## Acknowledgments
 
-Heavily inspired by [monome Teletype](https://monome.org/docs/teletype/).
+Heavily inspired by the wonderful [monome Teletype](https://monome.org/docs/teletype/).

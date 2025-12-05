@@ -526,7 +526,7 @@ Save and load parameter configurations into script slots.
 - [x] `PSET.DEL <name>` - Delete user preset
 - [x] `PSETS` - List all presets ([F] factory, [U] user)
 - [x] 22 factory presets (drums, bass, lead, percussion, FX)
-- [x] User presets stored in `~/.monokit/presets/`
+- [x] User presets stored in `~/.config/monokit/presets/`
 
 **Factory Presets:**
 - Drums: 808-kick, punch-kick, sub-kick, basic-snare, snap-snare, hat-closed, hat-open, fm-hat, clap, rim
@@ -1091,7 +1091,7 @@ Create Homebrew distribution for macOS users.
   - Proper bin and pkgshare installation
   - Caveats for SC server file location
 - [ ] Test installation via `brew tap` and `brew install`
-- [ ] Document SC path configuration (homebrew prefix or ~/.monokit/)
+- [ ] Document SC path configuration (homebrew prefix or ~/.config/monokit/)
 
 ### Future Release Workflow
 Document repeatable release process.

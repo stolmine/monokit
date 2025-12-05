@@ -40,10 +40,10 @@ if [ ! -f "$MONOKIT_DIR/target/release/monokit" ]; then
     cargo build --release
 fi
 
-# Ensure test scenes are in ~/.monokit/scenes/
-echo "Copying test scenes to ~/.monokit/scenes/..."
-mkdir -p ~/.monokit/scenes
-cp "$SCRIPT_DIR"/test_error_*.json ~/.monokit/scenes/
+# Ensure test scenes are in ~/.config/monokit/scenes/
+echo "Copying test scenes to ~/.config/monokit/scenes/..."
+mkdir -p ~/.config/monokit/scenes
+cp "$SCRIPT_DIR"/test_error_*.json ~/.config/monokit/scenes/
 
 # Clean old dump files
 echo "Cleaning old dump files..."

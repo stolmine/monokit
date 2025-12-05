@@ -93,9 +93,9 @@ s.waitForBoot {
             ps_mix = 0,   // Pitch shift mix (0-16383)
             ps_targ = 0,  // Pitch shift target (0=main, 1=repeat)
             limit = 1,    // Limiter enabled (0-1)
-            vca_mode = 0, // VCA mode (0=gated, 1=drone)
+            vca_mode = 1, // VCA mode (0=drone, 1=gate)
             volume = 1,
-            gate = 0,
+            t_gate = 0,  // TrigControl - automatically resets after each control block
             slew_time = 0,
             slew_pf = -1, slew_mf = -1, slew_fc = -1, slew_fm = -1,
             slew_mx = -1, slew_dc = -1, slew_fb = -1, slew_fq = -1,
@@ -196,7 +196,7 @@ s.waitForBoot {
         // Exception: ampEnv is multiplicative (0→1 gating)
 
         // Trigger and envelopes
-        trig = Trig1.kr(gate, 0.001);
+        trig = Trig1.kr(t_gate, 0.001);
         pitchEnv = EnvGen.kr(Env.perc(pAtk, pd / 1000, 1, pCrv), trig);
         ampEnv = EnvGen.kr(Env.perc(aAtk, ad / 1000, 1, aCrv), trig);
         fmEnv = EnvGen.kr(Env.perc(fmAtk, fd / 1000, 1, fmCrv), trig);
@@ -607,9 +607,11 @@ s.waitForBoot {
     }).play;
 
     OSCdef(\monokit_trigger, { |msg|
-        ~voice.set(\gate, 1);
+        ~voice.set(\t_gate, 1);
+        // t_gate automatically resets after one control block, but we
+        // schedule a reset anyway for backwards compatibility
         SystemClock.sched(0.01, {
-            ~voice.set(\gate, 0);
+            ~voice.set(\t_gate, 0);
             nil;
         });
     }, '/monokit/trigger');
@@ -707,11 +709,11 @@ s.waitForBoot {
                 ~diagTimestamps = ~diagTimestamps.drop(1);
             });
         });
-        // Set gate high immediately
-        ~voice.set(\gate, 1);
-        // Schedule gate low after 10ms using language-side clock
+        // Set t_gate high immediately
+        ~voice.set(\t_gate, 1);
+        // t_gate auto-resets, but schedule explicit reset for safety
         SystemClock.sched(0.01, {
-            ~voice.set(\gate, 0);
+            ~voice.set(\t_gate, 0);
             nil;
         });
     }, '/monokit/trigger');

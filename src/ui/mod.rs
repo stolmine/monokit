@@ -184,10 +184,6 @@ pub fn run_app<B: ratatui::backend::Backend>(
                                 app.add_output(format!("ERROR SAVING CONFIG: {}", e));
                             }
                         }
-                        if app.should_output(crate::types::OutputCategory::Essential) {
-                            app.add_output(format!("RESTARTED: {}", device));
-                            app.add_output("RUN AUDIO.OUT TO VERIFY".to_string());
-                        }
                         app.awaiting_audio_restart = true;
                     }
                 }

@@ -8,6 +8,13 @@ mod midi;
 mod osc_utils;
 mod preset;
 mod sc_process;
+
+#[cfg(feature = "scsynth-direct")]
+mod audio_devices;
+
+#[cfg(feature = "scsynth-direct")]
+mod scsynth_direct;
+
 mod scramble;
 mod scene;
 mod terminal;
@@ -171,6 +178,9 @@ fn run_tui_mode() -> Result<()> {
         meter_thread(meter_event_tx);
     });
 
+    // Spawn ready sender after meter thread (scsynth-direct mode only)
+    let ready_rx = sc_process.spawn_ready_sender();
+
     // Wait for SC ready (blocking with timeout)
     println!("Waiting for SuperCollider server...");
     let start = std::time::Instant::now();
@@ -193,6 +203,11 @@ fn run_tui_mode() -> Result<()> {
     if !sc_ready {
         eprintln!("ERROR: SuperCollider failed to start within 20 seconds");
         std::process::exit(1);
+    }
+
+    // Wait for ready sender to complete (scsynth-direct mode only)
+    if let Some(rx) = ready_rx {
+        let _ = rx.recv_timeout(Duration::from_secs(3));
     }
 
     enable_raw_mode()?;

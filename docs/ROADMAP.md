@@ -34,6 +34,42 @@ Automatic SuperCollider lifecycle management - monokit spawns sclang on startup.
 - `AUDIO_DEVICE_PLAN.md` - Implementation plan
 - `CROSS_PLATFORM_AUDIO.md` - Future cross-platform design
 
+### VCA Default Mode Changed [COMPLETE]
+Changed VCA default from 0 (drone) to 1 (gate) for more intuitive behavior on startup/restart.
+
+**Changes:**
+- [x] VCA default changed from 0 to 1 (synth silent until triggered)
+- [x] Prevents unintended audio on startup/restart
+- [x] More predictable user experience for new users
+- [x] Matches traditional drum synthesizer behavior
+
+### AUDIO.OUT Direct Mode Support [COMPLETE]
+AUDIO.OUT command now works in scsynth-direct mode with graceful device switching.
+
+**Changes:**
+- [x] AUDIO.OUT queries devices directly via CoreAudio
+- [x] Silent restart without terminal output corruption
+- [x] Meters continue working during device switching
+- [x] No audio glitches during device changes
+
+### TUI/Startup Timing Fixed [COMPLETE]
+Fixed timing so startup prints complete before TUI renders.
+
+**Changes:**
+- [x] Ready sender thread spawned after meter thread
+- [x] Waits for ready completion before enabling raw mode
+- [x] Prevents TUI rendering during startup messages
+- [x] Clean startup sequence with proper console output
+
+### t_gate Trigger Implementation [COMPLETE]
+Reliable triggering in gate mode using TrigControl.
+
+**Changes:**
+- [x] Replaced `gate` parameter with `t_gate` (TrigControl)
+- [x] t_gate automatically resets after each control block
+- [x] More reliable trigger behavior in scsynth-direct mode
+- [x] Backward compatibility for sclang-based triggering
+
 ### Error Display Consistency [COMPLETE]
 Unified error formatting across REPL and script views.
 - [x] All errors use "ERROR:" prefix in uppercase
@@ -1154,8 +1190,8 @@ Phase 6 - Bundling & Distribution: COMPLETE
 - [x] Documented Homebrew formula changes
 - [x] Updated path resolution to prioritize bundled resources
 - [x] Bundle structure tested with Resources/ subdirectory
-- [ ] Handle macOS code signing / Gatekeeper (documented, future)
-- [ ] Test bundle on clean system (requires sc3-plugins installation)
+- [x] Handle macOS code signing / Gatekeeper (documented)
+- [x] Test bundle on clean system (requires sc3-plugins installation)
 
 **Implementation Summary:**
 - Feature gate: `cargo build --features scsynth-direct`

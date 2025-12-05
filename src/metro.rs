@@ -1,5 +1,5 @@
 use crate::osc_utils::{create_bundle, OSC_LATENCY_MS};
-use crate::types::{DelayedCommand, MetroCommand, MetroEvent, MetroState, SyncMode, OSC_ADDR};
+use crate::types::{DelayedCommand, MetroCommand, MetroEvent, MetroState, SyncMode, OSC_ADDR, MONOKIT_NODE_ID};
 use rosc::{encoder, OscMessage, OscPacket, OscType};
 use spin_sleep::SpinSleeper;
 use audio_thread_priority::promote_current_thread_to_real_time;
@@ -12,6 +12,170 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 const OSC_BUFFER_SIZE: usize = 4 * 1024 * 1024; // 4MB buffer to prevent packet loss
+
+#[cfg(feature = "scsynth-direct")]
+fn create_param_message(param_name: &str, value: OscType) -> OscMessage {
+    OscMessage {
+        addr: "/n_set".to_string(),
+        args: vec![
+            OscType::Int(MONOKIT_NODE_ID),
+            OscType::String(param_name.to_string()),
+            value,
+        ],
+    }
+}
+
+#[cfg(not(feature = "scsynth-direct"))]
+fn create_param_message(param_name: &str, value: OscType) -> OscMessage {
+    OscMessage {
+        addr: "/monokit/param".to_string(),
+        args: vec![OscType::String(param_name.to_string()), value],
+    }
+}
+
+#[cfg(feature = "scsynth-direct")]
+fn create_trigger_message() -> OscMessage {
+    // Use t_gate (TrigControl) which automatically resets after one control block
+    OscMessage {
+        addr: "/n_set".to_string(),
+        args: vec![
+            OscType::Int(MONOKIT_NODE_ID),
+            OscType::String("t_gate".to_string()),
+            OscType::Int(1),
+        ],
+    }
+}
+
+#[cfg(not(feature = "scsynth-direct"))]
+fn create_trigger_message() -> OscMessage {
+    OscMessage {
+        addr: "/monokit/trigger".to_string(),
+        args: vec![],
+    }
+}
+
+#[cfg(feature = "scsynth-direct")]
+fn create_volume_message(value: f32) -> OscMessage {
+    OscMessage {
+        addr: "/n_set".to_string(),
+        args: vec![
+            OscType::Int(MONOKIT_NODE_ID),
+            OscType::String("volume".to_string()),
+            OscType::Float(value),
+        ],
+    }
+}
+
+#[cfg(not(feature = "scsynth-direct"))]
+fn create_volume_message(value: f32) -> OscMessage {
+    OscMessage {
+        addr: "/monokit/volume".to_string(),
+        args: vec![OscType::Float(value)],
+    }
+}
+
+#[cfg(feature = "scsynth-direct")]
+fn create_slew_message(time_sec: f32) -> OscMessage {
+    OscMessage {
+        addr: "/n_set".to_string(),
+        args: vec![
+            OscType::Int(MONOKIT_NODE_ID),
+            OscType::String("slew_time".to_string()),
+            OscType::Float(time_sec),
+        ],
+    }
+}
+
+#[cfg(not(feature = "scsynth-direct"))]
+fn create_slew_message(time_sec: f32) -> OscMessage {
+    OscMessage {
+        addr: "/monokit/slew".to_string(),
+        args: vec![OscType::Float(time_sec)],
+    }
+}
+
+#[cfg(feature = "scsynth-direct")]
+fn create_param_slew_message(param: &str, time_sec: f32) -> OscMessage {
+    let slew_param = format!("slew_{}", param);
+    OscMessage {
+        addr: "/n_set".to_string(),
+        args: vec![
+            OscType::Int(MONOKIT_NODE_ID),
+            OscType::String(slew_param),
+            OscType::Float(time_sec),
+        ],
+    }
+}
+
+#[cfg(not(feature = "scsynth-direct"))]
+fn create_param_slew_message(param: &str, time_sec: f32) -> OscMessage {
+    OscMessage {
+        addr: "/monokit/slew/param".to_string(),
+        args: vec![OscType::String(param.to_string()), OscType::Float(time_sec)],
+    }
+}
+
+#[cfg(feature = "scsynth-direct")]
+fn create_gate_message(time_sec: f32) -> OscMessage {
+    OscMessage {
+        addr: "/n_set".to_string(),
+        args: vec![
+            OscType::Int(MONOKIT_NODE_ID),
+            OscType::String("env_atk".to_string()),
+            OscType::Float(time_sec * 1000.0),
+        ],
+    }
+}
+
+#[cfg(not(feature = "scsynth-direct"))]
+fn create_gate_message(time_sec: f32) -> OscMessage {
+    OscMessage {
+        addr: "/monokit/gate".to_string(),
+        args: vec![OscType::Float(time_sec)],
+    }
+}
+
+#[cfg(feature = "scsynth-direct")]
+fn create_env_gate_message(env_name: &str, time_sec: f32) -> OscMessage {
+    let param_name = format!("{}_atk", env_name);
+    OscMessage {
+        addr: "/n_set".to_string(),
+        args: vec![
+            OscType::Int(MONOKIT_NODE_ID),
+            OscType::String(param_name),
+            OscType::Float(time_sec * 1000.0),
+        ],
+    }
+}
+
+#[cfg(not(feature = "scsynth-direct"))]
+fn create_env_gate_message(env_name: &str, time_sec: f32) -> OscMessage {
+    OscMessage {
+        addr: "/monokit/gate/env".to_string(),
+        args: vec![OscType::String(env_name.to_string()), OscType::Float(time_sec)],
+    }
+}
+
+#[cfg(feature = "scsynth-direct")]
+fn create_scope_rate_message(time_ms: f32) -> OscMessage {
+    let rate = 128.0 / (time_ms * 44.1);
+    OscMessage {
+        addr: "/n_set".to_string(),
+        args: vec![
+            OscType::Int(1002),
+            OscType::String("scopeRate".to_string()),
+            OscType::Float(rate),
+        ],
+    }
+}
+
+#[cfg(not(feature = "scsynth-direct"))]
+fn create_scope_rate_message(time_ms: f32) -> OscMessage {
+    OscMessage {
+        addr: "/monokit/scope/rate".to_string(),
+        args: vec![OscType::Float(time_ms)],
+    }
+}
 
 // Metro thread timing diagnostics
 struct MetroTimingStats {
@@ -175,6 +339,12 @@ fn send_osc(socket: &UdpSocket, msg: OscMessage, use_timestamp: bool) {
 pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroState>>, event_tx: mpsc::Sender<MetroEvent>) {
     let _rt_handle = promote_current_thread_to_real_time(512, 48000).ok();
 
+    #[cfg(feature = "scsynth-direct")]
+    eprintln!("[monokit] Metro thread: SCSYNTH-DIRECT mode (port 57110, /n_set format)");
+
+    #[cfg(not(feature = "scsynth-direct"))]
+    eprintln!("[monokit] Metro thread: SCLANG mode (port 57120, /monokit/* format)");
+
     let spinner = SpinSleeper::default();
 
     // Create socket with large buffers to prevent UDP packet loss
@@ -257,74 +427,77 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                     state.script_index = idx;
                 }
                 MetroCommand::SendParam(name, value) => {
-                    let msg = OscMessage {
-                        addr: "/monokit/param".to_string(),
-                        args: vec![OscType::String(name), value],
-                    };
+                    let msg = create_param_message(&name, value);
                     send_osc(&socket, msg, sync_mode == SyncMode::Internal);
                 }
                 MetroCommand::SendTrigger => {
-                    let msg = OscMessage {
-                        addr: "/monokit/trigger".to_string(),
-                        args: vec![],
-                    };
+                    // t_gate (TrigControl) automatically resets - single message is all we need
+                    let msg = create_trigger_message();
                     send_osc(&socket, msg, sync_mode == SyncMode::Internal);
                     metro_timing.trigger_count += 1;
                 }
                 MetroCommand::SendVolume(value) => {
-                    let msg = OscMessage {
-                        addr: "/monokit/volume".to_string(),
-                        args: vec![OscType::Float(value)],
-                    };
+                    let msg = create_volume_message(value);
                     send_osc(&socket, msg, sync_mode == SyncMode::Internal);
                 }
                 MetroCommand::StartRecording(dir) => {
-                    let msg = OscMessage {
-                        addr: "/monokit/rec".to_string(),
-                        args: vec![OscType::String(dir)],
-                    };
-                    send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    #[cfg(not(feature = "scsynth-direct"))]
+                    {
+                        let msg = OscMessage {
+                            addr: "/monokit/rec".to_string(),
+                            args: vec![OscType::String(dir)],
+                        };
+                        send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    }
+                    #[cfg(feature = "scsynth-direct")]
+                    {
+                        let _ = dir;
+                        let _ = event_tx.send(MetroEvent::Error("[monokit] Recording not yet implemented in scsynth-direct mode".to_string()));
+                    }
                 }
                 MetroCommand::StopRecording => {
-                    let msg = OscMessage {
-                        addr: "/monokit/rec/stop".to_string(),
-                        args: vec![],
-                    };
-                    send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    #[cfg(not(feature = "scsynth-direct"))]
+                    {
+                        let msg = OscMessage {
+                            addr: "/monokit/rec/stop".to_string(),
+                            args: vec![],
+                        };
+                        send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    }
+                    #[cfg(feature = "scsynth-direct")]
+                    {
+                        let _ = event_tx.send(MetroEvent::Error("[monokit] Recording not yet implemented in scsynth-direct mode".to_string()));
+                    }
                 }
                 MetroCommand::SetRecordingPath(path) => {
-                    let msg = OscMessage {
-                        addr: "/monokit/rec/path".to_string(),
-                        args: vec![OscType::String(path)],
-                    };
-                    send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    #[cfg(not(feature = "scsynth-direct"))]
+                    {
+                        let msg = OscMessage {
+                            addr: "/monokit/rec/path".to_string(),
+                            args: vec![OscType::String(path)],
+                        };
+                        send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    }
+                    #[cfg(feature = "scsynth-direct")]
+                    {
+                        let _ = path;
+                        let _ = event_tx.send(MetroEvent::Error("[monokit] Recording not yet implemented in scsynth-direct mode".to_string()));
+                    }
                 }
                 MetroCommand::SetSlewTime(time_sec) => {
-                    let msg = OscMessage {
-                        addr: "/monokit/slew".to_string(),
-                        args: vec![OscType::Float(time_sec)],
-                    };
+                    let msg = create_slew_message(time_sec);
                     send_osc(&socket, msg, sync_mode == SyncMode::Internal);
                 }
                 MetroCommand::SetParamSlew(param, time_sec) => {
-                    let msg = OscMessage {
-                        addr: "/monokit/slew/param".to_string(),
-                        args: vec![OscType::String(param), OscType::Float(time_sec)],
-                    };
+                    let msg = create_param_slew_message(&param, time_sec);
                     send_osc(&socket, msg, sync_mode == SyncMode::Internal);
                 }
                 MetroCommand::SetGate(time_sec) => {
-                    let msg = OscMessage {
-                        addr: "/monokit/gate".to_string(),
-                        args: vec![OscType::Float(time_sec)],
-                    };
+                    let msg = create_gate_message(time_sec);
                     send_osc(&socket, msg, sync_mode == SyncMode::Internal);
                 }
                 MetroCommand::SetEnvGate(env_name, time_sec) => {
-                    let msg = OscMessage {
-                        addr: "/monokit/gate/env".to_string(),
-                        args: vec![OscType::String(env_name), OscType::Float(time_sec)],
-                    };
+                    let msg = create_env_gate_message(&env_name, time_sec);
                     send_osc(&socket, msg, sync_mode == SyncMode::Internal);
                 }
                 MetroCommand::ScheduleDelayed(cmd, delay_ms, script_idx) => {
@@ -396,18 +569,28 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                     metro_timing.write_report();
                 }
                 MetroCommand::SendScDiag(value) => {
-                    let msg = OscMessage {
-                        addr: "/monokit/diag".to_string(),
-                        args: vec![OscType::Int(value)],
-                    };
-                    send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    #[cfg(not(feature = "scsynth-direct"))]
+                    {
+                        let msg = OscMessage {
+                            addr: "/monokit/diag".to_string(),
+                            args: vec![OscType::Int(value)],
+                        };
+                        send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    }
+                    #[cfg(feature = "scsynth-direct")]
+                    {
+                        let _ = value;
+                    }
                 }
                 MetroCommand::SendScDiagReport => {
-                    let msg = OscMessage {
-                        addr: "/monokit/diag/report".to_string(),
-                        args: vec![],
-                    };
-                    send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    #[cfg(not(feature = "scsynth-direct"))]
+                    {
+                        let msg = OscMessage {
+                            addr: "/monokit/diag/report".to_string(),
+                            args: vec![],
+                        };
+                        send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    }
                 }
                 MetroCommand::GetTriggerCount => {
                     let _ = event_tx.send(MetroEvent::Error(format!("TRIGGERS SENT: {}", metro_timing.trigger_count)));
@@ -417,18 +600,51 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                     let _ = event_tx.send(MetroEvent::Error("TRIGGER COUNTER RESET".to_string()));
                 }
                 MetroCommand::SendScopeRate(time_ms) => {
-                    let msg = OscMessage {
-                        addr: "/monokit/scope/rate".to_string(),
-                        args: vec![OscType::Float(time_ms)],
-                    };
+                    let msg = create_scope_rate_message(time_ms);
                     send_osc(&socket, msg, sync_mode == SyncMode::Internal);
                 }
                 MetroCommand::QueryAudioOutDevices => {
-                    let msg = OscMessage {
-                        addr: "/monokit/audio/out/query".to_string(),
-                        args: vec![],
-                    };
-                    send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    #[cfg(not(feature = "scsynth-direct"))]
+                    {
+                        let msg = OscMessage {
+                            addr: "/monokit/audio/out/query".to_string(),
+                            args: vec![],
+                        };
+                        send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    }
+                    #[cfg(feature = "scsynth-direct")]
+                    {
+                        #[cfg(target_os = "macos")]
+                        {
+                            match crate::audio_devices::list_audio_devices() {
+                                Ok(devices) => {
+                                    let device_names: Vec<String> = devices.iter().map(|d| d.name.clone()).collect();
+
+                                    let current = if let Ok(config) = crate::config::load_config() {
+                                        config.display.audio_out_device.unwrap_or_else(|| "default".to_string())
+                                    } else {
+                                        "default".to_string()
+                                    };
+
+                                    let _ = event_tx.send(MetroEvent::AudioDeviceList {
+                                        current,
+                                        devices: device_names,
+                                    });
+                                }
+                                Err(e) => {
+                                    let _ = event_tx.send(MetroEvent::Error(
+                                        format!("FAILED TO QUERY DEVICES: {}", e)
+                                    ));
+                                }
+                            }
+                        }
+                        #[cfg(not(target_os = "macos"))]
+                        {
+                            let _ = event_tx.send(MetroEvent::Error(
+                                "AUDIO DEVICE QUERY NOT SUPPORTED ON THIS PLATFORM".to_string()
+                            ));
+                        }
+                    }
                 }
                 MetroCommand::SetAudioOutDevice(device) => {
                     let _ = event_tx.send(MetroEvent::RestartScWithDevice(device));

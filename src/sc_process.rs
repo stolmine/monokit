@@ -5,14 +5,33 @@ use std::process::{Child, ChildStdin, Command, Stdio};
 use std::time::Duration;
 use std::thread;
 
+#[cfg(feature = "scsynth-direct")]
+use crate::scsynth_direct::ScsynthDirect;
+
 pub struct ScProcess {
+    #[cfg(feature = "scsynth-direct")]
+    scsynth_direct: Option<ScsynthDirect>,
+
+    #[cfg(not(feature = "scsynth-direct"))]
     child: Option<Child>,
+    #[cfg(not(feature = "scsynth-direct"))]
     stdin: Option<ChildStdin>,
+    #[cfg(not(feature = "scsynth-direct"))]
     sclang_path: PathBuf,
+    #[cfg(not(feature = "scsynth-direct"))]
     script_path: PathBuf,
 }
 
 impl ScProcess {
+    #[cfg(feature = "scsynth-direct")]
+    pub fn new() -> Result<Self, String> {
+        let scsynth = ScsynthDirect::new()?;
+        Ok(Self {
+            scsynth_direct: Some(scsynth),
+        })
+    }
+
+    #[cfg(not(feature = "scsynth-direct"))]
     pub fn new() -> Result<Self, String> {
         let sclang_path = find_sclang()?;
         let script_path = find_script()?;
@@ -25,6 +44,16 @@ impl ScProcess {
         })
     }
 
+    #[cfg(feature = "scsynth-direct")]
+    pub fn start(&mut self, audio_out_device: Option<&str>) -> Result<(), String> {
+        if let Some(ref mut scsynth) = self.scsynth_direct {
+            scsynth.start(audio_out_device)
+        } else {
+            Err("scsynth not initialized".to_string())
+        }
+    }
+
+    #[cfg(not(feature = "scsynth-direct"))]
     pub fn start(&mut self, audio_out_device: Option<&str>) -> Result<(), String> {
         self.stop();
 
@@ -42,32 +71,32 @@ impl ScProcess {
             .spawn()
             .map_err(|e| format!("Failed to spawn sclang: {}", e))?;
 
-        // Capture stdin for graceful shutdown
         self.stdin = child.stdin.take();
         self.child = Some(child);
         Ok(())
     }
 
+    #[cfg(feature = "scsynth-direct")]
     pub fn stop(&mut self) {
-        // First, try graceful shutdown via stdin
+        if let Some(ref mut scsynth) = self.scsynth_direct {
+            scsynth.stop();
+        }
+    }
+
+    #[cfg(not(feature = "scsynth-direct"))]
+    pub fn stop(&mut self) {
         if let Some(mut stdin) = self.stdin.take() {
-            // Send quit command to sclang - this shuts down scsynth properly
             let _ = stdin.write_all(b"Server.quitAll; 0.exit;\n");
-            let _ = stdin.write_all(&[0x1b]); // Execute token
+            let _ = stdin.write_all(&[0x1b]);
             let _ = stdin.flush();
 
-            // Give it a moment to shut down gracefully
             thread::sleep(Duration::from_millis(500));
         }
 
         if let Some(mut child) = self.child.take() {
-            // Check if still running, kill if necessary
             match child.try_wait() {
-                Ok(Some(_)) => {
-                    // Already exited
-                }
+                Ok(Some(_)) => {}
                 Ok(None) => {
-                    // Still running, force kill
                     let _ = child.kill();
                     let _ = child.wait();
                 }
@@ -77,21 +106,71 @@ impl ScProcess {
                 }
             }
 
-            // Extra delay to ensure audio device is released
             thread::sleep(Duration::from_millis(300));
         }
 
-        // Also kill any orphaned scsynth processes (belt and suspenders)
         let _ = Command::new("pkill").arg("-f").arg("scsynth").output();
         thread::sleep(Duration::from_millis(200));
     }
 
+    #[cfg(feature = "scsynth-direct")]
+    pub fn restart_with_device(&mut self, device: &str) -> Result<(), String> {
+        if let Some(ref mut scsynth) = self.scsynth_direct {
+            scsynth.restart_with_device(device)
+        } else {
+            Err("scsynth not initialized".to_string())
+        }
+    }
+
+    #[cfg(not(feature = "scsynth-direct"))]
     pub fn restart_with_device(&mut self, device: &str) -> Result<(), String> {
         self.start(Some(device))
     }
 
+    #[cfg(feature = "scsynth-direct")]
+    pub fn spawn_ready_sender(&self) -> Option<std::sync::mpsc::Receiver<()>> {
+        if let Some(ref scsynth) = self.scsynth_direct {
+            Some(scsynth.send_ready())
+        } else {
+            None
+        }
+    }
+
+    #[cfg(not(feature = "scsynth-direct"))]
+    pub fn spawn_ready_sender(&self) -> Option<std::sync::mpsc::Receiver<()>> {
+        None
+    }
+
+    #[cfg(feature = "scsynth-direct")]
+    pub fn is_running(&self) -> bool {
+        self.scsynth_direct.as_ref().map_or(false, |s| s.is_running())
+    }
+
+    #[cfg(not(feature = "scsynth-direct"))]
     pub fn is_running(&self) -> bool {
         self.child.is_some()
+    }
+
+    /// Start recording (scsynth-direct mode only)
+    /// In sclang mode, recording is handled via OSC messages to sclang
+    #[cfg(feature = "scsynth-direct")]
+    pub fn start_recording(&self, dir: &str, custom_path: Option<&str>) -> Result<(), String> {
+        if let Some(ref scsynth) = self.scsynth_direct {
+            scsynth.start_recording(dir, custom_path)
+        } else {
+            Err("scsynth not initialized".to_string())
+        }
+    }
+
+    /// Stop recording (scsynth-direct mode only)
+    /// In sclang mode, recording is handled via OSC messages to sclang
+    #[cfg(feature = "scsynth-direct")]
+    pub fn stop_recording(&self) -> Result<(), String> {
+        if let Some(ref scsynth) = self.scsynth_direct {
+            scsynth.stop_recording()
+        } else {
+            Err("scsynth not initialized".to_string())
+        }
     }
 }
 
@@ -101,6 +180,7 @@ impl Drop for ScProcess {
     }
 }
 
+#[cfg(not(feature = "scsynth-direct"))]
 fn find_sclang() -> Result<PathBuf, String> {
     let candidates = [
         "/Applications/SuperCollider.app/Contents/MacOS/sclang",
@@ -127,6 +207,7 @@ fn find_sclang() -> Result<PathBuf, String> {
     Err("sclang not found. Install SuperCollider.".to_string())
 }
 
+#[cfg(not(feature = "scsynth-direct"))]
 fn find_script() -> Result<PathBuf, String> {
     if let Ok(exe) = env::current_exe() {
         if let Some(dir) = exe.parent() {

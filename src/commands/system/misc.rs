@@ -255,7 +255,7 @@ where
     metro_tx.send(MetroCommand::SendParam("eh".to_string(), OscType::Int(0)))?;
 
     metro_tx.send(MetroCommand::SendParam("pn".to_string(), OscType::Int(0)))?;
-    metro_tx.send(MetroCommand::SendParam("gate".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("t_gate".to_string(), OscType::Int(0)))?;
 
     metro_tx.send(MetroCommand::SendParam("br_act".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("br_len".to_string(), OscType::Int(250)))?;

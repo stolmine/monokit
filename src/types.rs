@@ -4,7 +4,13 @@ use serde_big_array::BigArray;
 use std::collections::HashMap;
 use std::time::Instant;
 
+#[cfg(not(feature = "scsynth-direct"))]
 pub const OSC_ADDR: &str = "127.0.0.1:57120";
+
+#[cfg(feature = "scsynth-direct")]
+pub const OSC_ADDR: &str = "127.0.0.1:57110";
+
+pub const MONOKIT_NODE_ID: i32 = 1000;
 pub const SPECTRUM_BANDS: usize = 15;
 pub const SCOPE_SAMPLES: usize = 128;
 

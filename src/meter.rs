@@ -1,9 +1,11 @@
 use crate::types::{CpuData, MeterData, MetroEvent, ScopeData, SpectrumData, SCOPE_SAMPLES, SPECTRUM_BANDS};
-use rosc::{decoder, OscPacket, OscType};
+use rosc::{decoder, encoder, OscMessage, OscPacket, OscType};
 use socket2::{Domain, Protocol, Socket, Type};
 use std::net::{SocketAddr, UdpSocket};
 use std::sync::mpsc;
 use std::time::Duration;
+
+const SCSYNTH_PORT: u16 = 57110;
 
 const METER_PORT: u16 = 57121;
 const RECV_TIMEOUT_MS: u64 = 100;
@@ -25,6 +27,9 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
         return;
     }
 
+    #[cfg(feature = "scsynth-direct")]
+    eprintln!("[meter] Successfully bound to port {}", METER_PORT);
+
     let socket: UdpSocket = socket.into();
 
     if let Err(e) = socket.set_read_timeout(Some(Duration::from_millis(RECV_TIMEOUT_MS))) {
@@ -36,6 +41,10 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
     let mut spectrum_data = SpectrumData::default();
     let mut buf = [0u8; 1024];
 
+    // Track if we've received meter data - used to detect restart vs initial boot
+    #[cfg(feature = "scsynth-direct")]
+    let mut has_received_data = false;
+
     loop {
         match socket.recv_from(&mut buf) {
             Ok((size, _addr)) => {
@@ -43,6 +52,9 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
                     if let OscPacket::Message(msg) = packet {
                         if msg.addr == "/monokit/meter" {
                             if let Some(update) = parse_meter_message(&msg.args) {
+                                #[cfg(feature = "scsynth-direct")]
+                                { has_received_data = true; }
+
                                 apply_meter_update(&mut meter_data, update);
 
                                 if let Err(e) = event_tx.send(MetroEvent::MeterUpdate(meter_data.clone())) {
@@ -73,6 +85,20 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
                                 }
                             }
                         } else if msg.addr == "/monokit/ready" {
+                            // On RESTART only: send /notify from THIS socket (57121)
+                            // so scsynth knows to send meter data here.
+                            // On initial boot, the boot sequence already sent /notify.
+                            #[cfg(feature = "scsynth-direct")]
+                            if has_received_data {
+                                // This is a restart - we need to re-register with the new scsynth
+                                let notify_msg = OscMessage {
+                                    addr: "/notify".to_string(),
+                                    args: vec![OscType::Int(1)],
+                                };
+                                if let Ok(packet) = encoder::encode(&OscPacket::Message(notify_msg)) {
+                                    let _ = socket.send_to(&packet, format!("127.0.0.1:{}", SCSYNTH_PORT));
+                                }
+                            }
                             let _ = event_tx.send(MetroEvent::ScReady);
                         } else if msg.addr == "/monokit/audio/out/list" {
                             if let Some(args) = &msg.args.get(0..) {
@@ -114,25 +140,30 @@ struct MeterUpdate {
 }
 
 fn parse_meter_message(args: &[OscType]) -> Option<MeterUpdate> {
-    if args.len() != 3 {
-        return None;
-    }
+    // Handle both formats:
+    // - sclang forwarded: [channel, peak, rms] (3 args)
+    // - scsynth direct (SendPeakRMS): [nodeID, channel, peak, rms] (4 args)
+    let (channel_idx, peak_idx, rms_idx) = match args.len() {
+        3 => (0, 1, 2),  // sclang mode
+        4 => (1, 2, 3),  // scsynth-direct mode (skip nodeID at index 0)
+        _ => return None,
+    };
 
     // Channel can come as Int or Float from SC
-    let channel = match &args[0] {
+    let channel = match &args[channel_idx] {
         OscType::Int(i) => *i,
         OscType::Float(f) => *f as i32,
         _ => return None,
     };
 
     // Peak and RMS are floats
-    let peak = match &args[1] {
+    let peak = match &args[peak_idx] {
         OscType::Float(f) => *f,
         OscType::Double(d) => *d as f32,
         _ => return None,
     };
 
-    let rms = match &args[2] {
+    let rms = match &args[rms_idx] {
         OscType::Float(f) => *f,
         OscType::Double(d) => *d as f32,
         _ => return None,
@@ -199,10 +230,22 @@ struct SpectrumUpdate {
 }
 
 fn parse_spectrum_message(args: &[OscType]) -> Option<SpectrumUpdate> {
+    // Handle both formats:
+    // - sclang forwarded: [band0...band14, clip0...clip14] (30 args) or just [band0...band14] (15 args)
+    // - scsynth direct (SendReply): [nodeID, replyID, band0...band14, clip0...clip14] (32 args) or [nodeID, replyID, band0...band14] (17 args)
+
+    let data_start = match args.len() {
+        15 | 30 => 0,  // sclang mode
+        17 | 32 => 2,  // scsynth-direct mode (skip nodeID and replyID)
+        _ => return None,
+    };
+
+    let data_len = args.len() - data_start;
+
     // Backwards compatibility: accept just 15 bands (no clip data)
-    if args.len() == SPECTRUM_BANDS {
+    if data_len == SPECTRUM_BANDS {
         let mut bands = [0.0f32; SPECTRUM_BANDS];
-        for (i, arg) in args.iter().enumerate() {
+        for (i, arg) in args.iter().skip(data_start).enumerate() {
             let value = match arg {
                 OscType::Float(f) => *f,
                 OscType::Double(d) => *d as f32,
@@ -217,12 +260,12 @@ fn parse_spectrum_message(args: &[OscType]) -> Option<SpectrumUpdate> {
     }
 
     // New format: 15 floats (bands) + 15 ints (clip flags)
-    if args.len() != SPECTRUM_BANDS * 2 {
+    if data_len != SPECTRUM_BANDS * 2 {
         return None;
     }
 
     let mut bands = [0.0f32; SPECTRUM_BANDS];
-    for (i, arg) in args.iter().take(SPECTRUM_BANDS).enumerate() {
+    for (i, arg) in args.iter().skip(data_start).take(SPECTRUM_BANDS).enumerate() {
         let value = match arg {
             OscType::Float(f) => *f,
             OscType::Double(d) => *d as f32,
@@ -232,7 +275,7 @@ fn parse_spectrum_message(args: &[OscType]) -> Option<SpectrumUpdate> {
     }
 
     let mut clips = [false; SPECTRUM_BANDS];
-    for (i, arg) in args.iter().skip(SPECTRUM_BANDS).enumerate() {
+    for (i, arg) in args.iter().skip(data_start + SPECTRUM_BANDS).enumerate() {
         let value = match arg {
             OscType::Int(v) => *v != 0,
             OscType::Float(f) => *f != 0.0,
@@ -296,12 +339,21 @@ fn parse_cpu_message(args: &[OscType]) -> Option<CpuData> {
 }
 
 fn parse_scope_message(args: &[OscType]) -> Option<ScopeData> {
-    if args.len() != SCOPE_SAMPLES {
-        return None;
-    }
+    // Handle both formats:
+    // - sclang forwarded: [sample0...sample127] (128 args)
+    // - scsynth direct (SendReply): [nodeID, replyID, sample0...sample127] (130 args)
+
+    let data_start = match args.len() {
+        128 => 0,   // sclang mode (SCOPE_SAMPLES)
+        130 => 2,   // scsynth-direct mode (skip nodeID and replyID)
+        _ => return None,
+    };
 
     let mut samples = [0.0f32; SCOPE_SAMPLES];
-    for (i, arg) in args.iter().enumerate() {
+    for (i, arg) in args.iter().skip(data_start).enumerate() {
+        if i >= SCOPE_SAMPLES {
+            break;
+        }
         let value = match arg {
             OscType::Float(f) => *f,
             OscType::Double(d) => *d as f32,

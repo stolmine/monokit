@@ -226,6 +226,19 @@ scsynth SendReply → sclang OSCdef → NetAddr.sendMsg → Rust (57121)
 
 **Current Approach:** `s.record()` / `s.stopRecording` (server-side recording via sclang)
 
+**Status:** STUB IMPLEMENTATION - Recording methods exist but do not record audio yet.
+
+**Reason:** Full DiskOut implementation requires:
+1. Modified monokit SynthDef with DiskOut UGen
+2. Buffer allocation/management via OSC
+3. File naming logic in Rust
+4. Testing requires sc3-plugins (SVF) to be resolved first
+
+**Current behavior in scsynth-direct mode:**
+- REC command logs "Recording not yet implemented in scsynth-direct mode"
+- No crash, graceful degradation
+- sclang mode recording continues to work unchanged
+
 ### Solution: DiskOut UGen
 
 **Replace:** Server.record with DiskOut UGen in SynthDef
@@ -509,26 +522,28 @@ if use_scsynth {
 - [ ] Message parsing handles all formats correctly
 
 ### Phase 4 Testing
-- [ ] Recording starts without error
+- [x] Recording methods exist and compile
+- [x] REC command doesn't crash in scsynth-direct mode
+- [ ] Recording starts without error (BLOCKED: needs DiskOut impl)
 - [ ] WAV file created with correct format (int24)
 - [ ] Recording stops cleanly
 - [ ] No buffer overruns or dropouts
 - [ ] Timestamped filenames generated correctly
 
 ### Phase 5 Testing
-- [ ] Audio device enumeration returns valid list
-- [ ] Device name → index mapping works
-- [ ] scsynth uses correct audio device
-- [ ] Device switching (restart) works correctly
-- [ ] Default device fallback works
+- [x] Audio device enumeration returns valid list
+- [x] Device name → index mapping works
+- [x] scsynth uses correct audio device
+- [x] Device switching (restart) works correctly
+- [x] Default device fallback works
 
 ### Phase 6 Testing
-- [ ] Bundle extracts to correct locations
-- [ ] scsynth finds bundled plugins
-- [ ] SynthDefs load from bundled location
-- [ ] Code signing doesn't break execution
-- [ ] Homebrew formula installs correctly
-- [ ] Bundle size is ~13 MB
+- [x] Bundle extracts to correct locations
+- [x] scsynth finds bundled plugins
+- [x] SynthDefs load from bundled location
+- [x] Code signing doesn't break execution (macOS Gatekeeper handling)
+- [x] Homebrew formula installs correctly
+- [x] Bundle size is ~13 MB
 
 ### Integration Tests
 

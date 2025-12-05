@@ -81,6 +81,7 @@ pub fn process_command<F>(
     ascii_meters: &mut bool,
     terminal_caps: &crate::terminal::TerminalCapabilities,
     color_mode: crate::types::ColorMode,
+    script_break: &mut bool,
     input: &str,
     mut output: F,
 ) -> Result<Vec<usize>>
@@ -292,6 +293,9 @@ where
         }
         "TR" => {
             misc::handle_tr(metro_tx, *debug_level, *out_cfm, output)?;
+        }
+        "BRK" => {
+            *script_break = true;
         }
         "VOL" => {
             misc::handle_vol(&parts, metro_tx, *debug_level, *out_cfm, output)?;

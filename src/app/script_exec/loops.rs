@@ -16,6 +16,9 @@ impl App {
             }
             // L loops are not highlighted, so offset doesn't matter for commands inside loops
             self.process_sub_command(sub_cmd, script_index, metro_interval, depth, 0, 0);
+            if self.script_break {
+                break;
+            }
         }
     }
 
@@ -68,11 +71,17 @@ impl App {
                     for i_val in start..=end {
                         self.variables.i = i_val;
                         self.process_loop_commands(commands, script_index, metro_interval, depth);
+                        if self.script_break {
+                            break;
+                        }
                     }
                 } else {
                     for i_val in (end..=start).rev() {
                         self.variables.i = i_val;
                         self.process_loop_commands(commands, script_index, metro_interval, depth);
+                        if self.script_break {
+                            break;
+                        }
                     }
                 }
 

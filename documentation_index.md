@@ -2,6 +2,17 @@
 
 ## Recent Updates (December 2025)
 
+### BRK Command (December 2025)
+
+**Script Break Control:**
+- BRK stops current script execution immediately
+- Zero arguments, works anywhere in a script
+- Works with conditionals: IF A: BRK
+- Works in loops: L 0 5: IF GT I 2: BRK
+- BRK affects current script only, not parents
+- Nested script reset: break flag cleared after SCRIPT command returns
+- Implementation: script_break flag in App struct
+
 ### Audio Engine Confirmation (December 2025)
 
 **AUDIO.OUT Device Change Feedback:**
@@ -1348,6 +1359,7 @@ PSETS                        # List all available presets
 - `EV <n>: <cmd>` - Execute cmd every Nth tick (applies to whole line including semicolons)
 - `SKIP <n>: <cmd>` - Skip every Nth tick (inverse of EV, executes on all other ticks)
 - `L <start> <end>: <commands>` - Loop from start to end (inclusive), supports forward/backward iteration, I is loop counter
+- `BRK` - Stop current script execution immediately (works in conditionals/loops, doesn't affect parent scripts)
 - Sub-commands: `cmd1; cmd2; cmd3` - Multiple commands on one line
 
 #### Comparison Operators (return 1 for true, 0 for false)

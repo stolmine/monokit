@@ -101,6 +101,7 @@ pub struct App {
     pub grid_scrambles: Vec<crate::scramble::ScrambleAnimation>,
     pub ascii_meters: bool,
     pub awaiting_audio_restart: bool,
+    pub script_break: bool,
 }
 
 impl App {
@@ -214,6 +215,7 @@ impl App {
             grid_scrambles: Vec::new(),
             ascii_meters: config.display.ascii_meters,
             awaiting_audio_restart: false,
+            script_break: false,
         }
     }
 
@@ -410,6 +412,7 @@ impl App {
             &mut self.ascii_meters,
             &self.terminal_caps,
             self.color_mode,
+            &mut self.script_break,
             command,
             |msg| {
                 output_messages.push(msg);

@@ -248,7 +248,7 @@ primaryFreq = pfSmooth * pow(2, pitchEnv * paCtl);
 - [x] Script storage: 8 lines per script with local J, K variables
 - [x] Pattern system: 6 patterns × 64 steps with comprehensive operations (P, PN, P.L, P.I, P.N, P.NEXT, P.PREV, P.HERE)
 - [x] Variables: A, B, C, D, X, Y, Z, T (global), I (loop), J, K (per-script)
-- [x] Control flow: IF/ELIF/ELSE, L (loop), PROB, EVERY, SKIP with PRE separator (`:`)
+- [x] Control flow: IF/ELIF/ELSE, L (loop), BRK (break), PROB, EVERY, SKIP with PRE separator (`:`)
 - [x] Comparison operators: EQ, NE, GT, LT, GTE, LTE, EZ, NZ (both prefix and infix)
 - [x] Sub-command separator: `;` for multiple commands per line
 - [x] Scene persistence: SAVE/LOAD system for scripts + patterns

@@ -111,6 +111,7 @@ pub struct TestContext {
     pub ascii_meters: bool,
     pub terminal_caps: crate::terminal::TerminalCapabilities,
     pub color_mode: crate::types::ColorMode,
+    pub script_break: bool,
     pub outputs: Vec<String>,
 }
 
@@ -177,6 +178,7 @@ impl Default for TestContext {
                 term_program: Some("iTerm2".to_string()),
             },
             color_mode: crate::types::ColorMode::TrueColor,
+            script_break: false,
             outputs: Vec::new(),
         }
     }
@@ -239,6 +241,7 @@ impl TestContext {
             &mut self.ascii_meters,
             &self.terminal_caps,
             self.color_mode,
+            &mut self.script_break,
             input,
             |msg| {
                 self.outputs.push(msg);

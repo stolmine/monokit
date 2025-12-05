@@ -87,6 +87,7 @@ impl App {
             &mut self.ascii_meters,
             &self.terminal_caps,
             self.color_mode,
+            &mut self.script_break,
             cmd_to_run,
             |msg| {
                 output_messages.push(msg);
@@ -104,6 +105,8 @@ impl App {
                     } else {
                         self.execute_script(script_idx);
                     }
+                    // Reset break flag after nested script - BRK only affects the script it's in
+                    self.script_break = false;
                 }
             }
             Err(e) => {
@@ -192,6 +195,8 @@ impl App {
             return;
         }
 
+        self.script_break = false;
+
         let script = self.scripts.get_script(script_index);
         let lines: Vec<String> = script.lines.to_vec();
 
@@ -211,6 +216,10 @@ impl App {
         }
 
         for (line_num, line) in lines.iter().enumerate() {
+            if self.script_break {
+                break;
+            }
+
             let original_line = line.trim();
             if original_line.is_empty() {
                 continue;
@@ -220,6 +229,9 @@ impl App {
 
             if original_line.to_uppercase().starts_with("L ") {
                 if self.execute_loop(original_line, script_index, &mut metro_interval, Some(depth)) {
+                    if self.script_break {
+                        break;
+                    }
                     continue;
                 }
             }
@@ -246,6 +258,10 @@ impl App {
 
                 self.debug_log(format!("  sub_cmd: '{}'", sub_cmd_trimmed));
                 self.process_sub_command(sub_cmd_trimmed, script_index, &mut metro_interval, Some(depth), line_num, sub_cmd_offset);
+
+                if self.script_break {
+                    break;
+                }
 
                 search_start += sub_cmd.len() + 1; // +1 for semicolon
             }

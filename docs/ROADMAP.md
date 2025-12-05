@@ -1156,7 +1156,7 @@ Phase 6 - Bundling & Distribution:
 **Risk:** Medium - proven approach (Sonic Pi) but significant refactor
 **Recommendation:** Implement behind feature flag, keep sclang as fallback
 
-See: `docs/SCSYNTH_DIRECT_PLAN.md` for detailed implementation guide
+See: `docs/scsynth_direct_integration.md` for detailed implementation guide
 
 ---
 

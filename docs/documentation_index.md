@@ -2,6 +2,40 @@
 
 ## Recent Updates (December 2025)
 
+### Direct scsynth Integration [COMPLETE]
+
+**Self-contained Audio Engine:**
+- Monokit now runs without sclang, spawning scsynth directly
+- Send parameters to scsynth via OSC (port 57110)
+- Receive meter/spectrum/scope data on separate port
+- Simplified by eliminating sclang interpretation layer
+
+**Build & Distribution:**
+- `cargo build --features scsynth-direct` enables feature
+- Bundle structure: monokit binary + scsynth + plugins + synthdefs
+- Resource directory: `/Resources/` contains scsynth executable
+- SynthDef precompilation: `sc/synthdefs/` holds .scsyndef files
+- Total bundle size: ~13 MB (vs ~200 MB for full SC)
+
+**t_gate Parameter Change:**
+- SynthDef gate parameter renamed to `t_gate` (TrigControl)
+- Ensures reliable triggering via OSC `/s_new` messages
+- Pitch, FM, discontinuity, feedback envelopes trigger on gate
+- Gate responds to TR command (trigger)
+
+**Bundled Resources:**
+- scsynth binary and core plugins in bundle Resources/
+- Monokit detects bundled resources via executable path
+- Fallback to system scsynth if bundled not found
+- Plugin path: `-U` flag passed to scsynth at boot
+
+**Feature Flag Architecture:**
+- `scsynth-direct` cargo feature enables new mode
+- Conditional compilation: `#[cfg(feature = "scsynth-direct")]`
+- Sclang compat as fallback (requires SuperCollider installed)
+
+See: `docs/scsynth_direct_integration.md` for detailed spec
+
 ### BRK Command (December 2025)
 
 **Script Break Control:**

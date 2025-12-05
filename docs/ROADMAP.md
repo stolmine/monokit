@@ -1101,6 +1101,63 @@ Document repeatable release process.
 - [ ] Changelog maintenance process
 - [ ] Binary build automation (optional GitHub Actions)
 
+### Remove sc3-plugins Dependency [Medium]
+Rewrite SC server to use only built-in UGens for easier installation.
+
+- [ ] Replace SVF filter with built-in alternatives (RLPF, RHPF, BPF, etc.)
+- [ ] Audit server for other sc3-plugins dependencies
+- [ ] Test sound parity with original
+- [ ] Update documentation
+
+### Direct scsynth Integration [High]
+Bundle scsynth binary directly, eliminating sclang and full SuperCollider dependency.
+
+**Benefits:**
+- Single binary distribution (~13 MB bundle vs ~200 MB SC install)
+- No user-facing SuperCollider/sc3-plugins installation required
+- Faster startup (no sclang interpretation layer)
+- Follows Sonic Pi's proven approach
+
+**Implementation phases:**
+
+Phase 1 - SynthDef Pre-compilation:
+- [ ] Create build script to compile SynthDefs to .scsyndef files
+- [ ] Add to build system (build.rs or Makefile)
+- [ ] Store compiled .scsyndef files in sc/synthdefs/
+
+Phase 2 - Direct scsynth Spawning:
+- [ ] Modify sc_process.rs to spawn scsynth instead of sclang
+- [ ] Implement OSC boot sequence (/notify → /d_load → /s_new)
+- [ ] Handle scsynth command-line args (-u port, -U plugins, -D device)
+- [ ] Add scsynth path discovery (bundled, homebrew, system)
+
+Phase 3 - OSC Message Routing:
+- [ ] Rework meter/spectrum/scope data flow
+- [ ] SendPeakRMS/SendReply route to notify client - need bridge or restructure
+- [ ] Ensure all visualization data flows to Rust correctly
+
+Phase 4 - Recording Without sclang:
+- [ ] Implement recording via DiskOut UGen or external capture
+- [ ] Handle buffer allocation for recording
+- [ ] Maintain feature parity with current recording
+
+Phase 5 - Audio Device Handling:
+- [ ] Map device names to scsynth device indices
+- [ ] Query available devices via scsynth or system APIs
+- [ ] Handle device switching gracefully
+
+Phase 6 - Bundling & Distribution:
+- [ ] Bundle scsynth binary from SuperCollider.app
+- [ ] Bundle required .scx plugins only
+- [ ] Handle macOS code signing / Gatekeeper
+- [ ] Update Homebrew formula for self-contained distribution
+
+**Effort estimate:** 6-8 weeks
+**Risk:** Medium - proven approach (Sonic Pi) but significant refactor
+**Recommendation:** Implement behind feature flag, keep sclang as fallback
+
+See: `docs/SCSYNTH_DIRECT_PLAN.md` for detailed implementation guide
+
 ---
 
 ## Phase 7: Advanced DSP

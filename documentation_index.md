@@ -32,6 +32,15 @@
 - All errors now respect should_output(OutputCategory::Error)
 - Consistent error display across REPL modes
 
+### Header ASCII Meters (December 2025)
+
+**Distinct Meter Characters:**
+- Header meters use new charset: `.oO0@###`
+- Rounder, easier to read at a glance
+- Grid meters keep original `.:-=+###` pattern
+- Better for vertical stacking
+- Implementation in src/ui/header.rs
+
 ### Phase 6: Release Preparation (December 2025)
 
 **Roadmap Addition:**

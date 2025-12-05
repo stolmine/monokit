@@ -4,7 +4,8 @@ use crate::types::{MeterData, Page, NAVIGABLE_PAGES};
 
 // 8-level vertical bar characters for meter display
 const METER_CHARS: [char; 9] = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
-const METER_CHARS_ASCII: [char; 9] = [' ', '.', ':', '-', '=', '+', '#', '#', '#'];
+// Header ASCII uses rounder, more readable chars than grid meters
+const METER_CHARS_ASCII: [char; 9] = [' ', '.', 'o', 'O', '0', '@', '#', '#', '#'];
 
 fn level_to_char(level: f32, ascii_mode: bool) -> char {
     let clamped = level.clamp(0.0, 1.0);

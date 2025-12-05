@@ -41,6 +41,15 @@
 - Better for vertical stacking
 - Implementation in src/ui/header.rs
 
+### XDG Configuration Migration (December 2025)
+
+**Config Location Change:**
+- Migrated from `~/.monokit/` to `~/.config/monokit/` (XDG Base Directory compliance)
+- All configuration and user data now follows XDG specification
+- Config file: `~/.config/monokit/config.toml`
+- Scenes: `~/.config/monokit/scenes/`
+- User presets: `~/.config/monokit/presets/`
+
 ### Phase 6: Release Preparation (December 2025)
 
 **Roadmap Addition:**
@@ -52,6 +61,9 @@
 - Future Release Workflow planning
 - Advanced DSP renumbered to Phase 7
 - Distribution renumbered to Phase 8
+- GPL-2.0 license added
+- 47 themes bundled at compile time (themes/themes.toml)
+- Release script created: `scripts/release.sh`
 
 ### Terminal Compatibility System (December 2025)
 
@@ -1763,8 +1775,9 @@ PS.TARG 0         // Process input signal
 - `THEME` - Show current theme and list all available themes
 - `THEME <name>` - Switch to theme by name (case-insensitive)
 - Built-in themes: `dark`, `light`, `system`
+- 47 bundled themes compiled at build time from themes/themes.toml
 - Custom themes defined in `~/.config/monokit/config.toml` under `[themes.name]` sections
-- Example themes included: dracula, solarized, coral, copper, neo_peachio_dark, nougat_light, and many more
+- Example themes: dracula, solarized, coral, copper, neo_peachio_dark, nougat_light, and many more
 
 ### Navigation (Keybindings)
 
@@ -1861,7 +1874,8 @@ foreground = "#fa8072"
 **Rendering:** Uses buffer-based background rendering for proper theme support across different terminal emulators. Themes use RGB color values (Color::Rgb) for consistent cross-platform display.
 
 **Config Location:** `~/.config/monokit/config.toml`
-**Example Config:** See `config.toml.example` in repo for 30+ pre-defined themes
+**Bundled Themes:** 47 themes compiled into binary (themes/themes.toml), plus 3 built-in (dark, light, system) = 50 total available
+**Example Config:** See `config.toml.example` in repo for additional theme examples
 
 ## OSC Protocol
 
@@ -1906,3 +1920,17 @@ All parameter updates are validated in Rust CLI before sending and applied immed
 
 ### SuperCollider
 - SuperCollider 3.x with scsynth
+
+## Project Metadata
+
+### License
+- GPL-2.0 (GNU General Public License v2.0)
+
+### Release Process
+- Release script: `scripts/release.sh`
+- Automates version tagging and build process
+- Creates GitHub releases with compiled binaries
+
+### Distribution
+- Homebrew support: SC script search includes /opt/homebrew/share/monokit/sc/
+- Binary installation paths follow XDG Base Directory specification

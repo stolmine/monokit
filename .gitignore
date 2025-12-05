@@ -1,4 +1,44 @@
-teletype-main/
+# Build artifacts
 target/
+dist/
+
+# IDE/Editor
 .claude/
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# User config (use config.toml.example as template)
+config.toml
+
+# Debug/test output
+repl_dump.txt
+*.log
+/tmp/
+
+# Audio files
 *.wav
+*.aiff
+*.mp3
+
+# Reference/external code
+teletype-main/
+scrambling-title-animations-master/
+abl_themes/
+
+# Internal planning docs (keep in local dev only)
+*_PLAN.md
+*_REPORT.md
+CLAUDE.md
+PLAN.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test dumps
+repl_tests/dump_*.txt
+repl_tests/*_PLAN.md
+repl_tests/*_REPORT.md
+repl_tests/*_FINDINGS.md

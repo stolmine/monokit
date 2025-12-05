@@ -155,5 +155,17 @@ fn find_script() -> Result<PathBuf, String> {
         }
     }
 
+    // Homebrew install location (macOS)
+    let homebrew_paths = [
+        "/opt/homebrew/share/monokit/sc/monokit_server.scd",  // Apple Silicon
+        "/usr/local/share/monokit/sc/monokit_server.scd",     // Intel Mac
+    ];
+    for path in homebrew_paths {
+        let script = PathBuf::from(path);
+        if script.exists() {
+            return Ok(script);
+        }
+    }
+
     Err("monokit_server.scd not found".to_string())
 }

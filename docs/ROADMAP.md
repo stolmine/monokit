@@ -1103,6 +1103,13 @@ BR (beat repeat) does not turn off reliably when triggered conditionally.
 - [ ] Test with explicit BR.ACT 0 in else branch
 - [ ] May need latch/unlatch behavior clarification
 
+### VCA Reset Coverage [Low]
+Ensure VCA mode is included in reset commands.
+
+- [ ] Add VCA to RST command (reset to default VCA=1 gated mode)
+- [ ] Add VCA to LOAD.RST behavior
+- [ ] Verify VCA state is restored correctly on scene load
+
 ---
 
 ## Phase 6: Release Preparation

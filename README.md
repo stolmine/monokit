@@ -8,7 +8,7 @@ Only for M series Macs at the moment.
 
 ### macOS (Homebrew)
 
-```bash
+```
 brew tap stolmine/monokit
 brew install monokit
 ```

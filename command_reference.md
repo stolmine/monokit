@@ -1,5 +1,27 @@
 ## Command Reference
 
+### Basic Usage:
+
+Use `TR` in the `LIVE` page REPL to play the synth with its default settings.
+Then get scripting!
+
+```
+SCRIPT 1:
+PF 75; AD 250      # set primary osc freq to 100hz; set amp decay envelope to 250ms
+PD 60; PA 4        # set pitch envelope decay to 60ms; set pitch envelope to sweep up 4 octaves
+TR                 # trigger the voice after applying your settings!
+
+METRO SCRIPT:
+EV 4: SCRIPT 1     # call script 1 every 4 metro ticks
+
+On the LIVE page enter the following:
+M.ACT 1; M 125     # turn on the metro (clock), and make it tick every 125ms (120 BPM)
+
+```
+Congrats, you have made a 4 on the floor kick pattern!
+Go experiment with more complicated sequencing setups to trigger the voice with different parameter and fx settings.
+Call M.ACT 0 on the `LIVE` page to stop ticking the metro script.
+
 ### Navigation & Editing
 
 | Command | Description |
@@ -25,95 +47,6 @@
 | `Ctrl+D` | Duplicate line |
 | `Ctrl+K` | Delete line |
 | `Ctrl+C/X/V` | Copy/cut/paste line |
-
-### Variables & Math
-
-| Command | Description |
-|---------|-------------|
-| `A B C D X Y Z T` | Global variables |
-| `J K` | Per-script local variables |
-| `I` | Loop counter |
-| `N1-N4` | Auto-increment counters |
-| `N1.MIN <n>` | Set counter minimum |
-| `N1.MAX <n>` | Set counter maximum |
-| `N1.RST` | Reset counter to min |
-| `ADD / +` | Addition |
-| `SUB / -` | Subtraction |
-| `MUL / *` | Multiplication |
-| `DIV / /` | Division |
-| `MOD / %` | Modulo |
-| `MAP <v> <i1> <i2> <o1> <o2>` | Range mapping |
-| `RND <max>` | Random 0 to max |
-| `RRND <min> <max>` | Random min to max |
-| `TOSS` | Coin flip (0/1) |
-| `EITH <a> <b>` | Random choice |
-| `TOG <a> <b>` | Toggle/alternate |
-| `N <semi>` | Semitones to Hz |
-
-### Control Flow
-
-| Command | Description |
-|---------|-------------|
-| `IF <x>: <cmd>` | Execute if x != 0 |
-| `IF <cond>: <cmd>` | Execute if condition true |
-| `ELIF <cond>: <cmd>` | Else-if |
-| `ELSE: <cmd>` | Else |
-| `PROB <0-100>: <cmd>` | Probability % |
-| `EV <n>: <cmd>` | Every Nth execution |
-| `SKIP <n>: <cmd>` | Skip every Nth |
-| `L <s> <e>: <cmds>` | Loop start to end |
-| `BRK` | Break script |
-| `CMD1; CMD2` | Sub-commands |
-| `EZ <x>` | x == 0 |
-| `NZ <x>` | x != 0 |
-| `EQ <a> <b>` | a == b |
-| `NE <a> <b>` | a != b |
-| `GT <a> <b>` | a > b |
-| `LT <a> <b>` | a < b |
-| `GTE <a> <b>` | a >= b |
-| `LTE <a> <b>` | a <= b |
-
-### Sequences & Patterns
-
-| Command | Description |
-|---------|-------------|
-| `SEQ "<pattern>"` | Inline sequence |
-| `P.N [<0-5>]` | Get/set working pattern |
-| `P.L [<n>]` | Get/set pattern length |
-| `P.I [<n>]` | Get/set pattern index |
-| `P.HERE` | Value at index |
-| `P.NEXT` | Advance, get value |
-| `P.PREV` | Reverse, get value |
-| `P <i> [<v>]` | Get/set at index |
-| `P.PUSH <val>` | Push value |
-| `P.POP` | Pop last value |
-| `P.INS <i> <v>` | Insert at index |
-| `P.RM <i>` | Remove at index |
-| `P.REV` | Reverse pattern |
-| `P.ROT <n>` | Rotate by n |
-| `P.SHUF` | Shuffle |
-| `P.SORT` | Sort ascending |
-| `P.ADD <v>` | Add to all |
-| `P.SUB <v>` | Subtract from all |
-| `P.MUL <v>` | Multiply all |
-| `P.DIV <v>` | Divide all |
-| `P.MOD <v>` | Modulo all |
-| `P.SCALE <min> <max>` | Scale to range |
-| `P.MIN` | Minimum value |
-| `P.MAX` | Maximum value |
-| `P.SUM` | Sum of all |
-| `P.AVG` | Average (int) |
-| `P.FND <val>` | Find index |
-| `PN.*` | Explicit pattern (add pattern # as 1st arg) |
-
-### Scale Quantization
-
-| Command | Description |
-|---------|-------------|
-| `Q <note>` | Quantize to scale |
-| `Q.ROOT <0-11>` | Set root note |
-| `Q.SCALE <0-11>` | Set scale type |
-| `Q.BIT <binary>` | Custom scale mask |
 
 ### Oscillators & FM
 
@@ -244,6 +177,95 @@
 | `EQ.FRQ <hz>` | `EF` | Mid frequency |
 | `EQ.Q <q>` | - | Mid Q (0.1-10) |
 | `EQ.HI <db>` | `EH` | High shelf (-24 to 24) |
+
+### Variables & Math
+
+| Command | Description |
+|---------|-------------|
+| `A B C D X Y Z T` | Global variables |
+| `J K` | Per-script local variables |
+| `I` | Loop counter |
+| `N1-N4` | Auto-increment counters |
+| `N1.MIN <n>` | Set counter minimum |
+| `N1.MAX <n>` | Set counter maximum |
+| `N1.RST` | Reset counter to min |
+| `ADD / +` | Addition |
+| `SUB / -` | Subtraction |
+| `MUL / *` | Multiplication |
+| `DIV / /` | Division |
+| `MOD / %` | Modulo |
+| `MAP <v> <i1> <i2> <o1> <o2>` | Range mapping |
+| `RND <max>` | Random 0 to max |
+| `RRND <min> <max>` | Random min to max |
+| `TOSS` | Coin flip (0/1) |
+| `EITH <a> <b>` | Random choice |
+| `TOG <a> <b>` | Toggle/alternate |
+| `N <semi>` | Semitones to Hz |
+
+### Control Flow
+
+| Command | Description |
+|---------|-------------|
+| `IF <x>: <cmd>` | Execute if x != 0 |
+| `IF <cond>: <cmd>` | Execute if condition true |
+| `ELIF <cond>: <cmd>` | Else-if |
+| `ELSE: <cmd>` | Else |
+| `PROB <0-100>: <cmd>` | Probability % |
+| `EV <n>: <cmd>` | Every Nth execution |
+| `SKIP <n>: <cmd>` | Skip every Nth |
+| `L <s> <e>: <cmds>` | Loop start to end |
+| `BRK` | Break script |
+| `CMD1; CMD2` | Sub-commands |
+| `EZ <x>` | x == 0 |
+| `NZ <x>` | x != 0 |
+| `EQ <a> <b>` | a == b |
+| `NE <a> <b>` | a != b |
+| `GT <a> <b>` | a > b |
+| `LT <a> <b>` | a < b |
+| `GTE <a> <b>` | a >= b |
+| `LTE <a> <b>` | a <= b |
+
+### Sequences & Patterns
+
+| Command | Description |
+|---------|-------------|
+| `SEQ "<pattern>"` | Inline sequence |
+| `P.N [<0-5>]` | Get/set working pattern |
+| `P.L [<n>]` | Get/set pattern length |
+| `P.I [<n>]` | Get/set pattern index |
+| `P.HERE` | Value at index |
+| `P.NEXT` | Advance, get value |
+| `P.PREV` | Reverse, get value |
+| `P <i> [<v>]` | Get/set at index |
+| `P.PUSH <val>` | Push value |
+| `P.POP` | Pop last value |
+| `P.INS <i> <v>` | Insert at index |
+| `P.RM <i>` | Remove at index |
+| `P.REV` | Reverse pattern |
+| `P.ROT <n>` | Rotate by n |
+| `P.SHUF` | Shuffle |
+| `P.SORT` | Sort ascending |
+| `P.ADD <v>` | Add to all |
+| `P.SUB <v>` | Subtract from all |
+| `P.MUL <v>` | Multiply all |
+| `P.DIV <v>` | Divide all |
+| `P.MOD <v>` | Modulo all |
+| `P.SCALE <min> <max>` | Scale to range |
+| `P.MIN` | Minimum value |
+| `P.MAX` | Maximum value |
+| `P.SUM` | Sum of all |
+| `P.AVG` | Average (int) |
+| `P.FND <val>` | Find index |
+| `PN.*` | Explicit pattern (add pattern # as 1st arg) |
+
+### Scale Quantization
+
+| Command | Description |
+|---------|-------------|
+| `Q <note>` | Quantize to scale |
+| `Q.ROOT <0-11>` | Set root note |
+| `Q.SCALE <0-11>` | Set scale type |
+| `Q.BIT <binary>` | Custom scale mask |
 
 ### Metro & Timing
 

@@ -628,7 +628,7 @@ where
             gate::handle_flev_gate(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
         }
         "RST" => {
-            misc::handle_rst(metro_tx, *debug_level, *out_ess, output)?;
+            misc::handle_rst(metro_tx, vca_mode, *debug_level, *out_ess, output)?;
         }
         "RND" => {
             random_ops::handle_rnd(&parts, output)?;
@@ -707,7 +707,7 @@ where
         }
         "LOAD" => {
             if *load_rst {
-                misc::handle_rst(metro_tx, *debug_level, *out_ess, &mut |_| {})?;
+                misc::handle_rst(metro_tx, vca_mode, *debug_level, *out_ess, &mut |_| {})?;
             }
             if scene_cmds::handle_load(&parts, variables, scripts, patterns, notes, current_scene_name, *scramble_enabled, *scramble_mode, *scramble_speed, *scramble_curve, header_scramble, *debug_level, *out_ess, output) {
                 return Ok(vec![9]);

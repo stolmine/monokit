@@ -234,6 +234,41 @@ fn highlight_single_command(
                     continue;
                 }
             }
+        } else if part == "EITH" {
+            if i + 2 < parts.len() {
+                let next_idx = i + 3;
+                let key = format!("{}_{}", script_index, parts[i..next_idx].join("_"));
+
+                let eith_start = cmd[current_pos..].find("EITH").map(|p| current_pos + p);
+                if let Some(start_pos) = eith_start {
+                    if start_pos > current_pos {
+                        segments.push(HighlightedSegment {
+                            text: cmd[current_pos..start_pos].to_string(),
+                            is_highlighted: false,
+                        });
+                    }
+
+                    let selected_index = toggle_state.get(&key).copied().unwrap_or(0);
+
+                    if let Some(highlighted_segments) = highlight_eith_expression(
+                        &cmd[start_pos..],
+                        &parts[i+1],
+                        &parts[i+2],
+                        selected_index,
+                    ) {
+                        segments.extend(highlighted_segments);
+
+                        let val2_end = cmd[start_pos..]
+                            .find(parts[i+2])
+                            .map(|p| start_pos + p + parts[i+2].len())
+                            .unwrap_or(cmd.len());
+                        current_pos = val2_end;
+                    }
+
+                    i += 3;
+                    continue;
+                }
+            }
         }
 
         i += 1;
@@ -455,6 +490,44 @@ fn highlight_tog_expression(
     segments.push(HighlightedSegment {
         text: val2.to_string(),
         is_highlighted: active_index == 1,
+    });
+
+    Some(segments)
+}
+
+fn highlight_eith_expression(
+    line_from_eith: &str,
+    val1: &str,
+    val2: &str,
+    selected_index: usize,
+) -> Option<Vec<HighlightedSegment>> {
+    let mut segments = Vec::new();
+
+    let val1_pos = line_from_eith.find(val1)?;
+    let val1_end = val1_pos + val1.len();
+
+    let val2_pos = line_from_eith[val1_end..].find(val2).map(|p| p + val1_end)?;
+
+    let eith_to_val1 = &line_from_eith[..val1_pos];
+    segments.push(HighlightedSegment {
+        text: eith_to_val1.to_string(),
+        is_highlighted: false,
+    });
+
+    segments.push(HighlightedSegment {
+        text: val1.to_string(),
+        is_highlighted: selected_index == 0,
+    });
+
+    let between = &line_from_eith[val1_end..val2_pos];
+    segments.push(HighlightedSegment {
+        text: between.to_string(),
+        is_highlighted: false,
+    });
+
+    segments.push(HighlightedSegment {
+        text: val2.to_string(),
+        is_highlighted: selected_index == 1,
     });
 
     Some(segments)
@@ -752,6 +825,40 @@ mod tests {
         assert!(full_text.contains(";"), "Should preserve semicolons in output");
         assert!(full_text.contains("AD 5"), "Should preserve commands after semicolon");
         assert!(full_text.contains("PA 0"), "Should preserve all commands");
+    }
+
+    #[test]
+    fn test_highlight_eith_first_value() {
+        let mut state = HashMap::new();
+        state.insert("0_EITH_10_20".to_string(), 0);
+
+        let line = "N ON EITH 10 20";
+        let result = highlight_stateful_operators(line, 0, &state);
+
+        let highlighted_tokens: Vec<_> = result.segments
+            .iter()
+            .filter(|s| s.is_highlighted)
+            .map(|s| s.text.as_str())
+            .collect();
+
+        assert_eq!(highlighted_tokens, vec!["10"]);
+    }
+
+    #[test]
+    fn test_highlight_eith_second_value() {
+        let mut state = HashMap::new();
+        state.insert("0_EITH_100_200".to_string(), 1);
+
+        let line = "PF EITH 100 200";
+        let result = highlight_stateful_operators(line, 0, &state);
+
+        let highlighted_tokens: Vec<_> = result.segments
+            .iter()
+            .filter(|s| s.is_highlighted)
+            .map(|s| s.text.as_str())
+            .collect();
+
+        assert_eq!(highlighted_tokens, vec!["200"]);
     }
 }
 

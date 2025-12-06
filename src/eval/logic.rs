@@ -55,7 +55,11 @@ pub fn eval_logic_expression(
                     return None;
                 }
                 if let Some((b, b_consumed)) = eval_expr_fn(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index, scale) {
-                    let result = if rand::thread_rng().gen_bool(0.5) { a } else { b };
+                    let next_idx = start_idx + 1 + a_consumed + b_consumed;
+                    let key = format!("{}_{}", script_index, parts[start_idx..next_idx].join("_"));
+                    let selected_index = if rand::thread_rng().gen_bool(0.5) { 0 } else { 1 };
+                    patterns.toggle_state.insert(key, selected_index);
+                    let result = if selected_index == 0 { a } else { b };
                     return Some((result, 1 + a_consumed + b_consumed));
                 }
             }

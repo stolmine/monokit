@@ -77,8 +77,11 @@ pub fn handle_eith<F>(
         return;
     }
     if let Some((a, a_consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-        if let Some((b, _)) = eval_expression(&parts, 1 + a_consumed, variables, patterns, counters, scripts, script_index, scale) {
-            let result = if rand::thread_rng().gen_bool(0.5) { a } else { b };
+        if let Some((b, _b_consumed)) = eval_expression(&parts, 1 + a_consumed, variables, patterns, counters, scripts, script_index, scale) {
+            let key = format!("cmd_{}_{}", script_index, parts.join("_"));
+            let selected_index = if rand::thread_rng().gen_bool(0.5) { 0 } else { 1 };
+            patterns.toggle_state.insert(key, selected_index);
+            let result = if selected_index == 0 { a } else { b };
             output(format!("{}", result));
         } else {
             output("ERROR: FAILED TO EVALUATE SECOND VALUE".to_string());

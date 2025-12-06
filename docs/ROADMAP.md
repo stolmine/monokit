@@ -1087,12 +1087,12 @@ Define clear execution order to eliminate race conditions.
 - [ ] Handle nested SCRIPT calls with predictable ordering
 - [ ] Consider adding explicit priority control commands
 
-### EITH Selection Highlighting [Low]
+### EITH Selection Highlighting [COMPLETE]
 Fix visual feedback for EITH random choice operator.
 
-- [ ] Track last selected value in EITH expressions
-- [ ] Highlight selected option in script display (like TOG does)
-- [ ] Ensure state persists correctly across evaluations
+- [x] Track last selected value in EITH expressions
+- [x] Highlight selected option in script display (like TOG does)
+- [x] Ensure state persists correctly across evaluations
 
 ### Beat Repeat Stickiness Bug [Medium]
 BR (beat repeat) does not turn off reliably when triggered conditionally.
@@ -1103,12 +1103,18 @@ BR (beat repeat) does not turn off reliably when triggered conditionally.
 - [ ] Test with explicit BR.ACT 0 in else branch
 - [ ] May need latch/unlatch behavior clarification
 
-### VCA Reset Coverage [Low]
+### VCA Reset Coverage [Low] - COMPLETE (December 2025)
 Ensure VCA mode is included in reset commands.
 
-- [ ] Add VCA to RST command (reset to default VCA=1 gated mode)
-- [ ] Add VCA to LOAD.RST behavior
-- [ ] Verify VCA state is restored correctly on scene load
+- [x] Add VCA to RST command (reset to default VCA=1 gated mode)
+- [x] Add VCA to LOAD.RST behavior
+- [x] Verify VCA state is restored correctly on scene load
+
+**Implementation Notes:**
+- RST command now resets VCA mode to 1 (gated) via `vca_mode` parameter
+- LOAD.RST behavior inherits VCA reset automatically via `handle_rst` call
+- VCA state persists via config system (`save_vca_mode`/`load_config`)
+- Scene save/load already handles VCA state through config persistence
 
 ### Script Undo/Redo [Medium]
 Add undo/redo support for script editing.
@@ -1119,15 +1125,19 @@ Add undo/redo support for script editing.
 - [ ] Reasonable history depth (10-20 edits)
 - [ ] Clear history on page change or save
 
-### List Output Formatting [Low]
+### List Output Formatting [Low] - COMPLETE (December 2025)
 Ensure list queries display vertically, not in overflowing single lines.
 
-- [ ] SCENES - Display one scene per line
-- [ ] PSETS / PRESETS - Display one preset per line
-- [ ] THEMES - Display one theme per line (or columnar)
-- [ ] MIDI.IN (device list) - One device per line
-- [ ] AUDIO.OUT (device list) - One device per line
-- [ ] Respect 46-char width constraint
+- [x] SCENES - Display one scene per line (already correct)
+- [x] PSETS / PRESETS - Display one preset per line (already correct)
+- [x] THEMES - Display one theme per line
+- [x] MIDI.IN (device list) - One device per line (already correct)
+- [x] AUDIO.OUT (device list) - One device per line (already correct)
+- [x] Respect 46-char width constraint
+
+**Changes Made:**
+- Updated `handle_theme` in `src/commands/system/misc.rs` to display themes vertically
+- All other list commands (SCENES, PSETS, MIDI.IN, AUDIO.OUT) already displayed correctly
 
 ### NR and ER Operators [Medium]
 Add Teletype-style numeric repetitor and Euclidean rhythm operators.

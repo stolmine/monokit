@@ -169,6 +169,7 @@ where
 
 pub fn handle_rst<F>(
     metro_tx: &Sender<MetroCommand>,
+    vca_mode: &mut bool,
     debug_level: u8,
     out_ess: bool,
     mut output: F,
@@ -176,6 +177,7 @@ pub fn handle_rst<F>(
 where
     F: FnMut(String),
 {
+    *vca_mode = true;
     metro_tx.send(MetroCommand::SendParam("pf".to_string(), OscType::Float(131.0)))?;
     metro_tx.send(MetroCommand::SendParam("pw".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("mf".to_string(), OscType::Float(262.0)))?;
@@ -256,6 +258,7 @@ where
 
     metro_tx.send(MetroCommand::SendParam("pn".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("t_gate".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("vca_mode".to_string(), OscType::Int(1)))?;
 
     metro_tx.send(MetroCommand::SendParam("br_act".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("br_len".to_string(), OscType::Int(250)))?;
@@ -366,11 +369,17 @@ pub fn handle_theme<F>(
             Ok(cfg) => {
                 let available = config::list_themes(&cfg);
                 output(format!("CURRENT THEME: {}", theme.name.to_uppercase()));
-                output(format!("AVAILABLE: {}", available.join(", ").to_uppercase()));
+                output("AVAILABLE THEMES:".to_string());
+                for theme_name in available {
+                    output(format!("  {}", theme_name.to_uppercase()));
+                }
             }
             Err(_) => {
                 output(format!("CURRENT THEME: {}", theme.name.to_uppercase()));
-                output("AVAILABLE: DARK, LIGHT, SYSTEM".to_string());
+                output("AVAILABLE THEMES:".to_string());
+                output("  DARK".to_string());
+                output("  LIGHT".to_string());
+                output("  SYSTEM".to_string());
             }
         }
     } else {

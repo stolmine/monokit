@@ -1110,6 +1110,34 @@ Ensure VCA mode is included in reset commands.
 - [ ] Add VCA to LOAD.RST behavior
 - [ ] Verify VCA state is restored correctly on scene load
 
+### Script Undo/Redo [Medium]
+Add undo/redo support for script editing.
+
+- [ ] Track edit history per script page
+- [ ] `Ctrl+Z` - Undo last edit
+- [ ] `Ctrl+Shift+Z` or `Ctrl+Y` - Redo
+- [ ] Reasonable history depth (10-20 edits)
+- [ ] Clear history on page change or save
+
+### List Output Formatting [Low]
+Ensure list queries display vertically, not in overflowing single lines.
+
+- [ ] SCENES - Display one scene per line
+- [ ] PSETS / PRESETS - Display one preset per line
+- [ ] THEMES - Display one theme per line (or columnar)
+- [ ] MIDI.IN (device list) - One device per line
+- [ ] AUDIO.OUT (device list) - One device per line
+- [ ] Respect 46-char width constraint
+
+### NR and ER Operators [Medium]
+Add Teletype-style numeric repetitor and Euclidean rhythm operators.
+
+- [ ] `NR <val> <count>` - Numeric repetitor (repeat val count times, then advance)
+- [ ] `ER <fills> <length> [offset]` - Euclidean rhythm generator
+- [ ] ER returns 1 or 0 for current step in pattern
+- [ ] Per-script/per-line state tracking (like TOG/SEQ)
+- [ ] Document Euclidean algorithm implementation
+
 ---
 
 ## Phase 6: Release Preparation
@@ -1272,6 +1300,25 @@ Add multi-colored noise generator before filter and amp stages.
 - [ ] Envelope option: noise follows amp envelope or constant level
 - [ ] Update SynthDef with noise UGens (WhiteNoise, PinkNoise, BrownNoise, etc.)
 
+### Oscillator Sync [Medium]
+Add hard sync between primary and modulator oscillators.
+
+- [ ] `SYNC <0|1>` - Enable/disable oscillator sync
+- [ ] Primary oscillator resets phase on modulator zero-crossing
+- [ ] Classic sync sweep sound when modulator frequency changes
+- [ ] Update SynthDef with sync logic (Sync or manual phase reset)
+
+### Additional Filter Types [Medium]
+Expand filter options beyond SVF.
+
+- [ ] `FT` / `FILT.TYPE` extended modes:
+  - Current: 0=LP, 1=HP, 2=BP, 3=Notch
+  - Add: 4=Ladder (Moog-style 24dB/oct)
+  - Add: 5=Formant (vowel filter)
+  - Add: 6=Comb (as filter, not resonator)
+- [ ] Consider separate filter UGens or multi-mode SynthDef
+- [ ] Maintain filter envelope compatibility across types
+
 ### Additional Voice Types [Very High]
 - [ ] `VOICE <0-N>` - Voice type selector
 - [ ] Voice 0: Current HD2-style complex oscillator (default)
@@ -1322,6 +1369,29 @@ Add multi-colored noise generator before filter and amp stages.
 
 **Focus:** Packaging and deployment infrastructure (post-release expansion)
 
+### Cross-Platform Compatibility [High]
+Expand beyond Apple Silicon macOS.
+
+**macOS Intel (x86_64):**
+- [ ] Add x86_64-apple-darwin target to release workflow
+- [ ] Bundle Intel scsynth binary
+- [ ] Test on Intel Mac hardware
+- [ ] Universal binary option (fat binary)
+
+**Linux:**
+- [ ] Linux build target (x86_64-unknown-linux-gnu)
+- [ ] Bundle or document scsynth installation
+- [ ] Handle audio backend differences (JACK, PulseAudio, PipeWire)
+- [ ] AppImage or Flatpak packaging
+- [ ] Test on common distros (Ubuntu, Fedora, Arch)
+
+**Windows:**
+- [ ] Windows build target (x86_64-pc-windows-msvc)
+- [ ] Bundle scsynth for Windows
+- [ ] Handle Windows audio APIs (WASAPI, ASIO)
+- [ ] Portable .exe or MSI installer
+- [ ] Terminal emulator recommendations (Windows Terminal)
+
 ### Unified Installer [High]
 - [ ] Single installer package bundling:
   - Rust CLI binary
@@ -1329,7 +1399,7 @@ Add multi-colored noise generator before filter and amp stages.
   - SC SynthDefs
   - Default config/themes
 - [ ] Platform-specific installers:
-  - macOS: .pkg or Homebrew formula
+  - macOS: .pkg or Homebrew formula (COMPLETE for ARM)
   - Linux: .deb, .rpm, AppImage
   - Windows: .msi or portable .exe
 - [ ] Auto-start SC server on launch

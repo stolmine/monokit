@@ -1,5 +1,7 @@
 # Monokit
 
+![Discord](https://img.shields.io/discord/:1446968284225212450)
+
 Teletype-style scripting front end for a single complex oscillator voice built in SuperCollider.
 
 Designed for percussion, glitch, microsound purposes, but has broad range.

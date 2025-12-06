@@ -1262,6 +1262,16 @@ See: `docs/scsynth_direct_integration.md` for detailed implementation guide
 
 **Focus:** Major architectural changes requiring deep SuperCollider work
 
+### Noise Source Integration [Medium]
+Add multi-colored noise generator before filter and amp stages.
+
+- [ ] Add noise oscillator to voice (white, pink, brown/red, blue, violet)
+- [ ] `NS` / `NOISE` - Noise level (mix amount into signal path)
+- [ ] `NS.CLR` / `NOISE.CLR` - Noise color (0=white, 1=pink, 2=brown, 3=blue, 4=violet)
+- [ ] Insert point: after oscillator mix, before filter
+- [ ] Envelope option: noise follows amp envelope or constant level
+- [ ] Update SynthDef with noise UGens (WhiteNoise, PinkNoise, BrownNoise, etc.)
+
 ### Additional Voice Types [Very High]
 - [ ] `VOICE <0-N>` - Voice type selector
 - [ ] Voice 0: Current HD2-style complex oscillator (default)

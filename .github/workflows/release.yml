@@ -9,33 +9,73 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    runs-on: macos-latest
+  build-macos:
+    runs-on: macos-14  # Apple Silicon runner
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Rust
         uses: dtolnay/rust-action@stable
 
+      - name: Install SuperCollider
+        run: |
+          brew install --cask supercollider
+          # Wait for installation to complete
+          sleep 5
+
+      - name: Install sc3-plugins
+        run: |
+          # Download and install sc3-plugins for SVF filter
+          SC3_VERSION="3.14.0"
+          curl -L -o sc3-plugins.zip "https://github.com/supercollider/sc3-plugins/releases/download/Version-${SC3_VERSION}/sc3-plugins-${SC3_VERSION}-macOS-universal.zip"
+          unzip sc3-plugins.zip
+          mkdir -p ~/Library/Application\ Support/SuperCollider/Extensions/
+          cp -r SC3plugins ~/Library/Application\ Support/SuperCollider/Extensions/
+
+      - name: Compile SynthDefs
+        run: |
+          # Run sclang to compile synthdefs
+          cd build_scripts
+          /Applications/SuperCollider.app/Contents/MacOS/sclang compile_synthdefs.scd || true
+          ls -la ../sc/synthdefs/
+
       - name: Run tests
         run: cargo test --verbose
 
-      - name: Build release
-        run: cargo build --release
+      - name: Build release bundle
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          CODESIGN=1 ./scripts/bundle.sh "${VERSION}"
 
-      - name: Create distribution
+      - name: Create tarball
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           ARCH="aarch64-apple-darwin"
           NAME="monokit-${VERSION}-${ARCH}"
 
-          mkdir -p dist/${NAME}
-          cp target/release/monokit dist/${NAME}/
-          cp -r sc dist/${NAME}/
+          cd dist/bundle
+          tar -czvf "${NAME}.tar.gz" "${NAME}"
+          shasum -a 256 "${NAME}.tar.gz" > "${NAME}.tar.gz.sha256"
 
-          cd dist
-          tar -czvf ${NAME}.tar.gz ${NAME}
-          shasum -a 256 ${NAME}.tar.gz > ${NAME}.tar.gz.sha256
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-arm64-bundle
+          path: |
+            dist/bundle/*.tar.gz
+            dist/bundle/*.sha256
+
+  release:
+    needs: build-macos
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-arm64-bundle
+          path: dist/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -44,22 +84,24 @@ jobs:
             dist/*.tar.gz
             dist/*.sha256
           generate_release_notes: true
+          body: |
+            ## Installation
 
-      - name: Update Homebrew Formula
-        env:
-          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          SHA256=$(curl -sL https://github.com/${{ github.repository }}/archive/refs/tags/v${VERSION}.tar.gz | shasum -a 256 | cut -d' ' -f1)
+            Download the tarball for your platform, extract, and run:
 
-          git clone https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/stolmine/homebrew-monokit.git
-          cd homebrew-monokit
+            ```bash
+            tar -xzf monokit-*.tar.gz
+            cd monokit-*
+            ./monokit
+            ```
 
-          sed -i '' "s|url \".*\"|url \"https://github.com/stolmine/monokit/archive/refs/tags/v${VERSION}.tar.gz\"|" Formula/monokit.rb
-          sed -i '' "s|sha256 \".*\"|sha256 \"${SHA256}\"|" Formula/monokit.rb
+            **Note:** On first run, macOS may require you to allow the app in Security & Privacy settings.
 
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add Formula/monokit.rb
-          git commit -m "Update monokit to v${VERSION}"
-          git push
+            ## What's Included
+
+            This is a self-contained bundle (~16MB) that includes:
+            - monokit binary
+            - scsynth audio engine
+            - All required plugins and SynthDefs
+
+            No separate SuperCollider installation required!

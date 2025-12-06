@@ -6,6 +6,8 @@ Designed for percussion, glitch, microsound purposes, but has broad range.
 
 Only for M series Macs at the moment.
 
+See command_reference.md for quick overview of basic options.
+
 ## Features
 
 ### Sound Engine
@@ -110,6 +112,8 @@ And the Industrial Music Electronics [Hertz Donut mk2](https://modulargrid.net/e
 Made possible with binaries and sound engine from [SuperCollider](https://supercollider.github.io/)
 
 As well as ugens from [sc3-plugins](https://github.com/supercollider/sc3-plugins)
+
+Keyboard smash title text animation based on this repo from [DvorakDwarf](https://github.com/DvorakDwarf/scrambling-title-animations?tab=readme-ov-file)
 
 ## Disclosure
 

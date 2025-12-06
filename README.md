@@ -7,7 +7,7 @@ Only for M series Macs at the moment.
 ## Features
 
 ### Sound Engine
-- **Complex oscillator voice** - complex oscillator configuration with FM, feedback, and waveshaping/folding
+- **Complex oscillator voice** - dual linked oscillator configuration with independent pitch, FM, feedback, mix ratio,  and waveshaping/folding
 - **Full effects chain** - SVF filter, comb resonator, ring mod, bit and sample rate reduction, compressor, beat repeat, pitch shift, stereo delay, 3-band EQ, plate reverb
 - **77 real-time parameters** - All controllable via terse commands
 - **6 percussive envelopes** - Amp, pitch, FM, discontinuity, feedback, filter with per-envelope attack and curve

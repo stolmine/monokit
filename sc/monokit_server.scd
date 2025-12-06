@@ -81,7 +81,6 @@ s.waitForBoot {
             eq = 1,       // EQ mid Q (0.1-10)
             eh = 0,       // EQ high shelf dB (-24 to +24)
             pn = 0,       // Pan position (-16383 to +16383)
-            br_act = 0,   // Beat repeat active (0-1)
             br_len = 2,   // Beat repeat loop division (0-7)
             br_len_ms = 250, // Beat repeat loop length in ms
             br_rev = 0,   // Beat repeat reverse (0-1)
@@ -313,7 +312,7 @@ s.waitForBoot {
         #sigL, sigR = Pan2.ar(sig, panPos);
 
         // Beat Repeat Buffer Processing
-        brActive = Lag.kr(br_act.clip(0, 1), 0.01);
+        brActive = (br_mix > 0).asInteger;
         brLoopLen = br_len_ms / 1000;
         brBufSize = (brLoopLen * SampleRate.ir).ceil.max(4410);
 

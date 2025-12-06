@@ -260,11 +260,12 @@ Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ → Plate Reverb
 
 ### Beat Repeat
 
-- `BR.ACT <0|1>` - Enable beat repeat
+Beat repeat activates automatically when `BR.MIX` is greater than 0.
+
 - `BR.LEN <0-7>` - Division (0=1/16, 1=1/8...7=8×)
 - `BR.REV <0|1>` - Reverse playback
 - `BR.WIN <1-50>` - Window size (ms)
-- `BR.MIX <0-16383>` - Beat repeat mix
+- `BR.MIX <0-16383>` - Beat repeat mix (activates when > 0)
 
 ### Pitch Shift
 
@@ -1271,11 +1272,10 @@ Notes are saved with scenes. 8 lines maximum.
 
 | Command | Description |
 |---------|-------------|
-| `BR.ACT <0\|1>` | Beat repeat enable |
 | `BR.LEN <0-7>` | Division |
 | `BR.REV <0\|1>` | Reverse |
 | `BR.WIN <1-50>` | Window (ms) |
-| `BR.MIX <amt>` | Beat repeat mix |
+| `BR.MIX <amt>` | Beat repeat mix (activates >0) |
 | `PS.MODE <0\|1>` | Pitch shift mode |
 | `PS.SEMI <-24-24>` | Semitones |
 | `PS.GRAIN <5-100>` | Grain size (ms) |

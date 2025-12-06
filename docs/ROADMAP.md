@@ -1125,14 +1125,15 @@ Fix visual feedback for EITH random choice operator.
 - [x] Highlight selected option in script display (like TOG does)
 - [x] Ensure state persists correctly across evaluations
 
-### Beat Repeat Stickiness Bug [Medium]
+### Beat Repeat Stickiness Bug [COMPLETE] - December 2025
 BR (beat repeat) does not turn off reliably when triggered conditionally.
 
-- [ ] Diagnose why BR stays on after conditional trigger
-- [ ] Check if BR.ACT 0 is being sent correctly
-- [ ] Verify OSC message ordering (BR on/off vs other params)
-- [ ] Test with explicit BR.ACT 0 in else branch
-- [ ] May need latch/unlatch behavior clarification
+Fixed by deriving beat repeat activation from BR.MIX level instead of using separate BR.ACT command.
+
+- [x] Removed BR.ACT command entirely
+- [x] Changed brActive to derive from br_mix > 0 in SynthDef
+- [x] Beat repeat now activates automatically when BR.MIX > 0
+- [x] Updated documentation to reflect mix-based activation
 
 ### VCA Reset Coverage [Low] - COMPLETE (December 2025)
 Ensure VCA mode is included in reset commands.

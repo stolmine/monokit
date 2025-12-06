@@ -558,7 +558,7 @@ impl ParamActivity {
             "pa" => Some(16), "fd" => Some(17), "fa" => Some(18), "dd" => Some(19),
             "da" => Some(20), "dt" => Some(21), "df" => Some(22), "dw" => Some(23),
             "rv" => Some(24), "rh" => Some(25), "rw" => Some(26), "lm" => Some(27),
-            "ct" => Some(28), "br_act" | "br.act" => Some(29),
+            "ct" => Some(28), "br_mix" | "br.mix" => Some(29),
             "ps_semi" | "ps.semi" => Some(30), "rgf" => Some(31),
             "lb" => Some(32), "ls" => Some(33), "eq" => Some(34), "tk" => Some(35),
             "mb" => Some(36), "mp" => Some(37), "md" => Some(38), "mt" => Some(39),
@@ -583,7 +583,7 @@ pub const GRID_LABELS: [&str; 48] = [
     "PF", "PW", "MF", "MW", "FM", "FB", "DC", "FC",
     "FQ", "FT", "FE", "RF", "RD", "RM", "AD", "PD",
     "PA", "FD", "FA", "DD", "DA", "DT", "DF", "DW",
-    "RV", "RH", "RW", "LM", "CT", "BA", "PS", "RG",
+    "RV", "RH", "RW", "LM", "CT", "BM", "PS", "RG",
     "LB", "LS", "EQ", "TK", "MB", "MP", "MD", "MT",
     "MA", "MX", "VL", "PN", "DS", "MM", "ME", "FK",
 ];

@@ -531,9 +531,6 @@ where
         "VCA" => {
             synth_params::handle_vca(&parts, vca_mode, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_qry, *out_cfm, output)?;
         }
-        "BR.ACT" => {
-            synth_params::handle_br_act(&parts, *metro_interval, br_len, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
-        }
         "BR.LEN" => {
             synth_params::handle_br_len(&parts, *metro_interval, br_len, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }

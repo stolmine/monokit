@@ -260,7 +260,6 @@ where
     metro_tx.send(MetroCommand::SendParam("t_gate".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("vca_mode".to_string(), OscType::Int(1)))?;
 
-    metro_tx.send(MetroCommand::SendParam("br_act".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("br_len".to_string(), OscType::Int(250)))?;
     metro_tx.send(MetroCommand::SendParam("br_rev".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("br_win".to_string(), OscType::Int(5)))?;

@@ -1,6 +1,6 @@
 # Monokit
 
-Teletype-style scripting front end for a SuperCollider complex oscillator voice.
+Teletype-style scripting front end for a complex oscillator voice built in SuperCollider.
 
 ## Installation
 
@@ -19,13 +19,11 @@ No dependencies required - scsynth audio engine is bundled.
 cargo build --release --features scsynth-direct
 ```
 
-Requires Rust 1.70+ and SuperCollider 3.13+ (for bundling scsynth).
+Requires Rust 1.70+ and SuperCollider 3.14+ (for bundling scsynth).
 
 ## Usage
 
-```bash
-monokit
-```
+Run `monokit` on your terminal after installation.
 
 ## Documentation
 
@@ -41,8 +39,10 @@ User configuration is stored in `~/.config/monokit/config.toml`.
 
 ## License
 
-GPL-2.0
+GPL-2.0 - do what you want if you share!
 
 ## Acknowledgments
 
 Heavily inspired by the wonderful [monome Teletype](https://monome.org/docs/teletype/).
+Made possible with binaries from [SuperCollider](https://supercollider.github.io/)
+As well as ugens from [sc3-plugins](https://github.com/supercollider/sc3-plugins)

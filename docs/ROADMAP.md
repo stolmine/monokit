@@ -1177,6 +1177,12 @@ Phase 4 - Recording Without sclang: COMPLETE
 - [x] Implement recording via DiskOut UGen
 - [x] Handle buffer allocation for recording
 - [x] Maintain feature parity with sclang-based recording
+- [x] Bundle DiskIO_UGens.scx plugin (required for DiskOut)
+- [x] Upgrade to scsynth 3.14.1 (fixes CoreAudio input query bug)
+- [x] Bundle libsndfile, libfftw3f, libreadline dylibs
+- [x] Use /b_write with leaveOpen=1 for streaming writes
+- [x] Output: 24-bit stereo WAV @ 48kHz to current directory
+- [x] Sequential file naming: monokit_audio_N.wav
 
 Phase 5 - Audio Device Handling: COMPLETE
 - [x] Map device names to scsynth device indices

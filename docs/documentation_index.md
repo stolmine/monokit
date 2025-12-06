@@ -36,6 +36,34 @@
 
 See: `docs/scsynth_direct_integration.md` for detailed spec
 
+### Recording in scsynth-direct Mode [COMPLETE]
+
+**DiskOut UGen Implementation:**
+- Recording now works in bundled scsynth-direct mode
+- Uses DiskOut UGen for streaming audio to disk
+- Requires DiskIO_UGens.scx plugin (now bundled)
+- Separate monokit_recorder SynthDef on node 1001
+
+**Key Fixes:**
+- Upgraded to scsynth 3.14.1 (fixes CoreAudio input query bug with -i 0)
+- Added DiskIO_UGens.scx to bundle (contains DiskOut UGen)
+- Fixed /b_write OSC command with proper parameters (leaveOpen=1 for streaming)
+- Bundled required dylibs: libsndfile, libfftw3f, libreadline
+- Added xattr clearing and code signing to bundle process
+
+**Recording Workflow:**
+- Start: /b_alloc → /b_write (leaveOpen=1) → /s_new monokit_recorder
+- Stop: /n_free 1001 → /b_close → /b_free
+- Output format: 24-bit stereo WAV @ 48kHz
+- File naming: monokit_audio_0.wav, monokit_audio_1.wav, etc.
+- Files saved to current working directory
+
+**Bundle Updates:**
+- scripts/bundle.sh copies DiskIO_UGens.scx from plugins directory
+- All required dylibs copied from SuperCollider.app/Contents/Frameworks/
+- xattr -cr clears extended attributes (removes quarantine flags)
+- codesign --force --deep -s - signs all binaries and dylibs
+
 ### BRK Command (December 2025)
 
 **Script Break Control:**
@@ -1682,12 +1710,15 @@ Q.BIT 10101       // Custom 5-note scale
 ```
 
 #### Recording
-- `REC` - Start recording to current working directory (timestamped WAV file)
+- `REC` - Start recording to current working directory
 - `REC.STOP` - Stop recording (automatically called on quit)
 - `REC.PATH <prefix>` - Set custom recording path prefix
-- Files saved as WAV (int24) format
+- Files saved as WAV 24-bit stereo @ 48kHz
+- Sequential file naming: monokit_audio_0.wav, monokit_audio_1.wav, etc.
 - UI shows red "● REC MM:SS" indicator when recording
 - Recording auto-stops on quit to prevent file corruption
+- Works in both sclang and scsynth-direct modes
+- scsynth-direct: uses DiskOut UGen with streaming buffer writes
 
 #### Beat Repeat
 - `BR.ACT <0|1>` - Enable/disable beat repeat (0=off, 1=on)

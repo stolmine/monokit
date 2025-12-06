@@ -15,6 +15,9 @@ use crate::audio_devices;
 pub struct ScsynthDirect {
     child: Option<Child>,
     osc_socket: Option<UdpSocket>,
+    recording_index: u32,
+    recording_path_prefix: Option<String>,
+    is_recording: bool,
 }
 
 impl ScsynthDirect {
@@ -22,6 +25,9 @@ impl ScsynthDirect {
         Ok(Self {
             child: None,
             osc_socket: None,
+            recording_index: 1,
+            recording_path_prefix: None,
+            is_recording: false,
         })
     }
 
@@ -294,6 +300,7 @@ impl ScsynthDirect {
             synthdefs_dir.join("monokit.scsyndef"),
             synthdefs_dir.join("monokit_spectrum.scsyndef"),
             synthdefs_dir.join("monokit_scope.scsyndef"),
+            synthdefs_dir.join("monokit_recorder.scsyndef"),
         ];
 
         if !silent {
@@ -439,31 +446,122 @@ impl ScsynthDirect {
         Self::send_osc_message_static(&socket, addr, args)
     }
 
-    /// Start recording audio to a file
-    ///
-    /// NOTE: Recording in scsynth-direct mode requires DiskOut UGen implementation.
-    /// This is a stub that will be fully implemented in Phase 4.
-    ///
-    /// The proper implementation requires:
-    /// 1. Adding DiskOut UGen to the monokit SynthDef
-    /// 2. Using /b_alloc to allocate recording buffer
-    /// 3. Using /b_record to start recording to buffer
-    /// 4. Using /b_write to write buffer to disk
-    /// 5. Using /b_free to clean up
-    pub fn start_recording(&self, _dir: &str, _custom_path: Option<&str>) -> Result<(), String> {
-        eprintln!("[monokit] Recording not yet fully implemented in scsynth-direct mode");
-        eprintln!("[monokit] TODO: Implement DiskOut-based recording");
-        // Return Ok for now so the command doesn't error out
-        // In production, this should either work or clearly fail
+    /// Start recording audio to a file using DiskOut UGen
+    pub fn start_recording(&mut self, dir: &str, _custom_path: Option<&str>) -> Result<(), String> {
+        if self.is_recording {
+            return Err("Already recording".to_string());
+        }
+
+        // Generate file path
+        let file_path = if let Some(ref prefix) = self.recording_path_prefix {
+            format!("{}_{}.wav", prefix, self.recording_index)
+        } else {
+            format!("{}/monokit_audio_{}.wav", dir, self.recording_index)
+        };
+
+        // Create socket for OSC communication
+        let socket = UdpSocket::bind("127.0.0.1:0")
+            .map_err(|e| format!("Failed to bind socket for recording: {}", e))?;
+
+        socket.set_read_timeout(Some(Duration::from_secs(5)))
+            .map_err(|e| format!("Failed to set socket timeout: {}", e))?;
+
+        // 1. Allocate buffer (bufnum=99, numFrames=65536, numChannels=2)
+        Self::send_osc_message_static(
+            &socket,
+            "/b_alloc",
+            vec![
+                OscType::Int(99),
+                OscType::Int(65536),
+                OscType::Int(2),
+            ],
+        )?;
+
+        // Wait for buffer allocation to complete (increased from 100ms)
+        thread::sleep(Duration::from_millis(200));
+
+        // 2. Open file for streaming recording via DiskOut
+        // /b_write with leaveOpen=1 opens file for continuous writes by DiskOut UGen
+        Self::send_osc_message_static(
+            &socket,
+            "/b_write",
+            vec![
+                OscType::Int(99),                           // buffer number
+                OscType::String(file_path),                 // path
+                OscType::String("wav".to_string()),         // header format
+                OscType::String("int24".to_string()),       // sample format
+                OscType::Int(-1),                           // numFrames (-1 = all)
+                OscType::Int(0),                            // startFrame
+                OscType::Int(1),                            // leaveOpen = 1 for DiskOut
+            ],
+        )?;
+
+        // Wait for file to be opened (increased from 100ms)
+        thread::sleep(Duration::from_millis(200));
+
+        // 3. Create recorder synth (/s_new "monokit_recorder", nodeID=2000, addAction=1, targetID=0)
+        Self::send_osc_message_static(
+            &socket,
+            "/s_new",
+            vec![
+                OscType::String("monokit_recorder".to_string()),
+                OscType::Int(2000),
+                OscType::Int(1),  // addAction=1 (addToTail)
+                OscType::Int(0),  // targetID=0 (default group)
+                OscType::String("bufnum".to_string()),
+                OscType::Int(99),
+            ],
+        )?;
+
+        self.is_recording = true;
+        self.recording_index += 1;
+
         Ok(())
     }
 
-    /// Stop recording
-    ///
-    /// NOTE: Stub for DiskOut-based recording (Phase 4 implementation pending)
-    pub fn stop_recording(&self) -> Result<(), String> {
-        eprintln!("[monokit] Recording stop (not yet implemented in scsynth-direct mode)");
+    /// Stop recording and close the file
+    pub fn stop_recording(&mut self) -> Result<(), String> {
+        if !self.is_recording {
+            return Err("Not currently recording".to_string());
+        }
+
+        // Create socket for OSC communication
+        let socket = UdpSocket::bind("127.0.0.1:0")
+            .map_err(|e| format!("Failed to bind socket for recording: {}", e))?;
+
+        // 1. Free recorder synth node
+        Self::send_osc_message_static(
+            &socket,
+            "/n_free",
+            vec![OscType::Int(2000)],
+        )?;
+
+        thread::sleep(Duration::from_millis(50));
+
+        // 2. Close buffer file
+        Self::send_osc_message_static(
+            &socket,
+            "/b_close",
+            vec![OscType::Int(99)],
+        )?;
+
+        thread::sleep(Duration::from_millis(50));
+
+        // 3. Free buffer
+        Self::send_osc_message_static(
+            &socket,
+            "/b_free",
+            vec![OscType::Int(99)],
+        )?;
+
+        self.is_recording = false;
+
         Ok(())
+    }
+
+    /// Set custom recording path prefix
+    pub fn set_recording_path_prefix(&mut self, prefix: String) {
+        self.recording_path_prefix = Some(prefix);
     }
 }
 

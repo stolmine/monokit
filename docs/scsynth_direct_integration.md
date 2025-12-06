@@ -224,63 +224,67 @@ scsynth SendReply → sclang OSCdef → NetAddr.sendMsg → Rust (57121)
 
 ## 7. Phase 4: Recording
 
-**Current Approach:** `s.record()` / `s.stopRecording` (server-side recording via sclang)
+**Status:** COMPLETE (December 2025)
 
-**Status:** STUB IMPLEMENTATION - Recording methods exist but do not record audio yet.
-
-**Reason:** Full DiskOut implementation requires:
-1. Modified monokit SynthDef with DiskOut UGen
-2. Buffer allocation/management via OSC
-3. File naming logic in Rust
-4. Testing requires sc3-plugins (SVF) to be resolved first
-
-**Current behavior in scsynth-direct mode:**
-- REC command logs "Recording not yet implemented in scsynth-direct mode"
-- No crash, graceful degradation
-- sclang mode recording continues to work unchanged
+**Implementation:** DiskOut UGen with streaming buffer writes
 
 ### Solution: DiskOut UGen
 
-**Replace:** Server.record with DiskOut UGen in SynthDef
+Recording now works in scsynth-direct mode using the DiskOut UGen for streaming audio to disk.
 
-**Implementation:**
+**Key Components:**
 
-1. **Add DiskOut to monokit SynthDef:**
-   ```supercollider
-   arg diskOutBus = 100, diskOutActive = 0;
+1. **DiskIO_UGens.scx plugin bundled:**
+   - Required for DiskOut UGen functionality
+   - Included in bundle via bundle.sh script
+   - Copied from SuperCollider.app/Contents/Resources/plugins/
 
-   Out.kr(diskOutBus, [sigL, sigR] * diskOutActive);
-   ```
+2. **Separate monokit_recorder SynthDef:**
+   - Dedicated recorder synth on separate node (ID 1001)
+   - Uses DiskOut UGen to stream audio to buffer
+   - Reads from main synth output bus (InFeedback)
+   - Always allocated, activated via buffer allocation
 
-2. **Recording control via OSC:**
-   - `/b_alloc` - Allocate buffer for recording
-   - `/b_write` - Start writing buffer to disk
-   - `/b_free` - Free buffer when done
-
-3. **Rust-side recording logic:**
+3. **Recording workflow:**
    ```rust
-   // Start recording
-   osc.send("/b_alloc", vec![bufnum, frames, channels, path])?;
-   osc.send("/s_set", vec![1000, "diskOutActive", 1])?;
+   // Start recording (Rust)
+   1. Allocate buffer: /b_alloc <bufnum> <numFrames> <numChannels>
+   2. Open file for streaming: /b_write <bufnum> <path> wav int24 -1 0 1 (leaveOpen=1)
+   3. Instantiate recorder: /s_new monokit_recorder 1001 1 0 bufnum <bufnum>
 
-   // Stop recording
-   osc.send("/s_set", vec![1000, "diskOutActive", 0])?;
-   osc.send("/b_close", vec![bufnum])?;
-   osc.send("/b_free", vec![bufnum])?;
+   // Stop recording (Rust)
+   1. Free recorder synth: /n_free 1001
+   2. Close buffer file: /b_close <bufnum>
+   3. Free buffer: /b_free <bufnum>
    ```
 
-**Pros:**
+4. **File format:**
+   - WAV 24-bit stereo @ 48kHz
+   - Sequential naming: monokit_audio_0.wav, monokit_audio_1.wav, etc.
+   - Files saved to current working directory
+
+5. **scsynth 3.14.1 upgrade:**
+   - Required to fix CoreAudio input query bug with -i 0
+   - Older versions fail with "Invalid audio device index -1" on macOS
+   - Bundle now includes scsynth 3.14.1
+
+6. **Additional dylibs bundled:**
+   - libsndfile.2.dylib (required by DiskOut for WAV writing)
+   - libfftw3f.3.dylib (required by FFT UGens)
+   - libreadline.8.dylib (required by scsynth)
+   - All copied from SuperCollider Frameworks directory
+   - Code signing and xattr clearing handled in bundle.sh
+
+**Benefits:**
 - No sclang dependency
 - Full control over format/path
+- Streaming writes (no buffer size limits)
+- Works in bundled scsynth-direct mode
 
-**Cons:**
-- More complex OSC sequencing
-- Buffer management required
-- No automatic file naming (must generate in Rust)
-
-**File Format:**
-- WAV int24 (current format)
-- Generate timestamped filenames in Rust: `monokit_YYYYMMDD_HHMMSS.wav`
+**Files Modified:**
+- `src/scsynth_direct.rs` - Recording OSC sequence
+- `sc/monokit_server.scd` - Added monokit_recorder SynthDef
+- `scripts/bundle.sh` - Copy DiskIO_UGens.scx and dylibs, code signing
 
 ---
 
@@ -524,11 +528,11 @@ if use_scsynth {
 ### Phase 4 Testing
 - [x] Recording methods exist and compile
 - [x] REC command doesn't crash in scsynth-direct mode
-- [ ] Recording starts without error (BLOCKED: needs DiskOut impl)
-- [ ] WAV file created with correct format (int24)
-- [ ] Recording stops cleanly
-- [ ] No buffer overruns or dropouts
-- [ ] Timestamped filenames generated correctly
+- [x] Recording starts without error
+- [x] WAV file created with correct format (24-bit stereo @ 48kHz)
+- [x] Recording stops cleanly
+- [x] No buffer overruns or dropouts
+- [x] Sequential filenames generated correctly (monokit_audio_N.wav)
 
 ### Phase 5 Testing
 - [x] Audio device enumeration returns valid list

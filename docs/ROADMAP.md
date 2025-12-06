@@ -1180,6 +1180,32 @@ Add Teletype-style numeric repetitor and Euclidean rhythm operators.
 - [ ] Per-script/per-line state tracking (like TOG/SEQ)
 - [ ] Document Euclidean algorithm implementation
 
+### Script Validation Overhaul [High]
+Comprehensive validation to reject invalid syntax before execution.
+
+**Current Issues:**
+- Invalid syntax can be entered and only fails at runtime
+- REPL errors are less useful than preventing invalid input
+- Validation coverage is incomplete
+
+**Goals:**
+- [ ] Reject invalid commands on script line entry (before save)
+- [ ] Validate all argument counts and types
+- [ ] Validate expression syntax (balanced parens, valid operators)
+- [ ] Validate SEQ notation syntax (quotes, brackets, valid tokens)
+- [ ] Validate pattern references (0-5 range)
+- [ ] Validate script references (1-8, M, I)
+- [ ] Validate parameter ranges where possible
+- [ ] Clear, specific error messages for each failure type
+- [ ] Visual feedback on invalid lines (error color/indicator)
+
+**Approach:**
+- [ ] Audit all commands for missing validation
+- [ ] Add expression parser validation (not just evaluation)
+- [ ] Add SEQ parser validation pass
+- [ ] Add control flow validation (matching IF/ELSE, valid PRE syntax)
+- [ ] Consider validation mode toggle for power users
+
 ---
 
 ## Phase 6: Release Preparation

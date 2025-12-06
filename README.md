@@ -15,9 +15,9 @@ Only for M series Macs at the moment.
 - **6 percussive envelopes** - Amp, pitch, FM, discontinuity, feedback, filter with per-envelope attack and curve
 
 ### Scripting Language
-- **Flexible scripting** - ~285 unique commands for controlling sequencing, synthesis, and UI at runtime. Most take expressions as argument input for further complexity.
+- **Flexible scripting** - ~285 unique commands for controlling sequencing, synthesis, and UI at runtime. Most take expressions as arguments for further complexity.
 - **8 script slots** - Each with 8 lines of code, local J/K variables
-- **Metro script** - Runs on internal or MIDI clock (rock-solid timing)
+- **Metro script** - Runs on internal or MIDI clock
 - **Init script** - Runs on scene load
 - **Pattern system** - 6 patterns × 64 steps with full manipulation (push, pop, rotate, shuffle, scale, etc.)
 - **SEQ notation** - Inline sequences with note names, repeats, toggles, random choice
@@ -33,21 +33,22 @@ Only for M series Macs at the moment.
 - **Global search** - Search help pages or scripts with Ctrl+F
 
 ### Recording & Sync
-- **Direct recording** - 24-bit stereo WAV to current directory
+- **Direct recording** - 24-bit stereo WAV to current working directory
+- **Configurable audio output** - Choose an audio device from within the program at any time (will restart audio engine i.e. short downtime)
+- **Solid timing core** - real time thread priority and tuned sleep system produce steady clock with on-grid output
 - **MIDI clock sync** - Follow external tempo with sub-millisecond accuracy
-- **Scene system** - Save/load complete state (scripts, patterns, parameters)
-- **22 factory presets** - Kicks, snares, hats, bass, leads, FX, with full user preset (saved insertable script states) available
+- **Scene system** - Save/load complete state (scripts, patterns, parameters), scenes can be called via script to create song structures
 - **Seamless transitions** - Save/load does not interrupt clock, move between scenes with confidence
+- **22 factory presets** - Kicks, snares, hats, bass, leads, FX, with full user preset (saved insertable script states) available
 
 ### Data Driven Musicality
 - **Quantization** - Snap primary and modulator osc frequency to a range of preset scales, or use binary notation to create microtonal scales over any division of the octave
 - **Note selection** - N op automatically maps osc frequency to chromatic semitone values
 
-### Technical
+### Lightweight Binary
 - **Self-contained bundle** - No SuperCollider installation required
 - **~16MB footprint** - Includes scsynth and all required plugins
 - **Rust CLI** - Fast startup, low resource usage
-- **Configurable audio output** - Choose an audio device from within the program at any time (will restart audio engine)
 
 ## Installation
 

@@ -1,12 +1,6 @@
 use crate::commands::validate_script_command;
 
 #[test]
-fn test_br_act_valid() {
-    assert!(validate_script_command("BR.ACT 0").is_ok());
-    assert!(validate_script_command("BR.ACT 1").is_ok());
-}
-
-#[test]
 fn test_br_len_valid() {
     assert!(validate_script_command("BR.LEN 0").is_ok());
     assert!(validate_script_command("BR.LEN 3").is_ok());
@@ -38,12 +32,10 @@ fn test_br_commands_with_expressions() {
     assert!(validate_script_command("BR.MIX ADD 100 200").is_ok());
     assert!(validate_script_command("BR.LEN SUB 5 2").is_ok());
     assert!(validate_script_command("BR.WIN MUL 10 2").is_ok());
-    assert!(validate_script_command("BR.ACT RND 2").is_ok());
 }
 
 #[test]
 fn test_br_commands_missing_args() {
-    assert!(validate_script_command("BR.ACT").is_err());
     assert!(validate_script_command("BR.LEN").is_err());
     assert!(validate_script_command("BR.REV").is_err());
     assert!(validate_script_command("BR.WIN").is_err());
@@ -111,6 +103,6 @@ fn test_ps_commands_missing_args() {
 
 #[test]
 fn test_br_and_ps_combined_usage() {
-    assert!(validate_script_command("BR.ACT 1; PS.SEMI 12; PS.MIX 16383").is_ok());
+    assert!(validate_script_command("BR.MIX 8192; PS.SEMI 12; PS.MIX 16383").is_ok());
     assert!(validate_script_command("BR.LEN 4; BR.MIX 8192; PS.TARG 1").is_ok());
 }

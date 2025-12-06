@@ -572,7 +572,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         // Pan
         "PAN" |
         // Beat Repeat
-        "BR.ACT" | "BR.LEN" | "BR.REV" | "BR.WIN" | "BR.MIX" |
+        "BR.LEN" | "BR.REV" | "BR.WIN" | "BR.MIX" |
         // Pitch Shift
         "PS.MODE" | "PS.SEMI" | "PS.GRAIN" | "PS.MIX" | "PS.TARG" => {
             if argc < 1 {

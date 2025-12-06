@@ -1101,7 +1101,7 @@ Modular Rust implementation (~17,300 total lines across 93 files, after Phase 1 
       - **lofi.rs** - Lo-Fi processor (LB, LS, LM)
       - **ring_mod.rs** - Ring modulator (RGF, RGW, RGM)
       - **compressor.rs** - Compressor (CT, CR, CA, CL, CM)
-      - **beat_repeat.rs** - Beat repeat (BR.ACT, BR.LEN, BR.REV, BR.WIN, BR.MIX)
+      - **beat_repeat.rs** - Beat repeat (BR.LEN, BR.REV, BR.WIN, BR.MIX)
       - **pitch_shift.rs** - Pitch shift (PS.MODE, PS.SEMI, PS.GRAIN, PS.MIX, PS.TARG)
   - **randomization.rs** - Randomization commands (RND.VOICE, RND.OSC, RND.FM, RND.MOD, RND.ENV, etc.)
 - **src/tests/** - Test suite module (21 files, ~5,288 lines, 558 tests)
@@ -1616,11 +1616,11 @@ Examples:
 - `PAN <-16383 to +16383>` - Stereo position (-L, 0=center, +R)
 
 **Beat Repeat**
-- `BR.ACT <0|1>` - Enable/disable beat repeat
+Beat repeat activates automatically when BR.MIX > 0.
 - `BR.LEN <0-7>` - Loop division (0=1/16, 1=1/8, 2=1/4, 3=1/2, 4=1, 5=2, 6=4, 7=8 beats)
 - `BR.REV <0|1>` - Reverse playback
 - `BR.WIN <1-50>` - Window/capture size (ms)
-- `BR.MIX <0-16383>` - Dry/wet mix
+- `BR.MIX <0-16383>` - Dry/wet mix (activates when > 0)
 
 **Pitch Shift**
 - `PS.MODE <0|1>` - Mode (0=normal, 1=granular)
@@ -1766,10 +1766,8 @@ Q.BIT 10101       // Custom 5-note scale
 - scsynth-direct: uses DiskOut UGen with streaming buffer writes
 
 #### Beat Repeat
-- `BR.ACT <0|1>` - Enable/disable beat repeat (0=off, 1=on)
-  - Buffer freezes on activation (captures audio at moment of activation)
-  - Automatically sets BR.MIX to 100% (16383) when activated
-  - Uses separate L/R buffers for proper stereo operation
+Beat repeat activates automatically when BR.MIX > 0.
+
 - `BR.LEN <0-7>` - Loop division/length setting
   - 0 = 1/16 beat (shortest loop)
   - 1 = 1/8 beat
@@ -1781,16 +1779,16 @@ Q.BIT 10101       // Custom 5-note scale
   - 7 = 8 beats (longest loop)
 - `BR.REV <0|1>` - Reverse playback (0=normal, 1=reversed)
 - `BR.WIN <1-50>` - Window/capture size in milliseconds (1-50ms)
-- `BR.MIX <0-16383>` - Dry/wet mix (0=dry, 16383=100% wet)
-  - Mix is adjustable after activation even though it auto-sets to 100%
+- `BR.MIX <0-16383>` - Dry/wet mix (0=dry, 16383=100% wet, activates when > 0)
+  - Uses separate L/R buffers for proper stereo operation
 
 Example usage:
 ```
-BR.ACT 1          // Enable beat repeat (freezes buffer, sets mix to 100%)
+BR.MIX 16383      // Enable beat repeat at 100% wet
 BR.LEN 2          // Set to 1/4 beat loop
 BR.WIN 10         // 10ms window
-BR.MIX 8192       // Adjust mix to 50% (can change after activation)
 BR.REV 1          // Reverse playback
+BR.MIX 8192       // Adjust mix to 50%
 ```
 
 #### Pitch Shift

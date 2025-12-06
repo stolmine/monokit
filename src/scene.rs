@@ -38,11 +38,16 @@ pub enum SceneError {
 }
 
 pub fn get_scenes_dir() -> PathBuf {
+    // Check XDG location first (~/.config/monokit/scenes) for backwards compatibility
+    let home = env::var("HOME").unwrap_or_else(|_| ".".to_string());
+    let xdg_scenes = PathBuf::from(&home).join(".config/monokit/scenes");
+    if xdg_scenes.exists() {
+        return xdg_scenes;
+    }
+
+    // Fall back to platform-native location (~/Library/Application Support on macOS)
     dirs::config_dir()
-        .unwrap_or_else(|| {
-            let home = env::var("HOME").unwrap_or_else(|_| ".".to_string());
-            PathBuf::from(home).join(".config")
-        })
+        .unwrap_or_else(|| PathBuf::from(home).join(".config"))
         .join("monokit")
         .join("scenes")
 }

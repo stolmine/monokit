@@ -430,7 +430,10 @@ fn highlight_tog_expression(
     let mut segments = Vec::new();
 
     let val1_pos = line_from_tog.find(val1)?;
-    let val2_pos = line_from_tog.find(val2)?;
+    let val1_end = val1_pos + val1.len();
+
+    // Search for val2 AFTER val1 to avoid finding val2 inside val1 (e.g., "0" inside "10000")
+    let val2_pos = line_from_tog[val1_end..].find(val2).map(|p| p + val1_end)?;
 
     let tog_to_val1 = &line_from_tog[..val1_pos];
     segments.push(HighlightedSegment {
@@ -443,7 +446,7 @@ fn highlight_tog_expression(
         is_highlighted: active_index == 0,
     });
 
-    let between = &line_from_tog[val1_pos + val1.len()..val2_pos];
+    let between = &line_from_tog[val1_end..val2_pos];
     segments.push(HighlightedSegment {
         text: between.to_string(),
         is_highlighted: false,

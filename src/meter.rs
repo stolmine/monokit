@@ -41,9 +41,10 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
     let mut spectrum_data = SpectrumData::default();
     let mut buf = [0u8; 1024];
 
-    // Track if we've received meter data - used to detect restart vs initial boot
+    // Track if we've completed initial boot - used to detect restart vs initial boot
+    // We only send /notify on RESTART (when we receive /monokit/ready after initial boot)
     #[cfg(feature = "scsynth-direct")]
-    let mut has_received_data = false;
+    let mut initial_boot_complete = false;
 
     loop {
         match socket.recv_from(&mut buf) {
@@ -52,9 +53,6 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
                     if let OscPacket::Message(msg) = packet {
                         if msg.addr == "/monokit/meter" {
                             if let Some(update) = parse_meter_message(&msg.args) {
-                                #[cfg(feature = "scsynth-direct")]
-                                { has_received_data = true; }
-
                                 apply_meter_update(&mut meter_data, update);
 
                                 if let Err(e) = event_tx.send(MetroEvent::MeterUpdate(meter_data.clone())) {
@@ -89,7 +87,7 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
                             // so scsynth knows to send meter data here.
                             // On initial boot, the boot sequence already sent /notify.
                             #[cfg(feature = "scsynth-direct")]
-                            if has_received_data {
+                            if initial_boot_complete {
                                 // This is a restart - we need to re-register with the new scsynth
                                 let notify_msg = OscMessage {
                                     addr: "/notify".to_string(),
@@ -98,6 +96,9 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
                                 if let Ok(packet) = encoder::encode(&OscPacket::Message(notify_msg)) {
                                     let _ = socket.send_to(&packet, format!("127.0.0.1:{}", SCSYNTH_PORT));
                                 }
+                            } else {
+                                // First /monokit/ready - initial boot is now complete
+                                initial_boot_complete = true;
                             }
                             let _ = event_tx.send(MetroEvent::ScReady);
                         } else if msg.addr == "/monokit/audio/out/list" {

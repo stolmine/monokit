@@ -417,34 +417,50 @@ if plugins_dir.exists() {
 }
 ```
 
-### Homebrew Formula Changes
+### Homebrew Formula Changes - IMPLEMENTED
 
-**Current formula (simplified):**
+**Implemented formula (v0.1.1+):**
 ```ruby
-depends_on "supercollider"  # Optional dependency
-```
+class Monokit < Formula
+  desc "Teletype-style scripting for a SuperCollider complex oscillator voice"
+  homepage "https://github.com/stolmine/monokit"
+  version "0.1.1"
+  license "GPL-2.0"
 
-**New formula (self-contained):**
-```ruby
-# No SuperCollider dependency!
+  on_macos do
+    on_arm do
+      url "https://github.com/stolmine/monokit/releases/download/v0.1.1/monokit-0.1.1-aarch64-apple-darwin.tar.gz"
+      sha256 "PLACEHOLDER"
+    end
+  end
 
-def install
-  bin.install "monokit"
-  pkgshare.install "scsynth"
-  pkgshare.install "plugins"
-  pkgshare.install "synthdefs"
+  def install
+    # Install everything to libexec to keep bundle structure intact
+    libexec.install "monokit", "Resources", "Frameworks"
+    # Symlink binary to bin
+    bin.install_symlink libexec/"monokit"
+  end
+
+  def caveats
+    <<~EOS
+      Self-contained bundle - no SuperCollider installation required.
+
+      User config stored at:
+        ~/.config/monokit/
+    EOS
+  end
+
+  test do
+    assert_match "monokit", shell_output("#{bin}/monokit --version 2>&1", 1)
+  end
 end
 ```
 
-**Caveats:**
-```ruby
-def caveats
-  <<~EOS
-    Monokit includes a bundled scsynth.
-    No SuperCollider installation required.
-  EOS
-end
-```
+**Key features:**
+- No external dependencies
+- Automated updates via `.github/workflows/release.yml`
+- Symlink resolution via `get_exe_dir()` in `src/scsynth_direct.rs`
+- See `docs/HOMEBREW_BUNDLE_FORMULA.md` for full details
 
 ---
 
@@ -552,20 +568,20 @@ if use_scsynth {
 ### Integration Tests
 
 **Test all phases together:**
-- [ ] Boot scsynth-only monokit
-- [ ] Send trigger command → hear sound
-- [ ] Adjust parameters → sound changes
-- [ ] Record audio → WAV file created
-- [ ] Switch audio device → scsynth restarts
-- [ ] Meters/spectrum/scope display correctly
-- [ ] Graceful shutdown → no orphaned processes
+- [x] Boot scsynth-only monokit
+- [x] Send trigger command → hear sound
+- [x] Adjust parameters → sound changes
+- [x] Record audio → WAV file created
+- [x] Switch audio device → scsynth restarts
+- [x] Meters/spectrum/scope display correctly
+- [x] Graceful shutdown → no orphaned processes
 
 ### Platform Testing
 
 **macOS:**
-- [ ] Apple Silicon (M1/M2/M3)
-- [ ] Intel (x86_64)
-- [ ] macOS 12+ (Monterey and later)
+- [x] Apple Silicon (M1/M2/M3) - v0.1.1 released
+- [ ] Intel (x86_64) - not yet tested
+- [x] macOS 12+ (Monterey and later)
 
 **Linux (future):**
 - [ ] ALSA backend

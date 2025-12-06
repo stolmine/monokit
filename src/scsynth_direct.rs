@@ -1,6 +1,6 @@
 use rosc::{encoder, OscMessage, OscPacket, OscType};
 use std::env;
-use std::fs::{File, OpenOptions};
+use std::fs::{self, File, OpenOptions};
 use std::io::{BufRead, Write};
 use std::net::UdpSocket;
 use std::path::PathBuf;
@@ -576,20 +576,28 @@ impl Drop for ScsynthDirect {
     }
 }
 
+/// Get the directory containing the real executable (resolving symlinks)
+fn get_exe_dir() -> Option<PathBuf> {
+    if let Ok(exe) = env::current_exe() {
+        // Resolve symlinks to find the real binary location
+        let real_exe = fs::canonicalize(&exe).unwrap_or(exe);
+        return real_exe.parent().map(|p| p.to_path_buf());
+    }
+    None
+}
+
 fn find_scsynth() -> Result<PathBuf, String> {
     // Check for bundled scsynth (in Resources/ subdirectory for framework path resolution)
-    if let Ok(exe) = env::current_exe() {
-        if let Some(dir) = exe.parent() {
-            // New bundle structure: monokit is at root, scsynth in Resources/
-            let bundled = dir.join("Resources/scsynth");
-            if bundled.exists() {
-                return Ok(bundled);
-            }
-            // Legacy: scsynth at same level as monokit
-            let bundled = dir.join("scsynth");
-            if bundled.exists() {
-                return Ok(bundled);
-            }
+    if let Some(dir) = get_exe_dir() {
+        // New bundle structure: monokit is at root, scsynth in Resources/
+        let bundled = dir.join("Resources/scsynth");
+        if bundled.exists() {
+            return Ok(bundled);
+        }
+        // Legacy: scsynth at same level as monokit
+        let bundled = dir.join("scsynth");
+        if bundled.exists() {
+            return Ok(bundled);
         }
     }
 
@@ -619,27 +627,25 @@ fn find_scsynth() -> Result<PathBuf, String> {
 }
 
 fn find_synthdefs_dir() -> Result<PathBuf, String> {
-    if let Ok(exe) = env::current_exe() {
-        if let Some(dir) = exe.parent() {
-            // New bundle structure: Resources/synthdefs/
-            let synthdefs = dir.join("Resources/synthdefs");
+    if let Some(dir) = get_exe_dir() {
+        // New bundle structure: Resources/synthdefs/
+        let synthdefs = dir.join("Resources/synthdefs");
+        if synthdefs.exists() {
+            return Ok(synthdefs);
+        }
+        // Legacy: synthdefs at same level
+        let synthdefs = dir.join("synthdefs");
+        if synthdefs.exists() {
+            return Ok(synthdefs);
+        }
+        let synthdefs = dir.join("sc/synthdefs");
+        if synthdefs.exists() {
+            return Ok(synthdefs);
+        }
+        if let Some(parent) = dir.parent() {
+            let synthdefs = parent.join("sc/synthdefs");
             if synthdefs.exists() {
                 return Ok(synthdefs);
-            }
-            // Legacy: synthdefs at same level
-            let synthdefs = dir.join("synthdefs");
-            if synthdefs.exists() {
-                return Ok(synthdefs);
-            }
-            let synthdefs = dir.join("sc/synthdefs");
-            if synthdefs.exists() {
-                return Ok(synthdefs);
-            }
-            if let Some(parent) = dir.parent() {
-                let synthdefs = parent.join("sc/synthdefs");
-                if synthdefs.exists() {
-                    return Ok(synthdefs);
-                }
             }
         }
     }
@@ -671,18 +677,16 @@ fn find_synthdefs_dir() -> Result<PathBuf, String> {
 }
 
 fn find_plugins_dir() -> Result<PathBuf, String> {
-    if let Ok(exe) = env::current_exe() {
-        if let Some(dir) = exe.parent() {
-            // New bundle structure: Resources/plugins/
-            let plugins = dir.join("Resources/plugins");
-            if plugins.exists() {
-                return Ok(plugins);
-            }
-            // Legacy: plugins at same level
-            let plugins = dir.join("plugins");
-            if plugins.exists() {
-                return Ok(plugins);
-            }
+    if let Some(dir) = get_exe_dir() {
+        // New bundle structure: Resources/plugins/
+        let plugins = dir.join("Resources/plugins");
+        if plugins.exists() {
+            return Ok(plugins);
+        }
+        // Legacy: plugins at same level
+        let plugins = dir.join("plugins");
+        if plugins.exists() {
+            return Ok(plugins);
         }
     }
 

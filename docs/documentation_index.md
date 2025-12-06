@@ -112,20 +112,25 @@ See: `docs/scsynth_direct_integration.md` for detailed spec
 - Scenes: `~/.config/monokit/scenes/`
 - User presets: `~/.config/monokit/presets/`
 
-### Phase 6: Release Preparation (December 2025)
+### Phase 6: Release Preparation (December 2025) - COMPLETE
 
-**Roadmap Addition:**
-- New phase before Advanced DSP
-- Terminal Compatibility (Phase 1 done)
-- Release Build & Tag process
-- GitHub Release workflow
-- Homebrew Tap setup
-- Future Release Workflow planning
-- Advanced DSP renumbered to Phase 7
-- Distribution renumbered to Phase 8
+**Automated Release Infrastructure:**
+- Terminal Compatibility (Phase 1 complete)
+- Automated release workflow via `.github/workflows/release.yml`
+- GitHub Release creation with pre-built bundles
+- Homebrew formula auto-updates after releases
+- Bundle creation via `scripts/bundle.sh`
+- Symlink resolution for Homebrew compatibility (`get_exe_dir()`)
 - GPL-2.0 license added
 - 47 themes bundled at compile time (themes/themes.toml)
-- Release script created: `scripts/release.sh`
+- Advanced DSP renumbered to Phase 7
+- Distribution renumbered to Phase 8
+
+**Homebrew Distribution:**
+- Tap: `stolmine/monokit`
+- Formula: Pre-built bundles, no dependencies
+- Structure: libexec with symlink to bin
+- Auto-updates via GitHub Actions
 
 ### Terminal Compatibility System (December 2025)
 
@@ -1997,5 +2002,10 @@ All parameter updates are validated in Rust CLI before sending and applied immed
 - Creates GitHub releases with compiled binaries
 
 ### Distribution
-- Homebrew support: SC script search includes /opt/homebrew/share/monokit/sc/
+- Homebrew tap: `brew tap stolmine/monokit` (pre-built bundles)
+- Formula: `homebrew-monokit/Formula/monokit.rb`
+- Install location: `/opt/homebrew/libexec/monokit/` (symlink from `/opt/homebrew/bin/monokit`)
+- Bundle structure: monokit binary + Resources/ (scsynth, plugins, synthdefs) + Frameworks/ (dylibs)
+- Automated release updates via `.github/workflows/release.yml`
 - Binary installation paths follow XDG Base Directory specification
+- User config: `~/.config/monokit/`

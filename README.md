@@ -2,21 +2,29 @@
 
 Teletype-style scripting front end for a SuperCollider complex oscillator voice.
 
-## Requirements
-
-- Rust 1.70+
-- SuperCollider 3.13+
-
 ## Installation
 
+### macOS (Homebrew)
+
 ```bash
-cargo build --release
+brew tap stolmine/monokit
+brew install monokit
 ```
+
+No dependencies required - scsynth audio engine is bundled.
+
+### Building from Source
+
+```bash
+cargo build --release --features scsynth-direct
+```
+
+Requires Rust 1.70+ and SuperCollider 3.13+ (for bundling scsynth).
 
 ## Usage
 
 ```bash
-./target/release/monokit
+monokit
 ```
 
 ## Documentation

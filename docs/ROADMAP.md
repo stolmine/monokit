@@ -1099,35 +1099,38 @@ Ensure usability across different terminal emulators.
 - [ ] Auto theme selection based on terminal
 - [ ] VT100 alternate charset support
 
-### Release Build & Tag [High]
-Prepare versioned release binaries.
+### Release Build & Tag [High] - COMPLETE
+Automated versioned release process.
 
-- [ ] Ensure all tests pass (`cargo test`)
-- [ ] Build release binary (`cargo build --release`)
-- [ ] Create version tag (`git tag -a v0.1.0`)
-- [ ] Push tag to origin
-- [ ] Build platform-specific tarballs with sc/ directory
-- [ ] Generate sha256 checksums for each tarball
+- [x] Ensure all tests pass (`cargo test`)
+- [x] Build release binary (`cargo build --release`)
+- [x] Create version tag (`git tag -a v0.1.0`)
+- [x] Push tag to origin
+- [x] Build platform-specific tarballs with bundled resources
+- [x] Generate sha256 checksums for each tarball
+- [x] Automated via `.github/workflows/release.yml`
 
-### GitHub Release [Medium]
-Publish release on GitHub.
+### GitHub Release [Medium] - COMPLETE
+Automated release publishing on GitHub.
 
-- [ ] Create GitHub release for tagged version
-- [ ] Upload platform binaries (aarch64-apple-darwin)
-- [ ] Write release notes documenting features
-- [ ] Link to documentation
+- [x] Create GitHub release for tagged version
+- [x] Upload platform binaries (aarch64-apple-darwin)
+- [x] Write release notes documenting features
+- [x] Link to documentation
+- [x] Automated via `.github/workflows/release.yml`
 
-### Homebrew Tap [High]
-Create Homebrew distribution for macOS users.
+### Homebrew Tap [High] - COMPLETE
+Pre-built bundle distribution for macOS users.
 
-- [ ] Create `homebrew-monokit` repository
-- [ ] Write Formula/monokit.rb with:
+- [x] Create `homebrew-monokit` repository
+- [x] Write Formula/monokit.rb with:
   - Platform-specific URLs and sha256 hashes
-  - SuperCollider as recommended dependency
-  - Proper bin and pkgshare installation
-  - Caveats for SC server file location
-- [ ] Test installation via `brew tap` and `brew install`
-- [ ] Document SC path configuration (homebrew prefix or ~/.config/monokit/)
+  - No external dependencies (bundled scsynth)
+  - Proper libexec installation with symlink
+  - User config path documentation
+- [x] Test installation via `brew tap` and `brew install`
+- [x] Automated formula updates via `.github/workflows/release.yml`
+- [x] Symlink resolution in `src/scsynth_direct.rs` via `get_exe_dir()`
 
 ### Future Release Workflow
 Document repeatable release process.

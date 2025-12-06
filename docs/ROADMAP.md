@@ -11,6 +11,37 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ## Recent Updates (December 2025)
 
+### Release Pipeline Documentation [COMPLETE]
+Automated release infrastructure documented for future reference.
+
+**Documentation Added:**
+- [x] docs/RELEASE_PIPELINE.md - Complete release workflow
+- [x] docs/MANUAL.md - User manual with comprehensive command reference
+- [x] README.md - Updated with feature rundown and installation instructions
+- [x] Automated GitHub Actions release workflow
+- [x] Homebrew tap auto-updates via release pipeline
+
+**Release Process:**
+1. Local: `./scripts/release.sh X.Y.Z` creates signed bundle and git tag
+2. GitHub Actions: Builds release bundle on macOS-14 (Apple Silicon)
+3. Homebrew: Formula auto-updates with new SHA256 from artifacts
+
+### Recent Feature Completions [COMPLETE]
+**List Output Formatting:**
+- [x] THEMES command now displays vertically (one per line)
+- [x] Improved readability and terminal compatibility
+- [x] Consistent with other list commands
+
+**VCA Reset Coverage:**
+- [x] RST and LOAD.RST now reset VCA to gated mode (default)
+- [x] Ensures predictable behavior after reset operations
+- [x] VCA state properly restored on scene load
+
+**EITH Selection Highlighting:**
+- [x] Random choice now highlights selected option in script display
+- [x] State persists correctly across evaluations like TOG
+- [x] Nested random choice `{a b}` in SEQ shows last selection
+
 ### SC Process Management [COMPLETE]
 Automatic SuperCollider lifecycle management - monokit spawns sclang on startup.
 
@@ -1274,10 +1305,12 @@ Phase 6 - Bundling & Distribution: COMPLETE
 - [x] Bundle scsynth binary from SuperCollider.app
 - [x] Bundle required .scx plugins only
 - [x] Created bundle.sh script with plugin search
+- [x] Bundle script always clears quarantine with xattr -cr
+- [x] Code signing: all binaries and dylibs signed with codesign
 - [x] Documented Homebrew formula changes
 - [x] Updated path resolution to prioritize bundled resources
 - [x] Bundle structure tested with Resources/ subdirectory
-- [x] Handle macOS code signing / Gatekeeper (documented)
+- [x] Handle macOS code signing / Gatekeeper (complete)
 - [x] Test bundle on clean system (requires sc3-plugins installation)
 
 **Implementation Summary:**

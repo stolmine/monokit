@@ -2,6 +2,28 @@
 
 ## Recent Updates (December 2025)
 
+### List Output Formatting [COMPLETE]
+**Vertical Display for Theme List:**
+- THEMES command now displays one theme per line vertically
+- Improved readability and terminal compatibility
+- Respects 46-character width constraint
+- Consistent with other list commands (SCENES, PSETS, MIDI.IN, AUDIO.OUT)
+
+### VCA Reset Coverage [COMPLETE]
+**VCA Mode in Reset Commands:**
+- RST command now resets VCA to default mode 1 (gated)
+- LOAD.RST behavior includes VCA reset automatically
+- VCA state properly restored on scene load
+- Ensures predictable behavior after reset operations
+
+### EITH Selection Highlighting [COMPLETE]
+**Random Choice Visual Feedback:**
+- EITH (random choice) now tracks last selected value
+- Selected option highlighted in script display
+- State persists across evaluations like TOG does
+- Nested random choice `{a b}` in SEQ notation shows last selection
+- Random choice state tracking with `seq_rnd_` keys in toggle_state
+
 ### Direct scsynth Integration [COMPLETE]
 
 **Self-contained Audio Engine:**
@@ -61,8 +83,8 @@ See: `docs/scsynth_direct_integration.md` for detailed spec
 **Bundle Updates:**
 - scripts/bundle.sh copies DiskIO_UGens.scx from plugins directory
 - All required dylibs copied from SuperCollider.app/Contents/Frameworks/
-- xattr -cr clears extended attributes (removes quarantine flags)
-- codesign --force --deep -s - signs all binaries and dylibs
+- Bundle script now always clears quarantine with xattr -cr
+- Code signing: all binaries and dylibs signed with codesign --force --deep -s -
 
 ### BRK Command (December 2025)
 
@@ -961,16 +983,34 @@ All 558 tests pass. Codebase reduced by ~28% while maintaining full functionalit
 
 ## Documentation
 
+### User Documentation
+- **MANUAL.md** - Comprehensive user manual with command reference and tutorials
+- **README.md** - Project overview, installation instructions, feature rundown
+
+### Development Documentation
+- **ROADMAP.md** - Single source of truth for all future development plans and roadmap
 - **CONCEPT.md** - Project overview, architecture, MVP implementation
 - **PLAN.md** - UI refactor plan: Teletype-style interface with page system, script storage, patterns, and control flow
-- **ROADMAP.md** - Single source of truth for all future development plans and roadmap
-- **ON_HOLD.md** - Features deferred indefinitely due to technical constraints (LFO system, Aux Envelopes, Extended Envelopes, MIDI Clock Output, Initial Window Sizing)
+
+### Release & Distribution
+- **RELEASE_PIPELINE.md** - Automated release workflow: local builds, GitHub Actions, Homebrew updates
+- **HOMEBREW_BUNDLE_FORMULA.md** - Homebrew formula documentation for monokit tap
+- **BUNDLE_QUICK_START.md** - Quick start guide for bundle distribution
+
+### Technical Specifications
+- **scsynth_direct_integration.md** - Direct scsynth integration design and implementation
 - **DSP_TIER1_IMPLEMENTATION_PLAN.md** - Detailed implementation plan for Filter, Resonator, Delay, and Reverb DSP blocks
 - **DSP_TIER3_BUFFER_EFFECTS_PLAN.md** - Implementation plan for Beat Repeat and Pitch Shift buffer effects
 - **EFFECT_ROUTING_DESIGN.md** - Design document for flexible effect routing system
 - **DRY_REFACTOR_PLAN.md** - Comprehensive refactoring plan for codebase reorganization and DRY consolidation
 - **DRY_ANALYSIS_REPORT.md** - Detailed analysis of code duplication and refactoring opportunities (~4,000-5,000 line reduction potential)
 - **UI_REFINEMENT_PLAN.md** - Detailed implementation plan for UI enhancements: activity indicators, variable monitoring, SEQ/TOG highlighting, audio metering
+- **MIDI_CLOCK_TIMING_LESSONS.md** - MIDI clock sync timing diagnostics and lessons learned
+
+### Deferred Features
+- **ON_HOLD.md** - Features deferred indefinitely due to technical constraints (LFO system, Aux Envelopes, Extended Envelopes, MIDI Clock Output, Initial Window Sizing)
+
+### Cross-Reference
 - **documentation_index.md** - This file, listing all documentation and key project files
 
 ## Key Project Files

@@ -168,16 +168,16 @@ ls -lh "${BUNDLE_DIR}/Frameworks/" | wc -l | xargs echo "  Framework count:"
 BUNDLE_SIZE=$(du -sh "${BUNDLE_DIR}" | awk '{print $1}')
 echo "  Bundle size: ${BUNDLE_SIZE}"
 
-if [ -n "${CODESIGN}" ]; then
-    echo ""
-    echo "Code signing bundle..."
-    codesign --force --deep --sign - "${BUNDLE_DIR}/Resources/scsynth"
-    codesign --force --deep --sign - "${BUNDLE_DIR}/monokit"
-    for fw in "${BUNDLE_DIR}"/Frameworks/*.dylib; do
-        codesign --force --sign - "$fw" 2>/dev/null || true
-    done
-    echo "  Signed with ad-hoc signature"
-fi
+# Always sign and clear quarantine for local testing
+echo ""
+echo "Code signing bundle..."
+codesign --force --deep --sign - "${BUNDLE_DIR}/Resources/scsynth"
+codesign --force --deep --sign - "${BUNDLE_DIR}/monokit"
+for fw in "${BUNDLE_DIR}"/Frameworks/*.dylib; do
+    codesign --force --sign - "$fw" 2>/dev/null || true
+done
+xattr -cr "${BUNDLE_DIR}"
+echo "  Signed with ad-hoc signature"
 
 echo ""
 echo "=== Bundle complete ==="

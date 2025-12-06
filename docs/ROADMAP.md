@@ -1078,6 +1078,15 @@ Clarify and deduplicate mod bus parameters for consistency.
 - [ ] Remove any redundant or overlapping parameters
 - [ ] Update help system with clearer mod bus explanation
 
+### Script and Trigger Prioritization [Medium]
+Define clear execution order to eliminate race conditions.
+
+- [ ] Document current execution order (metro tick vs script calls vs TR)
+- [ ] Define priority weighting for concurrent operations
+- [ ] Ensure parameter changes apply before trigger fires
+- [ ] Handle nested SCRIPT calls with predictable ordering
+- [ ] Consider adding explicit priority control commands
+
 ---
 
 ## Phase 6: Release Preparation

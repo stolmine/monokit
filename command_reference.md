@@ -17,10 +17,11 @@ EV 4: SCRIPT 1     # call script 1 every 4 metro ticks
 On the LIVE page enter the following:
 M.ACT 1; M 125     # turn on the metro (clock), and make it tick every 125ms (120 BPM)
 
+To stop ticking the metro (and effectively turn off the sound) enter the folllowing on the LIVE page:
+M.ACT 0
 ```
 Congrats, you have made a 4 on the floor kick pattern!
 Go experiment with more complicated sequencing setups to trigger the voice with different parameter and fx settings.
-Call M.ACT 0 on the `LIVE` page to stop ticking the metro script.
 
 ### Navigation & Editing
 

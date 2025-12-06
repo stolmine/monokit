@@ -1087,6 +1087,13 @@ Define clear execution order to eliminate race conditions.
 - [ ] Handle nested SCRIPT calls with predictable ordering
 - [ ] Consider adding explicit priority control commands
 
+### EITH Selection Highlighting [Low]
+Fix visual feedback for EITH random choice operator.
+
+- [ ] Track last selected value in EITH expressions
+- [ ] Highlight selected option in script display (like TOG does)
+- [ ] Ensure state persists correctly across evaluations
+
 ---
 
 ## Phase 6: Release Preparation

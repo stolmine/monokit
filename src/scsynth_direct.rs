@@ -135,13 +135,17 @@ impl ScsynthDirect {
         thread::spawn(move || {
             if let Some(stdout) = stdout {
                 let reader = std::io::BufReader::new(stdout);
+                let mut server_ready = false;
                 for line in reader.lines() {
                     if let Ok(line) = line {
-                        if !silent_stdout {
+                        // Only print to console during boot, suppress "late" warnings always
+                        // Once server is ready, stop printing to avoid TUI corruption
+                        let is_late_warning = line.contains("late ");
+                        if !silent_stdout && !server_ready && !is_late_warning {
                             eprintln!("[scsynth] {}", line);
                         }
 
-                        // Also log to file
+                        // Always log to file (including late warnings)
                         if let Ok(mut guard) = log_file_stdout.lock() {
                             if let Some(ref mut f) = *guard {
                                 let _ = writeln!(f, "[stdout] {}", line);
@@ -149,8 +153,9 @@ impl ScsynthDirect {
                             }
                         }
 
-                        // Signal when server is ready
+                        // Signal when server is ready and stop console output
                         if line.contains("server ready") {
+                            server_ready = true;
                             let _ = ready_tx.send(());
                         }
                     }

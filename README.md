@@ -56,3 +56,7 @@ GPL-2.0 - do what you want if you share!
 Heavily inspired by the wonderful [monome Teletype](https://monome.org/docs/teletype/).
 Made possible with binaries from [SuperCollider](https://supercollider.github.io/)
 As well as ugens from [sc3-plugins](https://github.com/supercollider/sc3-plugins)
+
+## Disclosure
+
+Vibe-coded (or not so vibe-coded) with Claude.

@@ -31,6 +31,16 @@ Official docs are in progress. For now, there is an extensive (if terse) help sy
 
 Press `esc` or `alt + h` to access it. `Ctrl f` will search the help system, use `[ ]` to change sections and up/down arrows to read.
 
+## Caveat
+
+This software is a TUI (terminal user interface) app. 
+
+It is optimized for true color terminals like iTerm2, but will run with some color restrcitions on the native MacOS terminal.
+
+I'd suggest exploring `/themes/themes.toml` if you do not like the look of your instance.
+
+Themes and saved scenes can be modified directly under ~/.config/monokit. 
+
 ## Configuration
 
 User configuration is stored in `~/.config/monokit/config.toml`.

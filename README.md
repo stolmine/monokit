@@ -2,6 +2,8 @@
 
 Teletype-style scripting front end for a complex oscillator voice built in SuperCollider.
 
+Only for M series Macs at the moment.
+
 ## Installation
 
 ### macOS (Homebrew)

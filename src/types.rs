@@ -430,6 +430,9 @@ pub enum MetroEvent {
     AudioDeviceList { current: String, devices: Vec<String> },
     RestartScWithDevice(String),
     Error(String),
+    StartRecordingDirect(String),  // dir path for scsynth-direct mode
+    StopRecordingDirect,
+    SetRecordingPathDirect(String),
 }
 
 #[derive(Debug, Clone)]

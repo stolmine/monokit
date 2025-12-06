@@ -451,8 +451,7 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                     }
                     #[cfg(feature = "scsynth-direct")]
                     {
-                        let _ = dir;
-                        let _ = event_tx.send(MetroEvent::Error("[monokit] Recording not yet implemented in scsynth-direct mode".to_string()));
+                        let _ = event_tx.send(MetroEvent::StartRecordingDirect(dir));
                     }
                 }
                 MetroCommand::StopRecording => {
@@ -466,7 +465,7 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                     }
                     #[cfg(feature = "scsynth-direct")]
                     {
-                        let _ = event_tx.send(MetroEvent::Error("[monokit] Recording not yet implemented in scsynth-direct mode".to_string()));
+                        let _ = event_tx.send(MetroEvent::StopRecordingDirect);
                     }
                 }
                 MetroCommand::SetRecordingPath(path) => {
@@ -480,8 +479,7 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                     }
                     #[cfg(feature = "scsynth-direct")]
                     {
-                        let _ = path;
-                        let _ = event_tx.send(MetroEvent::Error("[monokit] Recording not yet implemented in scsynth-direct mode".to_string()));
+                        let _ = event_tx.send(MetroEvent::SetRecordingPathDirect(path));
                     }
                 }
                 MetroCommand::SetSlewTime(time_sec) => {

@@ -154,8 +154,8 @@ impl ScProcess {
     /// Start recording (scsynth-direct mode only)
     /// In sclang mode, recording is handled via OSC messages to sclang
     #[cfg(feature = "scsynth-direct")]
-    pub fn start_recording(&self, dir: &str, custom_path: Option<&str>) -> Result<(), String> {
-        if let Some(ref scsynth) = self.scsynth_direct {
+    pub fn start_recording(&mut self, dir: &str, custom_path: Option<&str>) -> Result<(), String> {
+        if let Some(ref mut scsynth) = self.scsynth_direct {
             scsynth.start_recording(dir, custom_path)
         } else {
             Err("scsynth not initialized".to_string())
@@ -165,11 +165,20 @@ impl ScProcess {
     /// Stop recording (scsynth-direct mode only)
     /// In sclang mode, recording is handled via OSC messages to sclang
     #[cfg(feature = "scsynth-direct")]
-    pub fn stop_recording(&self) -> Result<(), String> {
-        if let Some(ref scsynth) = self.scsynth_direct {
+    pub fn stop_recording(&mut self) -> Result<(), String> {
+        if let Some(ref mut scsynth) = self.scsynth_direct {
             scsynth.stop_recording()
         } else {
             Err("scsynth not initialized".to_string())
+        }
+    }
+
+    /// Set recording path prefix (scsynth-direct mode only)
+    /// In sclang mode, recording path is handled via OSC messages to sclang
+    #[cfg(feature = "scsynth-direct")]
+    pub fn set_recording_path_prefix(&mut self, prefix: String) {
+        if let Some(ref mut scsynth) = self.scsynth_direct {
+            scsynth.set_recording_path_prefix(prefix);
         }
     }
 }

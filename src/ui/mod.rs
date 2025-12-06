@@ -192,6 +192,57 @@ pub fn run_app<B: ratatui::backend::Backend>(
                         app.add_output(msg);
                     }
                 }
+                MetroEvent::StartRecordingDirect(dir) => {
+                    #[cfg(feature = "scsynth-direct")]
+                    {
+                        let mut sc = sc_process.lock().unwrap();
+                        match sc.start_recording(&dir, None) {
+                            Ok(_) => {
+                                if app.should_output(crate::types::OutputCategory::Confirm) {
+                                    app.add_output("RECORDING STARTED".to_string());
+                                }
+                            }
+                            Err(e) => {
+                                if app.should_output(crate::types::OutputCategory::Error) {
+                                    app.add_output(format!("ERROR: {}", e));
+                                }
+                            }
+                        }
+                    }
+                    #[cfg(not(feature = "scsynth-direct"))]
+                    {
+                        let _ = dir;
+                    }
+                }
+                MetroEvent::StopRecordingDirect => {
+                    #[cfg(feature = "scsynth-direct")]
+                    {
+                        let mut sc = sc_process.lock().unwrap();
+                        match sc.stop_recording() {
+                            Ok(_) => {
+                                if app.should_output(crate::types::OutputCategory::Confirm) {
+                                    app.add_output("RECORDING STOPPED".to_string());
+                                }
+                            }
+                            Err(e) => {
+                                if app.should_output(crate::types::OutputCategory::Error) {
+                                    app.add_output(format!("ERROR: {}", e));
+                                }
+                            }
+                        }
+                    }
+                }
+                MetroEvent::SetRecordingPathDirect(path) => {
+                    #[cfg(feature = "scsynth-direct")]
+                    {
+                        let mut sc = sc_process.lock().unwrap();
+                        sc.set_recording_path_prefix(path);
+                    }
+                    #[cfg(not(feature = "scsynth-direct"))]
+                    {
+                        let _ = path;
+                    }
+                }
             }
         }
 

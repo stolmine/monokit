@@ -1094,6 +1094,15 @@ Fix visual feedback for EITH random choice operator.
 - [ ] Highlight selected option in script display (like TOG does)
 - [ ] Ensure state persists correctly across evaluations
 
+### Beat Repeat Stickiness Bug [Medium]
+BR (beat repeat) does not turn off reliably when triggered conditionally.
+
+- [ ] Diagnose why BR stays on after conditional trigger
+- [ ] Check if BR.ACT 0 is being sent correctly
+- [ ] Verify OSC message ordering (BR on/off vs other params)
+- [ ] Test with explicit BR.ACT 0 in else branch
+- [ ] May need latch/unlatch behavior clarification
+
 ---
 
 ## Phase 6: Release Preparation

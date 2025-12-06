@@ -1070,6 +1070,14 @@ Comprehensive audit to reduce parameter sprawl and improve maintainability.
 - Eliminates parameter sprawl across 100+ function signatures
 - Single point of change for output control logic
 
+### Mod Bus Parameter Cleanup [Low]
+Clarify and deduplicate mod bus parameters for consistency.
+
+- [ ] Audit MB, MF_F, MP, MD, MT, MA parameter naming
+- [ ] Document mod bus routing clearly (source → destination)
+- [ ] Remove any redundant or overlapping parameters
+- [ ] Update help system with clearer mod bus explanation
+
 ---
 
 ## Phase 6: Release Preparation

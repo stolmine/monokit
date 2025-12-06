@@ -1,6 +1,8 @@
 # Monokit Manual
 
-**Version 0.1.0** - Teletype-style scripting for a complex oscillator voice
+Updated 2025-12-06
+
+**Version 0.2.0** - Teletype-style scripting for a complex oscillator voice
 
 ---
 

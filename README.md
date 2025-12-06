@@ -7,8 +7,8 @@ Only for M series Macs at the moment.
 ## Features
 
 ### Sound Engine
-- **Complex oscillator voice** - HD2-style dual oscillator with FM, feedback, and discontinuity
-- **Full effects chain** - SVF filter, comb resonator, ring mod, lo-fi, compressor, beat repeat, pitch shift, stereo delay, 3-band EQ, plate reverb
+- **Complex oscillator voice** - complex oscillator configuration with FM, feedback, and waveshaping/folding
+- **Full effects chain** - SVF filter, comb resonator, ring mod, bit and sample rate reduction, compressor, beat repeat, pitch shift, stereo delay, 3-band EQ, plate reverb
 - **77 real-time parameters** - All controllable via terse commands
 - **6 percussive envelopes** - Amp, pitch, FM, discontinuity, feedback, filter with per-envelope attack and curve
 
@@ -34,11 +34,13 @@ Only for M series Macs at the moment.
 - **MIDI clock sync** - Follow external tempo with sub-millisecond accuracy
 - **Scene system** - Save/load complete state (scripts, patterns, parameters)
 - **22 factory presets** - Kicks, snares, hats, bass, leads, FX
+- **Seamless transitions** - Save/load does not interrupt clock, move between scenes with confidence
 
 ### Technical
 - **Self-contained bundle** - No SuperCollider installation required
 - **~16MB footprint** - Includes scsynth and all required plugins
 - **Rust CLI** - Fast startup, low resource usage
+- **Configurable audio output** - Choose an audio device from within the program at any time (will restart audio engine)
 
 ## Installation
 
@@ -71,9 +73,11 @@ Press `esc` or `alt + h` to access it. `Ctrl f` will search the help system, use
 
 ## Caveat
 
-This software is a TUI (terminal user interface) app. 
+This software is a TUI (terminal user interface) app. It is designed to run in a 50x18 terminal window.
 
-It is optimized for true color terminals like iTerm2, but will run with some color restrcitions on the native MacOS terminal.
+There is no line length limit, however. The TUI will also scale to whatever window size you choose and zoom attractively with `cmd +/-`.
+
+It is optimized for true color terminals like iTerm2, but will run with a limited color range on the native MacOS terminal (8 bit depth).
 
 I'd suggest exploring `/themes/themes.toml` if you do not like the look of your instance.
 
@@ -91,8 +95,12 @@ GPL-2.0 - do what you want if you share!
 
 ## Acknowledgments
 
-Heavily inspired by the wonderful [monome Teletype](https://monome.org/docs/teletype/).
-Made possible with binaries from [SuperCollider](https://supercollider.github.io/)
+Heavily inspired by the wonderful [monome Teletype](https://monome.org/docs/teletype/)
+
+And the Industrial Music Electronics [Hertz Donut mk2](https://modulargrid.net/e/industrial-music-electronics-hertz-donut-mk-ii)
+
+Made possible with binaries and sound engine from [SuperCollider](https://supercollider.github.io/)
+
 As well as ugens from [sc3-plugins](https://github.com/supercollider/sc3-plugins)
 
 ## Disclosure

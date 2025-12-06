@@ -1,18 +1,21 @@
 # Monokit
 
-Teletype-style scripting front end for a complex oscillator voice built in SuperCollider.
+Teletype-style scripting front end for a single complex oscillator voice built in SuperCollider.
+
+Designed for percussion, glitch, microsound purposes, but has broad range.
 
 Only for M series Macs at the moment.
 
 ## Features
 
 ### Sound Engine
-- **Complex oscillator voice** - dual linked oscillator configuration with independent pitch, FM, feedback, mix ratio,  and waveshaping/folding
+- **Complex oscillator voice** - dual linked oscillator configuration with independent pitch control, FM (mod to primary), feedback (mod only), mix ratio (mod volume), and waveshaping/folding (primary output, mod-influenced)
 - **Full effects chain** - SVF filter, comb resonator, ring mod, bit and sample rate reduction, compressor, beat repeat, pitch shift, stereo delay, 3-band EQ, plate reverb
 - **77 real-time parameters** - All controllable via terse commands
 - **6 percussive envelopes** - Amp, pitch, FM, discontinuity, feedback, filter with per-envelope attack and curve
 
 ### Scripting Language
+- **Flexible scripting** - ~285 unique commands for controlling sequencing, synthesis, and UI at runtime. Most take expressions as argument input for further complexity.
 - **8 script slots** - Each with 8 lines of code, local J/K variables
 - **Metro script** - Runs on internal or MIDI clock (rock-solid timing)
 - **Init script** - Runs on scene load
@@ -33,8 +36,12 @@ Only for M series Macs at the moment.
 - **Direct recording** - 24-bit stereo WAV to current directory
 - **MIDI clock sync** - Follow external tempo with sub-millisecond accuracy
 - **Scene system** - Save/load complete state (scripts, patterns, parameters)
-- **22 factory presets** - Kicks, snares, hats, bass, leads, FX
+- **22 factory presets** - Kicks, snares, hats, bass, leads, FX, with full user preset (saved insertable script states) available
 - **Seamless transitions** - Save/load does not interrupt clock, move between scenes with confidence
+
+### Data Driven Musicality
+- **Quantization** - Snap primary and modulator osc frequency to a range of preset scales, or use binary notation to create microtonal scales over any division of the octave
+- **Note selection** - N op automatically maps osc frequency to chromatic semitone values
 
 ### Technical
 - **Self-contained bundle** - No SuperCollider installation required

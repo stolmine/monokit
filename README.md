@@ -4,6 +4,42 @@ Teletype-style scripting front end for a complex oscillator voice built in Super
 
 Only for M series Macs at the moment.
 
+## Features
+
+### Sound Engine
+- **Complex oscillator voice** - HD2-style dual oscillator with FM, feedback, and discontinuity
+- **Full effects chain** - SVF filter, comb resonator, ring mod, lo-fi, compressor, beat repeat, pitch shift, stereo delay, 3-band EQ, plate reverb
+- **77 real-time parameters** - All controllable via terse commands
+- **6 percussive envelopes** - Amp, pitch, FM, discontinuity, feedback, filter with per-envelope attack and curve
+
+### Scripting Language
+- **8 script slots** - Each with 8 lines of code, local J/K variables
+- **Metro script** - Runs on internal or MIDI clock (rock-solid timing)
+- **Init script** - Runs on scene load
+- **Pattern system** - 6 patterns × 64 steps with full manipulation (push, pop, rotate, shuffle, scale, etc.)
+- **SEQ notation** - Inline sequences with note names, repeats, toggles, random choice
+- **Scale quantization** - 12 built-in scales plus custom via bitmask
+- **Control flow** - IF/ELIF/ELSE, loops, probability, every-N, skip-N
+
+### Interface
+- **TUI with 10 pages** - Live, Scripts 1-8, Metro, Init, Patterns, Variables, Notes, Scope, Help
+- **Real-time meters** - Peak/RMS audio levels, 15-band spectrum analyzer
+- **Oscilloscope** - Multiple render modes (braille, block, line, dot)
+- **Activity indicators** - Visual feedback for script execution and triggers
+- **48 color themes** - True color and 256-color fallback support
+- **Global search** - Search help pages or scripts with Ctrl+F
+
+### Recording & Sync
+- **Direct recording** - 24-bit stereo WAV to current directory
+- **MIDI clock sync** - Follow external tempo with sub-millisecond accuracy
+- **Scene system** - Save/load complete state (scripts, patterns, parameters)
+- **22 factory presets** - Kicks, snares, hats, bass, leads, FX
+
+### Technical
+- **Self-contained bundle** - No SuperCollider installation required
+- **~16MB footprint** - Includes scsynth and all required plugins
+- **Rust CLI** - Fast startup, low resource usage
+
 ## Installation
 
 ### macOS (Homebrew)

@@ -1,6 +1,6 @@
 # Monokit
 
-![Discord](https://img.shields.io/discord/1446968284225212450)
+![Discord](https://img.shields.io/discord/1446968284225212450?style=flat-square&label=Discord&labelColor=%239D00FF&color=%23FFFFFF)
 
 Teletype-style scripting front end for a single complex oscillator voice built in SuperCollider.
 

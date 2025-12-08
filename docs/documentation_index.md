@@ -981,6 +981,64 @@ All 558 tests pass. Codebase reduced by ~28% while maintaining full functionalit
 
 ---
 
+## Known Issues and Planned Improvements
+
+The following items have been added to Phase 5 (Polish & Refinements) of the roadmap. These represent known issues and planned improvements that will be addressed in future updates. For full details, see `docs/ROADMAP.md`.
+
+### Clear REPL on Load Setting
+**Status:** Planned (Phase 5)
+
+Optional setting to clear REPL output when loading scenes.
+- `LOAD.CLR <0|1>` command to toggle clear-on-load behavior
+- When enabled, automatically runs CLEAR after LOAD completes
+- Config persistence for user preference
+
+### CLR Alias for CLEAR Command
+**Status:** Planned (Phase 5, partial completion of Alias Coverage Audit)
+
+Add shorter `CLR` alias for the `CLEAR` command to maintain consistency with terse command syntax philosophy. This is the final remaining item in the Alias Coverage Audit.
+
+### State Highlight Timing Verification
+**Status:** Under Investigation (Phase 5)
+
+Comprehensive audit needed to verify timing accuracy of stateful operator highlighting:
+- SEQ, TOG, EITH, `<>`, `{}` highlight timing
+- Verify highlights show current state vs previous state
+- Test in metro context (update timing relative to execution)
+- Test in nested contexts (multiple operators per line)
+
+Currently, state highlighting is implemented and functional, but edge cases around timing may exist that need verification and documentation.
+
+### TOG Zero Parsing Bug
+**Status:** Known Issue (Phase 5)
+
+Script display corruption when TOG operator uses zero as an argument:
+- Bug: `DC TOG 2000 0` displays as `DC TOG 2000 000 0` on script line
+- Input field shows correct version but script display adds extra zeros
+- Likely issue in TOG state serialization/display logic
+
+### IF/ELSE/ELIF Scope Logic Investigation
+**Status:** Under Investigation (Phase 5)
+
+Need to establish and document clear scope rules for conditional chains:
+- Does ELSE cut off downstream logic processing?
+- Define scope for IF/ELIF/ELSE pairs (line-local vs script-local)
+- Test multi-line conditional chains
+- Test conditionals with semicolons (multiple commands after colon)
+- Document expected behavior in help system
+
+Current implementation is functional but behavior in edge cases needs verification and clear documentation.
+
+### DEL Command Script Entry Rejection
+**Status:** Known Issue (Phase 5)
+
+DEL commands are rejected when entered on script lines but work correctly in REPL:
+- DEL/DEL.X/DEL.R commands cannot be saved to script pages
+- Likely validation or parsing issue with colon separator
+- Need to verify if DEL commands should be allowed in scripts and fix validation accordingly
+
+---
+
 ## Documentation
 
 ### User Documentation

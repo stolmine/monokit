@@ -643,6 +643,29 @@ PSETS                        # List all presets
 **Optional:**
 - [ ] `LINK <0|1>` - Ableton Link support (requires Link SDK)
 
+### MIDI CC and Note Input [Medium]
+Receive MIDI CC and note messages for parameter control and triggering.
+
+**MIDI Note Input:**
+- [ ] `MIDI.NOTE <0|1>` - Enable/disable MIDI note input
+- [ ] Note-on triggers TR command automatically
+- [ ] Note number available as expression variable (e.g., `MN` or `MIDI.N`)
+- [ ] Velocity available as expression variable (e.g., `MV` or `MIDI.V`)
+- [ ] `PF N MN` - Set pitch from incoming MIDI note
+- [ ] Optional: Note-off handling for gate/VCA control
+
+**MIDI CC Input:**
+- [ ] `MIDI.CC <cc#> <param>` - Map CC to parameter (e.g., `MIDI.CC 1 FC`)
+- [ ] `MIDI.CC.CLR` - Clear all CC mappings
+- [ ] `MIDI.CC.LIST` - Show current CC mappings
+- [ ] CC value (0-127) scaled to parameter range automatically
+- [ ] Optional: CC value as expression variable (`CC <n>` returns last value)
+
+**MIDI Learn:**
+- [ ] `MIDI.LEARN <param>` - Enter learn mode, next CC maps to param
+- [ ] Visual feedback during learn mode
+- [ ] Timeout or ESC to cancel learn
+
 ### Additional ModBus Routing [Medium]
 - [ ] ModBus → delay time routing
 - [ ] ModBus → reverb size routing
@@ -842,7 +865,24 @@ Ensure all user preferences persist across sessions for consistent experience.
 - [x] Load saved preferences on startup
 - [x] Save preferences on change (not just on exit)
 
-### Alias Coverage Audit [Low] - COMPLETE
+### Auto-Load Previous Scene [Low]
+Automatically load the last used scene on startup.
+
+- [ ] `AUTOLOAD <0|1>` - Enable/disable auto-load on startup
+- [ ] Track last loaded scene name in config.toml
+- [ ] On startup, if enabled, automatically run LOAD with saved scene name
+- [ ] Silent load (no REPL output) or respect DEBUG level
+- [ ] Handle missing scene gracefully (scene deleted since last session)
+
+### Clear REPL on Load [Low]
+Optional setting to clear REPL output when loading scenes.
+
+- [ ] `LOAD.CLR <0|1>` - Toggle clear-on-load behavior
+- [ ] When enabled, automatically run CLEAR after LOAD completes
+- [ ] Persist setting to config.toml
+- [ ] Provides clean slate when switching between scenes
+
+### Alias Coverage Audit [Low] - PARTIAL
 Complete alias to canonical name coverage - many parameters have no short forms in CLI even though they are generally addressed with short forms in SuperCollider.
 
 - [x] Audit all parameters for missing short-form aliases
@@ -851,6 +891,7 @@ Complete alias to canonical name coverage - many parameters have no short forms 
 - [x] Review SC parameter names vs CLI command names for consistency
 - [x] Update aliases.rs with new mappings
 - [x] Update help system with new aliases
+- [ ] Add CLR alias for CLEAR command
 
 ### Per-Element UI Toggles [Low] - COMPLETE
 Individual override commands to toggle visual elements independently.
@@ -1048,6 +1089,14 @@ Address issues discovered during comprehensive REPL command testing (December 20
 
 **Low Priority - Validation Edge Cases:**
 - [ ] Standardize REPL output formatting (some envelope params lack "SET...TO" prefix)
+- [ ] VCA and FAA commands need to accept expressions as input
+- [ ] PSETS and THEMES lists should post to REPL regardless of DEBUG level
+- [ ] Verify FM and other 14-bit params accept full 0-16383 range (reported errors)
+
+**DSP Bugs:**
+- [ ] FM envelope (FMEV) has no audible effect - investigate SynthDef routing
+- [ ] Audit all envelopes in SynthDef - verify each is actually wired to its target
+- [ ] Audit all envelope parameter ranges - verify ATK, DEC, CRV, AMT scaling is correct
 - [ ] Error message prefix standardization (some use "Error:", some use "ERROR:")
 
 **Infrastructure Complete:**
@@ -1125,6 +1174,16 @@ Fix visual feedback for EITH random choice operator.
 - [x] Highlight selected option in script display (like TOG does)
 - [x] Ensure state persists correctly across evaluations
 
+### State Highlight Timing Verification [Low]
+Verify all stateful operator highlights show correct timing.
+
+- [ ] Audit SEQ, TOG, EITH, `<>`, `{}` highlight timing
+- [ ] Verify highlights show current state vs previous state
+- [ ] Test in metro context (does highlight update before or after execution?)
+- [ ] Test in nested contexts (multiple operators per line)
+- [ ] Document expected behavior clearly
+- [ ] Fix any timing inconsistencies found
+
 ### Beat Repeat Stickiness Bug [COMPLETE] - December 2025
 BR (beat repeat) does not turn off reliably when triggered conditionally.
 
@@ -1157,6 +1216,15 @@ Add undo/redo support for script editing.
 - [ ] Reasonable history depth (10-20 edits)
 - [ ] Clear history on page change or save
 
+### Line Duplicate Push Behavior [Low]
+Improve Ctrl+D duplicate behavior to preserve content below.
+
+- [ ] When duplicating a line, push succeeding lines down instead of overwriting
+- [ ] If on line N, duplicate copies line N to N+1, shifting N+1..7 down to N+2..8
+- [ ] Last line (line 8) content is lost only if script is full
+- [ ] If duplicating line 8, no change (nowhere to push)
+- [ ] Applies to script pages 1-8, M, I, and Notes
+
 ### List Output Formatting [Low] - COMPLETE (December 2025)
 Ensure list queries display vertically, not in overflowing single lines.
 
@@ -1179,6 +1247,42 @@ Add Teletype-style numeric repetitor and Euclidean rhythm operators.
 - [ ] ER returns 1 or 0 for current step in pattern
 - [ ] Per-script/per-line state tracking (like TOG/SEQ)
 - [ ] Document Euclidean algorithm implementation
+
+### SCRIPT Command Expression Support [Low]
+Allow SCRIPT command to accept expressions for dynamic script selection.
+
+- [ ] `SCRIPT <expr>` - Execute script by evaluated expression
+- [ ] Example: `SCRIPT ADD 1 A` to call script (1 + A)
+- [ ] Validate result is valid script reference (1-8)
+- [ ] Error if expression evaluates outside valid range
+
+### TOG Zero Parsing Bug [Low]
+Fix script display corruption when TOG uses zero as argument.
+
+- [ ] Bug: `DC TOG 2000 0` displays as `DC TOG 2000 000 0` on script line
+- [ ] Input field shows correct version but script display adds extra zeros
+- [ ] Investigate TOG state serialization/display logic
+- [ ] Fix rendering to match input exactly
+
+### IF/ELSE/ELIF Scope Logic [Medium]
+Establish and document scope rules for conditional chains.
+
+- [ ] Investigate: Does ELSE cut off downstream logic processing?
+- [ ] Define clear scope for IF/ELIF/ELSE pairs (line-local vs script-local)
+- [ ] Test multi-line conditional chains
+- [ ] Test conditionals with semicolons (multiple commands after colon)
+- [ ] Verify ELSE doesn't prevent subsequent non-conditional commands from executing
+- [ ] Document expected behavior clearly in help system
+
+### DEL Command Script Entry Rejection [Medium]
+DEL commands are rejected when entered on script lines.
+
+- [ ] Investigate: Why are DEL/DEL.X/DEL.R commands rejected in script editor?
+- [ ] DEL commands work in REPL but not in scripts
+- [ ] Likely validation or parsing issue with colon separator
+- [ ] Verify DEL commands should be allowed in scripts
+- [ ] Fix validation/parsing to accept DEL commands on script lines
+- [ ] Test all three variants: DEL, DEL.X, DEL.R
 
 ### Script Validation Overhaul [High]
 Comprehensive validation to reject invalid syntax before execution.
@@ -1448,12 +1552,22 @@ Expand beyond Apple Silicon macOS.
 - [ ] Test on Intel Mac hardware
 - [ ] Universal binary option (fat binary)
 
-**Linux:**
+**Linux x86_64:**
 - [ ] Linux build target (x86_64-unknown-linux-gnu)
 - [ ] Bundle or document scsynth installation
 - [ ] Handle audio backend differences (JACK, PulseAudio, PipeWire)
 - [ ] AppImage or Flatpak packaging
 - [ ] Test on common distros (Ubuntu, Fedora, Arch)
+
+**Linux ARM64 (uConsole/Raspberry Pi):**
+- [ ] Linux build target (aarch64-unknown-linux-gnu)
+- [ ] Build or bundle scsynth for ARM64 Linux
+- [ ] Build or bundle sc3-plugins for ARM64 (or remove dependency)
+- [ ] Implement ALSA/PipeWire audio backend selection
+- [ ] Test on ClockworkPi uConsole (CM4 variant)
+- [ ] Test on Raspberry Pi 4/5
+- [ ] Optimize buffer sizes for ARM CPU constraints
+- [ ] Document ClockworkOS / Raspberry Pi OS setup
 
 **Windows:**
 - [ ] Windows build target (x86_64-pc-windows-msvc)

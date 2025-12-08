@@ -1030,12 +1030,13 @@ Need to establish and document clear scope rules for conditional chains:
 Current implementation is functional but behavior in edge cases needs verification and clear documentation.
 
 ### DEL Command Script Entry Rejection
-**Status:** Known Issue (Phase 5)
+**Status:** FIXED (December 2025, commit b6554a5)
 
-DEL commands are rejected when entered on script lines but work correctly in REPL:
-- DEL/DEL.X/DEL.R commands cannot be saved to script pages
-- Likely validation or parsing issue with colon separator
-- Need to verify if DEL commands should be allowed in scripts and fix validation accordingly
+DEL commands work correctly in both REPL and script lines:
+- [x] DEL/DEL.X/DEL.R commands now validate and execute from scripts
+- [x] Verified with 560 passing tests including 9 DEL-specific tests
+- [x] Audio testing confirms correct execution from script lines
+- Fix: Added DEL.X/DEL.R to validation whitelist and control flow handling
 
 ---
 

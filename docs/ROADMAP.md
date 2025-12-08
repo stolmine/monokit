@@ -1274,15 +1274,30 @@ Establish and document scope rules for conditional chains.
 - [ ] Verify ELSE doesn't prevent subsequent non-conditional commands from executing
 - [ ] Document expected behavior clearly in help system
 
-### DEL Command Script Entry Rejection [Medium]
-DEL commands are rejected when entered on script lines.
+### DEL Command Script Entry Rejection [Medium] - COMPLETE (December 2025)
+DEL commands were being rejected when entered on script lines.
 
-- [ ] Investigate: Why are DEL/DEL.X/DEL.R commands rejected in script editor?
-- [ ] DEL commands work in REPL but not in scripts
-- [ ] Likely validation or parsing issue with colon separator
-- [ ] Verify DEL commands should be allowed in scripts
-- [ ] Fix validation/parsing to accept DEL commands on script lines
-- [ ] Test all three variants: DEL, DEL.X, DEL.R
+**Root Cause:**
+- DEL.X and DEL.R variants were missing from validation whitelist for colon-separated commands
+- Validation code in `src/commands/validate.rs` was checking for `DEL ` but not `DEL.X ` or `DEL.R `
+- This caused script line validation to reject these commands as invalid syntax
+
+**Fix Applied (Commit b6554a5):**
+- [x] Added `DEL.X ` and `DEL.R ` to validation whitelist in validate.rs (lines 197-198)
+- [x] Added special handling in control_flow.rs to prevent DEL commands from being parsed as conditionals (lines 255-260)
+- [x] All three variants (DEL, DEL.X, DEL.R) now work correctly in scripts and REPL
+- [x] Test coverage added in src/tests/delay_tests.rs (test_del_valid_commands)
+- [x] Verified with test scenes (repl_tests/test_metro_timing.json)
+
+**Verification (December 2025):**
+- [x] All 560 tests pass including 9 DEL-specific tests
+- [x] Audio testing confirms DEL, DEL.X, and DEL.R execute correctly from script lines
+- [x] Fix verified functional with real-world usage
+
+**Implementation:**
+- Validation: Lines 186-202 of src/commands/validate.rs explicitly allow DEL/DEL.X/DEL.R with colon syntax
+- Execution: Lines 255-260 of src/app/script_exec/control_flow.rs prevent DEL commands from being parsed as conditionals
+- Both REPL and script execution paths correctly handle all three DEL command variants
 
 ### Script Validation Overhaul [High]
 Comprehensive validation to reject invalid syntax before execution.

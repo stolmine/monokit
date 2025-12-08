@@ -874,15 +874,16 @@ Automatically load the last used scene on startup.
 - [ ] Silent load (no REPL output) or respect DEBUG level
 - [ ] Handle missing scene gracefully (scene deleted since last session)
 
-### Clear REPL on Load [Low]
+### Clear REPL on Load [Low] - COMPLETE (December 2025)
 Optional setting to clear REPL output when loading scenes.
 
-- [ ] `LOAD.CLR <0|1>` - Toggle clear-on-load behavior
-- [ ] When enabled, automatically run CLEAR after LOAD completes
-- [ ] Persist setting to config.toml
-- [ ] Provides clean slate when switching between scenes
+- [x] `LOAD.CLR <0|1>` - Toggle clear-on-load behavior
+- [x] When enabled, automatically run CLEAR after LOAD completes
+- [x] Persist setting to config.toml
+- [x] Provides clean slate when switching between scenes
+- [x] Feature verified working with config persistence tested
 
-### Alias Coverage Audit [Low] - PARTIAL
+### Alias Coverage Audit [Low] - COMPLETE (December 2025)
 Complete alias to canonical name coverage - many parameters have no short forms in CLI even though they are generally addressed with short forms in SuperCollider.
 
 - [x] Audit all parameters for missing short-form aliases
@@ -891,7 +892,7 @@ Complete alias to canonical name coverage - many parameters have no short forms 
 - [x] Review SC parameter names vs CLI command names for consistency
 - [x] Update aliases.rs with new mappings
 - [x] Update help system with new aliases
-- [ ] Add CLR alias for CLEAR command
+- [x] Add CLR alias for CLEAR command
 
 ### Per-Element UI Toggles [Low] - COMPLETE
 Individual override commands to toggle visual elements independently.

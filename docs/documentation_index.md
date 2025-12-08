@@ -981,22 +981,40 @@ All 558 tests pass. Codebase reduced by ~28% while maintaining full functionalit
 
 ---
 
-## Known Issues and Planned Improvements
+## Recent Feature Completions (December 2025)
 
-The following items have been added to Phase 5 (Polish & Refinements) of the roadmap. These represent known issues and planned improvements that will be addressed in future updates. For full details, see `docs/ROADMAP.md`.
-
-### Clear REPL on Load Setting
-**Status:** Planned (Phase 5)
+### LOAD.CLR - Clear REPL on Load Setting
+**Status:** COMPLETE (December 2025)
 
 Optional setting to clear REPL output when loading scenes.
-- `LOAD.CLR <0|1>` command to toggle clear-on-load behavior
-- When enabled, automatically runs CLEAR after LOAD completes
-- Config persistence for user preference
+- `LOAD.CLR <0|1>` command toggles clear-on-load behavior
+- When enabled (LOAD.CLR 1), automatically runs CLEAR after LOAD completes
+- Setting persists to config.toml across sessions
+- Default is 0 (off)
+- Provides clean slate when switching between scenes
+
+**Implementation:**
+- Command handler in `src/commands/system/scene.rs`
+- Config persistence in `src/config.rs`
+- Feature verified working with full config persistence testing
 
 ### CLR Alias for CLEAR Command
-**Status:** Planned (Phase 5, partial completion of Alias Coverage Audit)
+**Status:** COMPLETE (December 2025)
 
-Add shorter `CLR` alias for the `CLEAR` command to maintain consistency with terse command syntax philosophy. This is the final remaining item in the Alias Coverage Audit.
+Shorter `CLR` alias for the `CLEAR` command maintains consistency with terse command syntax philosophy.
+- `CLR` now works as alias for `CLEAR` command
+- Clears all REPL output
+- Completes the Alias Coverage Audit
+
+**Implementation:**
+- Alias mapping in `src/commands/aliases.rs`
+- Help system updated in `src/ui/pages/help_content.rs`
+
+---
+
+## Known Issues and Planned Improvements
+
+The following items represent known issues and planned improvements that will be addressed in future updates. For full details, see `docs/ROADMAP.md`.
 
 ### State Highlight Timing Verification
 **Status:** Under Investigation (Phase 5)

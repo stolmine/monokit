@@ -313,7 +313,7 @@ s.waitForBoot {
         #sigL, sigR = Pan2.ar(sig, panPos);
 
         // Beat Repeat Buffer Processing
-        brActive = Lag.kr((br_mix > 0), 0.01);
+        brActive = Lag.kr(br_mix > 0, 0.01);
         brLoopLen = br_len_ms / 1000;
         brBufSize = (brLoopLen * SampleRate.ir).ceil.max(4410);
 
@@ -624,6 +624,10 @@ s.waitForBoot {
     OSCdef(\monokit_param, { |msg|
         var paramName = msg[1].asSymbol;
         var paramValue = msg[2].asFloat;
+        // DEBUG: log br_ params
+        if(paramName.asString.beginsWith("br_"), {
+            ("BR PARAM: " ++ paramName ++ " = " ++ paramValue).postln;
+        });
         ~voice.set(paramName, paramValue);
     }, '/monokit/param');
 

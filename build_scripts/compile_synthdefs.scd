@@ -79,7 +79,6 @@ SynthDef(\monokit, {
         eq = 1,
         eh = 0,
         pn = 0,
-        br_act = 0,
         br_len = 2,
         br_len_ms = 250,
         br_rev = 0,
@@ -284,7 +283,7 @@ SynthDef(\monokit, {
     panPos = (panSmooth / 16383).clip(-1, 1);
     #sigL, sigR = Pan2.ar(sig, panPos);
 
-    brActive = Lag.kr(br_act.clip(0, 1), 0.01);
+    brActive = Lag.kr(br_mix > 0, 0.01);
     brLoopLen = br_len_ms / 1000;
     brBufSize = (brLoopLen * SampleRate.ir).ceil.max(4410);
 

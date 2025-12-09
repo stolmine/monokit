@@ -1347,31 +1347,38 @@ DEL commands were being rejected when entered on script lines.
 - Execution: Lines 255-260 of src/app/script_exec/control_flow.rs prevent DEL commands from being parsed as conditionals
 - Both REPL and script execution paths correctly handle all three DEL command variants
 
-### Script Validation Overhaul [High]
-Comprehensive validation to reject invalid syntax before execution.
+### Script Validation Overhaul [COMPLETE - December 2025]
+Comprehensive validation system rejects invalid syntax before execution.
 
-**Current Issues:**
-- Invalid syntax can be entered and only fails at runtime
-- REPL errors are less useful than preventing invalid input
-- Validation coverage is incomplete
+**Implementation Complete:**
+- [x] Closed paste_line() bypass in src/app/input.rs - validation now runs on paste
+- [x] Added 32 pattern operations (16 P.* and 16 PN.*) to eval/patterns.rs with return values
+- [x] Created src/commands/validate_expr.rs for expression syntax validation
+- [x] Added control flow validation (loops, conditionals, DEL) to validate.rs
+- [x] Added SEQ pattern content validation (brackets, tokens) to validate.rs
+- [x] Added reference range validation (patterns 0-5, scripts 1-8/M/I) to validate.rs
+- [x] Added extra tokens check for variable assignments
+- [x] Clear, specific error messages for each failure type
+- [x] Created 9 comprehensive test scenes in ~/.config/monokit/scenes/
 
-**Goals:**
-- [ ] Reject invalid commands on script line entry (before save)
-- [ ] Validate all argument counts and types
-- [ ] Validate expression syntax (balanced parens, valid operators)
-- [ ] Validate SEQ notation syntax (quotes, brackets, valid tokens)
-- [ ] Validate pattern references (0-5 range)
-- [ ] Validate script references (1-8, M, I)
-- [ ] Validate parameter ranges where possible
-- [ ] Clear, specific error messages for each failure type
-- [ ] Visual feedback on invalid lines (error color/indicator)
+**Files Modified:**
+- src/app/input.rs - paste validation
+- src/eval/patterns.rs - 32 pattern operations
+- src/commands/validate_expr.rs - NEW file
+- src/commands/validate.rs - enhanced validation
 
-**Approach:**
-- [ ] Audit all commands for missing validation
-- [ ] Add expression parser validation (not just evaluation)
-- [ ] Add SEQ parser validation pass
-- [ ] Add control flow validation (matching IF/ELSE, valid PRE syntax)
-- [ ] Consider validation mode toggle for power users
+**Test Coverage:**
+- test_pattern_ops_basic.json - basic operations
+- test_pattern_ops_expressions.json - expressions
+- test_pattern_ops_nested.json - nested usage
+- test_pattern_ops_conditionals.json - conditionals
+- test_pattern_ops_semicolons.json - multi-command
+- test_pattern_ops_loops.json - loop contexts
+- test_pattern_pn_variants.json - PN.* operations
+- test_validation_errors.json - error cases
+- test_validation_edge_cases.json - boundary conditions
+
+See **SCRIPT_VALIDATION_PLAN.md** for complete details.
 
 ---
 

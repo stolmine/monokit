@@ -1360,6 +1360,54 @@ See **DRY_REFACTOR_PLAN.md** for complete implementation details and **DRY_ANALY
 
 ---
 
+## Script Validation Plan
+
+### Overview
+Comprehensive validation system prevents invalid scripts from being saved. Validation occurs on line entry, not at runtime.
+
+**Implementation Status: COMPLETE (December 2025)**
+
+### Completed Phases
+
+**Phase 1: Close Bypass Paths [COMPLETE]**
+- Added validation to paste_line() in src/app/input.rs
+- All entry paths now run validation before save
+
+**Phase 2: Pattern Operation Fixes [COMPLETE]**
+- Added 32 pattern operations (16 P.*, 16 PN.*) to eval/patterns.rs
+- All operations return values for expression usage
+- Argument validation matches execution behavior
+
+**Phase 3: Expression Validation [COMPLETE]**
+- Created src/commands/validate_expr.rs
+- Validates expression syntax without evaluation
+- Handles nested expressions, math, logic ops
+
+**Phase 4: Control Flow Validation [COMPLETE]**
+- Loop syntax (L <start> <end>: <cmd>)
+- Conditionals (IF/ELIF/ELSE, PROB, EV, SKIP)
+- DEL command variants (DEL, DEL.X, DEL.R)
+
+**Phase 5: SEQ Pattern Content [COMPLETE]**
+- Bracket balancing (<>, {})
+- Valid token verification
+- Repetition syntax (*N)
+
+**Phase 6: Reference Range Validation [COMPLETE]**
+- Pattern numbers (0-5)
+- Script references (1-8, M, I)
+- Variable assignment extra tokens check
+
+### Test Coverage
+- 9 comprehensive test scenes in ~/.config/monokit/scenes/
+- Pattern operations (basic, expressions, nested, conditionals, semicolons, loops, PN variants)
+- Validation errors and edge cases
+- All tests pass with validation enabled
+
+See **SCRIPT_VALIDATION_PLAN.md** for complete implementation details.
+
+---
+
 ## Architecture Overview
 
 ```

@@ -1,0 +1,174 @@
+{
+  "version": 1,
+  "scripts": [
+    {
+      "lines": [
+        "PRINT \"=== ARG COUNT ERRORS ===\"",
+        "P.NEXT 1 2 3",
+        "P.PUSH",
+        "P.FND",
+        "PN.MIN",
+        "PN.FND 0",
+        "P.ROT",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== RANGE ERRORS ===\"",
+        "P -1 100",
+        "P 64 100",
+        "P.N 6",
+        "P.N -1",
+        "PN.NEXT 6",
+        "PN.NEXT -1",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== UNKNOWN COMMANDS ===\"",
+        "P.INVALID",
+        "PN.BADOP 0",
+        "NOTACMD",
+        "FAKECMD 123",
+        "BADCOMMAND",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== MUTATOR ARG ERRORS ===\"",
+        "P.POP 1",
+        "P.REV 5",
+        "P.SHUF 1 2",
+        "P.SORT 1",
+        "P.ROT",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== ARITHMETIC OP ERRORS ===\"",
+        "P.ADD",
+        "P.SUB",
+        "P.MUL",
+        "P.DIV",
+        "P.MOD",
+        "P.SCALE 0",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== MISSING ARG ERRORS ===\"",
+        "VOL",
+        "PF",
+        "DC",
+        "PN.PUSH 0",
+        "PN.ADD 1",
+        "PN.ROT 2",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== SCRIPT REF ERRORS ===\"",
+        "SCRIPT 0",
+        "SCRIPT 9",
+        "M.SCRIPT 0",
+        "M.SCRIPT 9",
+        "$ 0",
+        "$ 9",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"INIT: VALIDATION ERROR TESTS\"",
+        "PRINT \"SCRIPTS 0-6 HAVE INVALID CMDS\"",
+        "PRINT \"THEY SHOULD BE REJECTED\"",
+        "M 200",
+        "M.ACT 1",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    }
+  ],
+  "patterns": [
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    }
+  ],
+  "pattern_working": 0,
+  "notes": [
+    "VALIDATION ERROR TESTS",
+    "Test invalid commands",
+    "Arg count errors",
+    "Range errors",
+    "Unknown commands",
+    "Mutator errors",
+    "Arithmetic errors",
+    "Script ref errors"
+  ]
+}

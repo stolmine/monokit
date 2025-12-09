@@ -1,6 +1,254 @@
 use anyhow::Result;
 
 use super::resolve_alias;
+use super::validate_expr::validate_expression;
+
+/// Validates SEQ pattern content for bracket balancing and valid tokens
+fn validate_seq_pattern_content(pattern: &str) -> Result<()> {
+    if pattern.trim().is_empty() {
+        return Err(anyhow::anyhow!("SEQ: EMPTY PATTERN"));
+    }
+
+    let mut angle_depth = 0;
+    let mut curly_depth = 0;
+    let mut in_angle = false;
+    let mut in_curly = false;
+
+    for ch in pattern.chars() {
+        match ch {
+            '<' => {
+                if in_angle || in_curly {
+                    return Err(anyhow::anyhow!("SEQ: NESTED BRACKETS NOT ALLOWED"));
+                }
+                angle_depth += 1;
+                in_angle = true;
+            }
+            '>' => {
+                if angle_depth == 0 {
+                    return Err(anyhow::anyhow!("SEQ: UNCLOSED < BRACKET"));
+                }
+                angle_depth -= 1;
+                if angle_depth == 0 {
+                    in_angle = false;
+                }
+            }
+            '{' => {
+                if in_angle || in_curly {
+                    return Err(anyhow::anyhow!("SEQ: NESTED BRACKETS NOT ALLOWED"));
+                }
+                curly_depth += 1;
+                in_curly = true;
+            }
+            '}' => {
+                if curly_depth == 0 {
+                    return Err(anyhow::anyhow!("SEQ: UNCLOSED {{ BRACKET"));
+                }
+                curly_depth -= 1;
+                if curly_depth == 0 {
+                    in_curly = false;
+                }
+            }
+            _ => {}
+        }
+    }
+
+    if angle_depth > 0 {
+        return Err(anyhow::anyhow!("SEQ: UNCLOSED < BRACKET"));
+    }
+    if curly_depth > 0 {
+        return Err(anyhow::anyhow!("SEQ: UNCLOSED {{ BRACKET"));
+    }
+
+    let tokens: Vec<&str> = pattern.split_whitespace().collect();
+    for token in tokens {
+        validate_seq_token(token)?;
+    }
+
+    Ok(())
+}
+
+/// Validates a single SEQ token (handles brackets, repetition, and basic tokens)
+fn validate_seq_token(token: &str) -> Result<()> {
+    if token.is_empty() {
+        return Ok(());
+    }
+
+    let (base_token, repeat_suffix) = if let Some(star_pos) = token.rfind('*') {
+        let base = &token[..star_pos];
+        let count_str = &token[star_pos + 1..];
+        if count_str.is_empty() {
+            return Err(anyhow::anyhow!("SEQ: INVALID REPEAT \"{}\"", token));
+        }
+        if !count_str.chars().all(|c| c.is_ascii_digit()) {
+            return Err(anyhow::anyhow!("SEQ: INVALID REPEAT \"*{}\"", count_str));
+        }
+        (base, Some(count_str))
+    } else {
+        (token, None)
+    };
+
+    if base_token.starts_with('<') && base_token.ends_with('>') {
+        let inner = &base_token[1..base_token.len()-1];
+        for inner_token in inner.split_whitespace() {
+            validate_basic_seq_token(inner_token)?;
+        }
+        return Ok(());
+    }
+
+    if base_token.starts_with('{') && base_token.ends_with('}') {
+        let inner = &base_token[1..base_token.len()-1];
+        for inner_token in inner.split_whitespace() {
+            validate_basic_seq_token(inner_token)?;
+        }
+        return Ok(());
+    }
+
+    validate_basic_seq_token(base_token)?;
+
+    if let Some(count_str) = repeat_suffix {
+        if count_str.parse::<usize>().is_err() {
+            return Err(anyhow::anyhow!("SEQ: INVALID REPEAT \"*{}\"", count_str));
+        }
+    }
+
+    Ok(())
+}
+
+/// Validates a basic SEQ token (no brackets, no repetition)
+fn validate_basic_seq_token(token: &str) -> Result<()> {
+    if token.is_empty() {
+        return Ok(());
+    }
+
+    match token {
+        "_" | "." | "x" | "X" | "?" => return Ok(()),
+        _ => {}
+    }
+
+    if token.parse::<i16>().is_ok() {
+        return Ok(());
+    }
+
+    if is_valid_note_name(token) {
+        return Ok(());
+    }
+
+    Err(anyhow::anyhow!("SEQ: INVALID TOKEN \"{}\"", token))
+}
+
+/// Validates if a token is a valid note name (C0-B9, with optional # or b)
+fn is_valid_note_name(s: &str) -> bool {
+    let s = s.to_uppercase();
+    let mut chars = s.chars().peekable();
+
+    let note = match chars.next() {
+        Some('C') | Some('D') | Some('E') | Some('F') | Some('G') | Some('A') | Some('B') => {}
+        _ => return false,
+    };
+
+    match chars.peek() {
+        Some('#') => {
+            chars.next();
+        }
+        Some('B') => {
+            let mut lookahead = chars.clone();
+            lookahead.next();
+            if lookahead.peek().map_or(false, |c| c.is_ascii_digit()) {
+                chars.next();
+            }
+        }
+        _ => {}
+    }
+
+    let octave_str: String = chars.collect();
+    if octave_str.is_empty() {
+        return false;
+    }
+
+    if let Ok(octave) = octave_str.parse::<i16>() {
+        octave >= 0 && octave <= 9
+    } else {
+        false
+    }
+}
+
+/// Validates loop syntax: L <start> <end>: <commands>
+fn validate_loop_syntax(line: &str) -> Result<()> {
+    let colon_pos = line.find(':').ok_or_else(|| anyhow::anyhow!("L REQUIRES : SEPARATOR"))?;
+
+    let loop_part = line[2..colon_pos].trim();
+    let parts: Vec<&str> = loop_part.split_whitespace().collect();
+
+    if parts.len() < 2 {
+        return Err(anyhow::anyhow!("L REQUIRES START AND END"));
+    }
+
+    validate_expression(&parts, 0)?;
+    validate_expression(&parts, 1)?;
+
+    let commands = line[colon_pos + 1..].trim();
+    if commands.is_empty() {
+        return Err(anyhow::anyhow!("L REQUIRES COMMAND AFTER :"));
+    }
+
+    Ok(())
+}
+
+/// Validates conditional syntax: IF/ELIF/ELSE/PROB/EV/SKIP
+fn validate_conditional_syntax(prefix: &str, rest: &str) -> Result<()> {
+    let colon_pos = rest.find(':').ok_or_else(|| {
+        anyhow::anyhow!("{} REQUIRES : BEFORE COMMAND", prefix)
+    })?;
+
+    let condition_part = rest[..colon_pos].trim();
+    let command_part = rest[colon_pos + 1..].trim();
+
+    if command_part.is_empty() {
+        return Err(anyhow::anyhow!("{} REQUIRES COMMAND AFTER :", prefix));
+    }
+
+    if prefix != "ELSE" && !condition_part.is_empty() {
+        let parts: Vec<&str> = condition_part.split_whitespace().collect();
+        if parts.is_empty() {
+            return Err(anyhow::anyhow!("INVALID CONDITION EXPRESSION"));
+        }
+        validate_expression(&parts, 0)?;
+    }
+
+    Ok(())
+}
+
+/// Validates DEL command variants: DEL, DEL.X, DEL.R
+fn validate_del_syntax(line: &str) -> Result<()> {
+    let upper = line.to_uppercase();
+    let colon_pos = line.find(':').ok_or_else(|| {
+        anyhow::anyhow!("DEL REQUIRES : BEFORE COMMAND")
+    })?;
+
+    let before_colon = line[..colon_pos].trim();
+    let after_colon = line[colon_pos + 1..].trim();
+
+    if after_colon.is_empty() {
+        return Err(anyhow::anyhow!("DEL REQUIRES COMMAND AFTER :"));
+    }
+
+    let parts: Vec<&str> = before_colon.split_whitespace().collect();
+
+    if upper.starts_with("DEL.X ") || upper.starts_with("DEL.R ") {
+        if parts.len() < 3 {
+            return Err(anyhow::anyhow!("DEL.X/R REQUIRE COUNT AND TIME"));
+        }
+        validate_expression(&parts, 1)?;
+        validate_expression(&parts, 2)?;
+    } else if upper.starts_with("DEL ") {
+        if parts.len() < 2 {
+            return Err(anyhow::anyhow!("DEL REQUIRES TIME"));
+        }
+        validate_expression(&parts, 1)?;
+    }
+
+    Ok(())
+}
 
 /// Validates PN.* expression fragments that require pattern arguments.
 /// Returns the number of tokens consumed, or None if this is not a PN.* expression.
@@ -110,6 +358,48 @@ fn validate_all_pn_expressions(parts: &[&str], start_idx: usize) -> Result<()> {
     Ok(())
 }
 
+/// Validates that a pattern number is in range 0-5.
+/// Only validates static numeric values - accepts variables/expressions.
+fn validate_pattern_number(val: &str) -> Result<()> {
+    if let Ok(num) = val.parse::<i16>() {
+        if num < 0 || num > 5 {
+            return Err(anyhow::anyhow!("PATTERN NUMBER MUST BE 0-5"));
+        }
+    }
+    Ok(())
+}
+
+/// Validates that a pattern index is in range 0-63.
+/// Only validates static numeric values - accepts variables/expressions.
+fn validate_pattern_index(val: &str) -> Result<()> {
+    if let Ok(num) = val.parse::<i16>() {
+        if num < 0 || num > 63 {
+            return Err(anyhow::anyhow!("PATTERN INDEX MUST BE 0-63"));
+        }
+    }
+    Ok(())
+}
+
+/// Validates that a script reference is valid: 1-8, M, or I.
+/// Only validates static values - accepts variables/expressions.
+fn validate_script_reference(val: &str) -> Result<()> {
+    let upper = val.to_uppercase();
+
+    // Accept M or I
+    if upper == "M" || upper == "I" {
+        return Ok(());
+    }
+
+    // Try to parse as number
+    if let Ok(num) = val.parse::<i16>() {
+        if num < 1 || num > 8 {
+            return Err(anyhow::anyhow!("SCRIPT MUST BE 1-8, M, OR I"));
+        }
+    }
+
+    Ok(())
+}
+
 pub fn validate_script_command(cmd: &str) -> Result<()> {
     let trimmed = cmd.trim();
     if trimmed.is_empty() {
@@ -146,14 +436,9 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
                     if remaining_trimmed.len() == 2 {
                         return Err(anyhow::anyhow!("SEQ REQUIRES A QUOTED PATTERN"));
                     }
-                    // Check for empty alternation or random choice
+                    // Validate pattern content
                     let inner = &remaining_trimmed[1..remaining_trimmed.len()-1];
-                    if inner.contains("<>") {
-                        return Err(anyhow::anyhow!("SEQ HAS EMPTY ALTERNATION <>"));
-                    }
-                    if inner.contains("{}") {
-                        return Err(anyhow::anyhow!("SEQ HAS EMPTY RANDOM CHOICE {{}}"));
-                    }
+                    validate_seq_pattern_content(inner)?;
                 } else if remaining_trimmed.starts_with('\'') {
                     if !remaining_trimmed.ends_with('\'') || remaining_trimmed.len() == 1 {
                         return Err(anyhow::anyhow!("SEQ HAS UNCLOSED QUOTE"));
@@ -162,14 +447,9 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
                     if remaining_trimmed.len() == 2 {
                         return Err(anyhow::anyhow!("SEQ REQUIRES A QUOTED PATTERN"));
                     }
-                    // Check for empty alternation or random choice
+                    // Validate pattern content
                     let inner = &remaining_trimmed[1..remaining_trimmed.len()-1];
-                    if inner.contains("<>") {
-                        return Err(anyhow::anyhow!("SEQ HAS EMPTY ALTERNATION <>"));
-                    }
-                    if inner.contains("{}") {
-                        return Err(anyhow::anyhow!("SEQ HAS EMPTY RANDOM CHOICE {{}}"));
-                    }
+                    validate_seq_pattern_content(inner)?;
                 } else {
                     // No quote at all
                     return Err(anyhow::anyhow!("SEQ REQUIRES A QUOTED PATTERN"));
@@ -183,26 +463,33 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         return Ok(());
     }
 
+    if trimmed.to_uppercase().starts_with("L ") {
+        return validate_loop_syntax(trimmed);
+    }
+
     if trimmed.contains(':') {
         let colon_pos = trimmed.find(':').unwrap();
         let prefix = trimmed[..colon_pos].trim().to_uppercase();
-        if prefix.starts_with("IF ")
-            || prefix.starts_with("ELIF ")
-            || prefix == "ELSE"
-            || prefix.starts_with("PROB ")
-            || prefix.starts_with("EV ")
-            || prefix.starts_with("SKIP ")
-            || prefix.starts_with("L ")
-            || prefix.starts_with("DEL ")
-            || prefix.starts_with("DEL.X ")
-            || prefix.starts_with("DEL.R ")
-        {
-            return Ok(());
-        }
-    }
 
-    if trimmed.to_uppercase().starts_with("L ") {
-        return Ok(());
+        if prefix.starts_with("IF ") {
+            return validate_conditional_syntax("IF", &trimmed[3..]);
+        } else if prefix.starts_with("ELIF ") {
+            return validate_conditional_syntax("ELIF", &trimmed[5..]);
+        } else if prefix == "ELSE" {
+            return validate_conditional_syntax("ELSE", &trimmed[4..]);
+        } else if prefix.starts_with("PROB ") {
+            return validate_conditional_syntax("PROB", &trimmed[5..]);
+        } else if prefix.starts_with("EV ") {
+            return validate_conditional_syntax("EV", &trimmed[3..]);
+        } else if prefix.starts_with("SKIP ") {
+            return validate_conditional_syntax("SKIP", &trimmed[5..]);
+        } else if prefix.starts_with("DEL.X ") {
+            return validate_del_syntax(trimmed);
+        } else if prefix.starts_with("DEL.R ") {
+            return validate_del_syntax(trimmed);
+        } else if prefix.starts_with("DEL ") {
+            return validate_del_syntax(trimmed);
+        }
     }
 
     if trimmed.contains(';') {
@@ -220,6 +507,13 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
 
     match command.as_str() {
         "A" | "B" | "C" | "D" | "I" | "X" | "Y" | "Z" | "T" | "J" | "K" => {
+            // Variable assignment - validate expression consumes all tokens
+            if argc > 0 {
+                let consumed = validate_expression(&parts, 1)?;
+                if consumed != argc {
+                    return Err(anyhow::anyhow!("EXTRA TOKENS AFTER EXPRESSION"));
+                }
+            }
             Ok(())
         }
         "N1" | "N2" | "N3" | "N4" => {
@@ -259,66 +553,92 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             if argc > 1 {
                 return Err(anyhow::anyhow!("{} TAKES 0-1 ARGUMENTS", command));
             }
+            // Validate pattern number for P.N <n>
+            if command == "P.N" && argc == 1 {
+                validate_pattern_number(parts[1])?;
+            }
             Ok(())
         }
         "P" => {
             if argc < 1 {
                 return Err(anyhow::anyhow!("P REQUIRES AT LEAST 1 ARGUMENT"));
             }
+            // Validate pattern index for P <idx> [val]
+            validate_pattern_index(parts[1])?;
             Ok(())
         }
         "PN.HERE" | "PN.NEXT" | "PN.PREV" | "PN.POP" | "PN.REV" | "PN.SHUF" | "PN.SORT" | "PN.MIN" | "PN.MAX" | "PN.SUM" | "PN.AVG" => {
             if argc < 1 {
                 return Err(anyhow::anyhow!("{} NEEDS PAT NUM", command));
             }
+            // Validate pattern number (first arg)
+            validate_pattern_number(parts[1])?;
             Ok(())
         }
         "PN.L" | "PN.I" => {
             if argc < 1 {
                 return Err(anyhow::anyhow!("{} REQUIRES AT LEAST 1 ARGUMENT", command));
             }
+            // Validate pattern number (first arg)
+            validate_pattern_number(parts[1])?;
             Ok(())
         }
         "PN.PUSH" | "PN.ADD" | "PN.SUB" | "PN.MUL" | "PN.DIV" | "PN.MOD" | "PN.FND" => {
             if argc < 2 {
                 return Err(anyhow::anyhow!("{} NEEDS PAT NUM AND VAL", command));
             }
+            // Validate pattern number (first arg)
+            validate_pattern_number(parts[1])?;
             Ok(())
         }
         "PN.RM" => {
             if argc < 2 {
                 return Err(anyhow::anyhow!("PN.RM NEEDS PAT NUM AND IDX"));
             }
+            // Validate pattern number (first arg)
+            validate_pattern_number(parts[1])?;
             Ok(())
         }
         "PN.ROT" => {
             if argc < 2 {
                 return Err(anyhow::anyhow!("PN.ROT NEEDS PAT NUM AND AMT"));
             }
+            // Validate pattern number (first arg)
+            validate_pattern_number(parts[1])?;
             Ok(())
         }
         "PN.INS" => {
             if argc < 3 {
                 return Err(anyhow::anyhow!("PN.INS NEEDS PAT NUM, IDX, VAL"));
             }
+            // Validate pattern number (first arg)
+            validate_pattern_number(parts[1])?;
             Ok(())
         }
         "PN.SCALE" => {
             if argc < 3 {
                 return Err(anyhow::anyhow!("PN.SCALE NEEDS PAT, MIN, MAX"));
             }
+            // Validate pattern number (first arg)
+            validate_pattern_number(parts[1])?;
             Ok(())
         }
         "PN.RND" => {
             if argc < 1 {
                 return Err(anyhow::anyhow!("PN.RND NEEDS PAT NUM"));
             }
+            // Validate pattern number (first arg)
+            validate_pattern_number(parts[1])?;
             Ok(())
         }
         "PN" => {
             if argc < 2 {
                 return Err(anyhow::anyhow!("PN REQUIRES AT LEAST 2 ARGUMENTS"));
             }
+            // Validate pattern number (first arg)
+            validate_pattern_number(parts[1])?;
+            // Validate pattern index (second arg)
+            validate_pattern_index(parts[2])?;
             Ok(())
         }
         "ADD" | "SUB" | "MUL" | "DIV" | "MOD" | "+" | "-" | "*" | "/" | "%" => {
@@ -389,6 +709,8 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             if argc != 1 {
                 return Err(anyhow::anyhow!("SCRIPT TAKES EXACTLY 1 ARGUMENT"));
             }
+            // Validate script reference
+            validate_script_reference(parts[1])?;
             Ok(())
         }
         "SAVE" | "LOAD" | "DELETE" => {
@@ -484,6 +806,10 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         "M.ACT" | "M.SCRIPT" => {
             if argc > 1 {
                 return Err(anyhow::anyhow!("{} TAKES 0-1 ARGUMENTS", command));
+            }
+            // Validate script reference for M.SCRIPT <n>
+            if command == "M.SCRIPT" && argc == 1 {
+                validate_script_reference(parts[1])?;
             }
             Ok(())
         }

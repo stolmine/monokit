@@ -1,0 +1,186 @@
+{
+  "version": 1,
+  "scripts": [
+    {
+      "lines": [
+        "PRINT \"=== PATTERN OPS IN IF ===\"",
+        "P.N 0; P.L 4",
+        "P 0 10; P 1 20; P 2 30; P 3 40",
+        "P.I 1",
+        "IF GT P.NEXT 25: PRINT \"P.NEXT>25\"",
+        "IF LT P.PREV 15: PRINT \"P.PREV<15\"",
+        "IF EQ P.HERE 20: PRINT \"P.HERE=20\"",
+        "PRINT \"--- END IF TESTS ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PATTERN METADATA IN IF ===\"",
+        "P.N 1; P.L 4",
+        "P 0 1; P 1 2; P 2 3; P 3 4",
+        "IF EQ P.L 4: PRINT \"LENGTH=4\"",
+        "IF NZ P.I: PRINT \"INDEX NZ\"",
+        "IF EQ P.N 1: PRINT \"PATTERN=1\"",
+        "PRINT \"--- END METADATA IF ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PATTERN AGGREGATES IN IF ===\"",
+        "P.N 2; P.L 4",
+        "P 0 50; P 1 10; P 2 90; P 3 30",
+        "IF GT P.MAX 80: PRINT \"MAX>80\"",
+        "IF LT P.MIN 20: PRINT \"MIN<20\"",
+        "IF GT P.SUM 100: PRINT \"SUM>100\"",
+        "IF GT P.AVG 40: PRINT \"AVG>40\"",
+        "PRINT \"--- END AGGREGATE IF ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PATTERN OPS IN PROB/EV ===\"",
+        "P.N 3; P.L 4",
+        "P 0 100; P 1 50; P 2 0; P 3 25",
+        "P.I 0; PROB P.NEXT: PRINT \"PROB 100\"",
+        "P.I 2; PROB P.NEXT: PRINT \"NEVER\"",
+        "EV P.HERE: PRINT \"EV 0 (ALWAYS)\"",
+        "PRINT \"--- END PROB/EV ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PATTERN OPS IN ELIF/ELSE ===\"",
+        "P.N 4; P.L 4",
+        "P 0 5; P 1 15; P 2 25; P 3 35",
+        "P.I 1",
+        "IF GT P.NEXT 50: PRINT \"NEXT>50\"",
+        "ELIF GT P.NEXT 20: PRINT \"NEXT>20\"",
+        "ELSE: PRINT \"ELSE\"",
+        "PRINT \"--- END ELIF/ELSE ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PN.* IN CONDITIONALS ===\"",
+        "P.N 0; P.L 3; P 0 10; P 1 20; P 2 30",
+        "P.N 1; P.L 3; P 0 40; P 1 50; P 2 60",
+        "IF GT PN.MAX 0 25: PRINT \"PN0.MAX>25\"",
+        "IF GT PN.MIN 1 35: PRINT \"PN1.MIN>35\"",
+        "IF GT PN.SUM 0 50: PRINT \"PN0.SUM>50\"",
+        "PRINT \"--- END PN CONDITIONAL ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PATTERN LOGIC OPS ===\"",
+        "P.N 5; P.L 4",
+        "P 0 0; P 1 10; P 2 20; P 3 30",
+        "P.I 0; IF EZ P.HERE: PRINT \"HERE=0\"",
+        "P.I 1; IF NZ P.HERE: PRINT \"HERE NZ\"",
+        "A EQ P.NEXT 20; PRINT A",
+        "B NE P.PREV 20; PRINT B",
+        "PRINT \"--- END LOGIC OPS ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"==== PATTERN OPS IN CONDITIONALS ====\"",
+        "L 1 7: SCRIPT I",
+        "M.ACT 0",
+        "REPL.DUMP repl_tests/dump_pattern_ops_conditionals.txt",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"INIT: PATTERN OPS IN CONDITIONALS\"",
+        "M 200",
+        "M.ACT 1",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    }
+  ],
+  "patterns": [
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 4,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 4,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 4,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 4,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 4,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 4,
+      "index": 0
+    }
+  ],
+  "pattern_working": 0,
+  "notes": [
+    "PATTERN OPS IN CONDITIONALS",
+    "Tests after IF/ELIF/ELSE",
+    "Tests after PROB/EV",
+    "Tests logic ops EZ/NZ/GT/LT",
+    "Tests aggregates in conditionals",
+    "Tests PN.* in conditionals",
+    "",
+    ""
+  ]
+}

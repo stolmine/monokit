@@ -1,0 +1,185 @@
+{
+  "version": 1,
+  "scripts": [
+    {
+      "lines": [
+        "PRINT \"=== PATTERN OPS WITH SEMICOLONS ===\"",
+        "P.N 0; P.L 4",
+        "P 0 10; P 1 20; P 2 30; P 3 40",
+        "P.I 0; A P.NEXT; B P.NEXT; PRINT A; PRINT B",
+        "PRINT \"--- END BASIC SEMI ---\"",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== MULTIPLE ASSIGNS ON ONE LINE ===\"",
+        "P.N 1; P.L 4",
+        "P 0 5; P 1 10; P 2 15; P 3 20",
+        "A P.MIN; B P.MAX; C P.AVG",
+        "PRINT A; PRINT B; PRINT C",
+        "PRINT \"--- END MULTI ASSIGN ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== MUTATORS WITH SEMICOLONS ===\"",
+        "P.N 2; P.L 2",
+        "P 0 100; P 1 200",
+        "P.PUSH 300; P.PUSH 400; P.PUSH 500",
+        "A P.POP; B P.POP; C P.POP",
+        "PRINT A; PRINT B; PRINT C",
+        "PRINT \"--- END MUTATOR SEMI ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== CONDITIONALS WITH PATTERN OPS ===\"",
+        "P.N 3; P.L 4",
+        "P 0 10; P 1 20; P 2 30; P 3 40",
+        "P.I 0; IF GT P.NEXT 15: PRINT \"YES\"; A P.NEXT",
+        "PRINT A",
+        "PRINT \"--- END COND SEMI ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PATTERN SWITCH WITH SEMICOLONS ===\"",
+        "P.N 0; A P.SUM; P.N 1; B P.SUM",
+        "PRINT A; PRINT B",
+        "P.N 2; C P.MAX; P.N 3; D P.MIN",
+        "PRINT C; PRINT D",
+        "PRINT \"--- END PATTERN SWITCH ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PN.* WITH SEMICOLONS ===\"",
+        "P.N 0; P.L 3; P 0 11; P 1 22; P 2 33",
+        "P.N 1; P.L 3; P 0 44; P 1 55; P 2 66",
+        "A PN.MIN 0; B PN.MAX 1; C PN.AVG 0",
+        "PRINT A; PRINT B; PRINT C",
+        "PRINT \"--- END PN SEMI ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== COMPLEX SEMICOLON CHAINS ===\"",
+        "P.N 4; P.L 4; P 0 7; P 1 14; P 2 21; P 3 28",
+        "A P.NEXT; B ADD A P.NEXT; C MUL B 2",
+        "PRINT A; PRINT B; PRINT C",
+        "IF GT C 50: PRINT \"C>50\"; X P.MAX; PRINT X",
+        "PRINT \"--- END COMPLEX SEMI ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"==== PATTERN OPS WITH SEMICOLONS ====\"",
+        "L 1 7: SCRIPT I",
+        "M.ACT 0",
+        "REPL.DUMP repl_tests/dump_pattern_ops_semicolons.txt",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"INIT: PATTERN OPS WITH SEMICOLONS\"",
+        "M 200",
+        "M.ACT 1",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    }
+  ],
+  "patterns": [
+    {
+      "data": [1,2,3,4,5,6,7,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [2,4,6,8,10,12,14,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [3,6,9,12,15,18,21,24,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [4,8,12,16,20,24,28,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    }
+  ],
+  "pattern_working": 0,
+  "notes": [
+    "PATTERN OPS WITH SEMICOLONS",
+    "Tests multi-command lines",
+    "Tests multiple assignments",
+    "Tests mutators chained",
+    "Tests pattern switching",
+    "Tests PN.* chained",
+    "",
+    ""
+  ]
+}

@@ -1,0 +1,188 @@
+{
+  "version": 1,
+  "scripts": [
+    {
+      "lines": [
+        "PRINT \"=== VALID EDGE CASES ===\"",
+        "P.N 0; P.L 8",
+        "P 0 10; P 1 20; P 2 30; P 3 40",
+        "A P.NEXT; PRINT A",
+        "P.N 5; PRINT P.N",
+        "P 63 127; PRINT P 63",
+        "PRINT \"--- END VALID EDGES ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PATTERN BOUNDS ===\"",
+        "P.N 0; PRINT \"MIN PATTERN\"",
+        "P.N 5; PRINT \"MAX PATTERN\"",
+        "PRINT \"P.N 6 INVALID (TEST MANUALLY)\"",
+        "PRINT \"P.N -1 INVALID (TEST MANUALLY)\"",
+        "PRINT \"--- END PATTERN BOUNDS ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== INDEX BOUNDS ===\"",
+        "P.N 0; P.L 64",
+        "P 0 100; PRINT \"MIN INDEX\"",
+        "P 63 127; PRINT \"MAX INDEX\"",
+        "PRINT P 63",
+        "PRINT \"P 64 100 INVALID (MANUAL)\"",
+        "PRINT \"P -1 100 INVALID (MANUAL)\"",
+        "PRINT \"--- END INDEX BOUNDS ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== ZERO-LENGTH PATTERNS ===\"",
+        "P.N 1; P.L 0",
+        "PRINT P.L",
+        "PRINT P.MIN",
+        "PRINT P.MAX",
+        "A P.NEXT; PRINT A",
+        "PRINT \"--- END ZERO LENGTH ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== CONDITIONAL EDGE CASES ===\"",
+        "P.N 2; P.L 4",
+        "P 0 0; P 1 10; P 2 20; P 3 30",
+        "P.I 0; IF EZ P.HERE: PRINT \"ZERO OK\"",
+        "IF EZ 0: A P.NEXT; PRINT A",
+        "PRINT \"--- END COND EDGES ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== LOOP EDGE CASES ===\"",
+        "P.N 3; P.L 4",
+        "L 0 0: PRINT \"NEVER (0 ITER)\"",
+        "L 1 1: P 0 100",
+        "PRINT P 0",
+        "L 0 SUB P.L 1: P I I",
+        "PRINT \"--- END LOOP EDGES ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PN.* EDGE CASES ===\"",
+        "A PN.L 0; PRINT A",
+        "B PN.I 5; PRINT B",
+        "C PN.MIN 0; PRINT C",
+        "D PN.MAX 5; PRINT D",
+        "PRINT \"PN.* 6 INVALID (MANUAL)\"",
+        "PRINT \"--- END PN EDGES ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"==== VALIDATION EDGE CASES ====\"",
+        "L 1 7: SCRIPT I",
+        "M.ACT 0",
+        "REPL.DUMP repl_tests/dump_validation_edge_cases.txt",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"INIT: VALIDATION EDGE CASES\"",
+        "PRINT \"TESTS BOUNDARY CONDITIONS\"",
+        "M 200",
+        "M.ACT 1",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    }
+  ],
+  "patterns": [
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    }
+  ],
+  "pattern_working": 0,
+  "notes": [
+    "VALIDATION EDGE CASES",
+    "Tests boundary conditions",
+    "Pattern 0-5, Index 0-63",
+    "Zero-length patterns",
+    "Zero-iteration loops",
+    "Conditional edge cases",
+    "PN.* bounds",
+    ""
+  ]
+}

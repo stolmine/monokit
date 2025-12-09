@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "scripts": [
+    {
+      "lines": [
+        "PRINT \"=== PATTERN OPS IN MATH ===\"",
+        "P.N 0; P.L 4",
+        "P 0 10; P 1 20; P 2 30; P 3 40",
+        "P.I 1",
+        "A ADD 5 P.NEXT; PRINT A",
+        "B SUB P.MAX 10; PRINT B",
+        "C MUL 2 P.MIN; PRINT C",
+        "PRINT \"--- END MATH NEST ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PATTERN OPS IN NESTED MATH ===\"",
+        "P.N 1; P.L 4",
+        "P 0 5; P 1 10; P 2 15; P 3 20",
+        "A ADD P.NEXT MUL P.PREV 2; PRINT A",
+        "B SUB P.SUM DIV P.L 2; PRINT B",
+        "C MUL ADD P.MIN P.MAX 2; PRINT C",
+        "PRINT \"--- END NESTED MATH ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PATTERN OPS IN MAP ===\"",
+        "P.N 2; P.L 4",
+        "P 0 25; P 1 50; P 2 75; P 3 100",
+        "P.I 0",
+        "A MAP P.NEXT 0 100 0 1000; PRINT A",
+        "B MAP P.AVG 0 100 100 0; PRINT B",
+        "PRINT \"--- END MAP NEST ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PATTERN OPS AS ARGS ===\"",
+        "P.N 3; P.L 4",
+        "P 0 1; P 1 2; P 2 3; P 3 4",
+        "PF ADD 100 P.HERE; PRINT PF",
+        "A RND P.MIN P.MAX; PRINT A",
+        "B RRND P.MAX P.MIN; PRINT B",
+        "C EITH P.NEXT P.PREV; PRINT C",
+        "PRINT \"--- END ARGS ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PATTERN OPS WITH MUTATORS ===\"",
+        "P.N 4; P.L 2",
+        "P 0 10; P 1 20",
+        "A ADD P.PUSH 30 P.POP; PRINT A",
+        "B MUL 2 P.PUSH 40; PRINT B",
+        "C SUB 100 P.POP; PRINT C",
+        "PRINT \"--- END MUTATORS ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PN.* IN NESTED EXPR ===\"",
+        "P.N 5; P.L 3",
+        "P 0 50; P 1 60; P 2 70",
+        "A ADD PN.NEXT 0 PN.PREV 0; PRINT A",
+        "B DIV PN.SUM 0 PN.L 0; PRINT B",
+        "C SUB PN.MAX 0 PN.MIN 0; PRINT C",
+        "PRINT \"--- END PN NESTED ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== MULTIPLE PATTERNS ===\"",
+        "P.N 0; P.L 2; P 0 10; P 1 20",
+        "P.N 1; P.L 2; P 0 30; P 1 40",
+        "A ADD PN.NEXT 0 PN.NEXT 1; PRINT A",
+        "B MUL PN.HERE 0 PN.HERE 1; PRINT B",
+        "PRINT \"--- END MULTI PATTERN ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"==== NESTED PATTERN OPS ====\"",
+        "L 1 7: SCRIPT I",
+        "M.ACT 0",
+        "REPL.DUMP repl_tests/dump_pattern_ops_nested.txt",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"INIT: NESTED PATTERN OPS\"",
+        "M 200",
+        "M.ACT 1",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    }
+  ],
+  "patterns": [
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 4,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 4,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 4,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 4,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 4,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 4,
+      "index": 0
+    }
+  ],
+  "pattern_working": 0,
+  "notes": [
+    "NESTED PATTERN OPS",
+    "Tests in math expressions",
+    "Tests in MAP/RND/RRND",
+    "Tests with mutators",
+    "Tests PN.* nested",
+    "Tests multi-pattern combos",
+    "",
+    ""
+  ]
+}

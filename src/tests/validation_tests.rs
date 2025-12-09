@@ -351,3 +351,219 @@ fn test_validate_q_root_command() {
     assert!(validate_script_command("Q.ROOT 60").is_ok());
     assert!(validate_script_command("Q.ROOT 60 70").is_err());
 }
+
+#[test]
+fn test_validate_loop_valid() {
+    assert!(validate_script_command("L 0 10: TR").is_ok());
+    assert!(validate_script_command("L 1 5: P I 100").is_ok());
+    assert!(validate_script_command("L A B: PRINT I").is_ok());
+    assert!(validate_script_command("L 0 3: A ADD A 1").is_ok());
+    assert!(validate_script_command("L 1 P.L: PF MUL I 100").is_ok());
+}
+
+#[test]
+fn test_validate_loop_invalid() {
+    assert!(validate_script_command("L 0 10 TR").is_err());
+    assert!(validate_script_command("L 0: TR").is_err());
+    assert!(validate_script_command("L 0 10:").is_err());
+    assert!(validate_script_command("L: TR").is_err());
+}
+
+#[test]
+fn test_validate_if_valid() {
+    assert!(validate_script_command("IF GT A 5: TR").is_ok());
+    assert!(validate_script_command("IF EZ A: PF 100").is_ok());
+    assert!(validate_script_command("IF NZ B: RST").is_ok());
+    assert!(validate_script_command("IF LT I 10: A I").is_ok());
+}
+
+#[test]
+fn test_validate_if_invalid() {
+    assert!(validate_script_command("IF GT A 5 TR").is_err());
+    assert!(validate_script_command("IF GT A 5:").is_err());
+    assert!(validate_script_command("IF: TR").is_err());
+}
+
+#[test]
+fn test_validate_elif_valid() {
+    assert!(validate_script_command("ELIF LT B 10: TR").is_ok());
+    assert!(validate_script_command("ELIF EQ A 5: PF 200").is_ok());
+}
+
+#[test]
+fn test_validate_elif_invalid() {
+    assert!(validate_script_command("ELIF LT B 10 TR").is_err());
+    assert!(validate_script_command("ELIF:").is_err());
+}
+
+#[test]
+fn test_validate_else_valid() {
+    assert!(validate_script_command("ELSE: TR").is_ok());
+    assert!(validate_script_command("ELSE: PF 100").is_ok());
+}
+
+#[test]
+fn test_validate_else_invalid() {
+    assert!(validate_script_command("ELSE TR").is_err());
+    assert!(validate_script_command("ELSE:").is_err());
+}
+
+#[test]
+fn test_validate_prob_valid() {
+    assert!(validate_script_command("PROB 50: TR").is_ok());
+    assert!(validate_script_command("PROB A: PF 100").is_ok());
+}
+
+#[test]
+fn test_validate_prob_invalid() {
+    assert!(validate_script_command("PROB 50 TR").is_err());
+    assert!(validate_script_command("PROB:").is_err());
+}
+
+#[test]
+fn test_validate_ev_valid() {
+    assert!(validate_script_command("EV 4: TR").is_ok());
+    assert!(validate_script_command("EV A: PF 200").is_ok());
+}
+
+#[test]
+fn test_validate_ev_invalid() {
+    assert!(validate_script_command("EV 4 TR").is_err());
+    assert!(validate_script_command("EV:").is_err());
+}
+
+#[test]
+fn test_validate_skip_valid() {
+    assert!(validate_script_command("SKIP 2: TR").is_ok());
+    assert!(validate_script_command("SKIP B: RST").is_ok());
+}
+
+#[test]
+fn test_validate_skip_invalid() {
+    assert!(validate_script_command("SKIP 2 TR").is_err());
+    assert!(validate_script_command("SKIP:").is_err());
+}
+
+#[test]
+fn test_validate_del_valid() {
+    assert!(validate_script_command("DEL 100: TR").is_ok());
+    assert!(validate_script_command("DEL A: PF 100").is_ok());
+    assert!(validate_script_command("DEL 500: PRINT I").is_ok());
+}
+
+#[test]
+fn test_validate_del_invalid() {
+    assert!(validate_script_command("DEL TR").is_err());
+    assert!(validate_script_command("DEL 100:").is_err());
+    assert!(validate_script_command("DEL:").is_err());
+    assert!(validate_script_command("DEL: TR").is_err());
+}
+
+#[test]
+fn test_validate_del_x_valid() {
+    assert!(validate_script_command("DEL.X 5 100: TR").is_ok());
+    assert!(validate_script_command("DEL.X A B: PF 200").is_ok());
+}
+
+#[test]
+fn test_validate_del_x_invalid() {
+    assert!(validate_script_command("DEL.X 5: TR").is_err());
+    assert!(validate_script_command("DEL.X: TR").is_err());
+    assert!(validate_script_command("DEL.X 5 100:").is_err());
+}
+
+#[test]
+fn test_validate_del_r_valid() {
+    assert!(validate_script_command("DEL.R 3 200: PF 100").is_ok());
+    assert!(validate_script_command("DEL.R I A: TR").is_ok());
+}
+
+#[test]
+fn test_validate_del_r_invalid() {
+    assert!(validate_script_command("DEL.R 3: TR").is_err());
+    assert!(validate_script_command("DEL.R: TR").is_err());
+    assert!(validate_script_command("DEL.R 3 200:").is_err());
+}
+
+#[test]
+fn test_validate_pattern_number_range() {
+    // Valid pattern numbers (0-5)
+    assert!(validate_script_command("P.N 0").is_ok());
+    assert!(validate_script_command("P.N 1").is_ok());
+    assert!(validate_script_command("P.N 5").is_ok());
+    assert!(validate_script_command("PN.NEXT 0").is_ok());
+    assert!(validate_script_command("PN.NEXT 5").is_ok());
+    assert!(validate_script_command("PN.PUSH 0 100").is_ok());
+    assert!(validate_script_command("PN.PUSH 5 100").is_ok());
+    assert!(validate_script_command("PN 0 10").is_ok());
+    assert!(validate_script_command("PN 5 63").is_ok());
+
+    // Invalid pattern numbers (out of range)
+    assert!(validate_script_command("P.N 6").is_err());
+    assert!(validate_script_command("P.N -1").is_err());
+    assert!(validate_script_command("PN.NEXT 6").is_err());
+    assert!(validate_script_command("PN.NEXT -1").is_err());
+    assert!(validate_script_command("PN.PUSH 6 100").is_err());
+    assert!(validate_script_command("PN.PUSH -1 100").is_err());
+    assert!(validate_script_command("PN 6 10").is_err());
+    assert!(validate_script_command("PN -1 10").is_err());
+
+    // Variables and expressions should be accepted
+    assert!(validate_script_command("P.N A").is_ok());
+    assert!(validate_script_command("PN.NEXT A").is_ok());
+    assert!(validate_script_command("PN ADD 1 2 10").is_ok());
+}
+
+#[test]
+fn test_validate_pattern_index_range() {
+    // Valid pattern indices (0-63)
+    assert!(validate_script_command("P 0").is_ok());
+    assert!(validate_script_command("P 1").is_ok());
+    assert!(validate_script_command("P 63").is_ok());
+    assert!(validate_script_command("P 0 100").is_ok());
+    assert!(validate_script_command("P 63 200").is_ok());
+    assert!(validate_script_command("PN 0 0").is_ok());
+    assert!(validate_script_command("PN 5 63").is_ok());
+
+    // Invalid pattern indices (out of range)
+    assert!(validate_script_command("P 64").is_err());
+    assert!(validate_script_command("P -1").is_err());
+    assert!(validate_script_command("P 64 100").is_err());
+    assert!(validate_script_command("P -1 100").is_err());
+    assert!(validate_script_command("PN 0 64").is_err());
+    assert!(validate_script_command("PN 5 -1").is_err());
+
+    // Variables and expressions should be accepted
+    assert!(validate_script_command("P A").is_ok());
+    assert!(validate_script_command("P I 100").is_ok());
+    assert!(validate_script_command("PN 0 A").is_ok());
+}
+
+#[test]
+fn test_validate_script_reference_range() {
+    // Valid script references (1-8, M, I)
+    assert!(validate_script_command("SCRIPT 1").is_ok());
+    assert!(validate_script_command("SCRIPT 8").is_ok());
+    assert!(validate_script_command("SCRIPT M").is_ok());
+    assert!(validate_script_command("SCRIPT I").is_ok());
+    assert!(validate_script_command("$ 1").is_ok());
+    assert!(validate_script_command("$ M").is_ok());
+    assert!(validate_script_command("M.SCRIPT 1").is_ok());
+    assert!(validate_script_command("M.SCRIPT 8").is_ok());
+    assert!(validate_script_command("M.SCRIPT M").is_ok());
+    assert!(validate_script_command("M.SCRIPT I").is_ok());
+
+    // Invalid script references (out of range)
+    assert!(validate_script_command("SCRIPT 0").is_err());
+    assert!(validate_script_command("SCRIPT 9").is_err());
+    assert!(validate_script_command("SCRIPT -1").is_err());
+    assert!(validate_script_command("$ 0").is_err());
+    assert!(validate_script_command("$ 9").is_err());
+    assert!(validate_script_command("M.SCRIPT 0").is_err());
+    assert!(validate_script_command("M.SCRIPT 9").is_err());
+
+    // Variables and expressions should be accepted
+    assert!(validate_script_command("SCRIPT A").is_ok());
+    assert!(validate_script_command("$ B").is_ok());
+    assert!(validate_script_command("M.SCRIPT A").is_ok());
+}

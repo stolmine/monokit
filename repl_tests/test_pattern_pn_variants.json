@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "scripts": [
+    {
+      "lines": [
+        "PRINT \"=== PN.* NAVIGATION ===\"",
+        "P.N 0; P.L 4; P 0 10; P 1 20; P 2 30; P 3 40",
+        "PN.I 0 1",
+        "A PN.NEXT 0; PRINT A",
+        "B PN.PREV 0; PRINT B",
+        "C PN.HERE 0; PRINT C",
+        "PRINT \"--- END PN NAV ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PN.* METADATA ===\"",
+        "P.N 1; P.L 6; PN.I 1 3",
+        "A PN.L 1; PRINT A",
+        "B PN.I 1; PRINT B",
+        "C PN.N 1; PRINT C",
+        "PRINT \"--- END PN METADATA ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PN.* AGGREGATES ===\"",
+        "P.N 2; P.L 5",
+        "PN 2 0 50; PN 2 1 10; PN 2 2 90; PN 2 3 30; PN 2 4 70",
+        "A PN.MIN 2; PRINT A",
+        "B PN.MAX 2; PRINT B",
+        "C PN.SUM 2; PRINT C",
+        "D PN.AVG 2; PRINT D",
+        "X PN.FND 2 90; PRINT X"
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PN.* STACK OPS ===\"",
+        "P.N 3; P.L 3",
+        "PN 3 0 100; PN 3 1 200; PN 3 2 300",
+        "PN.PUSH 3 400; A PN.L 3; PRINT A",
+        "B PN.POP 3; PRINT B",
+        "C PN.L 3; PRINT C",
+        "PRINT \"--- END PN STACK ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PN.* TRANSFORM ===\"",
+        "P.N 4; P.L 4",
+        "PN 4 0 1; PN 4 1 2; PN 4 2 3; PN 4 3 4",
+        "PN.REV 4; A PN 4 0; PRINT A",
+        "PN.SHUF 4; PRINT \"SHUFFLED\"",
+        "PN.SORT 4; B PN 4 0; PRINT B",
+        "PN.ROT 4 2; C PN 4 0; PRINT C",
+        "PRINT \"--- END PN TRANSFORM ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PN.* ARITHMETIC ===\"",
+        "P.N 5; P.L 4",
+        "PN 5 0 10; PN 5 1 20; PN 5 2 30; PN 5 3 40",
+        "PN.ADD 5 5; A PN 5 0; PRINT A",
+        "PN.SUB 5 3; B PN 5 1; PRINT B",
+        "PN.MUL 5 2; C PN 5 2; PRINT C",
+        "PN.DIV 5 2; D PN 5 3; PRINT D",
+        "PRINT \"--- END PN ARITH ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PN.* INSERT/REMOVE ===\"",
+        "P.N 0; P.L 3",
+        "PN 0 0 111; PN 0 1 222; PN 0 2 333",
+        "PN.INS 0 1 150; A PN 0 1; PRINT A",
+        "B PN.L 0; PRINT B",
+        "PN.RM 0 1; C PN 0 1; PRINT C",
+        "D PN.L 0; PRINT D",
+        "PRINT \"--- END PN INS/RM ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"==== PN.* VARIANTS ====\"",
+        "L 1 7: SCRIPT I",
+        "M.ACT 0",
+        "REPL.DUMP repl_tests/dump_pattern_pn_variants.txt",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"INIT: PN.* VARIANTS\"",
+        "M 200",
+        "M.ACT 1",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    }
+  ],
+  "patterns": [
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    }
+  ],
+  "pattern_working": 0,
+  "notes": [
+    "PN.* EXPLICIT PATTERN OPS",
+    "Tests PN.NEXT/PREV/HERE",
+    "Tests PN.L/I/N metadata",
+    "Tests PN.MIN/MAX/SUM/AVG/FND",
+    "Tests PN.PUSH/POP",
+    "Tests PN.REV/SHUF/SORT/ROT",
+    "Tests PN.ADD/SUB/MUL/DIV",
+    ""
+  ]
+}

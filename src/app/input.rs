@@ -224,10 +224,20 @@ impl App {
     pub fn paste_line(&mut self) {
         if let Some(script_idx) = self.current_script_index() {
             if let Some(selected) = self.selected_line {
+                if !self.clipboard.trim().is_empty() {
+                    if let Err(e) = crate::commands::validate_script_command(&self.clipboard) {
+                        self.script_error = Some(format!("{}", e));
+                        self.script_error_time = Some(std::time::Instant::now());
+                        return;
+                    }
+                }
+
                 let script = self.scripts.get_script_mut(script_idx);
                 script.lines[selected] = self.clipboard.clone();
                 self.input = self.clipboard.clone();
                 self.cursor_position = self.input.len();
+                self.script_error = None;
+                self.script_error_time = None;
             }
         }
     }

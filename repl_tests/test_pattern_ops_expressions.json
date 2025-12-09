@@ -1,0 +1,188 @@
+{
+  "version": 1,
+  "scripts": [
+    {
+      "lines": [
+        "PRINT \"=== PATTERN OPS IN EXPRESSIONS ===\"",
+        "P.N 0; P.L 8",
+        "P 0 10; P 1 20; P 2 30; P 3 40",
+        "P 4 50; P 5 60; P 6 70; P 7 80",
+        "P.I 0",
+        "PRINT \"--- SETUP DONE ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== NAVIGATION IN VARS ===\"",
+        "A P.NEXT; PRINT A",
+        "B P.PREV; PRINT B",
+        "C P.HERE; PRINT C",
+        "P.I 0; D P.NEXT; PRINT D",
+        "PRINT \"--- END NAVIGATION ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== METADATA IN VARS ===\"",
+        "A P.L; PRINT A",
+        "B P.I; PRINT B",
+        "C P.N; PRINT C",
+        "PRINT \"--- END METADATA ---\"",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== AGGREGATES IN VARS ===\"",
+        "A P.MIN; PRINT A",
+        "B P.MAX; PRINT B",
+        "C P.SUM; PRINT C",
+        "D P.AVG; PRINT D",
+        "X P.FND 50; PRINT X",
+        "Y P.FND 999; PRINT Y",
+        "PRINT \"--- END AGGREGATES ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== MUTATORS IN VARS ===\"",
+        "P.N 1; P.L 3",
+        "P 0 100; P 1 200; P 2 300",
+        "A P.PUSH 400; PRINT A",
+        "B P.POP; PRINT B",
+        "PRINT \"--- END MUTATORS ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== PN.* VARIANTS IN VARS ===\"",
+        "A PN.NEXT 0; PRINT A",
+        "B PN.MIN 1; PRINT B",
+        "C PN.MAX 0; PRINT C",
+        "D PN.L 1; PRINT D",
+        "X PN.HERE 0; PRINT X",
+        "Y PN.SUM 1; PRINT Y",
+        "PRINT \"--- END PN VARIANTS ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== CHAINED ASSIGNMENTS ===\"",
+        "P.N 2; P.L 4",
+        "P 0 10; P 1 20; P 2 30; P 3 40",
+        "A P.NEXT; B P.NEXT; C P.NEXT",
+        "PRINT A; PRINT B; PRINT C",
+        "PRINT \"--- END CHAINED ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"==== PATTERN OPS IN EXPRESSIONS ====\"",
+        "L 1 7: SCRIPT I",
+        "M.ACT 0",
+        "REPL.DUMP repl_tests/dump_pattern_ops_expressions.txt",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"INIT: PATTERN OPS IN EXPRESSIONS\"",
+        "M 200",
+        "M.ACT 1",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    }
+  ],
+  "patterns": [
+    {
+      "data": [5,15,25,35,45,55,65,75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [10,20,30,40,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 4,
+      "index": 0
+    },
+    {
+      "data": [7,14,21,28,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 4,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    }
+  ],
+  "pattern_working": 0,
+  "notes": [
+    "PATTERN OPS IN EXPRESSIONS",
+    "Tests P.* ops as values",
+    "Variable assignment",
+    "P.NEXT/PREV/HERE/L/I/N",
+    "Aggregates: MIN/MAX/SUM/AVG/FND",
+    "Mutators: PUSH/POP",
+    "PN.* variants",
+    ""
+  ]
+}

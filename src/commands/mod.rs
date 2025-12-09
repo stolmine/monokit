@@ -8,6 +8,7 @@ pub mod slew;
 mod synth;
 mod system;
 pub mod validate;
+mod validate_expr;
 
 // Re-export from core module
 use core::{counters, math_ops, random_ops, variables};

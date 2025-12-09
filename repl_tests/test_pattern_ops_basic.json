@@ -1,0 +1,188 @@
+{
+  "version": 1,
+  "scripts": [
+    {
+      "lines": [
+        "PRINT \"=== BASIC PATTERN OPS: SETTERS ===\"",
+        "P.N 0",
+        "PRINT P.N",
+        "P 0 100; P 1 200; P 2 300",
+        "PRINT P 0; PRINT P 1; PRINT P 2",
+        "P.L 4; PRINT P.L",
+        "PRINT \"--- END SETTERS ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== BASIC PATTERN OPS: STACK ===\"",
+        "P.N 0; P.L 3",
+        "P 0 10; P 1 20; P 2 30",
+        "P.PUSH 40; PRINT P.L",
+        "PRINT P.POP",
+        "PRINT P.L",
+        "PRINT \"--- END STACK ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== BASIC PATTERN OPS: TRANSFORM ===\"",
+        "P.N 1; P.L 4",
+        "P 0 1; P 1 2; P 2 3; P 3 4",
+        "P.REV; PRINT P 0",
+        "P.SHUF; PRINT \"SHUFFLED\"",
+        "P.SORT; PRINT P 0",
+        "P.ROT 1; PRINT P 0",
+        "PRINT \"--- END TRANSFORM ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== BASIC PATTERN OPS: ARITHMETIC ===\"",
+        "P.N 2; P.L 4",
+        "P 0 10; P 1 20; P 2 30; P 3 40",
+        "P.ADD 5; PRINT P 0",
+        "P.SUB 3; PRINT P 0",
+        "P.MUL 2; PRINT P 0",
+        "P.DIV 2; PRINT P 0",
+        "P.MOD 7; PRINT P 0"
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== BASIC PATTERN OPS: INSERT/RM ===\"",
+        "P.N 3; P.L 3",
+        "P 0 100; P 1 200; P 2 300",
+        "P.INS 1 150; PRINT P 1",
+        "PRINT P.L",
+        "P.RM 1; PRINT P 1",
+        "PRINT P.L",
+        "PRINT \"--- END INSERT/RM ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== BASIC PATTERN OPS: SCALE/CLR ===\"",
+        "P.N 4; P.L 4",
+        "P 0 10; P 1 20; P 2 30; P 3 40",
+        "P.SCALE 0 100; PRINT P 0",
+        "PRINT P 3",
+        "P.CLR; PRINT P.L",
+        "PRINT \"--- END SCALE/CLR ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== BASIC PATTERN OPS: RND ===\"",
+        "P.N 5; P.L 8",
+        "P.RND 0 127",
+        "PRINT \"RANDOMIZED\"",
+        "PRINT P.MIN",
+        "PRINT P.MAX",
+        "PRINT \"--- END RND ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"==== BASIC PATTERN OPS ====\"",
+        "L 1 7: SCRIPT I",
+        "M.ACT 0",
+        "REPL.DUMP repl_tests/dump_pattern_ops_basic.txt",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"INIT: BASIC PATTERN OPS\"",
+        "M 200",
+        "M.ACT 1",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    }
+  ],
+  "patterns": [
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 8,
+      "index": 0
+    }
+  ],
+  "pattern_working": 0,
+  "notes": [
+    "BASIC PATTERN OPS",
+    "Tests all ops as commands",
+    "PUSH/POP/REV/SHUF/SORT/ROT",
+    "ADD/SUB/MUL/DIV/MOD/SCALE",
+    "INS/RM/CLR/RND",
+    "",
+    "",
+    ""
+  ]
+}

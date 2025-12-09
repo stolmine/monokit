@@ -84,7 +84,7 @@
 
 ### Phase 3: Foundation Work (2-4 weeks)
 
-**11. Script Validation Overhaul [High]**
+**11. Script Validation Overhaul [COMPLETE]**
 - Reject invalid commands on script line entry (before save)
 - Validate all argument counts and types
 - Validate expression syntax (balanced parens, valid operators)
@@ -92,6 +92,7 @@
 - Validate pattern references (0-5 range)
 - Validate script references (1-8, M, I)
 - Clear, specific error messages for each failure type
+- Status: All 6 phases complete (paste bypass, pattern ops, expressions, control flow, SEQ, references)
 
 **12. File Size/DRY Audit [Medium]**
 - Ensure all files within agent readable limits (~500 lines)
@@ -137,9 +138,9 @@
 8. Highlight timing  → Quick audit
 9. Envelope scaling  → COMPLETE (FA/DA now 0-16383)
 10. Default mismatch → COMPLETE (SynthDef/RST aligned)
-11. SYNC command     → High value, medium effort
-12. Auto-load scene  → Quick win
-13. Validation       → Larger investment, enables future work
+11. SYNC command     → COMPLETE
+12. Auto-load scene  → COMPLETE
+13. Validation       → COMPLETE (all 6 phases)
 14. DRY audit        → Maintainability foundation
 ```
 

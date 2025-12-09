@@ -773,7 +773,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "SYNC" | "SYNC.SEQ" | "SYNC.TOG" | "SYNC.PAT" => {
+        "SYNC" | "SYNC.SEQ" | "SYNC.TOG" | "SYNC.PAT" | "VERSION" | "VER" => {
             if argc > 0 {
                 return Err(anyhow::anyhow!("{} TAKES NO ARGUMENTS", command));
             }

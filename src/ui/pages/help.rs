@@ -79,6 +79,7 @@ pub fn render_help_page(app: &crate::App, height: usize) -> Paragraph<'static> {
         help_page + 1,
         HELP_CATEGORIES.len()
     );
+    let version = format!(" v{} ", env!("CARGO_PKG_VERSION"));
 
     Paragraph::new(lines)
         .style(Style::default().bg(app.theme.background).fg(app.theme.foreground))
@@ -88,5 +89,6 @@ pub fn render_help_page(app: &crate::App, height: usize) -> Paragraph<'static> {
                 .border_style(Style::default().fg(app.theme.border))
                 .title(title)
                 .title_style(Style::default().fg(app.theme.foreground))
+                .title_bottom(Line::from(version).right_aligned())
         )
 }

@@ -409,6 +409,14 @@ pub fn handle_theme<F>(
     }
 }
 
+pub fn handle_version<F>(
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    output(format!("MONOKIT v{}", env!("CARGO_PKG_VERSION")));
+}
+
 pub fn handle_help<F>(
     mut output: F,
 ) where

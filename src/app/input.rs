@@ -148,7 +148,11 @@ impl App {
                 if selected < 7 {
                     let script = self.scripts.get_script(script_idx);
                     let line_content = script.lines[selected].clone();
+
                     let script = self.scripts.get_script_mut(script_idx);
+                    for i in (selected + 2..=7).rev() {
+                        script.lines[i] = script.lines[i - 1].clone();
+                    }
                     script.lines[selected + 1] = line_content;
                     self.selected_line = Some(selected + 1);
                 }
@@ -289,6 +293,10 @@ impl App {
         if let Some(selected) = self.selected_line {
             if selected < 7 {
                 let line_content = self.notes.lines[selected].clone();
+
+                for i in (selected + 2..=7).rev() {
+                    self.notes.lines[i] = self.notes.lines[i - 1].clone();
+                }
                 self.notes.lines[selected + 1] = line_content;
                 self.selected_line = Some(selected + 1);
             }

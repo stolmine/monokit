@@ -118,10 +118,151 @@
 
 ### Deferred Items
 
-- Script undo/redo [Medium] - Nice but not critical
 - Dynamic grid layout [Medium] - Polish item
-- Line duplicate push behavior [Low] - Minor UX improvement
 - NR/ER operators [Medium] - Nice-to-have Teletype features
+
+---
+
+## P1 Features (December 2025)
+
+### 1. Script Undo/Redo [Medium Complexity]
+
+**Current State:**
+- Scripts stored in `ScriptStorage` (src/types.rs lines 275-306)
+- Each script has 8 lines as `[String; 8]`
+- Editing in src/app/input.rs: `save_line()`, `duplicate_line()`, `delete_entire_line()`, `cut_line()`, `paste_line()`
+
+**Data Structure:**
+```rust
+pub struct UndoEntry {
+    pub script_index: usize,
+    pub line_index: usize,
+    pub previous_content: String,
+    pub new_content: String,
+}
+
+// Add to App struct:
+pub undo_stack: Vec<UndoEntry>,
+pub redo_stack: Vec<UndoEntry>,
+```
+
+**Scope:** Per-session, per-script history. Clear stacks when changing scripts/pages.
+
+**Undoable Operations:**
+- `save_line()` - save before/after state
+- `duplicate_line()` - save overwritten line
+- `delete_entire_line()` - save deleted content
+- `paste_line()` - save overwritten line
+
+**Files to Modify:**
+| File | Changes |
+|------|---------|
+| src/app/mod.rs | Add UndoEntry struct and stacks to App |
+| src/app/input.rs | Record state before each edit operation |
+| src/ui/mod.rs | Add Ctrl+Z/Ctrl+Y key handlers (~line 490) |
+| src/ui/pages/help_content.rs | Document undo/redo keybindings |
+
+**Implementation Steps:**
+1. Add `UndoEntry` struct and stacks to App
+2. Create `push_undo()` helper that clears redo stack
+3. Modify each editing function to record state before mutation
+4. Add `undo()` and `redo()` methods to App
+5. Add key bindings in ui/mod.rs
+
+---
+
+### 2. Line Duplicate Push Behavior [Low Complexity]
+
+**Current Behavior (src/app/input.rs lines 145-157):**
+```rust
+script.lines[selected + 1] = line_content;  // OVERWRITES next line
+```
+Duplicating line N copies to N+1, **overwriting** whatever was there.
+
+**Requested Behavior:**
+Shift lines N+1 through 7 down (line 7 lost if non-empty), insert duplicate at N+1.
+
+**Implementation:**
+```rust
+pub fn duplicate_line(&mut self) {
+    if let Some(script_idx) = self.current_script_index() {
+        if let Some(selected) = self.selected_line {
+            if selected < 7 {
+                let script = self.scripts.get_script(script_idx);
+                let line_content = script.lines[selected].clone();
+
+                // Push lines down from bottom to selected+1
+                let script = self.scripts.get_script_mut(script_idx);
+                for i in (selected + 2..=7).rev() {
+                    script.lines[i] = script.lines[i - 1].clone();
+                }
+                script.lines[selected + 1] = line_content;
+                self.selected_line = Some(selected + 1);
+            }
+        }
+    }
+}
+```
+
+**Files to Modify:**
+| File | Changes |
+|------|---------|
+| src/app/input.rs | Modify `duplicate_line()` and `duplicate_notes_line()` |
+| src/ui/pages/help_content.rs | Update help text |
+
+---
+
+### 3. Version Display [Low Complexity]
+
+**Compile-time version access:**
+```rust
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+```
+
+**Startup message (src/main.rs ~line 156):**
+```rust
+println!("MONOKIT v{} - Starting...", env!("CARGO_PKG_VERSION"));
+```
+
+**VERSION command (src/commands/mod.rs):**
+```rust
+"VERSION" | "VER" => {
+    output(format!("MONOKIT v{}", env!("CARGO_PKG_VERSION")));
+}
+```
+
+**Help page header (src/ui/pages/help.rs ~line 76):**
+```rust
+let title = format!(
+    " HELP: {} ({}/{}) - v{} ",
+    category.name, help_page + 1, HELP_CATEGORIES.len(),
+    env!("CARGO_PKG_VERSION")
+);
+```
+
+**Files to Modify:**
+| File | Changes |
+|------|---------|
+| src/main.rs | Add version to startup messages |
+| src/commands/mod.rs | Add VERSION/VER command handler |
+| src/ui/pages/help.rs | Add version to help page title |
+| src/ui/pages/help_content.rs | Document VERSION command |
+
+---
+
+### Priority Order
+
+1. **Version Display** - Quickest win, low complexity
+2. **Line Duplicate Push** - Simple algorithmic change
+3. **Script Undo/Redo** - Most complex, requires careful state tracking
+
+### Estimated Effort
+
+| Feature | Complexity | Files | Est. Lines |
+|---------|------------|-------|------------|
+| Version Display | Low | 4 | ~20 |
+| Line Duplicate Push | Low | 2 | ~15 |
+| Script Undo/Redo | Medium | 4 | ~100 |
 
 ---
 

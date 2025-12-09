@@ -9,6 +9,42 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ---
 
+## Prioritized Incomplete Items
+
+### P0 - Critical Bugs
+- ~~**TOG Zero Parsing Bug** [Low] - FIXED v0.3.3~~
+- ~~**AUDIO Command Device Query Bug** [Low] - FIXED v0.3.3~~
+
+### P1 - High Value Features
+- **MIDI CC and Note Input** [Medium] - External control, performance capability
+- **NR and ER Operators** [Medium] - Teletype-style rhythm generators
+- **Script Undo/Redo** [Medium] - Essential editing UX
+- ~~**Version Display** [Low] - FIXED v0.3.3~~
+
+### P2 - Polish & Documentation
+- **ModBus Documentation & Testing** [Low] - Verify MF_F works, add to help
+- **Config Flag Standardization** [Low] - Consistent 0/1 vs ON/OFF
+- **State Highlight Timing Verification** [Low] - Audit SEQ/TOG timing
+- **IF/ELSE/ELIF Scope Logic** [Medium] - Document conditional behavior
+
+### P3 - Nice to Have
+- **Additional ModBus Routing** [Medium] - Filter resonance, delay, reverb routing
+- **Dynamic Grid Layout** [Medium] - Responsive UI spacing
+- ~~**Line Duplicate Push Behavior** [Low] - FIXED v0.3.3~~
+- **SCRIPT Command Expression Support** [Low] - Dynamic script selection
+- **Tempo-Synced Delay** [Low] - DS parameter for musical delay times
+
+### P4 - Future / Large Effort
+- **Noise Source Integration** [Medium] - DSP addition
+- **Oscillator Sync** [Medium] - DSP addition
+- **Additional Filter Types** [Medium] - DSP addition
+- **Cross-Platform Compatibility** [High] - Linux/Windows/Intel Mac
+- **Sample Playback System** [Very High] - Major feature
+- **Additional Voice Types** [Very High] - Architecture change
+- **Optional Polyphony** [Very High] - Architecture change
+
+---
+
 ## Recent Updates (December 2025)
 
 ### Envelope Parameter Scaling Fix [COMPLETE]
@@ -705,9 +741,18 @@ Receive MIDI CC and note messages for parameter control and triggering.
 - [ ] Timeout or ESC to cancel learn
 
 ### Additional ModBus Routing [Medium]
+- [ ] ModBus → filter cutoff routing (MF_F parameter exists but needs verification)
+- [ ] ModBus → filter resonance routing
 - [ ] ModBus → delay time routing
 - [ ] ModBus → reverb size routing
 - [ ] ModBus → resonator frequency routing
+
+### ModBus Documentation & Testing [Low]
+- [ ] Test existing MF_F (ModBus → filter cutoff) functionality
+- [ ] Add ModBus routing section to internal help system
+- [ ] Document MB, MF_F, MP, MD, MT, MA parameters clearly
+- [ ] Add examples showing ModBus routing usage
+- [ ] Verify all ModBus routing commands work as expected
 
 ### Tempo-Synced Delay [Low]
 - [ ] `DS` parameter - Delay time sync to metro (divisions: 1/4, 1/8, 1/16, etc.)
@@ -965,7 +1010,7 @@ Toggleable display of current scene name in header, replacing "MONOKIT" title.
 - [x] Truncate long scene names to fit header width (15 chars max, 12 chars + "...")
 - [x] State persists to config.toml
 - [x] Update display immediately on SAVE/LOAD
-- [ ] Optional "Matrix" style character replacement lerp animation on save/load/change
+- [x] Optional "Matrix" style character replacement lerp animation on save/load/change
 
 ### Version Display [Low]
 Show version number for user awareness and bug reporting.
@@ -1027,6 +1072,14 @@ Standardize boolean config flags to use consistent format for readability.
 - [ ] Update all toggle commands to use chosen standard
 - [ ] Update help text and command_reference.md
 - [ ] Ensure config.toml uses consistent format
+
+### AUDIO Command Device Query Bug [COMPLETE] - December 2025
+AUDIO command requires device list query before device selection works.
+
+- [x] Bug: `AUDIO 1` fails if `AUDIO` (list devices) hasn't been called first
+- [x] Root cause: device list not populated until first query
+- [x] Fix: Populate audio_devices during App::new() on startup (macOS + scsynth-direct)
+- [x] User can now select device by number immediately without querying first
 
 ### REPL/DEBUG Level Audit [Medium] - COMPLETE (December 2025)
 Comprehensive tiered verbosity system with category overrides.
@@ -1147,15 +1200,15 @@ Address issues discovered during comprehensive REPL command testing (December 20
 **Low Priority - Validation Edge Cases:**
 - [ ] Standardize REPL output formatting (some envelope params lack "SET...TO" prefix)
 - [ ] VCA and FAA commands need to accept expressions as input
-- [ ] PSETS and THEMES lists should post to REPL regardless of DEBUG level
-- [ ] Verify FM and other 14-bit params accept full 0-16383 range (reported errors)
+- [x] PSETS and THEMES lists should post to REPL regardless of DEBUG level
+- [x] Verify FM and other 14-bit params accept full 0-16383 range (reported errors)
 
 **Control Flow Bugs (December 2025):**
-- [ ] Nested IF in loops fails - `L 1 6: IF GT I 2: IF LT I 5: PRINT I` gives "UNKNOWN COMMAND: IF"
+- [x] Nested IF in loops fails - `L 1 6: IF GT I 2: IF LT I 5: PRINT I` gives "UNKNOWN COMMAND: IF"
   - Root cause: process_sub_command uses find(':') which only finds first colon
   - Fix location: src/app/script_exec/control_flow.rs lines 262-268
   - Need to use rfind(':') to split from the rightmost colon
-- [ ] SEQ note names in variable assignment fails - `A SEQ "A B C D"` gives "FAILED TO PARSE VALUE"
+- [x] SEQ note names in variable assignment fails - `A SEQ "A B C D"` gives "FAILED TO PARSE VALUE"
   - Root cause: split_whitespace() fragments quoted strings
   - Fix location: src/app/script_exec/mod.rs lines 30-36
   - Need to use quote-respecting split instead of split_whitespace()
@@ -1260,6 +1313,8 @@ Fixed by deriving beat repeat activation from BR.MIX level instead of using sepa
 - [x] Changed brActive to derive from br_mix > 0 in SynthDef
 - [x] Beat repeat now activates automatically when BR.MIX > 0
 - [x] Updated documentation to reflect mix-based activation
+- [x] Synced compile_synthdefs.scd with monokit_server.scd (v0.3.2 fix)
+- [x] Beat repeat now works correctly in bundle mode
 
 ### VCA Reset Coverage [Low] - COMPLETE (December 2025)
 Ensure VCA mode is included in reset commands.
@@ -1323,13 +1378,14 @@ Allow SCRIPT command to accept expressions for dynamic script selection.
 - [ ] Validate result is valid script reference (1-8)
 - [ ] Error if expression evaluates outside valid range
 
-### TOG Zero Parsing Bug [Low]
+### TOG Zero Parsing Bug [COMPLETE] - December 2025
 Fix script display corruption when TOG uses zero as argument.
 
-- [ ] Bug: `DC TOG 2000 0` displays as `DC TOG 2000 000 0` on script line
-- [ ] Input field shows correct version but script display adds extra zeros
-- [ ] Investigate TOG state serialization/display logic
-- [ ] Fix rendering to match input exactly
+- [x] Bug: `DC TOG 2000 0` displays as `DC TOG 2000 000 0` on script line
+- [x] Root cause: `find("0")` in highlight_tog_expression matched inside "2000"
+- [x] Fix: Added `find_whole_word()` helper for word-boundary matching
+- [x] Applied fix to TOG, EITH highlighting and current_pos tracking
+- [x] Added tests for TOG with zero values
 
 ### IF/ELSE/ELIF Scope Logic [Medium]
 Establish and document scope rules for conditional chains.

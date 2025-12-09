@@ -153,7 +153,7 @@ fn run_tui_mode() -> Result<()> {
     }
 
     // Start SuperCollider
-    println!("Starting SuperCollider...");
+    println!("MONOKIT v{} - Starting...", env!("CARGO_PKG_VERSION"));
     let mut sc_process = match ScProcess::new() {
         Ok(sc) => sc,
         Err(e) => {

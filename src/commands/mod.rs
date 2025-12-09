@@ -746,6 +746,9 @@ where
         "THEME" => {
             misc::handle_theme(&parts, theme, color_mode, output);
         }
+        "VERSION" | "VER" => {
+            misc::handle_version(output);
+        }
         "HELP" => {
             misc::handle_help(output);
         }

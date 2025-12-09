@@ -444,6 +444,22 @@ Consolidated command definitions into a single source of truth to eliminate sync
 - [ ] `TOG <a> <b> <c>` - Cycle through 3+ values
 - [ ] `TOG.RST` - Reset toggle state
 
+### Global State Sync Command [Medium]
+Reset all stateful operators to their initial positions for clean restarts.
+
+- [ ] `SYNC` - Reset all stateful elements to starting position:
+  - SEQ sequences reset to first element
+  - TOG toggles reset to first value (a)
+  - EITH random choice state cleared
+  - `<>` inline toggles reset to first option
+  - `{}` inline random choice state cleared
+  - EV counters reset (every-N back to 0)
+  - SKIP counters reset
+  - Pattern indices (P.I) reset to 0
+  - N1-N4 counters reset to MIN values
+- [ ] Useful for: live performance resets, song structure sync points
+- [ ] Consider: `SYNC.SEQ`, `SYNC.TOG`, `SYNC.PAT` for partial resets
+
 ### Auto-Increment Counters [Low] - COMPLETE
 - [x] `N1`, `N2`, `N3`, `N4` - Auto-increment on each read
 - [x] `N1.MIN <n>` - Set minimum value (default 0)

@@ -1066,6 +1066,7 @@ DEL commands work correctly in both REPL and script lines:
 
 ### Development Documentation
 - **ROADMAP.md** - Single source of truth for all future development plans and roadmap
+- **IMPLEMENTATION_PLAN.md** - Prioritized implementation plan for current focus: bug fixes, SYNC command, auto-load scene, validation overhaul
 - **CONCEPT.md** - Project overview, architecture, MVP implementation
 - **PLAN.md** - UI refactor plan: Teletype-style interface with page system, script storage, patterns, and control flow
 

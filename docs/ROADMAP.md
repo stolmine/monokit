@@ -1018,6 +1018,16 @@ Changing param ranges will touch every synth handler - same sprawl risk as REPL 
 - [ ] Add MAP operators if needed (MAP7, MAP14)
 - [ ] Ensure backwards compatibility or migration path
 
+### Config Flag Standardization [Low]
+Standardize boolean config flags to use consistent format for readability.
+
+- [ ] Audit all config toggle commands for value format consistency
+- [ ] Decide standard: 0/1, ON/OFF, TRUE/FALSE, or ENABLED/DISABLED
+- [ ] Consider display format vs input format (accept multiple, display one)
+- [ ] Update all toggle commands to use chosen standard
+- [ ] Update help text and command_reference.md
+- [ ] Ensure config.toml uses consistent format
+
 ### REPL/DEBUG Level Audit [Medium] - COMPLETE (December 2025)
 Comprehensive tiered verbosity system with category overrides.
 

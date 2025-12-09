@@ -100,13 +100,26 @@
 
 ---
 
+**9. Envelope Parameter Scaling Bug [COMPLETE]**
+- Issue: FA, DA envelopes had no audible effect
+- Root cause: Rust limited FA/DA to 0-16 but SynthDef divided by 16383
+- Fix: Changed FA, DA from float 0-16 to int 0-16383
+- Status: Fixed in src/commands/synth/envelopes/fm.rs, disc.rs
+
+**10. SynthDef/RST Default Mismatch [COMPLETE]**
+- Issue: SynthDef defaults differed from RST values (fc=1000 was filtering FM)
+- Fix: Aligned SynthDef defaults with RST values
+- Changes: pf=131, mf=262, pa=0, fc=10000, cr=1, dmode=2, rmode=2
+- Status: Fixed in sc/monokit_server.scd, build_scripts/compile_synthdefs.scd
+
+---
+
 ### Deferred Items
 
 - Script undo/redo [Medium] - Nice but not critical
 - Dynamic grid layout [Medium] - Polish item
 - Line duplicate push behavior [Low] - Minor UX improvement
 - NR/ER operators [Medium] - Nice-to-have Teletype features
-- DSP bugs (FMEV envelope) - Needs deep SynthDef investigation
 
 ---
 
@@ -121,10 +134,12 @@
 6. SEQ var assign    → COMPLETE (quote-respecting split)
 7. CLI enhancements  → COMPLETE (dry-run, batch auto-start)
 8. Highlight timing  → Quick audit
-9. SYNC command      → High value, medium effort
-10. Auto-load scene  → Quick win
-11. Validation       → Larger investment, enables future work
-12. DRY audit        → Maintainability foundation
+9. Envelope scaling  → COMPLETE (FA/DA now 0-16383)
+10. Default mismatch → COMPLETE (SynthDef/RST aligned)
+11. SYNC command     → High value, medium effort
+12. Auto-load scene  → Quick win
+13. Validation       → Larger investment, enables future work
+14. DRY audit        → Maintainability foundation
 ```
 
 ## Rationale

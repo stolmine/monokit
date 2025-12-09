@@ -10,10 +10,11 @@ File.mkdir(synthdefs_dir);
 
 "Compiling SynthDefs to binary format...".postln;
 
+// Defaults match RST command values
 SynthDef(\monokit, {
-    arg pf = 200,
+    arg pf = 131,     // Primary freq (C3)
         pw = 0,
-        mf = 50,
+        mf = 262,     // Mod freq (C4)
         mw = 0,
         dc = 0,
         dm = 0,
@@ -28,7 +29,7 @@ SynthDef(\monokit, {
         pd = 10,
         fd = 10,
         dd = 10,
-        pa = 4,
+        pa = 0,       // No pitch envelope by default
         fa = 0,
         da = 0,
         mx = 0,
@@ -37,7 +38,7 @@ SynthDef(\monokit, {
         fb = 0,
         fba = 0,
         fbd = 10,
-        fc = 1000,
+        fc = 10000,   // Filter wide open
         fq = 0,
         ft = 0,
         fe = 0,
@@ -57,9 +58,9 @@ SynthDef(\monokit, {
         rp = 0,
         rh = 8000,
         rw = 0,
-        dmode = 1,
-        dtail = 1,
-        rmode = 1,
+        dmode = 2,    // Delay send mode by default
+        dtail = 1,    // Ring tail behavior
+        rmode = 2,    // Reverb send mode by default
         rtail = 1,
         lb = 16,
         ls = 48000,
@@ -68,7 +69,7 @@ SynthDef(\monokit, {
         rgw = 0,
         rgm = 0,
         ct = 8192,
-        cr = 4,
+        cr = 1,       // Compressor ratio (1:1 = off)
         ca = 10,
         cl = 100,
         cm = 0,

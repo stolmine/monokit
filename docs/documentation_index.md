@@ -2,6 +2,27 @@
 
 ## Recent Updates (December 2025)
 
+### Envelope Parameter Scaling Fix [COMPLETE]
+
+**FM and Disc Envelope Amount Range Corrected:**
+- FA (FM envelope amount): 0-16 float → 0-16383 int
+- DA (Disc envelope amount): 0-16 float → 0-16383 int
+- Root cause: SynthDef divided by 16383 but Rust limited to 0-16
+- Restored full 14-bit resolution for envelope modulation
+- Files: src/commands/synth/envelopes/fm.rs, disc.rs
+
+### SynthDef Default Parameter Alignment [COMPLETE]
+
+**Reset Command Now Matches SynthDef Defaults:**
+- pf: 200 → 131 (C3, ~131 Hz)
+- mf: 50 → 262 (C4, ~262 Hz)
+- pa: 4 → 0 (no pitch envelope by default)
+- fc: 1000 → 10000 (filter wide open, was cutting FM harmonics)
+- cr: 4 → 1 (compressor off by default)
+- dmode/rmode: 2 (send mode), dtail/rtail: 1 (ring) - already aligned
+- RST command now produces same state as fresh SynthDef
+- Files: sc/monokit_server.scd, build_scripts/compile_synthdefs.scd
+
 ### Control Flow Investigation (December 2025) [COMPLETE]
 
 **IF/ELSE/ELIF Scope Logic Verified:**

@@ -14,9 +14,10 @@ s.options.numInputBusChannels = 0;
 
 s.waitForBoot {
     SynthDef(\monokit, {
-        arg pf = 200,
+        // Defaults match RST command values
+        arg pf = 131,     // Primary freq (C3)
             pw = 0,
-            mf = 50,
+            mf = 262,     // Mod freq (C4)
             mw = 0,
             dc = 0,
             dm = 0,
@@ -31,7 +32,7 @@ s.waitForBoot {
             pd = 10,
             fd = 10,
             dd = 10,
-            pa = 4,
+            pa = 0,       // No pitch envelope by default
             fa = 0,
             da = 0,
             mx = 0,
@@ -40,7 +41,7 @@ s.waitForBoot {
             fb = 0,
             fba = 0,
             fbd = 10,
-            fc = 1000,
+            fc = 10000,   // Filter wide open
             fq = 0,
             ft = 0,
             fe = 0,
@@ -60,9 +61,9 @@ s.waitForBoot {
             rp = 0,
             rh = 8000,
             rw = 0,
-            dmode = 1,
-            dtail = 1,
-            rmode = 1,
+            dmode = 2,    // Delay send mode by default
+            dtail = 1,    // Ring tail behavior
+            rmode = 2,    // Reverb send mode by default
             rtail = 1,
             lb = 16,      // Lo-fi bit depth (1-16)
             ls = 48000,   // Lo-fi sample rate (100-48000)
@@ -71,7 +72,7 @@ s.waitForBoot {
             rgw = 0,      // Ring mod waveform (0-3)
             rgm = 0,      // Ring mod mix (0-16383)
             ct = 8192,    // Compressor threshold (0-16383)
-            cr = 4,       // Compressor ratio (1-20)
+            cr = 1,       // Compressor ratio (1:1 = off)
             ca = 10,      // Compressor attack ms (1-500)
             cl = 100,     // Compressor release ms (10-2000)
             cm = 0,       // Compressor makeup gain (0-16383)

@@ -11,6 +11,27 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ## Recent Updates (December 2025)
 
+### Envelope Parameter Scaling Fix [COMPLETE]
+Fixed FM and Disc envelope amount parameter ranges.
+
+**Changes:**
+- [x] FA (FM envelope): 0-16 float → 0-16383 int (14-bit)
+- [x] DA (Disc envelope): 0-16 float → 0-16383 int (14-bit)
+- [x] Root cause: SynthDef divided by 16383 but Rust limited to 0-16
+- [x] Restored full resolution for envelope modulation
+- [x] Files: src/commands/synth/envelopes/fm.rs, disc.rs
+
+### SynthDef Default Parameter Alignment [COMPLETE]
+RST command now matches SynthDef default values.
+
+**Changes:**
+- [x] pf: 200 → 131 (C3, ~131 Hz)
+- [x] mf: 50 → 262 (C4, ~262 Hz)
+- [x] pa: 4 → 0 (no pitch envelope by default)
+- [x] fc: 1000 → 10000 (filter wide open)
+- [x] cr: 4 → 1 (compressor off by default)
+- [x] Files: sc/monokit_server.scd, build_scripts/compile_synthdefs.scd
+
 ### Release Pipeline Documentation [COMPLETE]
 Automated release infrastructure documented for future reference.
 
@@ -1121,9 +1142,9 @@ Address issues discovered during comprehensive REPL command testing (December 20
   - Need to use quote-respecting split instead of split_whitespace()
 
 **DSP Bugs:**
-- [ ] FM envelope (FMEV) has no audible effect - investigate SynthDef routing
-- [ ] Audit all envelopes in SynthDef - verify each is actually wired to its target
-- [ ] Audit all envelope parameter ranges - verify ATK, DEC, CRV, AMT scaling is correct
+- [x] FM envelope (FMEV) has no audible effect - FIXED: FA/DA were limited to 0-16 but SynthDef expected 0-16383
+- [x] Audit all envelope parameter ranges - FIXED: FA, DA now 0-16383 (matching FBA, FE)
+- [x] SynthDef/RST default mismatch - FIXED: Aligned defaults (fc=10000, pa=0, pf=131, mf=262, cr=1)
 - [ ] Error message prefix standardization (some use "Error:", some use "ERROR:")
 
 **Infrastructure Complete:**

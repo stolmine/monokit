@@ -135,24 +135,24 @@ Real-time waveform visualization at 20Hz update rate.
 
 **FM Modulation:**
 - `MBUS.FM` / `FM <0-16383>` - FM index amount
-- `FMEV.AMT` / `FA <0-16383>` - FM envelope amount
+- `FMEV.AMT` / `FA <0-16383>` - FM envelope (14-bit)
 - `FMEV.DEC` / `FD <1-10000>` - FM envelope decay (ms)
 - `FMEV.ATK` / `FAA <1-10000>` - FM envelope attack (ms)
 - `FMEV.CRV <-8 to 8>` - FM envelope curve
 
 **Feedback FM:**
 - `MOSC.FB` / `FB <0-16383>` - Feedback amount
-- `FBEV.AMT` / `FBA <0-16383>` - Feedback envelope amount
-- `FBEV.DEC` / `FBD <1-10000>` - Feedback envelope decay (ms)
-- `FBEV.ATK` / `FBAA <1-10000>` - Feedback envelope attack (ms)
-- `FBEV.CRV` / `FBC <-8 to 8>` - Feedback envelope curve
+- `FBEV.AMT` / `FBA <0-16383>` - FB envelope (14-bit)
+- `FBEV.DEC` / `FBD <1-10000>` - FB envelope decay (ms)
+- `FBEV.ATK` / `FBAA <1-10000>` - FB envelope attack (ms)
+- `FBEV.CRV` / `FBC <-8 to 8>` - FB envelope curve
 
 ### Discontinuity / Waveshaping
 
 **Discontinuity:**
 - `DISC.AMT` / `DC <0-16383>` - Discontinuity amount
 - `DISC.MODE` / `DM <0-6>` - Mode (0=Fold, 1=Tanh, 2=Softclip, 3=Hard, 4=Asym, 5=Rectify, 6=Crush)
-- `DENV.AMT` / `DA <0-16383>` - Disc envelope amount
+- `DENV.AMT` / `DA <0-16383>` - Disc envelope (14-bit)
 - `DENV.DEC` / `DD <1-10000>` - Disc envelope decay (ms)
 - `DENV.ATK` / `DAA <1-10000>` - Disc envelope attack (ms)
 - `DENV.CRV <-8 to 8>` - Disc envelope curve
@@ -188,17 +188,17 @@ All envelopes are simple percussive (attack + decay) and trigger on each `TR`.
 | Envelope | Decay | Amount | Attack | Curve |
 |----------|-------|--------|--------|-------|
 | **Amplitude** | AD | - | AENV.ATK (AA) | AENV.CRV (AC) |
-| **Pitch** | PD | PA | PENV.ATK (PAA) | PENV.CRV (PC) |
-| **FM** | FD | FA | FMEV.ATK (FAA) | FMEV.CRV |
-| **Discontinuity** | DD | DA | DENV.ATK (DAA) | DENV.CRV |
-| **Feedback** | FBD | FBA | FBEV.ATK (FBAA) | FBEV.CRV (FBC) |
-| **Filter** | FED | FE | FLEV.ATK (FLAA) | FLEV.CRV (FLC) |
+| **Pitch** | PD | PA (0-16) | PENV.ATK (PAA) | PENV.CRV (PC) |
+| **FM** | FD | FA (0-16383) | FMEV.ATK (FAA) | FMEV.CRV |
+| **Discontinuity** | DD | DA (0-16383) | DENV.ATK (DAA) | DENV.CRV |
+| **Feedback** | FBD | FBA (0-16383) | FBEV.ATK (FBAA) | FBEV.CRV (FBC) |
+| **Filter** | FED | FE (0-16383) | FLEV.ATK (FLAA) | FLEV.CRV (FLC) |
 
 **Envelope Parameters:**
 - **Decay**: 1-10000 ms
 - **Attack**: 1-10000 ms
 - **Curve**: -8 (log) to 8 (exp), 0=linear
-- **Amount**: Varies by envelope type
+- **Amount**: 14-bit (0-16383) except pitch (0-16 octaves)
 
 **Pitch Envelope:**
 - `PA` - Amount in octaves (0-16)
@@ -1189,12 +1189,12 @@ Notes are saved with scenes. 8 lines maximum.
 | `MOSC.FREQ <hz>` | `MF` | Mod frequency |
 | `MOSC.WAVE <0-2>` | `MW` | Mod waveform |
 | `MBUS.FM <amt>` | `FM` | FM index |
-| `FMEV.AMT <amt>` | `FA` | FM envelope amount |
+| `FMEV.AMT <0-16383>` | `FA` | FM envelope (14-bit) |
 | `FMEV.DEC <ms>` | `FD` | FM envelope decay |
 | `FMEV.ATK <ms>` | `FAA` | FM envelope attack |
 | `FMEV.CRV <v>` | - | FM envelope curve |
 | `MOSC.FB <amt>` | `FB` | Feedback amount |
-| `FBEV.AMT <amt>` | `FBA` | FB envelope amount |
+| `FBEV.AMT <0-16383>` | `FBA` | FB envelope (14-bit) |
 | `FBEV.DEC <ms>` | `FBD` | FB envelope decay |
 | `FBEV.ATK <ms>` | `FBAA` | FB envelope attack |
 | `FBEV.CRV <v>` | `FBC` | FB envelope curve |
@@ -1205,7 +1205,7 @@ Notes are saved with scenes. 8 lines maximum.
 |---------|-------|-------------|
 | `DISC.AMT <amt>` | `DC` | Disc amount |
 | `DISC.MODE <0-6>` | `DM` | Disc mode |
-| `DENV.AMT <amt>` | `DA` | Disc env amount |
+| `DENV.AMT <0-16383>` | `DA` | Disc env (14-bit) |
 | `DENV.DEC <ms>` | `DD` | Disc env decay |
 | `DENV.ATK <ms>` | `DAA` | Disc env attack |
 | `DENV.CRV <v>` | - | Disc env curve |

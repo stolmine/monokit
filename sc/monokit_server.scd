@@ -313,7 +313,7 @@ s.waitForBoot {
         #sigL, sigR = Pan2.ar(sig, panPos);
 
         // Beat Repeat Buffer Processing
-        brActive = (br_mix > 0).asInteger;
+        brActive = Lag.kr((br_mix > 0), 0.01);
         brLoopLen = br_len_ms / 1000;
         brBufSize = (brLoopLen * SampleRate.ir).ceil.max(4410);
 

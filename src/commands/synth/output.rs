@@ -92,9 +92,7 @@ where
     F: FnMut(String),
 {
     if parts.len() == 1 {
-        if debug_level >= TIER_QUERIES || out_qry {
-            output(format!("VCA: {}", if *vca_mode { 1 } else { 0 }));
-        }
+        output(format!("VCA: {}", if *vca_mode { "GATED" } else { "DRONE" }));
     } else {
         let value: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
@@ -110,9 +108,7 @@ where
                     .send(MetroCommand::SendParam("vca_mode".to_string(), OscType::Int(0)))
                     .context("Failed to send VCA mode param")?;
                 let _ = config::save_vca_mode(*vca_mode);
-                if debug_level >= TIER_CONFIRMS || out_cfm {
-                    output("VCA: DRONE".to_string());
-                }
+                output("VCA: DRONE".to_string());
             }
             1 => {
                 *vca_mode = true;
@@ -120,9 +116,7 @@ where
                     .send(MetroCommand::SendParam("vca_mode".to_string(), OscType::Int(1)))
                     .context("Failed to send VCA mode param")?;
                 let _ = config::save_vca_mode(*vca_mode);
-                if debug_level >= TIER_CONFIRMS || out_cfm {
-                    output("VCA: GATED".to_string());
-                }
+                output("VCA: GATED".to_string());
             }
             _ => {
                 output("ERROR: VCA TAKES 0 (DRONE) OR 1 (GATED)".to_string());

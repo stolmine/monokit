@@ -43,7 +43,7 @@ macro_rules! define_bool_toggle {
             F: FnMut(String),
         {
             if parts.len() == 1 {
-                output(format!($query_fmt, if *state { 1 } else { 0 }));
+                output(if *state { $on_fmt.to_string() } else { $off_fmt.to_string() });
             } else {
                 match parts[1] {
                     "0" => {

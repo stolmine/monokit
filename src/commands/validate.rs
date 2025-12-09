@@ -1029,7 +1029,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
                 Err(anyhow::anyhow!("TITLE.TIMER TAKES 0, 1, OR 2 ARGUMENTS"))
             }
         }
-        "METER.HDR" | "METER.GRID" | "METER.ASCII" | "ACTIVITY" | "GRID" | "GRID.DEF" | "GRID.MODE" | "HL.COND" | "HL.SEQ" | "SPECTRUM" | "SCRMBL" | "SCRMBL.MODE" | "SCRMBL.SPD" | "SCRMBL.CRV" | "COMPAT.MODE" => {
+        "METER.HDR" | "METER.GRID" | "METER.ASCII" | "ACTIVITY" | "GRID" | "GRID.DEF" | "GRID.MODE" | "HL.COND" | "HL.SEQ" | "SPECTRUM" | "SCRMBL" | "SCRMBL.MODE" | "SCRMBL.SPD" | "SCRMBL.CRV" | "COMPAT.MODE" | "AUTOLOAD" => {
             if argc > 1 {
                 return Err(anyhow::anyhow!("{} TAKES 0-1 ARGUMENTS", command));
             }

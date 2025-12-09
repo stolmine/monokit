@@ -165,11 +165,12 @@ where
             .context("Failed to parse beat repeat mix")?
     };
     let clipped = value.clamp(0, 16383);
-    eprintln!("[DEBUG] BR.MIX sending br_mix={}", clipped);
     metro_tx
         .send(MetroCommand::SendParam("br_mix".to_string(), OscType::Int(clipped)))
         .context("Failed to send param to metro thread")?;
-    output(format!("SET BEAT REPEAT MIX TO {}", clipped));
+    if debug_level >= TIER_CONFIRMS || out_cfm {
+        output(format!("SET BEAT REPEAT MIX TO {}", clipped));
+    }
     Ok(())
 }
 

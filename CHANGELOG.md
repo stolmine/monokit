@@ -4,6 +4,11 @@
 
 ### Bug Fixes
 
+**Beat Repeat**
+- Fixed beat repeat not working in bundle mode
+- Synced SynthDef between compile_synthdefs.scd and monokit_server.scd
+- Beat repeat activation now derives from br_mix > 0
+
 **Config Command Output**
 - All config/query commands now output regardless of DEBUG level
 - Fixed: THEME, HEADER, CPU, GRID, METER.*, SCOPE.*, OUT.*, SCRMBL.*

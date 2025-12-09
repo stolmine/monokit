@@ -624,10 +624,6 @@ s.waitForBoot {
     OSCdef(\monokit_param, { |msg|
         var paramName = msg[1].asSymbol;
         var paramValue = msg[2].asFloat;
-        // DEBUG: log br_ params
-        if(paramName.asString.beginsWith("br_"), {
-            ("BR PARAM: " ++ paramName ++ " = " ++ paramValue).postln;
-        });
         ~voice.set(paramName, paramValue);
     }, '/monokit/param');
 

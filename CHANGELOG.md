@@ -2,6 +2,19 @@
 
 ## v0.3.3 (December 2025)
 
+### New Features
+
+**VERSION Command**
+- Added VERSION/VER command to display current version
+- Version information now shown in startup message
+- Version displayed in help page header
+- Provides quick access to version information
+
+**Line Duplicate Push Behavior**
+- Ctrl+D now pushes lines down instead of overwriting
+- Improved editing workflow for duplicating script lines
+- Non-destructive line duplication behavior
+
 ### Bug Fixes
 
 **TOG Zero Parsing**

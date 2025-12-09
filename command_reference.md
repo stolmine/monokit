@@ -369,6 +369,7 @@ Go experiment with more complicated sequencing setups to trigger the voice with 
 | `RST` | Reset to defaults |
 | `Q / QUIT / EXIT` | Quit application |
 | `CLEAR` | Clear REPL output |
+| `VERSION / VER` | Show version |
 | `PRINT "text"` | Print string |
 | `PRINT <expr>` | Print expression |
 | `NOTE "text"` | Append to notes |

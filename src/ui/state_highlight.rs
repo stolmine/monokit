@@ -223,8 +223,8 @@ fn highlight_single_command(
                     ) {
                         segments.extend(highlighted_segments);
 
-                        let val2_end = cmd[start_pos..]
-                            .find(parts[i+2])
+                        // Use whole-word search to find val2 end position
+                        let val2_end = find_whole_word(&cmd[start_pos..], parts[i+2])
                             .map(|p| start_pos + p + parts[i+2].len())
                             .unwrap_or(cmd.len());
                         current_pos = val2_end;
@@ -258,8 +258,8 @@ fn highlight_single_command(
                     ) {
                         segments.extend(highlighted_segments);
 
-                        let val2_end = cmd[start_pos..]
-                            .find(parts[i+2])
+                        // Use whole-word search to find val2 end position
+                        let val2_end = find_whole_word(&cmd[start_pos..], parts[i+2])
                             .map(|p| start_pos + p + parts[i+2].len())
                             .unwrap_or(cmd.len());
                         current_pos = val2_end;
@@ -464,11 +464,12 @@ fn highlight_tog_expression(
 ) -> Option<Vec<HighlightedSegment>> {
     let mut segments = Vec::new();
 
-    let val1_pos = line_from_tog.find(val1)?;
+    // Find val1 as a whole word (not a substring of another number)
+    let val1_pos = find_whole_word(line_from_tog, val1)?;
     let val1_end = val1_pos + val1.len();
 
-    // Search for val2 AFTER val1 to avoid finding val2 inside val1 (e.g., "0" inside "10000")
-    let val2_pos = line_from_tog[val1_end..].find(val2).map(|p| p + val1_end)?;
+    // Find val2 as a whole word AFTER val1
+    let val2_pos = find_whole_word(&line_from_tog[val1_end..], val2).map(|p| p + val1_end)?;
 
     let tog_to_val1 = &line_from_tog[..val1_pos];
     segments.push(HighlightedSegment {
@@ -503,10 +504,12 @@ fn highlight_eith_expression(
 ) -> Option<Vec<HighlightedSegment>> {
     let mut segments = Vec::new();
 
-    let val1_pos = line_from_eith.find(val1)?;
+    // Find val1 as a whole word (not a substring of another number)
+    let val1_pos = find_whole_word(line_from_eith, val1)?;
     let val1_end = val1_pos + val1.len();
 
-    let val2_pos = line_from_eith[val1_end..].find(val2).map(|p| p + val1_end)?;
+    // Find val2 as a whole word AFTER val1
+    let val2_pos = find_whole_word(&line_from_eith[val1_end..], val2).map(|p| p + val1_end)?;
 
     let eith_to_val1 = &line_from_eith[..val1_pos];
     segments.push(HighlightedSegment {
@@ -578,6 +581,29 @@ fn get_repeat_count(token: &str) -> usize {
     }
 }
 
+/// Find a value as a whole word, not as a substring of another token.
+/// Returns the position of the match if found.
+fn find_whole_word(haystack: &str, needle: &str) -> Option<usize> {
+    let mut search_start = 0;
+    while let Some(pos) = haystack[search_start..].find(needle) {
+        let abs_pos = search_start + pos;
+        let before_ok = abs_pos == 0 || {
+            let prev_char = haystack[..abs_pos].chars().last().unwrap();
+            !prev_char.is_alphanumeric() && prev_char != '_' && prev_char != '-'
+        };
+        let after_pos = abs_pos + needle.len();
+        let after_ok = after_pos >= haystack.len() || {
+            let next_char = haystack[after_pos..].chars().next().unwrap();
+            !next_char.is_alphanumeric() && next_char != '_' && next_char != '-'
+        };
+        if before_ok && after_ok {
+            return Some(abs_pos);
+        }
+        search_start = abs_pos + 1;
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -646,6 +672,47 @@ mod tests {
             .collect();
 
         assert_eq!(highlighted_tokens, vec!["20"]);
+    }
+
+    #[test]
+    fn test_highlight_tog_with_zero() {
+        // Bug: "DC TOG 2000 0" was displaying as "DC TOG 2000 000 0"
+        // The "0" was being found inside "2000" instead of as a separate token
+        let state = HashMap::new();
+
+        let line = "DC TOG 2000 0";
+        let result = highlight_stateful_operators(line, 0, &state);
+
+        let highlighted_tokens: Vec<_> = result.segments
+            .iter()
+            .filter(|s| s.is_highlighted)
+            .map(|s| s.text.as_str())
+            .collect();
+
+        // First value (2000) should be highlighted when state is 0
+        assert_eq!(highlighted_tokens, vec!["2000"]);
+
+        // Full text should be preserved correctly
+        let full_text: String = result.segments.iter().map(|s| s.text.as_str()).collect();
+        assert_eq!(full_text, "DC TOG 2000 0");
+    }
+
+    #[test]
+    fn test_highlight_tog_with_zero_second_value() {
+        let mut state = HashMap::new();
+        state.insert("0_TOG_2000_0".to_string(), 1);
+
+        let line = "DC TOG 2000 0";
+        let result = highlight_stateful_operators(line, 0, &state);
+
+        let highlighted_tokens: Vec<_> = result.segments
+            .iter()
+            .filter(|s| s.is_highlighted)
+            .map(|s| s.text.as_str())
+            .collect();
+
+        // Second value (0) should be highlighted when state is 1
+        assert_eq!(highlighted_tokens, vec!["0"]);
     }
 
     #[test]

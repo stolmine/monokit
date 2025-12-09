@@ -1,5 +1,24 @@
 # Monokit Documentation Index
 
+## Version 0.3.3 (December 2025)
+
+### Bug Fixes
+
+**TOG Zero Parsing Fix [COMPLETE]**
+- Fixed display corruption with TOG using zero
+- Example: `DC TOG 2000 0` showed as `DC TOG 2000 000 0`
+- Added `find_whole_word()` word-boundary matcher
+- Prevents substring matching in TOG/EITH highlight
+- File: src/ui/state_highlight.rs
+
+**AUDIO Device Query Fix [COMPLETE]**
+- Fixed `AUDIO 1` failing without prior `AUDIO` call
+- Populate audio_devices on App initialization
+- macOS with scsynth-direct feature only
+- File: src/app/mod.rs
+
+---
+
 ## Version 0.3.1 (December 2025)
 
 ### New Commands in v0.3.1

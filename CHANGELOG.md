@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.3.3 (December 2025)
+
+### Bug Fixes
+
+**TOG Zero Parsing**
+- Fixed display corruption when TOG uses zero as argument
+- Example: `DC TOG 2000 0` was displaying as `DC TOG 2000 000 0`
+- Added `find_whole_word()` helper for word-boundary matching
+- Prevents "0" being found inside "2000" during highlighting
+- File: src/ui/state_highlight.rs
+
+**AUDIO Command Device Query**
+- Fixed `AUDIO 1` failing if `AUDIO` not called first
+- Audio devices now populated during App initialization
+- Applies to macOS with scsynth-direct feature enabled
+- File: src/app/mod.rs
+
+---
+
 ## v0.3.2 (December 2025)
 
 ### Bug Fixes

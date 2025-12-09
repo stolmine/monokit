@@ -192,8 +192,19 @@ impl App {
             out_ess: config.display.out_ess,
             out_qry: config.display.out_qry,
             out_cfm: config.display.out_cfm,
-            audio_devices: Vec::new(),
-            audio_device_current: String::new(),
+            audio_devices: {
+                #[cfg(all(target_os = "macos", feature = "scsynth-direct"))]
+                {
+                    crate::audio_devices::list_audio_devices()
+                        .map(|devices| devices.into_iter().map(|d| d.name).collect())
+                        .unwrap_or_default()
+                }
+                #[cfg(not(all(target_os = "macos", feature = "scsynth-direct")))]
+                {
+                    Vec::new()
+                }
+            },
+            audio_device_current: config.display.audio_out_device.clone().unwrap_or_default(),
             header_scramble: if config.display.scramble_enabled {
                 let mode = crate::scramble::ScrambleMode::from_u8(config.display.scramble_mode);
                 let curve = crate::scramble::ScrambleCurve::from_u8(config.display.scramble_curve);

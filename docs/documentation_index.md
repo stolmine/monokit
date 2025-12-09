@@ -1,5 +1,25 @@
 # Monokit Documentation Index
 
+## Version 0.3.1 (December 2025)
+
+### New Commands in v0.3.1
+- `LOAD.CLR <0|1>` - Clear REPL on load
+- `AUTOLOAD <0|1>` - Auto-load last scene on startup
+- `LIMIT <0|1>` - Limiter on/off
+- `SYNC` - Reset all stateful elements to starting position
+- `SYNC.SEQ` - Reset SEQ sequences to first element
+- `SYNC.TOG` - Reset TOG toggles to first value
+- `SYNC.PAT` - Reset pattern indices to 0
+
+### Config Command Output Fixes [COMPLETE]
+All config and query commands now output to REPL regardless of DEBUG level:
+- THEME, HEADER, CPU, GRID, METER.*, SCOPE.*, OUT.*, SCRMBL.* commands
+- LOAD.RST, LOAD.CLR, AUTOLOAD, VCA, LIMIT commands
+- TITLE, TITLE.TIMER, BPM query commands
+- SCENES, PSETS scene management commands
+- REC, REC.STOP, REC.PATH recording commands
+- SAVE, LOAD, DELETE scene commands
+
 ## Recent Updates (December 2025)
 
 ### Envelope Parameter Scaling Fix [COMPLETE]

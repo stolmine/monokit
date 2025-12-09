@@ -465,21 +465,22 @@ Consolidated command definitions into a single source of truth to eliminate sync
 - [ ] `TOG <a> <b> <c>` - Cycle through 3+ values
 - [ ] `TOG.RST` - Reset toggle state
 
-### Global State Sync Command [Medium]
+### Global State Sync Command [Medium] - COMPLETE (December 2025)
 Reset all stateful operators to their initial positions for clean restarts.
 
-- [ ] `SYNC` - Reset all stateful elements to starting position:
-  - SEQ sequences reset to first element
-  - TOG toggles reset to first value (a)
-  - EITH random choice state cleared
-  - `<>` inline toggles reset to first option
-  - `{}` inline random choice state cleared
-  - EV counters reset (every-N back to 0)
-  - SKIP counters reset
-  - Pattern indices (P.I) reset to 0
-  - N1-N4 counters reset to MIN values
-- [ ] Useful for: live performance resets, song structure sync points
-- [ ] Consider: `SYNC.SEQ`, `SYNC.TOG`, `SYNC.PAT` for partial resets
+- [x] `SYNC` - Reset all stateful elements to starting position
+- [x] SEQ sequences reset to first element
+- [x] TOG toggles reset to first value (a)
+- [x] EITH random choice state cleared
+- [x] `<>` inline toggles reset to first option
+- [x] `{}` inline random choice state cleared
+- [x] EV counters reset (every-N back to 0)
+- [x] SKIP counters reset
+- [x] Pattern indices (P.I) reset to 0
+- [x] N1-N4 counters reset to MIN values
+- [x] `SYNC.SEQ` - Partial reset for SEQ sequences
+- [x] `SYNC.TOG` - Partial reset for TOG toggles
+- [x] `SYNC.PAT` - Partial reset for pattern indices
 
 ### Auto-Increment Counters [Low] - COMPLETE
 - [x] `N1`, `N2`, `N3`, `N4` - Auto-increment on each read
@@ -902,14 +903,14 @@ Ensure all user preferences persist across sessions for consistent experience.
 - [x] Load saved preferences on startup
 - [x] Save preferences on change (not just on exit)
 
-### Auto-Load Previous Scene [Low]
+### Auto-Load Previous Scene [Low] - COMPLETE (December 2025)
 Automatically load the last used scene on startup.
 
-- [ ] `AUTOLOAD <0|1>` - Enable/disable auto-load on startup
-- [ ] Track last loaded scene name in config.toml
-- [ ] On startup, if enabled, automatically run LOAD with saved scene name
-- [ ] Silent load (no REPL output) or respect DEBUG level
-- [ ] Handle missing scene gracefully (scene deleted since last session)
+- [x] `AUTOLOAD <0|1>` - Enable/disable auto-load on startup
+- [x] Track last loaded scene name in config.toml
+- [x] On startup, if enabled, automatically run LOAD with saved scene name
+- [x] Silent load (no REPL output) or respect DEBUG level
+- [x] Handle missing scene gracefully (scene deleted since last session)
 
 ### Clear REPL on Load [Low] - COMPLETE (December 2025)
 Optional setting to clear REPL output when loading scenes.

@@ -296,7 +296,9 @@ Go experiment with more complicated sequencing setups to trigger the voice with 
 | `LOAD <name>` | Load scene |
 | `SCENES` | List scenes |
 | `DELETE <name>` | Delete scene |
-| `LOAD.RST [<0\|1>]` | Get/set reset mode |
+| `LOAD.RST [<0\|1>]` | Reset params on load |
+| `LOAD.CLR [<0\|1>]` | Clear REPL on load |
+| `AUTOLOAD [<0\|1>]` | Auto-load last scene |
 | `PSET <1-8> <name>` | Load preset |
 | `PSET.SAVE <1-8> <name>` | Save preset |
 | `PSET.DEL <name>` | Delete preset |
@@ -382,3 +384,8 @@ Go experiment with more complicated sequencing setups to trigger the voice with 
 | `COMPAT.MODE <0\|1>` | Force compat mode |
 | `THEMES` | List themes |
 | `THEME <name>` | Switch theme |
+| `LIMIT [<0\|1>]` | Limiter on/off |
+| `SYNC` | Reset all stateful elements |
+| `SYNC.SEQ` | Reset SEQ sequences |
+| `SYNC.TOG` | Reset TOG toggles |
+| `SYNC.PAT` | Reset pattern indices |

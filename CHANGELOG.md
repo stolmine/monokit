@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.3.1 (December 2025)
+
+### Bug Fixes
+
+**Config Command Output**
+- All config/query commands now output regardless of DEBUG level
+- Fixed: THEME, HEADER, CPU, GRID, METER.*, SCOPE.*, OUT.*, SCRMBL.*
+- Fixed: LOAD.RST, LOAD.CLR, AUTOLOAD, VCA, LIMIT
+- Fixed: TITLE, TITLE.TIMER, BPM, SCENES, PSETS
+- Fixed: REC, REC.STOP, REC.PATH recording commands
+- Fixed: SAVE, LOAD, DELETE scene commands
+
+---
+
 ## v0.3.0 (December 2025)
 
 ### New Features

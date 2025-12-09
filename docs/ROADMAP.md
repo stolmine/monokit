@@ -966,6 +966,14 @@ Toggleable display of current scene name in header, replacing "MONOKIT" title.
 - [x] Update display immediately on SAVE/LOAD
 - [ ] Optional "Matrix" style character replacement lerp animation on save/load/change
 
+### Version Display [Low]
+Show version number for user awareness and bug reporting.
+
+- [ ] Display version in startup messages before TUI initializes
+- [ ] Add `VERSION` command to query version from REPL
+- [ ] Consider showing version in Help page header or footer
+- [ ] Read version from Cargo.toml at compile time via env!("CARGO_PKG_VERSION")
+
 ### BPM Header Display [Medium] - COMPLETE (December 2025)
 Add BPM readout to header border alongside CPU and REC indicators.
 

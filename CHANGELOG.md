@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.3.1 (December 2025)
+## v0.3.2 (December 2025)
 
 ### Bug Fixes
 

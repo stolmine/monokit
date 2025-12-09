@@ -239,3 +239,23 @@ fn test_del_valid_commands() {
     assert!(validate_script_command("DEL.X 4 100: TR").is_ok());
     assert!(validate_script_command("DEL.R 3 200: TR").is_ok());
 }
+#[test]
+fn test_del_commands_on_script_lines() {
+    use crate::commands::validate_script_command;
+    
+    // Test valid DEL commands as they would appear on script lines
+    let valid_commands = vec![
+        "DEL 100: TR",
+        "DEL 500: PF 440",
+        "DEL 1000: A 100; B 200",
+        "DEL.X 4 100: TR",
+        "DEL.X 3 200: PF 440",
+        "DEL.R 3 100: TR",
+        "DEL.R 2 200: PF 440",
+    ];
+    
+    for cmd in valid_commands {
+        let result = validate_script_command(cmd);
+        assert!(result.is_ok(), "Command should be valid: {} - Error: {:?}", cmd, result.err());
+    }
+}

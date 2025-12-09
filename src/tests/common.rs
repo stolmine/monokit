@@ -82,6 +82,7 @@ pub struct TestContext {
     pub limiter_enabled: bool,
     pub notes: NotesStorage,
     pub load_rst: bool,
+    pub load_clr: bool,
     pub vca_mode: bool,
     pub show_conditional_highlight: bool,
     pub scope_settings: crate::types::ScopeSettings,
@@ -141,6 +142,7 @@ impl Default for TestContext {
             limiter_enabled: true,
             notes: NotesStorage::default(),
             load_rst: false,
+            load_clr: false,
             vca_mode: false,
             show_conditional_highlight: true,
             scope_settings: crate::types::ScopeSettings {
@@ -212,6 +214,7 @@ impl TestContext {
             &mut self.limiter_enabled,
             &mut self.notes,
             &mut self.load_rst,
+            &mut self.load_clr,
             &mut self.vca_mode,
             &mut self.show_conditional_highlight,
             &mut self.scope_settings,

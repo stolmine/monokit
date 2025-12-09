@@ -52,6 +52,7 @@ pub fn process_command<F>(
     limiter_enabled: &mut bool,
     notes: &mut crate::types::NotesStorage,
     load_rst: &mut bool,
+    load_clr: &mut bool,
     vca_mode: &mut bool,
     show_conditional_highlight: &mut bool,
     scope_settings: &mut crate::types::ScopeSettings,
@@ -712,6 +713,9 @@ where
         }
         "LOAD.RST" => {
             misc::handle_load_rst(&parts, load_rst, output);
+        }
+        "LOAD.CLR" => {
+            misc::handle_load_clr(&parts, load_clr, output);
         }
         "SCENES" => {
             scene_cmds::handle_scenes(*debug_level, *out_qry, output);

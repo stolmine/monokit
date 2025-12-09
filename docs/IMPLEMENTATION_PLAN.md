@@ -4,11 +4,11 @@
 
 ### Phase 1: Bug Fixes (1-2 days)
 
-**1. TOG Zero Parsing Bug [Low]**
+**1. TOG Zero Parsing Bug [COMPLETE]**
 - Issue: `DC TOG 2000 0` displays as `DC TOG 2000 000 0` on script line
-- Input field shows correct version but script display adds extra zeros
-- Investigate TOG state serialization/display logic
-- Fix rendering to match input exactly
+- Root cause: Key format mismatch between state storage and highlighting
+- Fix: Changed key format from `"cmd_<idx>_DC_TOG_2000_0"` to `"<idx>_TOG_2000_0"`
+- Status: Fixed in src/commands/core/random_ops.rs
 
 **2. IF/ELSE/ELIF Scope Logic [Medium]**
 - Investigate: Does ELSE cut off downstream logic processing?

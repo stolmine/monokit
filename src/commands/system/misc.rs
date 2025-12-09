@@ -423,7 +423,7 @@ pub fn handle_help<F>(
     output("RESET:   RST".to_string());
     output("".to_string());
     output("-- REPL UTILITIES --".to_string());
-    output("CLEAR           CLEAR OUTPUT HISTORY".to_string());
+    output("CLEAR / CLR     CLEAR OUTPUT HISTORY".to_string());
     output("DEBUG <0-5>  SET VERBOSITY LEVEL".to_string());
     output("HEADER       SHOW CURRENT HEADER LEVEL".to_string());
     output("HEADER <0-4>    SET HEADER VERBOSITY".to_string());
@@ -666,6 +666,8 @@ where
 }
 
 define_bool_toggle!(handle_load_rst, "LOAD.RST", "LOAD.RST: {}", "LOAD.RST: OFF (PERSIST PARAMS)", "LOAD.RST: ON (RESET BEFORE LOAD)", config::save_load_rst);
+
+define_bool_toggle!(handle_load_clr, "LOAD.CLR", "LOAD.CLR: {}", "LOAD.CLR: OFF", "LOAD.CLR: ON (CLEAR ON LOAD)", config::save_load_clr);
 
 pub fn handle_scope_time<F>(
     parts: &[&str],

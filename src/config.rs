@@ -24,6 +24,8 @@ pub struct DisplayConfig {
     pub header_level: u8,
     #[serde(default)]
     pub load_rst: bool,
+    #[serde(default)]
+    pub load_clr: bool,
     #[serde(default = "default_debug_level")]
     pub debug_level: u8,
     #[serde(default)]
@@ -199,6 +201,7 @@ impl Default for DisplayConfig {
             theme: default_theme_mode(),
             header_level: default_header_level(),
             load_rst: false,
+            load_clr: false,
             debug_level: default_debug_level(),
             show_cpu: false,
             show_bpm: default_show_bpm(),
@@ -389,6 +392,13 @@ pub fn save_header_level(level: u8) -> Result<()> {
 pub fn save_load_rst(enabled: bool) -> Result<()> {
     let mut config = load_config()?;
     config.display.load_rst = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_load_clr(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.load_clr = enabled;
     save_config(&config)?;
     Ok(())
 }

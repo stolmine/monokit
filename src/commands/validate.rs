@@ -403,6 +403,12 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
+        "LOAD.CLR" => {
+            if argc > 1 {
+                return Err(anyhow::anyhow!("LOAD.CLR TAKES 0-1 ARGUMENTS"));
+            }
+            Ok(())
+        }
         "SCENES" => {
             if argc > 0 {
                 return Err(anyhow::anyhow!("SCENES TAKES NO ARGUMENTS"));
@@ -475,7 +481,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "TR" | "RST" | "HELP" | "REC" | "REC.STOP" | "CLEAR" | "BRK" | "RND.VOICE" | "RND.OSC" | "RND.FM" | "RND.MOD" | "RND.ENV" | "RND.FX" | "RND.FILT" | "RND.DLY" | "RND.VERB" => {
+        "TR" | "RST" | "HELP" | "REC" | "REC.STOP" | "CLEAR" | "CLR" | "BRK" | "RND.VOICE" | "RND.OSC" | "RND.FM" | "RND.MOD" | "RND.ENV" | "RND.FX" | "RND.FILT" | "RND.DLY" | "RND.VERB" => {
             if argc > 0 {
                 return Err(anyhow::anyhow!("{} TAKES NO ARGUMENTS", command));
             }

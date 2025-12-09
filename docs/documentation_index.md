@@ -116,6 +116,17 @@ See: `docs/scsynth_direct_integration.md` for detailed spec
 - All errors now respect should_output(OutputCategory::Error)
 - Consistent error display across REPL modes
 
+### TOG Zero Parsing Bug Fix [COMPLETE]
+
+**Script Display Accuracy:**
+- Fixed: `DC TOG 2000 0` displayed as `DC TOG 2000 000 0`
+- Root cause: Key format mismatch between state
+  storage and highlighting code
+- Solution: Aligned key format in both locations
+- Changed from `"cmd_<idx>_DC_TOG_2000_0"` to
+  `"<idx>_TOG_2000_0"`
+- Location: src/commands/core/random_ops.rs
+
 ### Header ASCII Meters (December 2025)
 
 **Distinct Meter Characters:**

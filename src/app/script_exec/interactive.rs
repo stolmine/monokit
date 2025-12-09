@@ -25,7 +25,7 @@ impl App {
             return;
         }
 
-        if cmd_upper == "CLEAR" {
+        if cmd_upper == "CLEAR" || cmd_upper == "CLR" {
             self.output.clear();
             return;
         }
@@ -141,8 +141,16 @@ impl App {
                 self.param_activity.mark(cmd);
             }
 
+            // Check if this is a LOAD command
+            let is_load_cmd = parts.get(0).map(|c| c.eq_ignore_ascii_case("LOAD")).unwrap_or(false);
+
             // Interactive mode (script_index=10) doesn't need highlighting
             self.process_sub_command(sub_cmd, 10, &mut metro_interval, None, 0, 0);
+
+            // Clear output if LOAD.CLR is enabled and LOAD succeeded
+            if is_load_cmd && self.load_clr {
+                self.output.clear();
+            }
         }
     }
 }

@@ -58,6 +58,7 @@ impl App {
             &mut self.limiter_enabled,
             &mut self.notes,
             &mut self.load_rst,
+            &mut self.load_clr,
             &mut self.vca_mode,
             &mut self.show_conditional_highlight,
             &mut self.scope_settings,

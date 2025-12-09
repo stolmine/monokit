@@ -24,6 +24,7 @@ use crate::config;
 use crate::midi::{MidiConnection, MidiTimingStats};
 use crate::theme::Theme;
 use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, SyncMode, Variables};
+use crate::utils::split_whitespace_respecting_quotes;
 use anyhow::Result;
 use std::sync::{mpsc::Sender, Arc};
 
@@ -95,7 +96,8 @@ where
         return Ok(vec![]);
     }
 
-    let parts: Vec<&str> = trimmed.split_whitespace().collect();
+    let parts_owned = split_whitespace_respecting_quotes(trimmed);
+    let parts: Vec<&str> = parts_owned.iter().map(|s| s.as_str()).collect();
     let cmd = parts[0].to_uppercase();
     let cmd = resolve_alias(&cmd);
 

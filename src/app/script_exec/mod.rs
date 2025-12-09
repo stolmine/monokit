@@ -5,7 +5,7 @@ mod loops;
 use super::App;
 use crate::commands::process_command;
 use crate::eval::eval_expression;
-use crate::utils::split_respecting_quotes;
+use crate::utils::{split_respecting_quotes, split_whitespace_respecting_quotes};
 use std::io::Write;
 
 impl App {
@@ -30,8 +30,8 @@ impl App {
         }
 
         // Mark parameter activity
-        let parts: Vec<&str> = cmd_to_run.split_whitespace().collect();
-        if let Some(cmd) = parts.get(0) {
+        let parts_owned = split_whitespace_respecting_quotes(cmd_to_run);
+        if let Some(cmd) = parts_owned.get(0) {
             self.param_activity.mark(cmd);
         }
 

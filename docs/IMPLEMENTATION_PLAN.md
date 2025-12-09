@@ -30,18 +30,29 @@
 **4. Loops + Stateful Ops Testing [COMPLETE]**
 - Tested TOG, EITH, SEQ, booleans in loops - all work correctly
 - Test scene: test_loops_stateful.json
-- **BUG FOUND: Nested IF in loops fails**
-  - Example: `L 1 6: IF GT I 2: IF LT I 5: PRINT I` → "UNKNOWN COMMAND: IF"
-  - Root cause: process_sub_command uses find(':') which only finds first colon
-  - Fix location: src/app/script_exec/control_flow.rs lines 262-268
-  - Need to use rfind(':') to split from the rightmost colon
-- **BUG FOUND: SEQ note names in variable assignment fails**
-  - Example: `A SEQ "A B C D"` → "FAILED TO PARSE VALUE"
-  - Root cause: split_whitespace() fragments quoted strings
-  - Fix location: src/app/script_exec/mod.rs lines 30-36
-  - Need to use quote-respecting split instead of split_whitespace()
 
-**5. State Highlight Timing Verification [Low]**
+**5. Nested IF in Loops Bug [COMPLETE]**
+- Issue: `L 1 6: IF GT I 2: IF LT I 5: PRINT I` → "UNKNOWN COMMAND: IF"
+- Root cause: process_sub_command uses find(':') which only finds first colon
+- Fix: Changed find(':') to rfind(':') to split at rightmost colon
+- Added recursive nested conditional handling
+- Status: Fixed in src/app/script_exec/control_flow.rs
+
+**6. SEQ Quote Parsing Bug [COMPLETE]**
+- Issue: `A SEQ "A B C D"` → "FAILED TO PARSE VALUE"
+- Root cause: split_whitespace() fragments quoted strings
+- Fix: Added split_whitespace_respecting_quotes() utility function
+- Variable assignment now respects quoted strings
+- Status: Fixed in src/utils.rs, src/commands/mod.rs, src/app/script_exec/mod.rs
+
+**7. CLI Enhancements [COMPLETE]**
+- `--dry-run --run <scene>` runs without SuperCollider/audio
+- Metro thread skips OSC socket creation in dry-run mode
+- Enables headless testing of command logic
+- Batch mode auto-starts metro: SetActive(true) after loading scene
+- Status: Fixed in src/main.rs, src/metro.rs
+
+**8. State Highlight Timing Verification [Low]**
 - Audit SEQ, TOG, EITH, `<>`, `{}` highlight timing
 - Verify highlights show current state vs previous state
 - Test in metro context and nested contexts
@@ -51,7 +62,7 @@
 
 ### Phase 2: High-Value Features (1-2 weeks)
 
-**4. SYNC Command [Medium]**
+**9. SYNC Command [Medium]**
 - `SYNC` resets all stateful elements to starting position:
   - SEQ sequences → first element
   - TOG toggles → first value
@@ -62,7 +73,7 @@
 - Consider partial variants: `SYNC.SEQ`, `SYNC.TOG`, `SYNC.PAT`
 - Use cases: live performance resets, song structure sync points
 
-**5. Auto-Load Previous Scene [Low]**
+**10. Auto-Load Previous Scene [Low]**
 - `AUTOLOAD <0|1>` - Enable/disable auto-load on startup
 - Track last loaded scene name in config.toml
 - On startup, if enabled, run LOAD with saved scene name
@@ -72,7 +83,7 @@
 
 ### Phase 3: Foundation Work (2-4 weeks)
 
-**6. Script Validation Overhaul [High]**
+**11. Script Validation Overhaul [High]**
 - Reject invalid commands on script line entry (before save)
 - Validate all argument counts and types
 - Validate expression syntax (balanced parens, valid operators)
@@ -81,7 +92,7 @@
 - Validate script references (1-8, M, I)
 - Clear, specific error messages for each failure type
 
-**7. File Size/DRY Audit [Medium]**
+**12. File Size/DRY Audit [Medium]**
 - Ensure all files within agent readable limits (~500 lines)
 - Create `CommandContext` struct to bundle shared parameters
 - Create category-aware output helper
@@ -105,14 +116,15 @@
 1. TOG zero bug      → COMPLETE
 2. IF/ELSE scope     → COMPLETE (documented, working as designed)
 3. Boolean ops       → COMPLETE (all operators verified working)
-4. Loops + stateful  → COMPLETE (2 bugs found, ready to fix)
-5. Nested IF bug     → Fix rfind colon splitting
-6. SEQ var assign    → Fix quote-respecting split
-7. Highlight timing  → Quick audit
-8. SYNC command      → High value, medium effort
-9. Auto-load scene   → Quick win
-10. Validation       → Larger investment, enables future work
-11. DRY audit        → Maintainability foundation
+4. Loops + stateful  → COMPLETE (tested, bugs identified)
+5. Nested IF bug     → COMPLETE (rfind colon splitting)
+6. SEQ var assign    → COMPLETE (quote-respecting split)
+7. CLI enhancements  → COMPLETE (dry-run, batch auto-start)
+8. Highlight timing  → Quick audit
+9. SYNC command      → High value, medium effort
+10. Auto-load scene  → Quick win
+11. Validation       → Larger investment, enables future work
+12. DRY audit        → Maintainability foundation
 ```
 
 ## Rationale

@@ -1,0 +1,218 @@
+{
+  "version": 1,
+  "scripts": [
+    {
+      "lines": [
+        "PRINT \"TEST 1: BASIC DEL\"",
+        "DEL 100: PRINT \"DEL 100ms\"",
+        "DEL 200: PRINT \"DEL 200ms\"",
+        "DEL 300: PRINT \"DEL 300ms\"",
+        "PRINT \"QUEUED 3 DELAYS\"",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"TEST 2: DEL.X REPEAT\"",
+        "DEL.X 3 100: PRINT \"REPEAT\"",
+        "PRINT \"3x100ms QUEUED\"",
+        "DEL.X 5 50: PRINT \"FAST\"",
+        "PRINT \"5x50ms QUEUED\"",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"TEST 3: DEL.R IMMED\"",
+        "DEL.R 3 100: PRINT \"IMMEDIATE\"",
+        "PRINT \"NOW+3x100ms\"",
+        "DEL.R 2 150: PRINT \"TRIGGER\"",
+        "PRINT \"NOW+2x150ms\"",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"TEST 4: DEL W/EXPR\"",
+        "A 50",
+        "DEL A: PRINT \"VAR DELAY\"",
+        "DEL MUL 50 2: PRINT \"EXPR 100\"",
+        "DEL ADD 100 50: PRINT \"EXPR 150\"",
+        "PRINT \"EXPR DELAYS OK\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"TEST 5: DEL.CLR\"",
+        "DEL 1000: PRINT \"1SEC LATER\"",
+        "DEL 2000: PRINT \"2SEC LATER\"",
+        "DEL 3000: PRINT \"3SEC LATER\"",
+        "DEL.CLR",
+        "PRINT \"ALL CLEARED\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"TEST 6: SEMICOLONS\"",
+        "A 0; DEL 50: A 1",
+        "DEL 100: PRINT A",
+        "DEL.X 2 75: B ADD B 1; PRINT B",
+        "B 0; PRINT \"SEMICOLON TEST\"",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"TEST 7: CROSS PAGE\"",
+        "SCRIPT M",
+        "DEL 100: PRINT \"FROM SCRIPT 6\"",
+        "SCRIPT 1",
+        "DEL 150: PRINT \"FROM SCRIPT 1\"",
+        "PRINT \"CROSS PAGE OK\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"M: DEL TEST SUITE\"",
+        "L 1 7: SCRIPT I",
+        "M.ACT 0",
+        "REPL.DUMP repl_tests/dump_del_commands.txt",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"INIT: DEL CMD TEST\"",
+        "M 300",
+        "M.SCRIPT M",
+        "M.ACT 1",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    }
+  ],
+  "patterns": [
+    {
+      "data": [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+      ],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+      ],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+      ],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+      ],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+      ],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+      ],
+      "length": 16,
+      "index": 0
+    }
+  ],
+  "pattern_working": 0,
+  "notes": [
+    "DEL COMMANDS",
+    "BASIC DELAY",
+    "DEL.X REPEAT",
+    "DEL.R IMMEDIATE",
+    "EXPRESSIONS",
+    "DEL.CLR",
+    "SEMICOLONS",
+    "CROSS PAGE"
+  ]
+}

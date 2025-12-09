@@ -325,58 +325,68 @@ impl MetroTimingStats {
 }
 
 /// Send OSC - uses timestamps for internal timing, immediate for MIDI sync
-fn send_osc(socket: &UdpSocket, msg: OscMessage, use_timestamp: bool) {
-    let packet = if use_timestamp {
-        create_bundle(vec![msg], OSC_LATENCY_MS)
-    } else {
-        OscPacket::Message(msg)
-    };
-    if let Ok(buf) = encoder::encode(&packet) {
-        let _ = socket.send(&buf);
+fn send_osc(socket: Option<&UdpSocket>, msg: OscMessage, use_timestamp: bool) {
+    if let Some(socket) = socket {
+        let packet = if use_timestamp {
+            create_bundle(vec![msg], OSC_LATENCY_MS)
+        } else {
+            OscPacket::Message(msg)
+        };
+        if let Ok(buf) = encoder::encode(&packet) {
+            let _ = socket.send(&buf);
+        }
     }
 }
 
-pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroState>>, event_tx: mpsc::Sender<MetroEvent>) {
+pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroState>>, event_tx: mpsc::Sender<MetroEvent>, dry_run: bool) {
     let _rt_handle = promote_current_thread_to_real_time(512, 48000).ok();
 
-    #[cfg(feature = "scsynth-direct")]
-    eprintln!("[monokit] Metro thread: SCSYNTH-DIRECT mode (port 57110, /n_set format)");
+    if dry_run {
+        eprintln!("[monokit] Metro thread: DRY-RUN mode (no OSC)");
+    } else {
+        #[cfg(feature = "scsynth-direct")]
+        eprintln!("[monokit] Metro thread: SCSYNTH-DIRECT mode (port 57110, /n_set format)");
 
-    #[cfg(not(feature = "scsynth-direct"))]
-    eprintln!("[monokit] Metro thread: SCLANG mode (port 57120, /monokit/* format)");
+        #[cfg(not(feature = "scsynth-direct"))]
+        eprintln!("[monokit] Metro thread: SCLANG mode (port 57120, /monokit/* format)");
+    }
 
     let spinner = SpinSleeper::default();
 
-    // Create socket with large buffers to prevent UDP packet loss
-    let socket = match Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::UDP)) {
-        Ok(s) => s,
-        Err(e) => {
-            let _ = event_tx.send(MetroEvent::Error(format!("ERROR: OSC SOCKET CREATE FAIL: {}", e)));
+    let socket: Option<UdpSocket> = if dry_run {
+        None
+    } else {
+        // Create socket with large buffers to prevent UDP packet loss
+        let socket = match Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::UDP)) {
+            Ok(s) => s,
+            Err(e) => {
+                let _ = event_tx.send(MetroEvent::Error(format!("ERROR: OSC SOCKET CREATE FAIL: {}", e)));
+                return;
+            }
+        };
+
+        // Set large send buffer to prevent packet loss
+        if let Err(e) = socket.set_send_buffer_size(OSC_BUFFER_SIZE) {
+            let _ = event_tx.send(MetroEvent::Error(format!("WARN: OSC SEND BUFFER SIZE FAIL: {}", e)));
+        }
+
+        // Bind to any available port
+        let bind_addr: SocketAddr = "0.0.0.0:0".parse().unwrap();
+        if let Err(e) = socket.bind(&bind_addr.into()) {
+            let _ = event_tx.send(MetroEvent::Error(format!("ERROR: OSC SOCKET BIND FAIL: {}", e)));
             return;
         }
+
+        // Connect to SuperCollider
+        let osc_addr: SocketAddr = OSC_ADDR.parse().unwrap();
+        if let Err(e) = socket.connect(&osc_addr.into()) {
+            let _ = event_tx.send(MetroEvent::Error(format!("ERROR: OSC CONNECT FAIL: {}", e)));
+            return;
+        }
+
+        // Convert to std UdpSocket for compatibility
+        Some(socket.into())
     };
-
-    // Set large send buffer to prevent packet loss
-    if let Err(e) = socket.set_send_buffer_size(OSC_BUFFER_SIZE) {
-        let _ = event_tx.send(MetroEvent::Error(format!("WARN: OSC SEND BUFFER SIZE FAIL: {}", e)));
-    }
-
-    // Bind to any available port
-    let bind_addr: SocketAddr = "0.0.0.0:0".parse().unwrap();
-    if let Err(e) = socket.bind(&bind_addr.into()) {
-        let _ = event_tx.send(MetroEvent::Error(format!("ERROR: OSC SOCKET BIND FAIL: {}", e)));
-        return;
-    }
-
-    // Connect to SuperCollider
-    let osc_addr: SocketAddr = OSC_ADDR.parse().unwrap();
-    if let Err(e) = socket.connect(&osc_addr.into()) {
-        let _ = event_tx.send(MetroEvent::Error(format!("ERROR: OSC CONNECT FAIL: {}", e)));
-        return;
-    }
-
-    // Convert to std UdpSocket for compatibility
-    let socket: UdpSocket = socket.into();
 
     let mut interval_ms: u64 = 500;
     let mut active = false;
@@ -428,17 +438,17 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                 }
                 MetroCommand::SendParam(name, value) => {
                     let msg = create_param_message(&name, value);
-                    send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
                 }
                 MetroCommand::SendTrigger => {
                     // t_gate (TrigControl) automatically resets - single message is all we need
                     let msg = create_trigger_message();
-                    send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
                     metro_timing.trigger_count += 1;
                 }
                 MetroCommand::SendVolume(value) => {
                     let msg = create_volume_message(value);
-                    send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
                 }
                 MetroCommand::StartRecording(dir) => {
                     #[cfg(not(feature = "scsynth-direct"))]
@@ -447,7 +457,7 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                             addr: "/monokit/rec".to_string(),
                             args: vec![OscType::String(dir)],
                         };
-                        send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                        send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
                     }
                     #[cfg(feature = "scsynth-direct")]
                     {
@@ -461,7 +471,7 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                             addr: "/monokit/rec/stop".to_string(),
                             args: vec![],
                         };
-                        send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                        send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
                     }
                     #[cfg(feature = "scsynth-direct")]
                     {
@@ -475,7 +485,7 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                             addr: "/monokit/rec/path".to_string(),
                             args: vec![OscType::String(path)],
                         };
-                        send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                        send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
                     }
                     #[cfg(feature = "scsynth-direct")]
                     {
@@ -484,19 +494,19 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                 }
                 MetroCommand::SetSlewTime(time_sec) => {
                     let msg = create_slew_message(time_sec);
-                    send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
                 }
                 MetroCommand::SetParamSlew(param, time_sec) => {
                     let msg = create_param_slew_message(&param, time_sec);
-                    send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
                 }
                 MetroCommand::SetGate(time_sec) => {
                     let msg = create_gate_message(time_sec);
-                    send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
                 }
                 MetroCommand::SetEnvGate(env_name, time_sec) => {
                     let msg = create_env_gate_message(&env_name, time_sec);
-                    send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
                 }
                 MetroCommand::ScheduleDelayed(cmd, delay_ms, script_idx) => {
                     let elapsed_ms = start_time.elapsed().as_millis() as u64;
@@ -573,7 +583,7 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                             addr: "/monokit/diag".to_string(),
                             args: vec![OscType::Int(value)],
                         };
-                        send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                        send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
                     }
                     #[cfg(feature = "scsynth-direct")]
                     {
@@ -587,7 +597,7 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                             addr: "/monokit/diag/report".to_string(),
                             args: vec![],
                         };
-                        send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                        send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
                     }
                 }
                 MetroCommand::GetTriggerCount => {
@@ -599,7 +609,7 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                 }
                 MetroCommand::SendScopeRate(time_ms) => {
                     let msg = create_scope_rate_message(time_ms);
-                    send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                    send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
                 }
                 MetroCommand::QueryAudioOutDevices => {
                     #[cfg(not(feature = "scsynth-direct"))]
@@ -608,7 +618,7 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                             addr: "/monokit/audio/out/query".to_string(),
                             args: vec![],
                         };
-                        send_osc(&socket, msg, sync_mode == SyncMode::Internal);
+                        send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
                     }
                     #[cfg(feature = "scsynth-direct")]
                     {

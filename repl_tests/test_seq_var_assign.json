@@ -1,0 +1,21 @@
+{
+  "name": "test_seq_var_assign",
+  "description": "Test SEQ quote parsing in variable assignment",
+  "tests": [
+    {
+      "name": "seq_note_names_var",
+      "commands": ["A SEQ \"C D E F\"", "PRINT A"],
+      "expected_output": ["C"]
+    },
+    {
+      "name": "seq_numbers_var",
+      "commands": ["B SEQ \"100 200 300\"", "PRINT B"],
+      "expected_output": ["100"]
+    },
+    {
+      "name": "seq_direct_still_works",
+      "commands": ["PRINT SEQ \"X Y Z\""],
+      "expected_output": ["X"]
+    }
+  ]
+}

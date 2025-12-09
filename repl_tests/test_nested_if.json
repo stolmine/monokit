@@ -1,0 +1,21 @@
+{
+  "name": "test_nested_if",
+  "description": "Test nested IF in loops bug fix",
+  "tests": [
+    {
+      "name": "nested_if_in_loop",
+      "commands": ["L 1 6: IF GT I 2: IF LT I 5: PRINT I"],
+      "expected_output": ["3", "4"]
+    },
+    {
+      "name": "triple_nested_if",
+      "commands": ["L 1 10: IF GT I 2: IF LT I 8: IF NZ I: PRINT I"],
+      "expected_output": ["3", "4", "5", "6", "7"]
+    },
+    {
+      "name": "simple_if_still_works",
+      "commands": ["L 1 5: IF GT I 2: PRINT I"],
+      "expected_output": ["3", "4"]
+    }
+  ]
+}

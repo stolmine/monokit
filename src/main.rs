@@ -46,9 +46,17 @@ use crate::ui::run_app;
 fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
 
+    // Check for --dry-run flag
+    let dry_run = args.iter().any(|arg| arg == "--dry-run");
+
     // Check for --run <scene> [wait_ms] mode
-    if args.len() >= 3 && args[1] == "--run" {
-        return run_batch_mode(&args[2], args.get(3).map(|s| s.as_str()));
+    let run_idx = args.iter().position(|arg| arg == "--run");
+    if let Some(idx) = run_idx {
+        if args.len() > idx + 1 {
+            let scene_name = &args[idx + 1];
+            let wait_ms = args.get(idx + 2).map(|s| s.as_str());
+            return run_batch_mode(scene_name, wait_ms, dry_run);
+        }
     }
 
     // Normal TUI mode
@@ -56,7 +64,7 @@ fn main() -> Result<()> {
 }
 
 /// Batch mode: load scene, wait for metro, exit (no TUI)
-fn run_batch_mode(scene_name: &str, wait_ms: Option<&str>) -> Result<()> {
+fn run_batch_mode(scene_name: &str, wait_ms: Option<&str>, dry_run: bool) -> Result<()> {
     let caps = terminal::detect_capabilities();
 
     let wait_duration = wait_ms
@@ -69,7 +77,7 @@ fn run_batch_mode(scene_name: &str, wait_ms: Option<&str>) -> Result<()> {
 
     let metro_state_clone = metro_state.clone();
     let metro_handle = thread::spawn(move || {
-        metro_thread(metro_rx, metro_state_clone, metro_event_tx);
+        metro_thread(metro_rx, metro_state_clone, metro_event_tx, dry_run);
     });
 
     let config = config::load_config().unwrap_or_default();
@@ -100,6 +108,9 @@ fn run_batch_mode(scene_name: &str, wait_ms: Option<&str>) -> Result<()> {
         let _ = metro_handle.join();
         return Ok(());
     }
+
+    // Start the metro to execute scripts
+    let _ = app.metro_tx.send(MetroCommand::SetActive(true));
 
     // Process metro events for the wait duration
     let start = std::time::Instant::now();
@@ -170,7 +181,7 @@ fn run_tui_mode() -> Result<()> {
     let metro_state_clone = metro_state.clone();
     let meter_event_tx = metro_event_tx.clone();
     let metro_handle = thread::spawn(move || {
-        metro_thread(metro_rx, metro_state_clone, metro_event_tx);
+        metro_thread(metro_rx, metro_state_clone, metro_event_tx, false);
     });
 
     // Spawn meter thread for receiving audio level data from SuperCollider

@@ -80,7 +80,45 @@ impl App {
     ) -> bool {
         if let Some(cond) = condition {
             let cond_upper = cond.trim().to_uppercase();
-            if cond_upper.starts_with("IF ") {
+
+            // Handle nested conditionals (e.g., "IF GT I 2: IF LT I 5")
+            if let Some(colon_pos) = cond.find(':') {
+                let first_cond = &cond[..colon_pos];
+                let rest = &cond[colon_pos + 1..].trim();
+
+                // Evaluate first condition
+                if !eval_condition(
+                    first_cond,
+                    &self.variables,
+                    &mut self.patterns,
+                    &mut self.counters,
+                    &self.scripts,
+                    script_index,
+                    &self.scale,
+                ) {
+                    return false;
+                }
+
+                // Recursively process remaining nested conditions
+                if !rest.is_empty() {
+                    return self.process_conditional(
+                        Some(rest),
+                        cmd_to_run,
+                        script_index,
+                        metro_interval,
+                        depth,
+                        line_num,
+                        sub_cmd,
+                        sub_cmd_offset,
+                    );
+                }
+
+                // If we get here, all conditions passed
+                self.if_else_condition = true;
+                if let Some(colon_pos) = sub_cmd.find(':') {
+                    self.mark_conditional_segment(script_index, line_num, sub_cmd_offset, sub_cmd_offset + colon_pos + 1);
+                }
+            } else if cond_upper.starts_with("IF ") {
                 self.if_else_condition = false;
                 if eval_condition(
                     cond,
@@ -259,7 +297,7 @@ impl App {
             return;
         }
 
-        let (condition, cmd_to_run) = if let Some(colon_pos) = sub_cmd.find(':') {
+        let (condition, cmd_to_run) = if let Some(colon_pos) = sub_cmd.rfind(':') {
             let cond = &sub_cmd[..colon_pos];
             let cmd = sub_cmd[colon_pos + 1..].trim();
             (Some(cond), cmd)

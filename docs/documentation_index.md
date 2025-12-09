@@ -21,15 +21,26 @@
 - Booleans work in loops
 - Test scene: test_loops_stateful.json
 
-**Bugs Found:**
-- Nested IF in loops fails: `L 1 6: IF GT I 2: IF LT I 5: PRINT I`
-  - Error: "UNKNOWN COMMAND: IF"
-  - Root cause: find(':') only finds first colon
-  - Fix: src/app/script_exec/control_flow.rs lines 262-268
-- SEQ note names in variable assignment fails: `A SEQ "A B C D"`
-  - Error: "FAILED TO PARSE VALUE"
-  - Root cause: split_whitespace() fragments quoted strings
-  - Fix: src/app/script_exec/mod.rs lines 30-36
+**Bugs Fixed:**
+- Nested IF in loops: `L 1 6: IF GT I 2: IF LT I 5: PRINT I` [COMPLETE]
+  - Changed find(':') to rfind(':') for rightmost colon split
+  - Added recursive nested conditional handling
+  - Fix: src/app/script_exec/control_flow.rs
+- SEQ quote parsing: `A SEQ "A B C D"` [COMPLETE]
+  - Added split_whitespace_respecting_quotes() utility
+  - Variable assignment now respects quoted strings
+  - Fix: src/utils.rs, src/commands/mod.rs, src/app/script_exec/mod.rs
+
+**CLI Enhancements:**
+- Dry-run mode: `--dry-run --run <scene>` [COMPLETE]
+  - Runs scripts without SuperCollider/audio
+  - Metro thread skips OSC socket creation
+  - Enables headless testing of command logic
+  - Fix: src/main.rs, src/metro.rs
+- Batch mode auto-start: `--run <scene>` [COMPLETE]
+  - Automatically sends SetActive(true) after scene load
+  - Scripts execute immediately in batch mode
+  - Fix: src/main.rs
 
 ### List Output Formatting [COMPLETE]
 **Vertical Display for Theme List:**

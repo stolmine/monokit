@@ -9,8 +9,11 @@ use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
+mod history;
 mod input;
 mod script_exec;
+
+pub use history::{EditAction, UndoStack};
 
 pub struct App {
     pub current_page: Page,
@@ -104,6 +107,8 @@ pub struct App {
     pub awaiting_audio_restart: bool,
     pub script_break: bool,
     pub autoload: bool,
+    pub script_undo_stacks: [UndoStack; 10],
+    pub notes_undo_stack: UndoStack,
 }
 
 impl App {
@@ -231,6 +236,8 @@ impl App {
             awaiting_audio_restart: false,
             script_break: false,
             autoload: config.display.autoload,
+            script_undo_stacks: Default::default(),
+            notes_undo_stack: UndoStack::new(),
         }
     }
 
@@ -575,5 +582,214 @@ impl App {
         if self.search_cursor < self.search_query.chars().count() {
             self.search_cursor += 1;
         }
+    }
+
+    pub fn undo(&mut self) {
+        use crate::types::Page;
+
+        if let Some(script_idx) = self.current_script_index() {
+            if let Some(action) = self.script_undo_stacks[script_idx].pop_undo() {
+                match &action {
+                    EditAction::SaveLine { line_idx, old, .. } => {
+                        let script = self.scripts.get_script_mut(script_idx);
+                        script.lines[*line_idx] = old.clone();
+                        if self.selected_line == Some(*line_idx) {
+                            self.input = old.clone();
+                            self.cursor_position = self.input.len();
+                        }
+                    }
+                    EditAction::DeleteLine { line_idx, content } => {
+                        let script = self.scripts.get_script_mut(script_idx);
+                        script.lines[*line_idx] = content.clone();
+                        if self.selected_line == Some(*line_idx) {
+                            self.input = content.clone();
+                            self.cursor_position = self.input.len();
+                        }
+                    }
+                    EditAction::DuplicateLine { line_idx, shifted_lines } => {
+                        let script = self.scripts.get_script_mut(script_idx);
+                        // Clear the duplicated line and restore shifted lines
+                        script.lines[*line_idx + 1].clear();
+                        for (i, content) in shifted_lines.iter().enumerate() {
+                            if *line_idx + 2 + i <= 7 {
+                                script.lines[*line_idx + 2 + i] = content.clone();
+                            }
+                        }
+                        self.selected_line = Some(*line_idx);
+                        self.input = script.lines[*line_idx].clone();
+                        self.cursor_position = self.input.len();
+                    }
+                    EditAction::CutLine { line_idx, content } => {
+                        let script = self.scripts.get_script_mut(script_idx);
+                        script.lines[*line_idx] = content.clone();
+                        if self.selected_line == Some(*line_idx) {
+                            self.input = content.clone();
+                            self.cursor_position = self.input.len();
+                        }
+                    }
+                    EditAction::PasteLine { line_idx, old, .. } => {
+                        let script = self.scripts.get_script_mut(script_idx);
+                        script.lines[*line_idx] = old.clone();
+                        if self.selected_line == Some(*line_idx) {
+                            self.input = old.clone();
+                            self.cursor_position = self.input.len();
+                        }
+                    }
+                    _ => {}
+                }
+                self.script_undo_stacks[script_idx].push_redo(action);
+            }
+        } else if self.current_page == Page::Notes {
+            if let Some(action) = self.notes_undo_stack.pop_undo() {
+                match &action {
+                    EditAction::SaveNotesLine { line_idx, old, .. } => {
+                        self.notes.lines[*line_idx] = old.clone();
+                        if self.selected_line == Some(*line_idx) {
+                            self.input = old.clone();
+                            self.cursor_position = self.input.len();
+                        }
+                    }
+                    EditAction::DeleteNotesLine { line_idx, content } => {
+                        self.notes.lines[*line_idx] = content.clone();
+                        if self.selected_line == Some(*line_idx) {
+                            self.input = content.clone();
+                            self.cursor_position = self.input.len();
+                        }
+                    }
+                    EditAction::DuplicateNotesLine { line_idx, shifted_lines } => {
+                        self.notes.lines[*line_idx + 1].clear();
+                        for (i, content) in shifted_lines.iter().enumerate() {
+                            if *line_idx + 2 + i <= 7 {
+                                self.notes.lines[*line_idx + 2 + i] = content.clone();
+                            }
+                        }
+                        self.selected_line = Some(*line_idx);
+                        self.input = self.notes.lines[*line_idx].clone();
+                        self.cursor_position = self.input.len();
+                    }
+                    EditAction::CutNotesLine { line_idx, content } => {
+                        self.notes.lines[*line_idx] = content.clone();
+                        if self.selected_line == Some(*line_idx) {
+                            self.input = content.clone();
+                            self.cursor_position = self.input.len();
+                        }
+                    }
+                    EditAction::PasteNotesLine { line_idx, old, .. } => {
+                        self.notes.lines[*line_idx] = old.clone();
+                        if self.selected_line == Some(*line_idx) {
+                            self.input = old.clone();
+                            self.cursor_position = self.input.len();
+                        }
+                    }
+                    _ => {}
+                }
+                self.notes_undo_stack.push_redo(action);
+            }
+        }
+    }
+
+    pub fn redo(&mut self) {
+        use crate::types::Page;
+
+        if let Some(script_idx) = self.current_script_index() {
+            if let Some(action) = self.script_undo_stacks[script_idx].pop_redo() {
+                match &action {
+                    EditAction::SaveLine { line_idx, new, .. } => {
+                        let script = self.scripts.get_script_mut(script_idx);
+                        script.lines[*line_idx] = new.clone();
+                        if self.selected_line == Some(*line_idx) {
+                            self.input = new.clone();
+                            self.cursor_position = self.input.len();
+                        }
+                    }
+                    EditAction::DeleteLine { line_idx, .. } => {
+                        let script = self.scripts.get_script_mut(script_idx);
+                        script.lines[*line_idx].clear();
+                        if self.selected_line == Some(*line_idx) {
+                            self.input.clear();
+                            self.cursor_position = 0;
+                        }
+                    }
+                    EditAction::DuplicateLine { line_idx, .. } => {
+                        let script = self.scripts.get_script(script_idx);
+                        let line_content = script.lines[*line_idx].clone();
+                        let script = self.scripts.get_script_mut(script_idx);
+                        for i in (*line_idx + 2..=7).rev() {
+                            script.lines[i] = script.lines[i - 1].clone();
+                        }
+                        script.lines[*line_idx + 1] = line_content;
+                        self.selected_line = Some(*line_idx + 1);
+                    }
+                    EditAction::CutLine { line_idx, .. } => {
+                        let script = self.scripts.get_script_mut(script_idx);
+                        script.lines[*line_idx].clear();
+                        if self.selected_line == Some(*line_idx) {
+                            self.input.clear();
+                            self.cursor_position = 0;
+                        }
+                    }
+                    EditAction::PasteLine { line_idx, new, .. } => {
+                        let script = self.scripts.get_script_mut(script_idx);
+                        script.lines[*line_idx] = new.clone();
+                        if self.selected_line == Some(*line_idx) {
+                            self.input = new.clone();
+                            self.cursor_position = self.input.len();
+                        }
+                    }
+                    _ => {}
+                }
+                self.script_undo_stacks[script_idx].push_undo_from_redo(action);
+            }
+        } else if self.current_page == Page::Notes {
+            if let Some(action) = self.notes_undo_stack.pop_redo() {
+                match &action {
+                    EditAction::SaveNotesLine { line_idx, new, .. } => {
+                        self.notes.lines[*line_idx] = new.clone();
+                        if self.selected_line == Some(*line_idx) {
+                            self.input = new.clone();
+                            self.cursor_position = self.input.len();
+                        }
+                    }
+                    EditAction::DeleteNotesLine { line_idx, .. } => {
+                        self.notes.lines[*line_idx].clear();
+                        if self.selected_line == Some(*line_idx) {
+                            self.input.clear();
+                            self.cursor_position = 0;
+                        }
+                    }
+                    EditAction::DuplicateNotesLine { line_idx, .. } => {
+                        let line_content = self.notes.lines[*line_idx].clone();
+                        for i in (*line_idx + 2..=7).rev() {
+                            self.notes.lines[i] = self.notes.lines[i - 1].clone();
+                        }
+                        self.notes.lines[*line_idx + 1] = line_content;
+                        self.selected_line = Some(*line_idx + 1);
+                    }
+                    EditAction::CutNotesLine { line_idx, .. } => {
+                        self.notes.lines[*line_idx].clear();
+                        if self.selected_line == Some(*line_idx) {
+                            self.input.clear();
+                            self.cursor_position = 0;
+                        }
+                    }
+                    EditAction::PasteNotesLine { line_idx, new, .. } => {
+                        self.notes.lines[*line_idx] = new.clone();
+                        if self.selected_line == Some(*line_idx) {
+                            self.input = new.clone();
+                            self.cursor_position = self.input.len();
+                        }
+                    }
+                    _ => {}
+                }
+                self.notes_undo_stack.push_undo_from_redo(action);
+            }
+        }
+    }
+
+    pub fn clear_all_undo_stacks(&mut self) {
+        for stack in &mut self.script_undo_stacks {
+            stack.clear();
+        }
+        self.notes_undo_stack.clear();
     }
 }

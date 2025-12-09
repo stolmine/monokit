@@ -565,3 +565,16 @@ error = "#ff0000"
 accent = "#ffff00"
 success = "#00ff00"
 label = "#00ffff"
+
+[themes.frappe]
+# Catppuccin Frappe - pastel dark theme
+background = "#303446"
+foreground = "#c6d0f5"
+secondary = "#737994"
+highlight_bg = "#e5c890"
+highlight_fg = "#303446"
+border = "#626880"
+error = "#e78284"
+accent = "#ca9ee6"
+success = "#a6d189"
+label = "#8caaee"

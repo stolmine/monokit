@@ -69,6 +69,8 @@ The voice starts silent (VCA=1, gated mode). Each `TR` command triggers all enve
 - `Ctrl+D` - Duplicate line
 - `Ctrl+K` - Delete line
 - `Ctrl+C/X/V` - Copy/cut/paste line
+- `Ctrl+Z` - Undo (page-local)
+- `Ctrl+Shift+Z` - Redo
 - `Ctrl+Left/Right` - Word movement
 
 **REPL (Live page):**
@@ -1090,6 +1092,8 @@ Notes are saved with scenes. 8 lines maximum.
 | `Ctrl+D` | Duplicate line |
 | `Ctrl+K` | Delete line |
 | `Ctrl+C/X/V` | Copy/cut/paste line |
+| `Ctrl+Z` | Undo (page-local) |
+| `Ctrl+Shift+Z` | Redo |
 
 ### Variables & Math
 

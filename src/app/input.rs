@@ -1,4 +1,4 @@
-use super::App;
+use super::{App, EditAction};
 
 impl App {
     pub fn insert_char(&mut self, c: char) {
@@ -130,6 +130,15 @@ impl App {
                 }
             }
 
+            // Record undo action before modifying
+            let old = self.scripts.get_script(script_idx).lines[line_idx].clone();
+            let new = self.input.clone();
+            self.script_undo_stacks[script_idx].push(EditAction::SaveLine {
+                line_idx,
+                old,
+                new,
+            });
+
             let script = self.scripts.get_script_mut(script_idx);
             script.lines[line_idx] = self.input.clone();
             let next_line = if line_idx < 7 { line_idx + 1 } else { 0 };
@@ -149,6 +158,15 @@ impl App {
                     let script = self.scripts.get_script(script_idx);
                     let line_content = script.lines[selected].clone();
 
+                    // Record lines that will be shifted for undo
+                    let shifted_lines: Vec<String> = (selected + 1..=7)
+                        .map(|i| script.lines[i].clone())
+                        .collect();
+                    self.script_undo_stacks[script_idx].push(EditAction::DuplicateLine {
+                        line_idx: selected,
+                        shifted_lines,
+                    });
+
                     let script = self.scripts.get_script_mut(script_idx);
                     for i in (selected + 2..=7).rev() {
                         script.lines[i] = script.lines[i - 1].clone();
@@ -163,6 +181,15 @@ impl App {
     pub fn delete_entire_line(&mut self) {
         if let Some(script_idx) = self.current_script_index() {
             if let Some(selected) = self.selected_line {
+                // Record undo action before modifying
+                let content = self.scripts.get_script(script_idx).lines[selected].clone();
+                if !content.is_empty() {
+                    self.script_undo_stacks[script_idx].push(EditAction::DeleteLine {
+                        line_idx: selected,
+                        content,
+                    });
+                }
+
                 let script = self.scripts.get_script_mut(script_idx);
                 script.lines[selected].clear();
                 self.input.clear();
@@ -221,8 +248,24 @@ impl App {
     }
 
     pub fn cut_line(&mut self) {
-        self.copy_line();
-        self.delete_entire_line();
+        if let Some(script_idx) = self.current_script_index() {
+            if let Some(selected) = self.selected_line {
+                let content = self.scripts.get_script(script_idx).lines[selected].clone();
+                self.clipboard = content.clone();
+
+                if !content.is_empty() {
+                    self.script_undo_stacks[script_idx].push(EditAction::CutLine {
+                        line_idx: selected,
+                        content,
+                    });
+                }
+
+                let script = self.scripts.get_script_mut(script_idx);
+                script.lines[selected].clear();
+                self.input.clear();
+                self.cursor_position = 0;
+            }
+        }
     }
 
     pub fn paste_line(&mut self) {
@@ -235,6 +278,15 @@ impl App {
                         return;
                     }
                 }
+
+                // Record undo action before modifying
+                let old = self.scripts.get_script(script_idx).lines[selected].clone();
+                let new = self.clipboard.clone();
+                self.script_undo_stacks[script_idx].push(EditAction::PasteLine {
+                    line_idx: selected,
+                    old,
+                    new,
+                });
 
                 let script = self.scripts.get_script_mut(script_idx);
                 script.lines[selected] = self.clipboard.clone();
@@ -282,6 +334,15 @@ impl App {
             first_empty.unwrap_or(7)
         };
 
+        // Record undo action before modifying
+        let old = self.notes.lines[line_idx].clone();
+        let new = self.input.clone();
+        self.notes_undo_stack.push(EditAction::SaveNotesLine {
+            line_idx,
+            old,
+            new,
+        });
+
         self.notes.lines[line_idx] = self.input.clone();
         let next_line = if line_idx < 7 { line_idx + 1 } else { 0 };
         self.selected_line = Some(next_line);
@@ -294,6 +355,15 @@ impl App {
             if selected < 7 {
                 let line_content = self.notes.lines[selected].clone();
 
+                // Record lines that will be shifted for undo
+                let shifted_lines: Vec<String> = (selected + 1..=7)
+                    .map(|i| self.notes.lines[i].clone())
+                    .collect();
+                self.notes_undo_stack.push(EditAction::DuplicateNotesLine {
+                    line_idx: selected,
+                    shifted_lines,
+                });
+
                 for i in (selected + 2..=7).rev() {
                     self.notes.lines[i] = self.notes.lines[i - 1].clone();
                 }
@@ -305,6 +375,15 @@ impl App {
 
     pub fn delete_notes_line(&mut self) {
         if let Some(selected) = self.selected_line {
+            // Record undo action before modifying
+            let content = self.notes.lines[selected].clone();
+            if !content.is_empty() {
+                self.notes_undo_stack.push(EditAction::DeleteNotesLine {
+                    line_idx: selected,
+                    content,
+                });
+            }
+
             self.notes.lines[selected].clear();
             self.input.clear();
             self.cursor_position = 0;
@@ -318,12 +397,34 @@ impl App {
     }
 
     pub fn cut_notes_line(&mut self) {
-        self.copy_notes_line();
-        self.delete_notes_line();
+        if let Some(selected) = self.selected_line {
+            let content = self.notes.lines[selected].clone();
+            self.clipboard = content.clone();
+
+            if !content.is_empty() {
+                self.notes_undo_stack.push(EditAction::CutNotesLine {
+                    line_idx: selected,
+                    content,
+                });
+            }
+
+            self.notes.lines[selected].clear();
+            self.input.clear();
+            self.cursor_position = 0;
+        }
     }
 
     pub fn paste_notes_line(&mut self) {
         if let Some(selected) = self.selected_line {
+            // Record undo action before modifying
+            let old = self.notes.lines[selected].clone();
+            let new = self.clipboard.clone();
+            self.notes_undo_stack.push(EditAction::PasteNotesLine {
+                line_idx: selected,
+                old,
+                new,
+            });
+
             self.notes.lines[selected] = self.clipboard.clone();
             self.input = self.clipboard.clone();
             self.cursor_position = self.input.len();

@@ -147,9 +147,12 @@ impl App {
             // Interactive mode (script_index=10) doesn't need highlighting
             self.process_sub_command(sub_cmd, 10, &mut metro_interval, None, 0, 0);
 
-            // Clear output if LOAD.CLR is enabled and LOAD succeeded
-            if is_load_cmd && self.load_clr {
-                self.output.clear();
+            // Clear output and undo stacks if LOAD command
+            if is_load_cmd {
+                self.clear_all_undo_stacks();
+                if self.load_clr {
+                    self.output.clear();
+                }
             }
         }
     }

@@ -18,7 +18,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 ### P1 - High Value Features
 - **MIDI CC and Note Input** [Medium] - External control, performance capability
 - ~~**NR and ER Operators** [Medium] - FIXED v0.3.3~~
-- **Script Undo/Redo** [Medium] - Essential editing UX
+- ~~**Script Undo/Redo** [Medium] - COMPLETE~~
 - ~~**Version Display** [Low] - FIXED v0.3.3~~
 
 ### P2 - Polish & Documentation
@@ -1329,23 +1329,25 @@ Ensure VCA mode is included in reset commands.
 - VCA state persists via config system (`save_vca_mode`/`load_config`)
 - Scene save/load already handles VCA state through config persistence
 
-### Script Undo/Redo [Medium]
-Add undo/redo support for script editing.
+### Script Undo/Redo [Medium] - COMPLETE (December 2025)
+Added page-local undo/redo for script and notes editing.
 
-- [ ] Track edit history per script page
-- [ ] `Ctrl+Z` - Undo last edit
-- [ ] `Ctrl+Shift+Z` or `Ctrl+Y` - Redo
-- [ ] Reasonable history depth (10-20 edits)
-- [ ] Clear history on page change or save
+- [x] Track edit history per script page (11 independent stacks)
+- [x] `Ctrl+Z` - Undo last edit (page-local)
+- [x] `Ctrl+Shift+Z` - Redo
+- [x] Max 50 actions per stack
+- [x] Clear history on scene LOAD
+- [x] Supports: save, delete, duplicate, cut, paste operations
+- [x] Files: src/app/history.rs, src/app/mod.rs, src/app/input.rs
 
-### Line Duplicate Push Behavior [Low]
-Improve Ctrl+D duplicate behavior to preserve content below.
+### Line Duplicate Push Behavior [Low] - COMPLETE (v0.3.3)
+Improved Ctrl+D duplicate behavior to preserve content below.
 
-- [ ] When duplicating a line, push succeeding lines down instead of overwriting
-- [ ] If on line N, duplicate copies line N to N+1, shifting N+1..7 down to N+2..8
-- [ ] Last line (line 8) content is lost only if script is full
-- [ ] If duplicating line 8, no change (nowhere to push)
-- [ ] Applies to script pages 1-8, M, I, and Notes
+- [x] When duplicating a line, push succeeding lines down instead of overwriting
+- [x] If on line N, duplicate copies line N to N+1, shifting N+1..7 down to N+2..8
+- [x] Last line (line 8) content is lost only if script is full
+- [x] If duplicating line 8, no change (nowhere to push)
+- [x] Applies to script pages 1-8, M, I, and Notes
 
 ### List Output Formatting [Low] - COMPLETE (December 2025)
 Ensure list queries display vertically, not in overflowing single lines.

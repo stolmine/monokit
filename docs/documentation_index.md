@@ -2187,6 +2187,11 @@ PS.TARG 0         // Process input signal
 - `Ctrl+C` - Copy line (script pages)
 - `Ctrl+X` - Cut line (script pages)
 - `Ctrl+V` - Paste line (script pages)
+- `Ctrl+Z` - Undo last action (script/notes pages)
+- `Ctrl+Shift+Z` - Redo last undone action (script/notes pages)
+- Page-local undo/redo: 11 independent stacks (10 scripts + notes), max 50 actions per stack
+- Undo/redo tracks: save, delete, duplicate, cut, paste operations
+- History clears on scene LOAD
 - Script pages show validation errors that auto-clear after 3 seconds or on successful save
 
 #### Search

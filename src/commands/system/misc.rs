@@ -363,7 +363,6 @@ pub fn handle_theme<F>(
     F: FnMut(String),
 {
     if parts.len() == 1 {
-        // Show current theme and list available themes
         match config::load_config() {
             Ok(cfg) => {
                 let available = config::list_themes(&cfg);
@@ -388,7 +387,6 @@ pub fn handle_theme<F>(
                 match config::load_theme_by_name(name, &cfg) {
                     Ok(new_theme) => {
                         let theme_name = new_theme.name.clone();
-                        // Apply 256-color conversion if needed
                         *theme = if color_mode == crate::types::ColorMode::Color256 {
                             new_theme.to_256_color()
                         } else {

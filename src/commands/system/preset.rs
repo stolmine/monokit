@@ -46,9 +46,7 @@ pub fn handle_pset<F>(
                 PresetType::Factory => "[F]",
                 PresetType::User => "[U]",
             };
-            if debug_level >= TIER_ESSENTIAL || out_ess {
-                output(format!("LOADED PRESET {} {} INTO SCRIPT {}", type_marker, name, script_num + 1));
-            }
+            output(format!("LOADED PRESET {} {} INTO SCRIPT {}", type_marker, name, script_num + 1));
         }
         Err(preset::PresetError::NotFound(_)) => {
             output(format!("ERROR: PRESET '{}' NOT FOUND", name));
@@ -101,9 +99,7 @@ pub fn handle_pset_save<F>(
 
     match preset::save_preset(&name, &preset) {
         Ok(()) => {
-            if debug_level >= TIER_ESSENTIAL || out_ess {
-                output(format!("SAVED PRESET: {}", name));
-            }
+            output(format!("SAVED PRESET: {}", name));
         }
         Err(e) => output(format!("ERROR: {:?}", e)),
     }
@@ -131,9 +127,7 @@ pub fn handle_pset_del<F>(
 
     match preset::delete_preset(&name) {
         Ok(()) => {
-            if debug_level >= TIER_ESSENTIAL || out_ess {
-                output(format!("DELETED PRESET: {}", name));
-            }
+            output(format!("DELETED PRESET: {}", name));
         }
         Err(preset::PresetError::NotFound(_)) => {
             output(format!("ERROR: PRESET '{}' NOT FOUND", name));
@@ -149,33 +143,31 @@ pub fn handle_psets<F>(
 ) where
     F: FnMut(String),
 {
-    if debug_level >= TIER_QUERIES || out_qry {
-        let factory_presets = preset::factory::list_factory_presets();
-        let user_presets = preset::list_user_presets().unwrap_or_default();
+    let factory_presets = preset::factory::list_factory_presets();
+    let user_presets = preset::list_user_presets().unwrap_or_default();
 
-        if factory_presets.is_empty() && user_presets.is_empty() {
-            output("NO PRESETS AVAILABLE".to_string());
-            return;
-        }
+    if factory_presets.is_empty() && user_presets.is_empty() {
+        output("NO PRESETS AVAILABLE".to_string());
+        return;
+    }
 
-        output("PRESETS:".to_string());
+    output("PRESETS:".to_string());
 
-        if !factory_presets.is_empty() {
-            output("".to_string());
-            output("FACTORY:".to_string());
-            for name in factory_presets {
-                if let Some(preset) = preset::factory::get_factory_preset(&name) {
-                    output(format!("  [F] {} - {}", name, preset.description));
-                }
+    if !factory_presets.is_empty() {
+        output("".to_string());
+        output("FACTORY:".to_string());
+        for name in factory_presets {
+            if let Some(preset) = preset::factory::get_factory_preset(&name) {
+                output(format!("  [F] {} - {}", name, preset.description));
             }
         }
+    }
 
-        if !user_presets.is_empty() {
-            output("".to_string());
-            output("USER:".to_string());
-            for (name, _size) in user_presets {
-                output(format!("  [U] {}", name));
-            }
+    if !user_presets.is_empty() {
+        output("".to_string());
+        output("USER:".to_string());
+        for (name, _size) in user_presets {
+            output(format!("  [U] {}", name));
         }
     }
 }

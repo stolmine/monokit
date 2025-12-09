@@ -33,9 +33,7 @@ pub fn handle_save<F>(
             } else {
                 None
             };
-            if debug_level >= TIER_ESSENTIAL || out_ess {
-                output(format!("SAVED SCENE: {}", name));
-            }
+            output(format!("SAVED SCENE: {}", name));
         }
         Err(e) => output(format!("ERROR: {:?}", e)),
     }
@@ -78,9 +76,7 @@ where
             } else {
                 None
             };
-            if debug_level >= TIER_ESSENTIAL || out_ess {
-                output(format!("LOADED SCENE: {}", name));
-            }
+            output(format!("LOADED SCENE: {}", name));
             true
         }
         Err(crate::scene::SceneError::NotFound(_)) => {
@@ -101,21 +97,19 @@ pub fn handle_scenes<F>(
 ) where
     F: FnMut(String),
 {
-    if debug_level >= TIER_QUERIES || out_qry {
-        match crate::scene::list_scenes() {
-            Ok(scenes) => {
-                if scenes.is_empty() {
-                    output("NO SCENES SAVED".to_string());
-                } else {
-                    output("SCENES:".to_string());
-                    for (name, size) in scenes {
-                        let size_kb = size as f64 / 1024.0;
-                        output(format!("  {} ({:.1} KB)", name, size_kb));
-                    }
+    match crate::scene::list_scenes() {
+        Ok(scenes) => {
+            if scenes.is_empty() {
+                output("NO SCENES SAVED".to_string());
+            } else {
+                output("SCENES:".to_string());
+                for (name, size) in scenes {
+                    let size_kb = size as f64 / 1024.0;
+                    output(format!("  {} ({:.1} KB)", name, size_kb));
                 }
             }
-            Err(e) => output(format!("ERROR: {:?}", e)),
         }
+        Err(e) => output(format!("ERROR: {:?}", e)),
     }
 }
 
@@ -134,9 +128,7 @@ pub fn handle_delete<F>(
     let name = parts[1..].join(" ");
     match crate::scene::delete_scene(&name) {
         Ok(()) => {
-            if debug_level >= TIER_ESSENTIAL || out_ess {
-                output(format!("DELETED SCENE: {}", name));
-            }
+            output(format!("DELETED SCENE: {}", name));
         }
         Err(crate::scene::SceneError::NotFound(_)) => {
             output(format!("ERROR: SCENE '{}' NOT FOUND", name));

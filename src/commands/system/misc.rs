@@ -508,9 +508,7 @@ where
     metro_tx
         .send(MetroCommand::StartRecording(cwd))
         .context("Failed to send recording command")?;
-    if debug_level >= TIER_ESSENTIAL || out_ess {
-        output("RECORDING STARTED".to_string());
-    }
+    output("RECORDING STARTED".to_string());
     Ok(())
 }
 
@@ -526,9 +524,7 @@ where
     metro_tx
         .send(MetroCommand::StopRecording)
         .context("Failed to send stop recording command")?;
-    if debug_level >= TIER_ESSENTIAL || out_ess {
-        output("RECORDING STOPPED".to_string());
-    }
+    output("RECORDING STOPPED".to_string());
     Ok(())
 }
 
@@ -551,9 +547,7 @@ where
     metro_tx
         .send(MetroCommand::SetRecordingPath(path.clone()))
         .context("Failed to send recording path")?;
-    if debug_level >= TIER_CONFIRMS || out_cfm {
-        output(format!("SET RECORDING PATH PREFIX TO: {}", path.to_uppercase()));
-    }
+    output(format!("SET RECORDING PATH PREFIX TO: {}", path.to_uppercase()));
     Ok(())
 }
 

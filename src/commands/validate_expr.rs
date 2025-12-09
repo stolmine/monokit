@@ -60,6 +60,25 @@ pub fn validate_expression(parts: &[&str], start: usize) -> Result<usize> {
             let consumed2 = validate_expression(parts, start + 1 + consumed1)?;
             Ok(1 + consumed1 + consumed2)
         }
+        "ER" => {
+            if start + 3 >= parts.len() {
+                return Err(anyhow::anyhow!("ER REQUIRES 3 ARGUMENTS"));
+            }
+            let consumed1 = validate_expression(parts, start + 1)?;
+            let consumed2 = validate_expression(parts, start + 1 + consumed1)?;
+            let consumed3 = validate_expression(parts, start + 1 + consumed1 + consumed2)?;
+            Ok(1 + consumed1 + consumed2 + consumed3)
+        }
+        "NR" => {
+            if start + 4 >= parts.len() {
+                return Err(anyhow::anyhow!("NR REQUIRES 4 ARGUMENTS"));
+            }
+            let consumed1 = validate_expression(parts, start + 1)?;
+            let consumed2 = validate_expression(parts, start + 1 + consumed1)?;
+            let consumed3 = validate_expression(parts, start + 1 + consumed1 + consumed2)?;
+            let consumed4 = validate_expression(parts, start + 1 + consumed1 + consumed2 + consumed3)?;
+            Ok(1 + consumed1 + consumed2 + consumed3 + consumed4)
+        }
         "TOSS" => Ok(1),
         "MAP" => {
             if start + 5 >= parts.len() {

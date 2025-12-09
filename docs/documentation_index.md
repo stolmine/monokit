@@ -1938,6 +1938,17 @@ Note: In SEND mode with RING or FREEZE tail modes, the effect output remains at 
   - State is per-script and per-line
   - First call returns a, second returns b, third returns a, etc.
   - Example: `PF TOG N 0 N 7` alternates between C3 and G3
+- `ER <fill> <length> <step>` - Euclidean rhythm generator (returns 0 or 1)
+  - Distributes fill beats evenly across length steps
+  - Uses Bjorklund's algorithm for euclidean patterns
+  - Parameters: fill (1-32), length (1-32), step (any, wraps)
+  - Per-line state tracking
+  - Example: `IF ER 5 8 I: TR` triggers on euclidean pattern
+- `NR <prime> <mask> <factor> <step>` - Numeric repetitor (returns 0 or 1)
+  - Uses 32 prime patterns from Noise Engineering
+  - Parameters: prime (0-31), mask (0-3), factor (0-16), step (0-15)
+  - Per-line state tracking
+  - Example: `IF NR 0 0 1 I: TR` triggers on numeric pattern
 
 #### Randomization Commands
 **Voice Randomization:**

@@ -17,7 +17,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ### P1 - High Value Features
 - **MIDI CC and Note Input** [Medium] - External control, performance capability
-- **NR and ER Operators** [Medium] - Teletype-style rhythm generators
+- ~~**NR and ER Operators** [Medium] - FIXED v0.3.3~~
 - **Script Undo/Redo** [Medium] - Essential editing UX
 - ~~**Version Display** [Low] - FIXED v0.3.3~~
 
@@ -1361,14 +1361,21 @@ Ensure list queries display vertically, not in overflowing single lines.
 - Updated `handle_theme` in `src/commands/system/misc.rs` to display themes vertically
 - All other list commands (SCENES, PSETS, MIDI.IN, AUDIO.OUT) already displayed correctly
 
-### NR and ER Operators [Medium]
+### NR and ER Operators [Medium] - COMPLETE (December 2025)
 Add Teletype-style numeric repetitor and Euclidean rhythm operators.
 
-- [ ] `NR <val> <count>` - Numeric repetitor (repeat val count times, then advance)
-- [ ] `ER <fills> <length> [offset]` - Euclidean rhythm generator
-- [ ] ER returns 1 or 0 for current step in pattern
-- [ ] Per-script/per-line state tracking (like TOG/SEQ)
-- [ ] Document Euclidean algorithm implementation
+- [x] `ER <fill> <length> <step>` - Euclidean rhythm generator
+- [x] ER returns 1 or 0 for current step in pattern
+- [x] Distributes fill beats evenly across length steps
+- [x] Uses Bjorklund's algorithm for euclidean patterns
+- [x] `NR <prime> <mask> <factor> <step>` - Numeric repetitor
+- [x] NR returns 1 or 0 for current step in pattern
+- [x] 32 prime patterns from Noise Engineering
+- [x] Per-line state tracking (like TOG/SEQ)
+- [x] Example: `IF ER 5 8 I: TR` or `IF NR 0 0 1 I: TR`
+- [x] Test scenes: test_er_basic, test_er_expressions
+- [x] Test scenes: test_nr_basic, test_er_nr_edge
+- [x] Test scene: test_er_nr_shared
 
 ### SCRIPT Command Expression Support [Low]
 Allow SCRIPT command to accept expressions for dynamic script selection.

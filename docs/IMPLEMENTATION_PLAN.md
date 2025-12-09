@@ -252,9 +252,124 @@ let title = format!(
 
 ### Priority Order
 
-1. **Version Display** - Quickest win, low complexity
-2. **Line Duplicate Push** - Simple algorithmic change
+1. **Version Display** - COMPLETE
+2. **Line Duplicate Push** - COMPLETE
 3. **Script Undo/Redo** - Most complex, requires careful state tracking
+
+---
+
+## NR and ER Operators [Medium Complexity]
+
+Teletype-style rhythm generators that return 0 or 1 for use in conditionals.
+
+### Operator Definitions
+
+**ER fill length step** - Euclidean Rhythm
+- `fill`: Number of beats to distribute (1-32)
+- `length`: Length of the pattern (1-32)
+- `step`: Current step index (any value, will be modulo'd)
+- Returns: 0 or 1
+
+**NR prime mask factor step** - Numeric Repeater
+- `prime`: Prime pattern index (0-31)
+- `mask`: Mask variation (0-3)
+- `factor`: Variation factor (0-16)
+- `step`: Current step (0-15)
+- Returns: 0 or 1
+
+### Usage Pattern
+```
+IF NE ER 13 16 A 0: TR    ; Trigger if euclidean step is active
+IF ER 5 8 I: N ON 60      ; In a loop, play note on euclidean hits
+```
+
+### Implementation
+
+**1. Euclidean Algorithm (src/eval/rhythm.rs - new file)**
+```rust
+/// Compute euclidean rhythm - returns true if step `i` should trigger
+/// for a pattern with `fill` beats distributed over `length` steps
+pub fn euclidean(fill: i16, length: i16, step: i16) -> i16 {
+    if length <= 0 || fill <= 0 {
+        return 0;
+    }
+    let fill = fill.min(length) as i32;
+    let length = length as i32;
+    let step = ((step as i32) % length + length) % length; // Handle negative steps
+
+    // Bjorklund's algorithm check: ((step * fill) % length) < fill
+    if (step * fill) % length < fill { 1 } else { 0 }
+}
+```
+
+**2. NR Prime Patterns (precomputed lookup table)**
+```rust
+/// 32 prime rhythms (16-bit patterns)
+const NR_PRIMES: [u16; 32] = [
+    0x8888, 0xAAAA, 0x9249, 0xA4A4, // etc - derived from Teletype
+    // ... fill with actual prime patterns
+];
+
+pub fn numeric_repeater(prime: i16, mask: i16, factor: i16, step: i16) -> i16 {
+    let prime_idx = (prime as usize).clamp(0, 31);
+    let pattern = NR_PRIMES[prime_idx];
+    let masked = match mask.clamp(0, 3) {
+        0 => pattern,
+        1 => pattern & 0xFF00,
+        2 => pattern & 0x00FF,
+        3 => pattern ^ (factor as u16 * 0x1111),
+        _ => pattern,
+    };
+    let step_idx = ((step as usize) % 16);
+    if (masked >> (15 - step_idx)) & 1 == 1 { 1 } else { 0 }
+}
+```
+
+**3. Register in eval system (src/eval/logic.rs)**
+```rust
+"ER" => {
+    // ER fill length step
+    if let Some((fill, f_consumed)) = eval_expr_fn(...) {
+        if let Some((length, l_consumed)) = eval_expr_fn(...) {
+            if let Some((step, s_consumed)) = eval_expr_fn(...) {
+                let result = rhythm::euclidean(fill, length, step);
+                return Some((result, 1 + f_consumed + l_consumed + s_consumed));
+            }
+        }
+    }
+    None
+}
+
+"NR" => {
+    // NR prime mask factor step
+    // Similar pattern with 4 arguments
+}
+```
+
+**4. Add to validation (src/commands/validate.rs)**
+- ER requires 3 arguments
+- NR requires 4 arguments
+
+### Files to Modify/Create
+| File | Changes |
+|------|---------|
+| src/eval/rhythm.rs | NEW - euclidean() and numeric_repeater() functions |
+| src/eval/mod.rs | Add `pub mod rhythm;` |
+| src/eval/logic.rs | Add ER and NR match arms |
+| src/commands/validate.rs | Add ER/NR validation |
+| src/ui/pages/help_content.rs | Document ER and NR |
+
+### Complexity Assessment
+- **ER**: Low - simple mathematical formula
+- **NR**: Medium - need to research/port prime patterns from Teletype source
+
+### Research Needed
+- Exact NR prime patterns from Teletype firmware
+- Verify ER algorithm matches Teletype behavior
+
+Sources:
+- [Teletype Euclidean Rhythm Discussion](https://llllllll.co/t/a-euclidean-rhythm-operator-for-the-teletype/2344)
+- [Sam Doshi's Teletype Euclidean Tutorial](https://samdoshi.com/post/2016/03/teletype-euclidean/)
 
 ### Estimated Effort
 

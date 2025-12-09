@@ -197,6 +197,36 @@ pub fn eval_logic_expression(
             }
             None
         }
+        "ER" => {
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((fill, f_consumed)) = eval_expr_fn(parts, start_idx + 1, variables, patterns, counters, scripts, script_index, scale) {
+                if let Some((length, l_consumed)) = eval_expr_fn(parts, start_idx + 1 + f_consumed, variables, patterns, counters, scripts, script_index, scale) {
+                    if let Some((step, s_consumed)) = eval_expr_fn(parts, start_idx + 1 + f_consumed + l_consumed, variables, patterns, counters, scripts, script_index, scale) {
+                        let result = crate::eval::rhythm::euclidean(fill, length, step);
+                        return Some((result, 1 + f_consumed + l_consumed + s_consumed));
+                    }
+                }
+            }
+            None
+        }
+        "NR" => {
+            if start_idx + 1 >= parts.len() {
+                return None;
+            }
+            if let Some((prime, p_consumed)) = eval_expr_fn(parts, start_idx + 1, variables, patterns, counters, scripts, script_index, scale) {
+                if let Some((mask, m_consumed)) = eval_expr_fn(parts, start_idx + 1 + p_consumed, variables, patterns, counters, scripts, script_index, scale) {
+                    if let Some((factor, f_consumed)) = eval_expr_fn(parts, start_idx + 1 + p_consumed + m_consumed, variables, patterns, counters, scripts, script_index, scale) {
+                        if let Some((step, s_consumed)) = eval_expr_fn(parts, start_idx + 1 + p_consumed + m_consumed + f_consumed, variables, patterns, counters, scripts, script_index, scale) {
+                            let result = crate::eval::rhythm::numeric_repeater(prime, mask, factor, step);
+                            return Some((result, 1 + p_consumed + m_consumed + f_consumed + s_consumed));
+                        }
+                    }
+                }
+            }
+            None
+        }
         _ => None,
     }
 }

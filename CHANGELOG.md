@@ -4,6 +4,17 @@
 
 ### New Features
 
+**ER and NR Operators**
+- Added ER (Euclidean Rhythm) operator
+- `ER <fill> <length> <step>` returns 0 or 1
+- Distributes fill beats evenly across length steps
+- Uses Bjorklund's algorithm for euclidean patterns
+- Added NR (Numeric Repetitor) operator
+- `NR <prime> <mask> <factor> <step>` returns 0 or 1
+- 32 prime patterns from Noise Engineering
+- Per-line state tracking for both operators
+- Example: `IF ER 5 8 I: TR` or `IF NR 0 0 1 I: TR`
+
 **VERSION Command**
 - Added VERSION/VER command to display current version
 - Version information now shown in startup message

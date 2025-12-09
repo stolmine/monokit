@@ -202,6 +202,8 @@ Go experiment with more complicated sequencing setups to trigger the voice with 
 | `EITH <a> <b>` | Random choice |
 | `TOG <a> <b>` | Toggle/alternate |
 | `N <semi>` | Semitones to Hz |
+| `ER <fill> <len> <step>` | Euclidean rhythm (0/1) |
+| `NR <pri> <mask> <fac> <step>` | Numeric repetitor (0/1) |
 
 ### Control Flow
 

@@ -26,3 +26,4 @@ mod fx_randomization_tests;
 mod scale_tests;
 mod delay_tests;
 mod seq_tests;
+mod rhythm_tests;

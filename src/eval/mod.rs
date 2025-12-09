@@ -1,6 +1,7 @@
 mod patterns;
 mod math;
 mod logic;
+pub mod rhythm;
 pub mod seq;
 
 use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables};

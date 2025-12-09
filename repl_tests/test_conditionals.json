@@ -1,0 +1,188 @@
+{
+  "version": 1,
+  "scripts": [
+    {
+      "lines": [
+        "PRINT \"=== TEST 1: BASIC IF/ELIF/ELSE ===\"",
+        "A 5",
+        "IF GT A 10: PRINT \"A>10\"",
+        "ELIF EQ A 5: PRINT \"A=5 (EXPECTED)\"",
+        "ELSE: PRINT \"A<5\"",
+        "PRINT \"--- END TEST 1 ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST 2: MULTI-LINE CHAIN ===\"",
+        "A 3",
+        "IF GT A 10: PRINT \"A>10\"",
+        "ELIF GT A 5: PRINT \"A>5\"",
+        "ELIF GT A 2: PRINT \"A>2 (EXPECTED)\"",
+        "ELSE: PRINT \"A<=2\"",
+        "PRINT \"--- END TEST 2 ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST 3: SEPARATE IF BLOCKS ===\"",
+        "A 10; B 5",
+        "IF GT A 5: PRINT \"BLOCK1: A>5 (EXPECTED)\"",
+        "ELSE: PRINT \"BLOCK1: A<=5\"",
+        "IF GT B 10: PRINT \"BLOCK2: B>10\"",
+        "ELSE: PRINT \"BLOCK2: B<=10 (EXPECTED)\"",
+        "PRINT \"--- END TEST 3 ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST 4: SEMICOLON CHAIN ===\"",
+        "A 15",
+        "IF GT A 20: PRINT \"A>20\"; ELIF GT A 10: PRINT \"A>10 (EXP)\"; ELSE: PRINT \"A<=10\"",
+        "PRINT \"--- POST-CHAIN CMD (SHOULD PRINT) ---\"",
+        "PRINT \"--- END TEST 4 ---\"",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST 5: DOWNSTREAM AFTER ELSE ===\"",
+        "A 1",
+        "IF GT A 10: PRINT \"A>10\"",
+        "ELSE: PRINT \"ELSE FIRES (EXPECTED)\"",
+        "PRINT \"DOWNSTREAM CMD (SHOULD PRINT)\"",
+        "A 100",
+        "PRINT \"A IS NOW 100 (SHOULD PRINT)\"",
+        "PRINT \"--- END TEST 5 ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST 6: ELSE ON SAME LINE ===\"",
+        "A 20",
+        "IF GT A 30: PRINT \"A>30\"; ELSE: PRINT \"A<=30 (EXPECTED)\"",
+        "PRINT \"--- END TEST 6 ---\"",
+        "PRINT \"=== TEST 7: ORPHAN ELSE ===\"",
+        "ELSE: PRINT \"ORPHAN ELSE (SHOULD NOT PRINT)\"",
+        "PRINT \"--- END TEST 7 ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST 8: ALL CONDITIONS FALSE ===\"",
+        "A 0",
+        "IF GT A 10: PRINT \"A>10\"",
+        "ELIF GT A 5: PRINT \"A>5\"",
+        "ELIF GT A 2: PRINT \"A>2\"",
+        "ELSE: PRINT \"ALL FALSE, ELSE FIRES (EXPECTED)\"",
+        "PRINT \"--- END TEST 8 ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST 9: IF IN LOOP ===\"",
+        "L 1 4: IF GT I 2: PRINT I",
+        "PRINT \"--- END TEST 9 (SHOULD PRINT 3,4) ---\"",
+        "PRINT \"=== TEST 10: NESTED SCRIPT COND ===\"",
+        "A 50",
+        "IF GT A 25: PRINT \"OUTER IF (EXPECTED)\"",
+        "PRINT \"--- END TEST 10 ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"==== CONDITIONAL TESTS ====\"",
+        "L 1 8: SCRIPT I",
+        "M.ACT 0",
+        "REPL.DUMP repl_tests/dump_conditionals.txt",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"INIT: CONDITIONAL TESTS\"",
+        "DEBUG 5",
+        "M 200",
+        "M.ACT 1",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    }
+  ],
+  "patterns": [
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    }
+  ],
+  "pattern_working": 0,
+  "notes": [
+    "IF/ELIF/ELSE SCOPE TESTS",
+    "Tests multi-line chains",
+    "Tests separate IF blocks",
+    "Tests semicolon chains",
+    "Tests downstream execution",
+    "Tests orphan ELSE behavior",
+    "Tests loop with conditionals",
+    ""
+  ]
+}

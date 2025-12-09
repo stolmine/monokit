@@ -1,0 +1,188 @@
+{
+  "version": 1,
+  "scripts": [
+    {
+      "lines": [
+        "PRINT \"=== EDGE 1: ORPHAN ELSE AFTER TRUE IF ===\"",
+        "A 100",
+        "IF GT A 50: PRINT \"IF TRUE (EXPECTED)\"",
+        "PRINT \"GAP LINE\"",
+        "ELSE: PRINT \"ORPHAN ELSE (SHOULD NOT PRINT)\"",
+        "PRINT \"--- END EDGE 1 ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== EDGE 2: ORPHAN ELSE AFTER FALSE IF ===\"",
+        "A 10",
+        "IF GT A 50: PRINT \"IF TRUE\"",
+        "PRINT \"GAP LINE\"",
+        "ELSE: PRINT \"ORPHAN ELSE (WILL IT PRINT?)\"",
+        "PRINT \"--- END EDGE 2 ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== EDGE 3: DOUBLE IF BLOCKS ===\"",
+        "A 5; B 15",
+        "IF GT A 10: PRINT \"A>10\"",
+        "ELSE: PRINT \"A<=10 (EXPECTED)\"",
+        "IF GT B 10: PRINT \"B>10 (EXPECTED)\"",
+        "ELSE: PRINT \"B<=10\"",
+        "PRINT \"--- END EDGE 3 ---\"",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== EDGE 4: ELIF WITHOUT IF ===\"",
+        "A 5",
+        "ELIF GT A 3: PRINT \"ORPHAN ELIF (WILL IT PRINT?)\"",
+        "PRINT \"--- END EDGE 4 ---\"",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== EDGE 5: STATE AFTER SCRIPT CALL ===\"",
+        "A 5",
+        "IF GT A 10: PRINT \"IF TRUE\"",
+        "SCRIPT 8",
+        "ELSE: PRINT \"ELSE AFTER SCRIPT (WILL IT PRINT?)\"",
+        "PRINT \"--- END EDGE 5 ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== EDGE 6: FRESH SCRIPT STATE ===\"",
+        "ELSE: PRINT \"FRESH ELSE (WILL IT PRINT?)\"",
+        "PRINT \"--- END EDGE 6 ---\"",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== EDGE 7: MULTIPLE ELSE ===\"",
+        "A 5",
+        "IF GT A 10: PRINT \"IF TRUE\"",
+        "ELSE: PRINT \"FIRST ELSE (EXPECTED)\"",
+        "ELSE: PRINT \"SECOND ELSE (SHOULD NOT PRINT)\"",
+        "PRINT \"--- END EDGE 7 ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"(HELPER SCRIPT FOR EDGE 5)\"",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"==== EDGE CASE TESTS ====\"",
+        "L 1 7: SCRIPT I",
+        "M.ACT 0",
+        "REPL.DUMP repl_tests/dump_conditionals_edge.txt",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"INIT: EDGE CASE TESTS\"",
+        "DEBUG 5",
+        "M 200",
+        "M.ACT 1",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    }
+  ],
+  "patterns": [
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    }
+  ],
+  "pattern_working": 0,
+  "notes": [
+    "EDGE CASE TESTS",
+    "Orphan ELSE behavior",
+    "State across scripts",
+    "Multiple ELSE chains",
+    "",
+    "",
+    "",
+    ""
+  ]
+}

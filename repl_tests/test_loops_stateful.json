@@ -1,0 +1,188 @@
+{
+  "version": 1,
+  "scripts": [
+    {
+      "lines": [
+        "PRINT \"=== TEST 1: BOOLEANS IN LOOP ===\"",
+        "L 0 5: IF EZ I: PRINT \"I=0\"",
+        "L 0 5: IF NZ I: PRINT I",
+        "L 1 5: IF GT I 3: PRINT I",
+        "L 1 5: IF LTE I 2: PRINT I",
+        "PRINT \"--- END TEST 1 ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST 2: EQ/NE IN LOOP ===\"",
+        "A 3",
+        "L 1 5: IF EQ I A: PRINT \"I=A\"",
+        "L 1 5: IF NE I A: PRINT I",
+        "L 0 4: IF EQ I 2: PRINT \"FOUND 2\"",
+        "PRINT \"--- END TEST 2 ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST 3: TOG IN LOOP ===\"",
+        "L 1 6: PRINT TOG 100 200",
+        "PRINT \"EXPECT: 100 200 100 200 100 200\"",
+        "L 1 4: A TOG 10 20; PRINT A",
+        "PRINT \"EXPECT: 10 20 10 20\"",
+        "PRINT \"--- END TEST 3 ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST 4: EITH IN LOOP ===\"",
+        "L 1 8: PRINT EITH 1 2",
+        "PRINT \"EXPECT: RANDOM 1s AND 2s\"",
+        "L 1 4: A EITH 50 100; PRINT A",
+        "PRINT \"EXPECT: RANDOM 50s AND 100s\"",
+        "PRINT \"--- END TEST 4 ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST 5: SEQ IN LOOP ===\"",
+        "L 1 6: PRINT SEQ \"10 20 30\"",
+        "PRINT \"EXPECT: 10 20 30 10 20 30\"",
+        "L 1 4: A SEQ \"A B C D\"; PRINT A",
+        "PRINT \"EXPECT: NUMERIC VALS (NOTES)\"",
+        "PRINT \"--- END TEST 5 ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST 6: SEQ TRIGGER IN LOOP ===\"",
+        "L 1 8: IF SEQ \"x _ x _\": PRINT I",
+        "PRINT \"EXPECT: 1 3 5 7 (ODD ITERATIONS)\"",
+        "L 1 6: IF SEQ \"x x _ _\": PRINT I",
+        "PRINT \"EXPECT: 1 2 5 6\"",
+        "PRINT \"--- END TEST 6 ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST 7: NESTED COND IN LOOP ===\"",
+        "L 1 6: IF GT I 2: IF LT I 5: PRINT I",
+        "PRINT \"EXPECT: 3 4\"",
+        "L 0 5: IF EZ MOD I 2: PRINT I",
+        "PRINT \"EXPECT: 0 2 4 (EVENS)\"",
+        "PRINT \"--- END TEST 7 ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST 8: TOG+COND IN LOOP ===\"",
+        "L 1 6: IF TOG 1 0: PRINT I",
+        "PRINT \"EXPECT: 1 3 5 (TOG RETURNS 1)\"",
+        "L 1 4: A TOG 0 10; IF NZ A: PRINT I",
+        "PRINT \"EXPECT: 2 4 (WHEN A=10)\"",
+        "PRINT \"--- END TEST 8 ---\"",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"==== LOOPS+STATEFUL TESTS ====\"",
+        "L 1 8: SCRIPT I",
+        "M.ACT 0",
+        "REPL.DUMP repl_tests/dump_loops_stateful.txt",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"INIT: LOOPS+STATEFUL TESTS\"",
+        "DEBUG 5",
+        "M 200",
+        "M.ACT 1",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    }
+  ],
+  "patterns": [
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    }
+  ],
+  "pattern_working": 0,
+  "notes": [
+    "LOOPS + STATEFUL OPS TESTS",
+    "Booleans in loops",
+    "TOG, EITH, SEQ in loops",
+    "Nested conditions",
+    "State advancement per iteration",
+    "",
+    "",
+    ""
+  ]
+}

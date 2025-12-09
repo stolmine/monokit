@@ -1110,6 +1110,16 @@ Address issues discovered during comprehensive REPL command testing (December 20
 - [ ] PSETS and THEMES lists should post to REPL regardless of DEBUG level
 - [ ] Verify FM and other 14-bit params accept full 0-16383 range (reported errors)
 
+**Control Flow Bugs (December 2025):**
+- [ ] Nested IF in loops fails - `L 1 6: IF GT I 2: IF LT I 5: PRINT I` gives "UNKNOWN COMMAND: IF"
+  - Root cause: process_sub_command uses find(':') which only finds first colon
+  - Fix location: src/app/script_exec/control_flow.rs lines 262-268
+  - Need to use rfind(':') to split from the rightmost colon
+- [ ] SEQ note names in variable assignment fails - `A SEQ "A B C D"` gives "FAILED TO PARSE VALUE"
+  - Root cause: split_whitespace() fragments quoted strings
+  - Fix location: src/app/script_exec/mod.rs lines 30-36
+  - Need to use quote-respecting split instead of split_whitespace()
+
 **DSP Bugs:**
 - [ ] FM envelope (FMEV) has no audible effect - investigate SynthDef routing
 - [ ] Audit all envelopes in SynthDef - verify each is actually wired to its target

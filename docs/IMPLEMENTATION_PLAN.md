@@ -10,14 +10,38 @@
 - Fix: Changed key format from `"cmd_<idx>_DC_TOG_2000_0"` to `"<idx>_TOG_2000_0"`
 - Status: Fixed in src/commands/core/random_ops.rs
 
-**2. IF/ELSE/ELIF Scope Logic [Medium]**
-- Investigate: Does ELSE cut off downstream logic processing?
-- Define clear scope for IF/ELIF/ELSE pairs (line-local vs script-local)
-- Test multi-line conditional chains
-- Test conditionals with semicolons
-- Document expected behavior in help system
+**2. IF/ELSE/ELIF Scope Logic [COMPLETE]**
+- Investigated: ELSE does NOT cut off downstream logic processing
+- Scope is SCRIPT-LOCAL (persists across lines within same script)
+- Multi-line IF/ELIF/ELSE chains work correctly
+- Semicolon-separated conditionals work correctly
+- Edge case: "orphan" ELSE fires if prior IF was false (by design)
+- Help system updated with scope documentation
+- Test scenes: test_conditionals.json, test_conditionals_edge.json
 
-**3. State Highlight Timing Verification [Low]**
+**3. Boolean Operator Verification [COMPLETE]**
+- User reported: IF EZ not firing when expected
+- Tested all boolean ops: EZ, NZ, EQ, NE, GT, LT, GTE, LTE
+- All operators work correctly in IF conditions
+- Works with variables, literals, and nested expressions (SUB, ADD, MUL)
+- Test scene: test_boolean_ops.json (all tests pass)
+- Conclusion: Operators work correctly; user issue likely variable state
+
+**4. Loops + Stateful Ops Testing [COMPLETE]**
+- Tested TOG, EITH, SEQ, booleans in loops - all work correctly
+- Test scene: test_loops_stateful.json
+- **BUG FOUND: Nested IF in loops fails**
+  - Example: `L 1 6: IF GT I 2: IF LT I 5: PRINT I` → "UNKNOWN COMMAND: IF"
+  - Root cause: process_sub_command uses find(':') which only finds first colon
+  - Fix location: src/app/script_exec/control_flow.rs lines 262-268
+  - Need to use rfind(':') to split from the rightmost colon
+- **BUG FOUND: SEQ note names in variable assignment fails**
+  - Example: `A SEQ "A B C D"` → "FAILED TO PARSE VALUE"
+  - Root cause: split_whitespace() fragments quoted strings
+  - Fix location: src/app/script_exec/mod.rs lines 30-36
+  - Need to use quote-respecting split instead of split_whitespace()
+
+**5. State Highlight Timing Verification [Low]**
 - Audit SEQ, TOG, EITH, `<>`, `{}` highlight timing
 - Verify highlights show current state vs previous state
 - Test in metro context and nested contexts
@@ -78,13 +102,17 @@
 ## Order of Operations
 
 ```
-1. TOG zero bug      → Quick fix, stop the annoyance
-2. IF/ELSE scope     → Investigate, fix or document
-3. Highlight timing  → Quick audit
-4. SYNC command      → High value, medium effort
-5. Auto-load scene   → Quick win
-6. Validation        → Larger investment, enables future work
-7. DRY audit         → Maintainability foundation
+1. TOG zero bug      → COMPLETE
+2. IF/ELSE scope     → COMPLETE (documented, working as designed)
+3. Boolean ops       → COMPLETE (all operators verified working)
+4. Loops + stateful  → COMPLETE (2 bugs found, ready to fix)
+5. Nested IF bug     → Fix rfind colon splitting
+6. SEQ var assign    → Fix quote-respecting split
+7. Highlight timing  → Quick audit
+8. SYNC command      → High value, medium effort
+9. Auto-load scene   → Quick win
+10. Validation       → Larger investment, enables future work
+11. DRY audit        → Maintainability foundation
 ```
 
 ## Rationale

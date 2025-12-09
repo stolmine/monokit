@@ -1,0 +1,188 @@
+{
+  "version": 1,
+  "scripts": [
+    {
+      "lines": [
+        "PRINT \"=== TEST EZ (EQUALS ZERO) ===\"",
+        "A 0",
+        "IF EZ A: PRINT \"EZ 0: FIRES (EXPECTED)\"",
+        "A 1",
+        "IF EZ A: PRINT \"EZ 1: FIRES (BUG!)\"",
+        "A 5",
+        "IF EZ A: PRINT \"EZ 5: FIRES (BUG!)\"",
+        "PRINT \"--- END EZ TEST ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST NZ (NOT ZERO) ===\"",
+        "A 0",
+        "IF NZ A: PRINT \"NZ 0: FIRES (BUG!)\"",
+        "A 1",
+        "IF NZ A: PRINT \"NZ 1: FIRES (EXPECTED)\"",
+        "A 5",
+        "IF NZ A: PRINT \"NZ 5: FIRES (EXPECTED)\"",
+        "PRINT \"--- END NZ TEST ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST EQ (EQUALS) ===\"",
+        "A 5; B 5",
+        "IF EQ A B: PRINT \"EQ 5 5: FIRES (EXPECTED)\"",
+        "B 10",
+        "IF EQ A B: PRINT \"EQ 5 10: FIRES (BUG!)\"",
+        "IF EQ A 5: PRINT \"EQ A 5: FIRES (EXPECTED)\"",
+        "IF EQ 0 0: PRINT \"EQ 0 0: FIRES (EXPECTED)\"",
+        "PRINT \"--- END EQ TEST ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST NE (NOT EQUALS) ===\"",
+        "A 5; B 5",
+        "IF NE A B: PRINT \"NE 5 5: FIRES (BUG!)\"",
+        "B 10",
+        "IF NE A B: PRINT \"NE 5 10: FIRES (EXPECTED)\"",
+        "IF NE A 5: PRINT \"NE A 5: FIRES (BUG!)\"",
+        "IF NE 0 1: PRINT \"NE 0 1: FIRES (EXPECTED)\"",
+        "PRINT \"--- END NE TEST ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST GT/LT ===\"",
+        "A 10; B 5",
+        "IF GT A B: PRINT \"GT 10 5: FIRES (EXPECTED)\"",
+        "IF GT B A: PRINT \"GT 5 10: FIRES (BUG!)\"",
+        "IF LT B A: PRINT \"LT 5 10: FIRES (EXPECTED)\"",
+        "IF LT A B: PRINT \"LT 10 5: FIRES (BUG!)\"",
+        "IF GT A 5: PRINT \"GT 10 5: FIRES (EXPECTED)\"",
+        "PRINT \"--- END GT/LT TEST ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST GTE/LTE ===\"",
+        "A 10; B 10",
+        "IF GTE A B: PRINT \"GTE 10 10: FIRES (EXPECTED)\"",
+        "IF LTE A B: PRINT \"LTE 10 10: FIRES (EXPECTED)\"",
+        "B 5",
+        "IF GTE A B: PRINT \"GTE 10 5: FIRES (EXPECTED)\"",
+        "IF LTE B A: PRINT \"LTE 5 10: FIRES (EXPECTED)\"",
+        "PRINT \"--- END GTE/LTE TEST ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST EZ WITH EXPRESSIONS ===\"",
+        "A 5; B 5",
+        "IF EZ SUB A B: PRINT \"EZ SUB 5 5: FIRES (EXPECTED)\"",
+        "IF EZ SUB A 4: PRINT \"EZ SUB 5 4: FIRES (BUG!)\"",
+        "A 0",
+        "IF EZ ADD A 0: PRINT \"EZ ADD 0 0: FIRES (EXPECTED)\"",
+        "IF EZ MUL 5 0: PRINT \"EZ MUL 5 0: FIRES (EXPECTED)\"",
+        "PRINT \"--- END EZ EXPR TEST ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"=== TEST STANDALONE BOOL RETURN ===\"",
+        "A 0",
+        "B EZ A; PRINT B",
+        "A 5",
+        "B EZ A; PRINT B",
+        "B NZ A; PRINT B",
+        "B EQ 5 5; PRINT B",
+        "PRINT \"--- END STANDALONE TEST ---\""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"==== BOOLEAN OPS TESTS ====\"",
+        "L 1 8: SCRIPT I",
+        "M.ACT 0",
+        "REPL.DUMP repl_tests/dump_boolean_ops.txt",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    },
+    {
+      "lines": [
+        "PRINT \"INIT: BOOLEAN OPS TESTS\"",
+        "DEBUG 5",
+        "M 200",
+        "M.ACT 1",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "j": 0,
+      "k": 0
+    }
+  ],
+  "patterns": [
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    },
+    {
+      "data": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      "length": 16,
+      "index": 0
+    }
+  ],
+  "pattern_working": 0,
+  "notes": [
+    "BOOLEAN OPERATOR TESTS",
+    "EZ, NZ, EQ, NE, GT, LT, GTE, LTE",
+    "Tests in IF conditions",
+    "Tests with expressions",
+    "Tests standalone return values",
+    "",
+    "",
+    ""
+  ]
+}

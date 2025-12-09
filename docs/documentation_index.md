@@ -2,6 +2,35 @@
 
 ## Recent Updates (December 2025)
 
+### Control Flow Investigation (December 2025) [COMPLETE]
+
+**IF/ELSE/ELIF Scope Logic Verified:**
+- Scope is SCRIPT-LOCAL (persists across lines within same script)
+- Multi-line IF/ELIF/ELSE chains work correctly
+- Downstream commands after ELSE execute normally
+- Edge case: "orphan" ELSE fires if prior IF was false (by design)
+- Test scenes: test_conditionals.json, test_conditionals_edge.json
+
+**Boolean Operators Verified:**
+- All operators (EZ, NZ, EQ, NE, GT, LT, GTE, LTE) work correctly
+- Works with variables, literals, and nested expressions
+- Test scene: test_boolean_ops.json
+
+**Loops + Stateful Ops Tested:**
+- TOG, EITH, SEQ all work correctly in loops
+- Booleans work in loops
+- Test scene: test_loops_stateful.json
+
+**Bugs Found:**
+- Nested IF in loops fails: `L 1 6: IF GT I 2: IF LT I 5: PRINT I`
+  - Error: "UNKNOWN COMMAND: IF"
+  - Root cause: find(':') only finds first colon
+  - Fix: src/app/script_exec/control_flow.rs lines 262-268
+- SEQ note names in variable assignment fails: `A SEQ "A B C D"`
+  - Error: "FAILED TO PARSE VALUE"
+  - Root cause: split_whitespace() fragments quoted strings
+  - Fix: src/app/script_exec/mod.rs lines 30-36
+
 ### List Output Formatting [COMPLETE]
 **Vertical Display for Theme List:**
 - THEMES command now displays one theme per line vertically

@@ -474,6 +474,7 @@ pub fn handle_help<F>(
     output("-- SCENES --".to_string());
     output("SAVE <NAME>   SAVE CURRENT STATE".to_string());
     output("LOAD <NAME>   LOAD SAVED STATE".to_string());
+    output("AUTOLOAD <0|1> AUTO-LOAD LAST SCENE AT START".to_string());
     output("SCENES        LIST ALL SCENES".to_string());
     output("DELETE <NAME> DELETE A SCENE".to_string());
     output("".to_string());
@@ -668,6 +669,8 @@ where
 define_bool_toggle!(handle_load_rst, "LOAD.RST", "LOAD.RST: {}", "LOAD.RST: OFF (PERSIST PARAMS)", "LOAD.RST: ON (RESET BEFORE LOAD)", config::save_load_rst);
 
 define_bool_toggle!(handle_load_clr, "LOAD.CLR", "LOAD.CLR: {}", "LOAD.CLR: OFF", "LOAD.CLR: ON (CLEAR ON LOAD)", config::save_load_clr);
+
+define_bool_toggle!(handle_autoload, "AUTOLOAD", "AUTOLOAD: {}", "AUTOLOAD: OFF", "AUTOLOAD: ON (LOAD LAST SCENE)", config::save_autoload);
 
 pub fn handle_scope_time<F>(
     parts: &[&str],

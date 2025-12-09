@@ -86,9 +86,11 @@ impl App {
             &mut self.scramble_speed,
             &mut self.scramble_curve,
             &mut self.ascii_meters,
+            &mut self.autoload,
             &self.terminal_caps,
             self.color_mode,
             &mut self.script_break,
+            &mut self.ev_counters,
             cmd_to_run,
             |msg| {
                 output_messages.push(msg);

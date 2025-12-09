@@ -451,6 +451,12 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
+        "SYNC" | "SYNC.SEQ" | "SYNC.TOG" | "SYNC.PAT" => {
+            if argc > 0 {
+                return Err(anyhow::anyhow!("{} TAKES NO ARGUMENTS", command));
+            }
+            Ok(())
+        }
         "N1.MAX" | "N2.MAX" | "N3.MAX" | "N4.MAX" => {
             if argc > 1 {
                 return Err(anyhow::anyhow!("{} TAKES 0-1 ARGUMENTS", command));

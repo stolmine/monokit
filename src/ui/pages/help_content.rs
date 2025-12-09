@@ -266,6 +266,12 @@ pub const HELP_CATEGORIES: &[HelpCategory] = &[
             "  EX: N1.MIN 10; N1.MAX 14",
             "  CYCLES: 10, 11, 12, 13, 14, 10...",
             "",
+            "# STATE SYNCHRONIZATION",
+            "  SYNC          RESET ALL STATE",
+            "  SYNC.SEQ      RESET SEQ STATE",
+            "  SYNC.TOG      RESET TOG/EITH STATE",
+            "  SYNC.PAT      RESET PATTERN INDICES",
+            "",
         ],
     },
     HelpCategory {

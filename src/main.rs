@@ -254,6 +254,15 @@ fn run_tui_mode() -> Result<()> {
         rosc::OscType::Int(if config.display.vca_mode { 1 } else { 0 })
     ));
 
+    // Autoload last scene if enabled
+    if config.display.autoload {
+        if let Some(last_scene) = &config.display.last_scene {
+            app.input = format!("LOAD {}", last_scene);
+            app.execute_delayed_command(&app.input.clone(), 0);
+            app.input.clear();
+        }
+    }
+
     app.execute_script(9);
 
     // Wrap sc_process in Arc<Mutex> to share with run_app

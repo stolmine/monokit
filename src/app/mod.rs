@@ -103,6 +103,7 @@ pub struct App {
     pub ascii_meters: bool,
     pub awaiting_audio_restart: bool,
     pub script_break: bool,
+    pub autoload: bool,
 }
 
 impl App {
@@ -218,6 +219,7 @@ impl App {
             ascii_meters: config.display.ascii_meters,
             awaiting_audio_restart: false,
             script_break: false,
+            autoload: config.display.autoload,
         }
     }
 
@@ -413,9 +415,11 @@ impl App {
             &mut self.scramble_speed,
             &mut self.scramble_curve,
             &mut self.ascii_meters,
+            &mut self.autoload,
             &self.terminal_caps,
             self.color_mode,
             &mut self.script_break,
+            &mut self.ev_counters,
             command,
             |msg| {
                 output_messages.push(msg);

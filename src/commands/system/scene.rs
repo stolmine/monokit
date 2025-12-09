@@ -70,6 +70,7 @@ where
             scene.apply_to_app_state(scripts, patterns, notes);
             *variables = crate::types::Variables::default();
             *current_scene_name = Some(name.clone());
+            let _ = crate::config::save_last_scene(&name);
             *header_scramble = if scramble_enabled {
                 let mode = crate::scramble::ScrambleMode::from_u8(scramble_mode);
                 let curve = crate::scramble::ScrambleCurve::from_u8(scramble_curve);

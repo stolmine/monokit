@@ -81,9 +81,11 @@ pub fn process_command<F>(
     scramble_speed: &mut u8,
     scramble_curve: &mut u8,
     ascii_meters: &mut bool,
+    autoload: &mut bool,
     terminal_caps: &crate::terminal::TerminalCapabilities,
     color_mode: crate::types::ColorMode,
     script_break: &mut bool,
+    ev_counters: &mut [[u32; 8]; 10],
     input: &str,
     mut output: F,
 ) -> Result<Vec<usize>>
@@ -719,6 +721,9 @@ where
         "LOAD.CLR" => {
             misc::handle_load_clr(&parts, load_clr, output);
         }
+        "AUTOLOAD" => {
+            misc::handle_autoload(&parts, autoload, output);
+        }
         "SCENES" => {
             scene_cmds::handle_scenes(*debug_level, *out_qry, output);
         }
@@ -930,6 +935,18 @@ where
         }
         "N4.MIN" => {
             counters::handle_n4_min(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_cfm, output);
+        }
+        "SYNC" => {
+            core::sync::handle_sync(patterns, counters, ev_counters, *debug_level, *out_cfm, output);
+        }
+        "SYNC.SEQ" => {
+            core::sync::handle_sync_seq(patterns, *debug_level, *out_cfm, output);
+        }
+        "SYNC.TOG" => {
+            core::sync::handle_sync_tog(patterns, *debug_level, *out_cfm, output);
+        }
+        "SYNC.PAT" => {
+            core::sync::handle_sync_pat(patterns, *debug_level, *out_cfm, output);
         }
         "DEL" => {
             delay::handle_del(&parts, input, variables, patterns, counters, scripts, script_index, metro_tx, scale, *debug_level, output)?;

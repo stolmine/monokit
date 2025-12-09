@@ -62,7 +62,7 @@
 
 ### Phase 2: High-Value Features (1-2 weeks)
 
-**9. SYNC Command [Medium]**
+**9. SYNC Command [COMPLETE]**
 - `SYNC` resets all stateful elements to starting position:
   - SEQ sequences → first element
   - TOG toggles → first value
@@ -70,14 +70,15 @@
   - EV/SKIP counters → 0
   - Pattern indices (P.I) → 0
   - N1-N4 counters → MIN values
-- Consider partial variants: `SYNC.SEQ`, `SYNC.TOG`, `SYNC.PAT`
-- Use cases: live performance resets, song structure sync points
+- Partial variants implemented: `SYNC.SEQ`, `SYNC.TOG`, `SYNC.PAT`
+- Status: Implemented in src/commands/core/sync.rs
 
-**10. Auto-Load Previous Scene [Low]**
+**10. Auto-Load Previous Scene [COMPLETE]**
 - `AUTOLOAD <0|1>` - Enable/disable auto-load on startup
 - Track last loaded scene name in config.toml
 - On startup, if enabled, run LOAD with saved scene name
 - Handle missing scene gracefully
+- Status: Implemented in config.rs, commands/system/misc.rs, commands/system/scene.rs, main.rs
 
 ---
 

@@ -90,6 +90,10 @@ pub struct DisplayConfig {
     pub vca_mode: bool,
     #[serde(default)]
     pub ascii_meters: bool,
+    #[serde(default)]
+    pub autoload: bool,
+    #[serde(default)]
+    pub last_scene: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -234,6 +238,8 @@ impl Default for DisplayConfig {
             scramble_curve: 0,
             vca_mode: false,
             ascii_meters: false,
+            autoload: false,
+            last_scene: None,
         }
     }
 }
@@ -637,6 +643,20 @@ pub fn save_title_timer_interval_secs(secs: u16) -> Result<()> {
 pub fn save_ascii_meters(enabled: bool) -> Result<()> {
     let mut config = load_config()?;
     config.display.ascii_meters = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_autoload(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.autoload = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_last_scene(scene_name: &str) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.last_scene = Some(scene_name.to_string());
     save_config(&config)?;
     Ok(())
 }

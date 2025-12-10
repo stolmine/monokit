@@ -706,11 +706,14 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             Ok(())
         }
         "SCRIPT" | "$" => {
-            if argc != 1 {
-                return Err(anyhow::anyhow!("SCRIPT TAKES EXACTLY 1 ARGUMENT"));
+            if argc < 1 {
+                return Err(anyhow::anyhow!("SCRIPT REQUIRES AT LEAST 1 ARGUMENT"));
             }
-            // Validate script reference
-            validate_script_reference(parts[1])?;
+            // For single arg, validate script reference
+            // Multi-arg case (e.g., SEQ "1 2 3") handled by eval_expression in handler
+            if argc == 1 {
+                validate_script_reference(parts[1])?;
+            }
             Ok(())
         }
         "SAVE" | "LOAD" | "DELETE" => {
@@ -888,7 +891,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         // Oscillator, FM, Discontinuity
         "PF" | "MF" | "PW" | "MW" | "DC" | "DM" | "FB" | "FBA" | "FBD" |
         // Modulation bus & routing
-        "TK" | "MB" | "FM" | "MX" | "MM" | "ME" | "MP" | "MD" | "MT" | "MA" | "MF.F" |
+        "TK" | "MB" | "MBA" | "MBD" | "FM" | "MX" | "MM" | "ME" | "MP" | "MD" | "MT" | "MA" | "MF.F" |
         // Envelopes (amounts and decays)
         "AD" | "PD" | "FD" | "DD" | "PA" | "FA" | "DA" |
         // Filter

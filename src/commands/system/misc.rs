@@ -187,6 +187,8 @@ where
     metro_tx.send(MetroCommand::SendParam("dm".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("tk".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("mb".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("mba".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("mbd".to_string(), OscType::Int(100)))?;
     metro_tx.send(MetroCommand::SendParam("mp".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("md".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("mt".to_string(), OscType::Int(0)))?;

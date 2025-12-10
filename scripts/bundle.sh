@@ -37,6 +37,29 @@ fi
 echo "Building monokit with scsynth-direct feature..."
 cargo build --release --features scsynth-direct
 
+echo "Compiling SynthDefs..."
+SCLANG="${SC_APP}/Contents/MacOS/sclang"
+if [ ! -f "${SCLANG}" ]; then
+    echo "ERROR: sclang not found at ${SCLANG}"
+    exit 1
+fi
+
+# Compile SynthDefs - the script uses thisProcess.nowExecutingPath to find output dir
+REPO_ROOT="$(pwd)"
+SYNTHDEF_OUTPUT="${REPO_ROOT}/sc/synthdefs"
+
+"${SCLANG}" "${REPO_ROOT}/build_scripts/compile_synthdefs.scd"
+
+# Verify synthdefs were created
+if [ -d "${SYNTHDEF_OUTPUT}" ] && [ -n "$(ls -A ${SYNTHDEF_OUTPUT}/*.scsyndef 2>/dev/null)" ]; then
+    echo "  SynthDefs compiled to sc/synthdefs/"
+    ls -la sc/synthdefs/*.scsyndef | awk '{print "    " $9 " (" $5 " bytes)"}'
+else
+    echo "ERROR: Compiled SynthDefs not found at ${SYNTHDEF_OUTPUT}"
+    echo "       Make sure build_scripts/compile_synthdefs.scd runs successfully"
+    exit 1
+fi
+
 echo "Creating bundle directory structure..."
 rm -rf "${BUNDLE_DIR}"
 mkdir -p "${BUNDLE_DIR}"
@@ -66,8 +89,8 @@ for fw in "${SC_FRAMEWORKS}"/*.dylib; do
 done
 
 echo "Copying SynthDefs..."
-if [ ! -d "sc/synthdefs" ]; then
-    echo "ERROR: SynthDefs not found. Run sc/compile_synthdefs.sh first."
+if [ ! -d "sc/synthdefs" ] || [ -z "$(ls -A sc/synthdefs/*.scsyndef 2>/dev/null)" ]; then
+    echo "ERROR: SynthDefs not found in sc/synthdefs/"
     exit 1
 fi
 cp sc/synthdefs/*.scsyndef "${BUNDLE_DIR}/Resources/synthdefs/"

@@ -23,6 +23,8 @@ s.waitForBoot {
             dm = 0,
             tk = 0,
             mb = 0,
+            mba = 0,      // ModBus envelope amount
+            mbd = 100,    // ModBus envelope decay (ms)
             mp = 0,
             md = 0,
             mt = 0,
@@ -110,7 +112,7 @@ s.waitForBoot {
             aenv_crv = -100, penv_crv = -100, fmev_crv = -100, denv_crv = -100, fbev_crv = -100, flev_crv = -100;
 
         // All var declarations at top
-        var trig, pitchEnv, ampEnv, fmEnv, dcEnv, fbEnv, filterEnv;
+        var trig, pitchEnv, ampEnv, fmEnv, dcEnv, fbEnv, filterEnv, modBusEnv;
         var modBus, trackingAmount, fmIndex, dcAmount, mixAmount, fbAmount;
         var primaryFreq, modulatorFreq, modOsc;
         var fmAmount, primaryOsc, sig, amp, discontinuity;
@@ -203,9 +205,11 @@ s.waitForBoot {
         dcEnv = EnvGen.kr(Env.perc(dAtk, dd / 1000, 1, dCrv), trig);
         fbEnv = EnvGen.kr(Env.perc(fbAtk, fbd / 1000, 1, fbCrv), trig);
         filterEnv = EnvGen.kr(Env.perc(flAtk, fed / 1000, 1, flCrv), trig);
+        modBusEnv = EnvGen.kr(Env.perc(0.001, mbd / 1000, 1, -4), trig);
 
         // Scaled parameters
-        modBus = mb / 16383;
+        // ModBus: base + (envelope * amount)
+        modBus = (mb / 16383) + (modBusEnv * mba / 16383);
         trackingAmount = tk / 16383;
         fmIndex = fmSmooth / 16383;
         dcAmount = dcSmooth / 16383;

@@ -64,6 +64,8 @@ static CANONICAL_TO_ALIAS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new
     m.insert("EQ.FRQ", "EF");
 
     m.insert("MBUS.AMT", "MB");
+    m.insert("MBEV.AMT", "MBA");
+    m.insert("MBEV.DEC", "MBD");
     m.insert("MBUS.TRK", "TK");
     m.insert("MBUS.FM", "FM");
     m.insert("MBUS.MIX", "MX");

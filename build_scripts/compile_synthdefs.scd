@@ -3,10 +3,13 @@
 // Compiles monokit SynthDefs to binary .scsyndef files
 // Run with: sclang -D compile_synthdefs.scd
 
-var synthdefs_dir = "../sc/synthdefs/";
+// Output to sibling sc/synthdefs directory (relative to this script's parent)
+var thisDir = thisProcess.nowExecutingPath.dirname;
+var synthdefs_dir = thisDir +/+ "../sc/synthdefs/";
 
 // Ensure output directory exists
 File.mkdir(synthdefs_dir);
+("Output directory: " ++ synthdefs_dir).postln;
 
 "Compiling SynthDefs to binary format...".postln;
 
@@ -20,6 +23,8 @@ SynthDef(\monokit, {
         dm = 0,
         tk = 0,
         mb = 0,
+        mba = 0,      // ModBus envelope amount
+        mbd = 100,    // ModBus envelope decay (ms)
         mp = 0,
         md = 0,
         mt = 0,
@@ -106,7 +111,7 @@ SynthDef(\monokit, {
         aenv_atk = -1, penv_atk = -1, fmev_atk = -1, denv_atk = -1, fbev_atk = -1, flev_atk = -1,
         aenv_crv = -100, penv_crv = -100, fmev_crv = -100, denv_crv = -100, fbev_crv = -100, flev_crv = -100;
 
-    var trig, pitchEnv, ampEnv, fmEnv, dcEnv, fbEnv, filterEnv;
+    var trig, pitchEnv, ampEnv, fmEnv, dcEnv, fbEnv, filterEnv, modBusEnv;
     var modBus, trackingAmount, fmIndex, dcAmount, mixAmount, fbAmount;
     var primaryFreq, modulatorFreq, modOsc;
     var fmAmount, primaryOsc, sig, amp, discontinuity;
@@ -190,8 +195,10 @@ SynthDef(\monokit, {
     dcEnv = EnvGen.kr(Env.perc(dAtk, dd / 1000, 1, dCrv), trig);
     fbEnv = EnvGen.kr(Env.perc(fbAtk, fbd / 1000, 1, fbCrv), trig);
     filterEnv = EnvGen.kr(Env.perc(flAtk, fed / 1000, 1, flCrv), trig);
+    modBusEnv = EnvGen.kr(Env.perc(0.001, mbd / 1000, 1, -4), trig);
 
-    modBus = mb / 16383;
+    // ModBus: base + (envelope * amount)
+    modBus = (mb / 16383) + (modBusEnv * mba / 16383);
     trackingAmount = tk / 16383;
     fmIndex = fmSmooth / 16383;
     dcAmount = dcSmooth / 16383;

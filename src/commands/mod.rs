@@ -357,6 +357,12 @@ where
         "MB" => {
             synth_params::handle_mb(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
+        "MBA" => {
+            synth_params::handle_mba(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "MBD" => {
+            synth_params::handle_mbd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
         "MP" => {
             synth_params::handle_mp(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }

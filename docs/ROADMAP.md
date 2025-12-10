@@ -28,7 +28,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **IF/ELSE/ELIF Scope Logic** [Medium] - Document conditional behavior
 
 ### P3 - Nice to Have
-- **Additional ModBus Routing** [Medium] - Filter resonance, delay, reverb routing
+- **Additional ModBus Routing** [Medium] - PARTIALLY COMPLETE (audio-rate signal fix, envelope added)
 - **Dynamic Grid Layout** [Medium] - Responsive UI spacing
 - ~~**Line Duplicate Push Behavior** [Low] - FIXED v0.3.3~~
 - **SCRIPT Command Expression Support** [Low] - Dynamic script selection
@@ -740,19 +740,19 @@ Receive MIDI CC and note messages for parameter control and triggering.
 - [ ] Visual feedback during learn mode
 - [ ] Timeout or ESC to cancel learn
 
-### Additional ModBus Routing [Medium]
-- [ ] ModBus → filter cutoff routing (MF_F parameter exists but needs verification)
+### Additional ModBus Routing [Medium] - PARTIALLY COMPLETE
+- [x] ModBus routing fix: All modbus routes now use audio-rate modOsc signal (enables vibrato/tremolo/filter sweeps)
+- [x] ModBus envelope: MBA (amount 0-16383), MBD (decay ms) - punchy modulation with decay
 - [ ] ModBus → filter resonance routing
 - [ ] ModBus → delay time routing
 - [ ] ModBus → reverb size routing
 - [ ] ModBus → resonator frequency routing
 
 ### ModBus Documentation & Testing [Low]
-- [ ] Test existing MF_F (ModBus → filter cutoff) functionality
+- [x] Verified all modbus routes (MP, MD, MM, MF.F, MA) use audio-rate modOsc
 - [ ] Add ModBus routing section to internal help system
-- [ ] Document MB, MF_F, MP, MD, MT, MA parameters clearly
+- [ ] Document MB, MBA, MBD, MP, MD, MT, MA, MM, MF_F parameters clearly
 - [ ] Add examples showing ModBus routing usage
-- [ ] Verify all ModBus routing commands work as expected
 
 ### Tempo-Synced Delay [Low]
 - [ ] `DS` parameter - Delay time sync to metro (divisions: 1/4, 1/8, 1/16, etc.)

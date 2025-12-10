@@ -1,5 +1,33 @@
 # Monokit Documentation Index
 
+## Version 0.3.4 (December 2025)
+
+### DSP Improvements
+
+**ModBus Routing Fix [COMPLETE]**
+- All modbus routes now use audio-rate modOsc signal instead of DC offset
+- Routes affected: MP, MD, MM, MF.F, MA
+- Enables actual vibrato, tremolo, filter sweeps, and dynamic modulation
+- Previous implementation used static DC offset which prevented time-varying modulation
+- Files: sc/monokit_server.scd, build_scripts/compile_synthdefs.scd
+
+**ModBus Envelope [COMPLETE]**
+- MBA <0-16383> / MBEV.AMT - ModBus envelope amount
+- MBD <1-10000> / MBEV.DEC - ModBus envelope decay (milliseconds)
+- Allows punchy modulation that decays over time
+- Works with all modbus routing destinations
+- Files: src/commands/synth/modulation.rs
+
+### Build Pipeline Improvements
+
+**Bundle Script Auto-Compilation [COMPLETE]**
+- scripts/bundle.sh now automatically compiles SynthDefs before bundling
+- No manual synthdef compilation step needed
+- Ensures synthdefs are always up-to-date in releases
+- Files: scripts/bundle.sh (lines 40-61)
+
+---
+
 ## Version 0.3.3 (December 2025)
 
 ### New Features
@@ -1785,6 +1813,8 @@ Examples:
 **Tracking & Modulation Bus**
 - `TK <0-16383>` - Tracking amount (modulator frequency follows pitch envelope)
 - `MB <0-16383>` - Modulation bus amount (general modulation depth)
+- `MBA <0-16383>` - Modulation bus envelope amount (MBEV.AMT)
+- `MBD <1-10000>` - Modulation bus envelope decay ms (MBEV.DEC)
 - `MP <0|1>` - Enable modulation -> primary frequency (FM-independent)
 - `MD <0|1>` - Enable modulation -> discontinuity amount
 - `MT <0|1>` - Enable modulation -> tracking
@@ -1812,6 +1842,7 @@ Available envelope prefixes:
 - `DENV` - Discontinuity envelope (DENV.DEC→DD, DENV.AMT→DA, DENV.ATK, DENV.CRV)
 - `FBEV` - Feedback envelope (FBEV.DEC→FBD, FBEV.AMT, FBEV.ATK, FBEV.CRV)
 - `FLEV` - Filter envelope (FLEV.DEC→FED, FLEV.AMT→FE, FLEV.ATK, FLEV.CRV)
+- `MBEV` - ModBus envelope (MBEV.DEC→MBD, MBEV.AMT→MBA)
 
 Examples:
 - `AENV.ATK 50` - Set amp envelope attack to 50ms

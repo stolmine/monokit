@@ -212,12 +212,12 @@ s.waitForBoot {
         mixAmount = mxSmooth / 16383;
         fbAmount = (fbSmooth / 16383) + (fbEnv * fbaCtl / 16383);  // base + (envelope * amount)
 
-        // Primary frequency: base + (pitchEnv * amount) + (modBus * routing)
-        primaryFreq = pfSmooth * (1 + (pitchEnv * paCtl) + (modBus * mp * 4));
+        // Base primary frequency (before modbus routing)
+        primaryFreq = pfSmooth * (1 + (pitchEnv * paCtl));
 
-        // Modulator frequency: base + (tracking) + (modBus * routing)
-        modulatorFreq = mfSmooth + (trackingAmount * mt * (pfSmooth * (1 + (pitchEnv * paCtl)) - pfSmooth));
-        modulatorFreq = modulatorFreq * (1 + (modBus * md));
+        // Modulator frequency: base + (tracking)
+        // Note: MD routing applied after modOsc is generated
+        modulatorFreq = mfSmooth + (trackingAmount * mt * (primaryFreq - pfSmooth));
 
         // Modulator oscillator (mw: 0=sine, 1=tri, 2=saw, 3=feedback)
         modOsc = Select.ar(mw.clip(0, 3).round, [
@@ -227,6 +227,13 @@ s.waitForBoot {
             SinOscFB.ar(modulatorFreq, fbAmount * 2)  // *2 scales 0-1 to useful 0-2 range
         ]);
 
+        // Apply modbus routing to primary frequency (MP: vibrato)
+        // modOsc is ±1, modBus is 0-1 depth, mp is 0/1 toggle, *4 = ±4 octaves max
+        primaryFreq = primaryFreq * (1 + (modOsc * modBus * mp * 4));
+
+        // Apply modbus routing to modulator frequency (MD: mod freq modulation)
+        modulatorFreq = modulatorFreq * (1 + (modOsc * modBus * md));
+
         // Primary oscillator with FM: base + (envelope * amount)
         fmAmount = (fmIndex + (fmEnv * faCtl / 16383)) * 1000;
         primaryOsc = Select.ar(pw.clip(0, 2).round, [
@@ -235,10 +242,10 @@ s.waitForBoot {
             LFSaw.ar(primaryFreq + (modOsc * fmAmount))
         ]);
 
-        // Secondary oscillator mix: base + (modBus * routing) + (ampEnv * env amount)
-        // Note: mix envelope (me) uses ampEnv for gating behavior
-        sig = (primaryOsc * (1 - (mixAmount + (modBus * mm) + (ampEnv * me)).clip(0, 1)))
-            + (modOsc * (mixAmount + (modBus * mm) + (ampEnv * me)).clip(0, 1));
+        // Secondary oscillator mix: base + (modOsc * modBus * routing) + (ampEnv * env amount)
+        // MM: audio-rate mix modulation
+        sig = (primaryOsc * (1 - (mixAmount + (modOsc * modBus * mm) + (ampEnv * me)).clip(0, 1)))
+            + (modOsc * (mixAmount + (modOsc * modBus * mm) + (ampEnv * me)).clip(0, 1));
 
         // Discontinuity: base + (envelope * amount)
         discontinuity = dcAmount + (dcEnv * daCtl / 16383);
@@ -262,7 +269,8 @@ s.waitForBoot {
         sig = (sig * (1 - lofiMix)) + (lofi * lofiMix);
 
         // SVF Multi-Mode Filter
-        filterCutoff = fcSmooth + ((fkSmooth / 16383) * primaryFreq) + (filterEnv * (feSmooth / 16383) * 5000) + (modBus * mf_f * 5000);
+        // MF.F: audio-rate filter cutoff modulation (modOsc * modBus * toggle * range)
+        filterCutoff = fcSmooth + ((fkSmooth / 16383) * primaryFreq) + (filterEnv * (feSmooth / 16383) * 5000) + (modOsc * modBus * mf_f * 5000);
         filterCutoff = filterCutoff.clip(20, 20000);
         filterQ = ((fqSmooth / 16383) * 0.9 + 0.1);
         sig = Select.ar(ft.clip(0, 3).round, [
@@ -291,9 +299,10 @@ s.waitForBoot {
         resonatorMix = rmSmooth / 16383;
         sig = (sig * (1 - resonatorMix)) + (resonated * resonatorMix);
 
-        // Amplitude: base + (modBus * routing)
+        // Amplitude: base + (modOsc * modBus * routing)
+        // MA: audio-rate amplitude modulation (tremolo)
         // VCA mode: 0=drone (always 1.0), 1=gated (uses ampEnv)
-        amp = Select.kr(vca_mode.clip(0, 1), [1.0, ampEnv]) * volumeSmooth * (1 + (modBus * ma * 0.5));
+        amp = Select.kr(vca_mode.clip(0, 1), [1.0, ampEnv]) * volumeSmooth * (1 + (modOsc * modBus * ma * 0.5));
         sig = sig * amp;
 
         // Compressor

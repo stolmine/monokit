@@ -198,10 +198,11 @@ SynthDef(\monokit, {
     mixAmount = mxSmooth / 16383;
     fbAmount = (fbSmooth / 16383) + (fbEnv * fbaCtl / 16383);
 
-    primaryFreq = pfSmooth * (1 + (pitchEnv * paCtl) + (modBus * mp * 4));
+    // Base primary frequency (before modbus routing)
+    primaryFreq = pfSmooth * (1 + (pitchEnv * paCtl));
 
-    modulatorFreq = mfSmooth + (trackingAmount * mt * (pfSmooth * (1 + (pitchEnv * paCtl)) - pfSmooth));
-    modulatorFreq = modulatorFreq * (1 + (modBus * md));
+    // Modulator frequency: base + tracking
+    modulatorFreq = mfSmooth + (trackingAmount * mt * (primaryFreq - pfSmooth));
 
     modOsc = Select.ar(mw.clip(0, 3).round, [
         SinOsc.ar(modulatorFreq),
@@ -210,6 +211,12 @@ SynthDef(\monokit, {
         SinOscFB.ar(modulatorFreq, fbAmount * 2)
     ]);
 
+    // Apply modbus routing to primary frequency (MP: vibrato)
+    primaryFreq = primaryFreq * (1 + (modOsc * modBus * mp * 4));
+
+    // Apply modbus routing to modulator frequency (MD: mod freq modulation)
+    modulatorFreq = modulatorFreq * (1 + (modOsc * modBus * md));
+
     fmAmount = (fmIndex + (fmEnv * faCtl / 16383)) * 1000;
     primaryOsc = Select.ar(pw.clip(0, 2).round, [
         SinOsc.ar(primaryFreq + (modOsc * fmAmount)),
@@ -217,8 +224,9 @@ SynthDef(\monokit, {
         LFSaw.ar(primaryFreq + (modOsc * fmAmount))
     ]);
 
-    sig = (primaryOsc * (1 - (mixAmount + (modBus * mm) + (ampEnv * me)).clip(0, 1)))
-        + (modOsc * (mixAmount + (modBus * mm) + (ampEnv * me)).clip(0, 1));
+    // MM: audio-rate mix modulation
+    sig = (primaryOsc * (1 - (mixAmount + (modOsc * modBus * mm) + (ampEnv * me)).clip(0, 1)))
+        + (modOsc * (mixAmount + (modOsc * modBus * mm) + (ampEnv * me)).clip(0, 1));
 
     discontinuity = dcAmount + (dcEnv * daCtl / 16383);
     sig = sig + (modOsc * discontinuity);
@@ -239,7 +247,8 @@ SynthDef(\monokit, {
     lofi = Latch.ar(lofi, Impulse.ar(lofiRate));
     sig = (sig * (1 - lofiMix)) + (lofi * lofiMix);
 
-    filterCutoff = fcSmooth + ((fkSmooth / 16383) * primaryFreq) + (filterEnv * (feSmooth / 16383) * 5000) + (modBus * mf_f * 5000);
+    // MF.F: audio-rate filter cutoff modulation
+    filterCutoff = fcSmooth + ((fkSmooth / 16383) * primaryFreq) + (filterEnv * (feSmooth / 16383) * 5000) + (modOsc * modBus * mf_f * 5000);
     filterCutoff = filterCutoff.clip(20, 20000);
     filterQ = ((fqSmooth / 16383) * 0.9 + 0.1);
     sig = Select.ar(ft.clip(0, 3).round, [
@@ -266,7 +275,8 @@ SynthDef(\monokit, {
     resonatorMix = rmSmooth / 16383;
     sig = (sig * (1 - resonatorMix)) + (resonated * resonatorMix);
 
-    amp = Select.kr(vca_mode.clip(0, 1), [1.0, ampEnv]) * volumeSmooth * (1 + (modBus * ma * 0.5));
+    // MA: audio-rate amplitude modulation (tremolo)
+    amp = Select.kr(vca_mode.clip(0, 1), [1.0, ampEnv]) * volumeSmooth * (1 + (modOsc * modBus * ma * 0.5));
     sig = sig * amp;
 
     compThresh = (ctSmooth / 16383).clip(0.001, 1);

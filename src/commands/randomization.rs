@@ -345,7 +345,7 @@ where
     let fq = rng.gen_range(0..=8000);
     metro_tx.send(MetroCommand::SendParam("fq".to_string(), OscType::Int(fq)))?;
 
-    let ft = rng.gen_range(0..=3);
+    let ft = rng.gen_range(0..=13);
     metro_tx.send(MetroCommand::SendParam("ft".to_string(), OscType::Int(ft)))?;
 
     let fe = rng.gen_range(0..=8000);
@@ -401,7 +401,7 @@ where
     let fq = rng.gen_range(0..=8000);
     metro_tx.send(MetroCommand::SendParam("fq".to_string(), OscType::Int(fq)))?;
 
-    let ft = rng.gen_range(0..=3);
+    let ft = rng.gen_range(0..=13);
     metro_tx.send(MetroCommand::SendParam("ft".to_string(), OscType::Int(ft)))?;
 
     let fe = rng.gen_range(0..=8000);

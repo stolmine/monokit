@@ -10,6 +10,10 @@ Only for M series Macs at the moment.
 
 See command_reference.md for quick overview of basic options.
 
+## Disclosure
+
+Vibe-coded (or not so vibe-coded) with Claude.
+
 ## Features
 
 ### Sound Engine
@@ -118,7 +122,3 @@ As well as UGens from [sc3-plugins](https://github.com/supercollider/sc3-plugins
 - **TJUGens** (DFM1 diode filter) by Tony Hardie-Bick & Jonny Stutters
 
 Keyboard smash title text animation based on this repo from [DvorakDwarf](https://github.com/DvorakDwarf/scrambling-title-animations?tab=readme-ov-file)
-
-## Disclosure
-
-Vibe-coded (or not so vibe-coded) with Claude.

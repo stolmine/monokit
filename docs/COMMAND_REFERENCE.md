@@ -172,15 +172,31 @@ Prefixes: `AENV`, `PENV`, `FMEV`, `DENV`, `FBEV`, `FLEV`, `MBEV`
 
 Short forms: AD, PD, FD, DD, FBD, FED (decay); PA, FA, DA, FBA, FE (amount)
 
-### SVF Multi-Mode Filter
+### Multi-Mode Filter (14 Types)
 - `FC <hz>` - Cutoff frequency (20-20000)
 - `FQ <0-16383>` - Resonance
-- `FT <0-3>` - Type (0=LP, 1=HP, 2=BP, 3=Notch)
+- `FT <0-13>` - Type (see filter types below)
 - `FE <0-16383>` - Filter envelope amount
 - `FED <ms>` - Filter envelope decay
 - `FK <0-16383>` - Key tracking amount
 - `MC <0|1>` - ModBus → Filter cutoff routing
 - `MQ <0|1>` - ModBus → Filter resonance routing
+
+**Filter Types:**
+- 0: SVF LP (lowpass)
+- 1: SVF HP (highpass)
+- 2: SVF BP (bandpass)
+- 3: SVF Notch
+- 4: MoogFF (warm, self-oscillating)
+- 5: RLPF (punchy 12dB LP)
+- 6: RHPF (tight 12dB HP)
+- 7: DFM1 LP (scuzzy diode LP)
+- 8: DFM1 HP (diode HP)
+- 9: BMoog LP (24dB saturating LP)
+- 10: BMoog HP (24dB saturating HP)
+- 11: BMoog BP (24dB saturating BP)
+- 12: Latch-SC LP (switched-cap LP)
+- 13: Latch-SC HP (switched-cap HP)
 
 ### Ring Modulator
 - `RGF <20-2000>` - Frequency (Hz)

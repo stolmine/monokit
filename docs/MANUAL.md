@@ -226,14 +226,34 @@ Ring Mod → Comb Resonator → Amp → Compressor → Pan →
 Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ → Plate Reverb
 ```
 
-### SVF Filter
+### Multi-Mode Filter (14 Types)
 
-- `FILT.CUT` / `FC <20-20000>` - Cutoff frequency (Hz)
+- `FILT.CUT` / `FC <20-20000>` - Cutoff (Hz)
 - `FILT.RES` / `FQ <0-16383>` - Resonance
-- `FILT.TYP` / `FT <0-3>` - Type (0=LP, 1=HP, 2=BP, 3=Notch)
+- `FILT.TYP` / `FT <0-13>` - Type (14 types)
 - `FILT.KEY` / `FK <0-16383>` - Key tracking
-- `FLEV.AMT` / `FE <0-16383>` - Filter envelope amount
-- `FLEV.DEC` / `FED <1-10000>` - Filter envelope decay (ms)
+- `FLEV.AMT` / `FE <0-16383>` - Filter env amt
+- `FLEV.DEC` / `FED <1-10000>` - Filter env decay
+
+**Filter Types (FT):**
+- 0: SVF LP (lowpass)
+- 1: SVF HP (highpass)
+- 2: SVF BP (bandpass)
+- 3: SVF Notch
+- 4: MoogFF (warm, self-oscillating)
+- 5: RLPF (punchy 12dB LP)
+- 6: RHPF (tight 12dB HP)
+- 7: DFM1 LP (scuzzy diode LP)
+- 8: DFM1 HP (diode HP)
+- 9: BMoog LP (24dB saturating LP)
+- 10: BMoog HP (24dB saturating HP)
+- 11: BMoog BP (24dB saturating BP)
+- 12: Latch-SC LP (switched-cap LP)
+- 13: Latch-SC HP (switched-cap HP)
+
+**ModBus Routing:**
+- `MC <0|1>` - ModBus → Filter cutoff
+- `MQ <0|1>` - ModBus → Filter resonance
 
 ### Ring Modulator
 
@@ -1256,7 +1276,7 @@ Notes are saved with scenes. 8 lines maximum.
 |---------|-------|-------------|
 | `FILT.CUT <hz>` | `FC` | Filter cutoff |
 | `FILT.RES <amt>` | `FQ` | Resonance |
-| `FILT.TYP <0-3>` | `FT` | Type (LP/HP/BP/N) |
+| `FILT.TYP <0-13>` | `FT` | Type (14 filter types) |
 | `FILT.KEY <amt>` | `FK` | Key tracking |
 | `RING.FRQ <hz>` | `RGF` | Ring mod freq |
 | `RING.WAV <0-3>` | `RGW` | Ring mod wave |

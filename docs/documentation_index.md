@@ -48,7 +48,7 @@ Quick reference and links to all project documentation.
 | ModBus Envelope (MBA/MBD) | **DONE** |
 | Script Undo/Redo | **DONE** |
 | ER/NR Rhythm Operators | **DONE** |
-| Additional Filter Types | Not started |
+| Additional Filter Types | **DONE** |
 | Noise Source | Not started |
 | Oscillator Sync | Not started |
 

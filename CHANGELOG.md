@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.3.4 (December 2025)
+
+### New Features
+
+**Additional Filter Types (FT 0-13)**
+- Expanded filter system from 4 to 14 filter types
+- FT 0-3: SVF filters (LP, HP, BP, Notch)
+- FT 4: MoogFF (warm, self-oscillating ladder LP)
+- FT 5: RLPF (resonant LP 12dB, punchy)
+- FT 6: RHPF (resonant HP 12dB, tight)
+- FT 7: DFM1 LP (diode filter LP, scuzzy)
+- FT 8: DFM1 HP (diode filter HP)
+- FT 9: BMoog LP (24dB saturating LP)
+- FT 10: BMoog HP (24dB saturating HP)
+- FT 11: BMoog BP (24dB saturating BP)
+- FT 12: Latch-SC LP (switched-cap LP)
+- FT 13: Latch-SC HP (switched-cap HP)
+- All filters share FC, FQ, FE, FED, FK params
+- MC renamed from MF.F (modbus to filter cutoff)
+- MQ added (modbus to filter resonance)
+
+---
+
 ## v0.3.3 (December 2025)
 
 ### New Features

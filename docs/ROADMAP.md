@@ -9,7 +9,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ---
 
-## v0.3.4 Progress (December 2025)
+## v0.3.4 Progress (December 2025) - COMPLETE
 
 | Feature | Effort | Status |
 |---------|--------|--------|
@@ -22,7 +22,14 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | Frappe Theme | Low | **DONE** |
 | Additional Filter Types | Medium | **DONE** |
 | Noise Source | Medium | **DONE** |
-| Oscillator Sync | Medium-High | Not started |
+
+---
+
+## v0.3.5 Plan
+
+| Feature | Effort | Status |
+|---------|--------|--------|
+| Oscillator Sync | Medium | Not started |
 
 ---
 
@@ -37,10 +44,9 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **Tempo-Synced Delay** [Low] - DS parameter for musical delay times
 - **Manual Update + Voice Architecture Diagram** [Low] - Fill documentation gaps, add ASCII voice architecture diagram
 - **Gain Staging Audit** [Medium] - Review clipping behavior with modbus/noise routing; consider automatic output level detection via existing meter OSC for testing; balance preventing unwanted distortion vs preserving intentional clipping
+- **Slew Coverage Expansion** [Low] - Extend SLEW to all continuous voice parameters (currently 30/88)
 
 ### P3 - Future / Large Effort
-- **Noise Source Integration** [Medium] - **DONE** (see v0.3.4_noise_source.md)
-- **Oscillator Sync** [Medium] - DSP addition (see v0.3.4_oscillator_sync.md)
 - **Cross-Platform Compatibility** [High] - Linux/Windows/Intel Mac
 - **Sample Playback System** [Very High] - Major feature
 - **Additional Voice Types** [Very High] - Architecture change

@@ -12,27 +12,31 @@ See command_reference.md for quick overview of basic options.
 
 ## Disclosure
 
-Vibe-coded (or not so vibe-coded) with Claude.
+Vibe-coded (whether the vibes are good or bad who can say) with Claude Code.
 
-That being said, I have tried as much as possible to approach things with care.
+That being the case, I have tried as much as possible to approach things with care.
+
+Hopefully it shows!
 
 ## Features
 
 ### Sound Engine
-- **Complex oscillator voice** - dual linked oscillator configuration with independent pitch control, FM (mod to primary), feedback (mod only), mix ratio (mod volume), and waveshaping/folding (primary output, mod-influenced)
-- **Full effects chain** - SVF filter, comb resonator, ring mod, bit and sample rate reduction, compressor, beat repeat, pitch shift, stereo delay, 3-band EQ, plate reverb
-- **88 real-time parameters** - All controllable via terse commands
-- **6 percussive envelopes** - Amp, pitch, FM, discontinuity, feedback, filter with per-envelope attack and curve
-- **Noise source** - Third sound source with dedicated envelope, oscillator FM routing, and drone/gate modes
+- **Complex oscillator voice** - dual oscillators with selectable waveforms + white/pink/brown noise, independent volume per source
+- **Extensive modulation routing** - mod osc → primary freq/mod freq/filter cutoff/filter Q/discontinuity/VCA; noise → primary FM/mod FM
+- **Full effects chain** - 14-type multimode filter, comb resonator, ring mod, lo-fi (bit/sample rate), compressor, beat repeat, pitch shift, stereo delay, 3-band EQ, plate reverb
+- **88 real-time parameters** - All instantly controllable via terse commands
+- **Per-stage envelopes** - Amp, pitch, FM, discontinuity, feedback, filter, noise, modbus - most with independent attack, decay, and curve
+- **Slew control** - 30 voice/fx parameters with 0-10000ms range, each independently settable
+- **VCA modes** - Gate mode for percussion, drone mode for sustained tones; noise has independent gating
 
 ### Scripting Language
-- **Flexible scripting** - ~285 unique commands for controlling sequencing, synthesis, and UI at runtime. Most take expressions as arguments for further complexity.
-- **8 script slots** - Each with 8 lines of code, local J/K variables
+- **Flexible scripting** - Hundreds of unique commands for controlling sequencing, synthesis, and UI at runtime. Most take expressions as arguments for further complexity.
+- **8 script slots** - Each with 8 lines of code
 - **Metro script** - Runs on internal or MIDI clock
 - **Init script** - Runs on scene load
+-**Variables** - 8 global variables, 4 incrementing accumulators, 2 local vars per script, several specialized variables for use with particular commands
 - **Pattern system** - 6 patterns × 64 steps with full manipulation (push, pop, rotate, shuffle, scale, etc.)
-- **SEQ notation** - Inline sequences with note names, repeats, toggles, random choice
-- **Scale quantization** - 12 built-in scales plus custom via bitmask
+- **SEQ notation** - Inline sequences with note names, raw values, repeats, toggles, random choice
 - **Control flow** - IF/ELIF/ELSE, loops, probability, every-N, skip-N
 
 ### Interface
@@ -47,18 +51,18 @@ That being said, I have tried as much as possible to approach things with care.
 - **Direct recording** - 24-bit stereo WAV to current working directory
 - **Configurable audio output** - Choose an audio device from within the program at any time (will restart audio engine i.e. short downtime)
 - **Solid timing core** - real time thread priority and tuned sleep system produce steady clock with on-grid output
-- **MIDI clock sync** - Follow external tempo with sub-millisecond accuracy
-- **Scene system** - Save/load complete state (scripts, patterns, parameters), scenes can be called via script to create song structures
-- **Seamless transitions** - Save/load does not interrupt clock, move between scenes with confidence
-- **22 factory presets** - Kicks, snares, hats, bass, leads, FX, with full user preset (saved insertable script states) available
+- **MIDI clock sync** - Follow external tempo with high accuracy (requires a couple beats on start to sync)
+- **Scene system** - Save/load complete state (scripts, patterns, parameters), scenes can be called via script to create song structures or continuous performances
+- **Seamless transitions** - Save/load is instant and does not interrupt clock, move between scenes with confidence
+- **22 factory presets** - Kicks, snares, hats, bass, leads, FX, save any script as a preset and insert it into a script on command, functionally infinite storage
 
 ### Data Driven Musicality
 - **Quantization** - Snap primary and modulator osc frequency to a range of preset scales, or use binary notation to create microtonal scales over any division of the octave
-- **Note selection** - N op automatically maps osc frequency to chromatic semitone values
+- **Note selection** - N op automatically maps osc frequency to chromatic semitone values or to bitmasked setting
 
 ### Lightweight Binary
 - **Self-contained bundle** - No SuperCollider installation required
-- **~16MB footprint** - Includes scsynth and all required plugins
+- **~17MB footprint** - Includes scsynth and all required plugins
 - **Rust CLI** - Fast startup, low resource usage
 
 ## Installation

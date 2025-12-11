@@ -57,7 +57,7 @@ The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity
   - **Envelope Amounts:** pa (pitch 0-16), fa (FM 0-16), da (discontinuity 0-16)
   - **Mix Controls:** mx (mix to disc input 0-16383), mm (mix modulation amount 0-16383), me (mix modulation enable 0-1)
   - **Lo-Fi:** lb (bit depth 1-16), ls (sample rate 100-48000 Hz), lm (mix 0-16383)
-  - **SVF Filter:** fc (cutoff Hz), fq (resonance 0-16383), ft (type 0-3), fe (env amount), fed (env decay ms), fk (key tracking), mf_f (modbus routing)
+  - **SVF Filter:** fc (cutoff Hz), fq (resonance 0-16383), ft (type 0-3), fe (env amount), fed (env decay ms), fk (key tracking), mc (modbus→cutoff), mq (modbus→res)
   - **Ring Modulator:** rgf (frequency 20-2000 Hz), rgw (waveform 0-3), rgm (mix 0-16383)
   - **Comb Resonator:** rf (freq Hz), rd (decay ms), rm (mix 0-16383), rk (key tracking)
   - **Compressor:** ct (threshold 0-16383), cr (ratio 1-20), ca (attack ms 1-500), cl (release ms 10-2000), cm (makeup gain 0-16383)

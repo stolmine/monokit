@@ -95,9 +95,15 @@ fn run_batch_mode(scene_name: &str, wait_ms: Option<&str>, dry_run: bool) -> Res
 
     let mut app = App::new(metro_tx, metro_state, theme, color_mode, &config, caps);
 
+    // Override debug level for batch mode to show output
+    app.debug_level = 2; // ESSENTIAL level for batch output
+
     // Load the scene by setting input and executing
     app.input = format!("LOAD {}", scene_name);
+    eprintln!("[batch] Loading with command: '{}'", app.input);
     app.execute_command();
+    eprintln!("[batch] Loaded scene, output: {:?}", app.output);
+    eprintln!("[batch] Current scene name: {:?}", app.current_scene_name);
 
     // Check if load failed (look for error in output)
     if app.output.iter().any(|line| line.contains("ERROR")) {
@@ -109,8 +115,15 @@ fn run_batch_mode(scene_name: &str, wait_ms: Option<&str>, dry_run: bool) -> Res
         return Ok(());
     }
 
+    // Execute script 1 once as initialization (handles M.SCRIPT setup etc)
+    eprintln!("[batch] Executing script 1 (init), debug_level={}", app.debug_level);
+    eprintln!("[batch] Script 1 lines: {:?}", app.scripts.get_script(0).lines);
+    app.execute_script(0);
+    eprintln!("[batch] After init, output: {:?}", app.output);
+
     // Start the metro to execute scripts
     let _ = app.metro_tx.send(MetroCommand::SetActive(true));
+    eprintln!("[batch] Metro started");
 
     // Process metro events for the wait duration
     let start = std::time::Instant::now();

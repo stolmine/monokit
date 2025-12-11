@@ -50,6 +50,7 @@ s.waitForBoot {
             fed = 100,
             fk = 0,
             mf_f = 0,
+            mf_q = 0,
             rf = 440,
             rd = 500,
             rm = 0,
@@ -273,10 +274,12 @@ s.waitForBoot {
         sig = (sig * (1 - lofiMix)) + (lofi * lofiMix);
 
         // SVF Multi-Mode Filter
-        // MF.F: audio-rate filter cutoff modulation (modOsc * modBus * toggle * range)
+        // MC: audio-rate filter cutoff modulation (modOsc * modBus * toggle * range)
         filterCutoff = fcSmooth + ((fkSmooth / 16383) * primaryFreq) + (filterEnv * (feSmooth / 16383) * 5000) + (modOsc * modBus * mf_f * 5000);
         filterCutoff = filterCutoff.clip(20, 20000);
-        filterQ = ((fqSmooth / 16383) * 0.9 + 0.1);
+        // MQ: audio-rate filter resonance modulation
+        filterQ = ((fqSmooth / 16383) * 0.9 + 0.1) + (modOsc * modBus * mf_q * 0.5);
+        filterQ = filterQ.clip(0.1, 1.0);
         sig = Select.ar(ft.clip(0, 3).round, [
             SVF.ar(sig, filterCutoff, filterQ, 1, 0, 0, 0, 0),
             SVF.ar(sig, filterCutoff, filterQ, 0, 1, 0, 0, 0),

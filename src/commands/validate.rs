@@ -891,7 +891,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         // Oscillator, FM, Discontinuity
         "PF" | "MF" | "PW" | "MW" | "DC" | "DM" | "FB" | "FBA" | "FBD" |
         // Modulation bus & routing
-        "TK" | "MB" | "MBA" | "MBD" | "FM" | "MX" | "MM" | "ME" | "MP" | "MD" | "MT" | "MA" | "MF.F" |
+        "TK" | "MB" | "MBA" | "MBD" | "FM" | "MX" | "MM" | "ME" | "MP" | "MD" | "MT" | "MA" | "MC" | "MQ" |
         // Envelopes (amounts and decays)
         "AD" | "PD" | "FD" | "DD" | "PA" | "FA" | "DA" |
         // Filter

@@ -76,7 +76,8 @@ static CANONICAL_TO_ALIAS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new
     m.insert("ROUT.MD", "MD");
     m.insert("ROUT.MT", "MT");
     m.insert("ROUT.MA", "MA");
-    m.insert("ROUT.MF", "MF.F");
+    m.insert("ROUT.MC", "MC");
+    m.insert("ROUT.MQ", "MQ");
 
     m.insert("OUT.VOL", "VOL");
     m.insert("OUT.PAN", "PAN");

@@ -567,3 +567,21 @@ fn test_validate_script_reference_range() {
     assert!(validate_script_command("$ B").is_ok());
     assert!(validate_script_command("M.SCRIPT A").is_ok());
 }
+
+#[test]
+fn test_validate_script_expressions() {
+    // SEQ expressions with quoted patterns
+    assert!(validate_script_command("SCRIPT SEQ \"1 2 3\"").is_ok());
+    assert!(validate_script_command("SCRIPT SEQ \"1 2 3 4\"").is_ok());
+    assert!(validate_script_command("SCRIPT SEQ \"1 8\"").is_ok());
+    assert!(validate_script_command("$ SEQ \"1 2 3\"").is_ok());
+
+    // EITH expressions
+    assert!(validate_script_command("SCRIPT EITH \"1 4\"").is_ok());
+    assert!(validate_script_command("$ EITH \"1 2 3\"").is_ok());
+
+    // Math expressions
+    assert!(validate_script_command("SCRIPT + A 1").is_ok());
+    assert!(validate_script_command("SCRIPT - 5 2").is_ok());
+    assert!(validate_script_command("$ ADD A B").is_ok());
+}

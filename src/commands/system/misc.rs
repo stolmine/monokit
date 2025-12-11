@@ -217,6 +217,7 @@ where
     metro_tx.send(MetroCommand::SendParam("fed".to_string(), OscType::Int(100)))?;
     metro_tx.send(MetroCommand::SendParam("fk".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("mf_f".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("mf_q".to_string(), OscType::Int(0)))?;
 
     metro_tx.send(MetroCommand::SendParam("rf".to_string(), OscType::Float(440.0)))?;
     metro_tx.send(MetroCommand::SendParam("rd".to_string(), OscType::Int(500)))?;

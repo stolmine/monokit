@@ -325,11 +325,13 @@ s.waitForBoot {
                 (((fqSmooth / 16383) * 0.95) + (modOsc * modBus * mf_q * 0.5)).clip(0, 0.95),
                 2, 0),
             // 12: Latch-SC LP (switched-capacitor style LP)
-            SVF.ar(Latch.ar(sig, Impulse.ar(filterCutoff * 50)), filterCutoff,
+            // Clock rate: filterCutoff / 8 gives aliasing at low freqs, cleaner at high freqs
+            // Clamped to 100-20000 Hz to stay within reasonable audio range
+            SVF.ar(Latch.ar(sig, Impulse.ar((filterCutoff / 8).clip(100, 20000))), filterCutoff,
                 (((fqSmooth / 16383) * 0.9 + 0.1) + (modOsc * modBus * mf_q * 0.5)).clip(0.1, 1.0),
                 1, 0, 0, 0, 0),
             // 13: Latch-SC HP (switched-capacitor style HP)
-            SVF.ar(Latch.ar(sig, Impulse.ar(filterCutoff * 50)), filterCutoff,
+            SVF.ar(Latch.ar(sig, Impulse.ar((filterCutoff / 8).clip(100, 20000))), filterCutoff,
                 (((fqSmooth / 16383) * 0.9 + 0.1) + (modOsc * modBus * mf_q * 0.5)).clip(0.1, 1.0),
                 0, 1, 0, 0, 0)
         ]);

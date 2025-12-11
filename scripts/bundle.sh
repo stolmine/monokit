@@ -146,32 +146,37 @@ else
     echo "    WARNING: LFUGens.scx not found!"
 fi
 
-# sc3-plugins required by monokit (SVF is in BlackrainUGens)
-echo "  Searching for sc3-plugins (BlackrainUGens contains SVF)..."
+# sc3-plugins required by monokit
+# - BlackrainUGens: SVF, BMoog filters
+# - TJUGens: DFM1 diode filter
+echo "  Searching for sc3-plugins..."
 
-# Check common sc3-plugins locations
-SC3_PLUGIN_LOCATIONS=(
-    "${HOME}/Library/Application Support/SuperCollider/Extensions/SC3plugins/BlackrainUGens"
-    "${SC_PLUGINS}"
-    "/usr/local/lib/SuperCollider/plugins"
-    "/opt/homebrew/lib/SuperCollider/plugins"
-)
+SC3_BASE="${HOME}/Library/Application Support/SuperCollider/Extensions/SC3plugins"
 
-SVF_FOUND=false
+# BlackrainUGens (SVF, BMoog)
+if [ -f "${SC3_BASE}/BlackrainUGens/BlackrainUGens.scx" ]; then
+    cp "${SC3_BASE}/BlackrainUGens/BlackrainUGens.scx" "${BUNDLE_DIR}/Resources/plugins/"
+    echo "    - BlackrainUGens.scx (SVF, BMoog filters)"
+else
+    echo "    WARNING: BlackrainUGens.scx not found!"
+    echo "    FT 0-3 (SVF) and FT 9-11 (BMoog) will not work."
+fi
 
-for location in "${SC3_PLUGIN_LOCATIONS[@]}"; do
-    if [ -f "${location}/BlackrainUGens.scx" ] && [ "${SVF_FOUND}" = false ]; then
-        cp "${location}/BlackrainUGens.scx" "${BUNDLE_DIR}/Resources/plugins/"
-        echo "    - BlackrainUGens.scx (contains SVF filter) from ${location}"
-        SVF_FOUND=true
-    fi
-done
+# TJUGens (DFM1)
+if [ -f "${SC3_BASE}/TJUGens/TJUGens.scx" ]; then
+    cp "${SC3_BASE}/TJUGens/TJUGens.scx" "${BUNDLE_DIR}/Resources/plugins/"
+    echo "    - TJUGens.scx (DFM1 diode filter)"
+else
+    echo "    WARNING: TJUGens.scx not found!"
+    echo "    FT 7-8 (DFM1) will not work."
+fi
 
-if [ "${SVF_FOUND}" = false ]; then
+# Check if any sc3-plugins were found
+if [ ! -f "${BUNDLE_DIR}/Resources/plugins/BlackrainUGens.scx" ] && \
+   [ ! -f "${BUNDLE_DIR}/Resources/plugins/TJUGens.scx" ]; then
     echo ""
-    echo "WARNING: BlackrainUGens.scx not found!"
-    echo "The monokit SynthDef uses SVF (State Variable Filter) from sc3-plugins."
-    echo "SVF is part of BlackrainUGens - install sc3-plugins:"
+    echo "WARNING: No sc3-plugins found!"
+    echo "Install sc3-plugins from:"
     echo "  https://github.com/supercollider/sc3-plugins/releases"
     echo "Then copy SC3plugins folder to:"
     echo "  ~/Library/Application Support/SuperCollider/Extensions/"

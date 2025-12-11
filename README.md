@@ -113,7 +113,9 @@ And the Industrial Music Electronics [Hertz Donut mk2](https://modulargrid.net/e
 
 Made possible with binaries and sound engine from [SuperCollider](https://supercollider.github.io/)
 
-As well as ugens from [sc3-plugins](https://github.com/supercollider/sc3-plugins)
+As well as UGens from [sc3-plugins](https://github.com/supercollider/sc3-plugins) (GPL-2.0):
+- **BlackrainUGens** (SVF, BMoog filters) by blackrain
+- **TJUGens** (DFM1 diode filter) by Tony Hardie-Bick & Jonny Stutters
 
 Keyboard smash title text animation based on this repo from [DvorakDwarf](https://github.com/DvorakDwarf/scrambling-title-animations?tab=readme-ov-file)
 

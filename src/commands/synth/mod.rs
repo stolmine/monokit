@@ -7,6 +7,8 @@ pub mod resonator;
 pub mod output;
 pub mod envelopes;
 pub mod effects;
+pub mod noise;
+pub mod source_levels;
 
 pub use oscillator::*;
 pub use modulation::*;
@@ -16,3 +18,5 @@ pub use resonator::*;
 pub use output::*;
 pub use envelopes::*;
 pub use effects::*;
+pub use noise::*;
+pub use source_levels::*;

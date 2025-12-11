@@ -102,7 +102,7 @@ fn test_validate_canonical_names() {
     assert!(validate_script_command("PENV.AMT 4").is_ok());
     assert!(validate_script_command("FMEV.AMT 2").is_ok());
     assert!(validate_script_command("ROUT.MP 1").is_ok());
-    assert!(validate_script_command("ROUT.MF 1").is_ok());
+    assert!(validate_script_command("ROUT.MC 1").is_ok());
 }
 
 #[test]

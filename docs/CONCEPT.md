@@ -47,8 +47,10 @@ The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity
 - `\monokit` SynthDef: complex oscillator with dual waveform engines, FM, discontinuity, comprehensive DSP effects, and multi-stage processing
 - Additive envelope model: output = base parameter + env * amount
 - Signal chain: Oscillators → FM → Mix → Discontinuity → Lo-Fi → SVF Filter → Ring Mod → Comb Resonator → Amp → Compressor → Pan → Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ → Plate Reverb → Out
-- 77 parameters (25 oscillator/envelope + 48 DSP + 4 routing):
+- 88 parameters (36 oscillator/envelope/noise + 48 DSP + 4 routing):
   - **Oscillators:** pf (primary freq), pw (primary waveform 0-2), mf (mod freq), mw (mod waveform 0-3)
+  - **Noise Source:** nw (type 0-2: white/pink/brown), na/nd/nc/ne (envelope), np/nm (→osc FM), nv (volume), ng (gate)
+  - **Source Levels:** pv (primary volume), mv (modulator volume)
   - **Feedback FM:** fb (feedback amount 0-16383), fba (feedback env amount 0-16383), fbd (feedback decay ms)
   - **Discontinuity:** dc (amount 0-16383), dm (mode 0-6: fold/tanh/softclip/hard/asym/rectify/crush), dd (discontinuity decay ms)
   - **Tracking/Modulation:** tk (tracking 0-16383), mb (mod bus 0-16383), mp/md/mt/ma (switches 0-1)
@@ -57,7 +59,7 @@ The MVP implements a full HD2-style dual oscillator voice with FM, discontinuity
   - **Envelope Amounts:** pa (pitch 0-16), fa (FM 0-16), da (discontinuity 0-16)
   - **Mix Controls:** mx (mix to disc input 0-16383), mm (mix modulation amount 0-16383), me (mix modulation enable 0-1)
   - **Lo-Fi:** lb (bit depth 1-16), ls (sample rate 100-48000 Hz), lm (mix 0-16383)
-  - **SVF Filter:** fc (cutoff Hz), fq (resonance 0-16383), ft (type 0-3), fe (env amount), fed (env decay ms), fk (key tracking), mc (modbus→cutoff), mq (modbus→res)
+  - **Filter:** fc (cutoff Hz), fq (resonance 0-16383), ft (type 0-13, 14 algorithms), fe (env amount), fed (env decay ms), fk (key tracking), mc (modbus→cutoff), mq (modbus→res)
   - **Ring Modulator:** rgf (frequency 20-2000 Hz), rgw (waveform 0-3), rgm (mix 0-16383)
   - **Comb Resonator:** rf (freq Hz), rd (decay ms), rm (mix 0-16383), rk (key tracking)
   - **Compressor:** ct (threshold 0-16383), cr (ratio 1-20), ca (attack ms 1-500), cl (release ms 10-2000), cm (makeup gain 0-16383)

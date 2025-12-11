@@ -14,13 +14,16 @@ See command_reference.md for quick overview of basic options.
 
 Vibe-coded (or not so vibe-coded) with Claude.
 
+That being said, I have tried as much as possible to approach things with care.
+
 ## Features
 
 ### Sound Engine
 - **Complex oscillator voice** - dual linked oscillator configuration with independent pitch control, FM (mod to primary), feedback (mod only), mix ratio (mod volume), and waveshaping/folding (primary output, mod-influenced)
 - **Full effects chain** - SVF filter, comb resonator, ring mod, bit and sample rate reduction, compressor, beat repeat, pitch shift, stereo delay, 3-band EQ, plate reverb
-- **77 real-time parameters** - All controllable via terse commands
+- **88 real-time parameters** - All controllable via terse commands
 - **6 percussive envelopes** - Amp, pitch, FM, discontinuity, feedback, filter with per-envelope attack and curve
+- **Noise source** - Third sound source with dedicated envelope, oscillator FM routing, and drone/gate modes
 
 ### Scripting Language
 - **Flexible scripting** - ~285 unique commands for controlling sequencing, synthesis, and UI at runtime. Most take expressions as arguments for further complexity.

@@ -82,7 +82,7 @@ src/
 
 ### SuperCollider
 - **sc/monokit_server.scd** (626 lines) - Sound engine
-  - `\monokit` SynthDef with 77 parameters
+  - `\monokit` SynthDef with 88 parameters
   - Signal chain: Oscillators → FM → Mix → Discontinuity → Lo-Fi → SVF Filter → Ring Mod → Comb Resonator → Amp → Compressor → Pan → Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ → Plate Reverb
 
 ---

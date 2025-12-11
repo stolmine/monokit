@@ -698,8 +698,8 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        // Note: EQ comparison is handled in eval, not here. "EQ" command is for EQ mid-Q parameter
-        "NE" | "GT" | "LT" | "GTE" | "LTE" => {
+        // Note: NE and EQ comparisons handled in eval, not here. NE=NOISE.ENV, EQ=EQ mid-Q parameter
+        "GT" | "LT" | "GTE" | "LTE" => {
             if argc < 2 {
                 return Err(anyhow::anyhow!("{} REQUIRES AT LEAST 2 ARGUMENTS", command));
             }
@@ -894,6 +894,10 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         "TK" | "MB" | "MBA" | "MBD" | "FM" | "MX" | "MM" | "ME" | "MP" | "MD" | "MT" | "MA" | "MC" | "MQ" |
         // Envelopes (amounts and decays)
         "AD" | "PD" | "FD" | "DD" | "PA" | "FA" | "DA" |
+        // Noise controls
+        "NW" | "NA" | "ND" | "NC" | "NE" | "NP" | "NM" | "NV" | "NG" |
+        // Source levels
+        "PV" | "MV" |
         // Filter
         "FC" | "FQ" | "FT" | "FE" | "FED" | "FK" |
         // Resonator

@@ -49,7 +49,7 @@ Quick reference and links to all project documentation.
 | Script Undo/Redo | **DONE** |
 | ER/NR Rhythm Operators | **DONE** |
 | Additional Filter Types | **DONE** |
-| Noise Source | Not started |
+| Noise Source | **DONE** |
 | Oscillator Sync | Not started |
 
 ---
@@ -67,9 +67,11 @@ All communication from Rust CLI to SuperCollider server uses UDP (127.0.0.1:5712
 
 **Parameter Names:**
 - Oscillator/FM: pf, pw, mf, mw, fb, fba, fbd, dc, dm, dd, tk, mb, mp, md, mt, ma, fm, mx, mm, me
+- Noise: nw, na, nd, nc, ne, np, nm, nv, ng
+- Source Levels: pv, mv
 - Envelopes: ad, pd, fd, dd, pa, fa, da
 - Lo-Fi: lb, ls, lm
-- Filter: fc, fq, ft, fe, fed, fk, mf_f, mf_q
+- Filter: fc, fq, ft (0-13), fe, fed, fk, mc, mq
 - Ring Mod: rgf, rgw, rgm
 - Resonator: rf, rd, rm, rk
 - Compressor: ct, cr, ca, cl, cm

@@ -110,7 +110,18 @@ SynthDef(\monokit, {
         slew_eh = -1, slew_ef = -1,
         env_atk = 1, env_crv = -4,
         aenv_atk = -1, penv_atk = -1, fmev_atk = -1, denv_atk = -1, fbev_atk = -1, flev_atk = -1,
-        aenv_crv = -100, penv_crv = -100, fmev_crv = -100, denv_crv = -100, fbev_crv = -100, flev_crv = -100;
+        aenv_crv = -100, penv_crv = -100, fmev_crv = -100, denv_crv = -100, fbev_crv = -100, flev_crv = -100,
+        nw = 0,       // Noise waveform (0=white, 1=pink, 2=brown)
+        na = 1,       // Noise envelope attack (ms)
+        nd = 100,     // Noise envelope decay (ms)
+        nc = -4,      // Noise envelope curve
+        ne = 16383,   // Noise envelope amount (0=bypass env)
+        np = 0,       // Noise -> primary FM amount
+        nm = 0,       // Noise -> modulator FM amount
+        nv = 0,       // Noise output level
+        ng = 1,       // Noise gate mode (0=drone, 1=gated)
+        pv = 16383,   // Primary volume
+        mv = 0;       // Modulator volume
 
     var trig, pitchEnv, ampEnv, fmEnv, dcEnv, fbEnv, filterEnv, modBusEnv;
     var modBus, trackingAmount, fmIndex, dcAmount, mixAmount, fbAmount;
@@ -138,6 +149,9 @@ SynthDef(\monokit, {
     var elSmooth, emSmooth, ehSmooth, efSmooth;
     var paCtl, faCtl, daCtl, fbaCtl;
     var aAtk, aCrv, pAtk, pCrv, fmAtk, fmCrv, dAtk, dCrv, fbAtk, fbCrv, flAtk, flCrv;
+    var nwVal, naSmooth, ndSmooth, ncVal, neSmooth, npSmooth, nmSmooth, nvSmooth, ngVal, pvSmooth, mvSmooth;
+    var noiseRaw, noiseEnv, noiseShaped, noiseToPrimary, noiseToMod;
+    var totalLevel, gainComp;
 
     paCtl = Lag.kr(pa, 0);
     faCtl = Lag.kr(fa, 0);
@@ -175,6 +189,19 @@ SynthDef(\monokit, {
     ehSmooth = Lag.kr(eh, Select.kr(slew_eh >= 0, [slew_time, slew_eh]));
     efSmooth = Lag.kr(ef, Select.kr(slew_ef >= 0, [slew_time, slew_ef]));
 
+    // Noise parameters smoothing
+    nwVal = nw.clip(0, 2).round;
+    naSmooth = Lag.kr(na, 0.01);
+    ndSmooth = Lag.kr(nd, 0.01);
+    ncVal = nc.clip(-8, 8);
+    neSmooth = Lag.kr(ne / 16383, 0.01);
+    npSmooth = Lag.kr(np / 16383, 0.01);
+    nmSmooth = Lag.kr(nm / 16383, 0.01);
+    nvSmooth = Lag.kr(nv / 16383, 0.01);
+    ngVal = ng.clip(0, 1).round;
+    pvSmooth = Lag.kr(pv / 16383, 0.01);
+    mvSmooth = Lag.kr(mv / 16383, 0.01);
+
     aAtk = Select.kr(aenv_atk >= 0, [env_atk, aenv_atk]) / 1000;
     pAtk = Select.kr(penv_atk >= 0, [env_atk, penv_atk]) / 1000;
     fmAtk = Select.kr(fmev_atk >= 0, [env_atk, fmev_atk]) / 1000;
@@ -198,6 +225,31 @@ SynthDef(\monokit, {
     filterEnv = EnvGen.kr(Env.perc(flAtk, fed / 1000, 1, flCrv), trig);
     modBusEnv = EnvGen.kr(Env.perc(0.001, mbd / 1000, 1, -4), trig);
 
+    // Noise generator (white/pink/brown)
+    noiseRaw = Select.ar(nwVal, [
+        WhiteNoise.ar(1),
+        PinkNoise.ar(1),
+        BrownNoise.ar(1)
+    ]);
+
+    // Noise envelope (full ATK/DEC/CRV control)
+    noiseEnv = EnvGen.kr(
+        Env.perc(naSmooth / 1000, ndSmooth / 1000, 1, ncVal),
+        trig
+    );
+
+    // Shaped noise (EG > VCA applied)
+    // ne controls envelope amount: 0=bypass (constant), 16383=full envelope
+    // ng controls gate mode: 0=drone (constant), 1=gated (envelope triggers)
+    noiseShaped = noiseRaw * Select.kr(ngVal, [
+        1,                                          // drone: constant level
+        ((1 - neSmooth) + (neSmooth * noiseEnv))   // gated: use envelope
+    ]);
+
+    // Noise modulation amounts for oscillators
+    noiseToPrimary = noiseShaped * npSmooth * 1000;
+    noiseToMod = noiseShaped * nmSmooth * 1000;
+
     // ModBus: base + (envelope * amount)
     modBus = (mb / 16383) + (modBusEnv * mba / 16383);
     trackingAmount = tk / 16383;
@@ -211,6 +263,10 @@ SynthDef(\monokit, {
 
     // Modulator frequency: base + tracking
     modulatorFreq = mfSmooth + (trackingAmount * mt * (primaryFreq - pfSmooth));
+
+    // Apply noise modulation to oscillator frequencies (before oscillator generation)
+    primaryFreq = primaryFreq + noiseToPrimary;
+    modulatorFreq = modulatorFreq + noiseToMod;
 
     modOsc = Select.ar(mw.clip(0, 3).round, [
         SinOsc.ar(modulatorFreq),
@@ -232,9 +288,16 @@ SynthDef(\monokit, {
         LFSaw.ar(primaryFreq + (modOsc * fmAmount))
     ]);
 
-    // MM: audio-rate mix modulation
-    sig = (primaryOsc * (1 - (mixAmount + (modOsc * modBus * mm) + (ampEnv * me)).clip(0, 1)))
-        + (modOsc * (mixAmount + (modOsc * modBus * mm) + (ampEnv * me)).clip(0, 1));
+    // Source level mixing with backward compatibility for MX
+    // Gain compensation for new mode
+    totalLevel = (pvSmooth + mvSmooth + nvSmooth).max(0.001);
+    gainComp = (1 / totalLevel.sqrt).clip(0.5, 1.5);
+
+    // Mix all three sources with individual levels
+    sig = (primaryOsc * pvSmooth) + (modOsc * mvSmooth) + (noiseShaped * nvSmooth);
+
+    // Apply gain compensation
+    sig = sig * gainComp;
 
     discontinuity = dcAmount + (dcEnv * daCtl / 16383);
     sig = sig + (modOsc * discontinuity);

@@ -68,6 +68,22 @@ Go experiment with more complicated sequencing setups to trigger the voice with 
 | `FBEV.ATK <ms>` | `FBAA` | FB envelope attack |
 | `FBEV.CRV <v>` | `FBC` | FB envelope curve |
 
+### Noise Source
+
+| Command | Alias | Description |
+|---------|-------|-------------|
+| `NOISE.WAV <0-2>` | `NW` | Type (0=white, 1=pink, 2=brown) |
+| `NOEV.ATK <ms>` | `NA` | Noise env attack |
+| `NOEV.DEC <ms>` | `ND` | Noise env decay |
+| `NOEV.CRV <v>` | `NC` | Noise env curve |
+| `NOISE.ENV <amt>` | `NE` | Noise env amount (0=bypass) |
+| `NOISE.PRI <amt>` | `NP` | Noise → primary FM |
+| `NOISE.MOD <amt>` | `NM` | Noise → modulator FM |
+| `NOISE.VOL <amt>` | `NV` | Noise volume |
+| `NOISE.GATE <0\|1>` | `NG` | Gate mode (0=drone, 1=gated) |
+| `PRI.VOL <amt>` | `PV` | Primary volume |
+| `MOD.VOL <amt>` | `MV` | Modulator volume |
+
 ### Discontinuity & Lo-Fi
 
 | Command | Alias | Description |
@@ -92,7 +108,8 @@ Go experiment with more complicated sequencing setups to trigger the voice with 
 | `ROUT.MD <0\|1>` | `MD` | Mod → Disc |
 | `ROUT.MT <0\|1>` | `MT` | Mod → Track |
 | `ROUT.MA <0\|1>` | `MA` | Mod → Amp |
-| `ROUT.MF <0\|1>` | `MF.F` | Mod → Filter |
+| `ROUT.MC <0\|1>` | `MC` | Mod → Filter cutoff |
+| `ROUT.MQ <0\|1>` | `MQ` | Mod → Filter resonance |
 | `MBUS.MIX <amt>` | `MX` | Mix amount |
 | `MBUS.MMX <0\|1>` | `MM` | Mod → Mix |
 | `MBUS.EMX <0\|1>` | `ME` | Env → Mix |
@@ -121,7 +138,7 @@ Go experiment with more complicated sequencing setups to trigger the voice with 
 |---------|-------|-------------|
 | `FILT.CUT <hz>` | `FC` | Filter cutoff |
 | `FILT.RES <amt>` | `FQ` | Resonance |
-| `FILT.TYP <0-3>` | `FT` | Type (LP/HP/BP/N) |
+| `FILT.TYP <0-13>` | `FT` | Filter type (14 algorithms) |
 | `FILT.KEY <amt>` | `FK` | Key tracking |
 | `RING.FRQ <hz>` | `RGF` | Ring mod freq |
 | `RING.WAV <0-3>` | `RGW` | Ring mod wave |

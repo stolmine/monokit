@@ -8,17 +8,14 @@ Detailed plans for Phase 7 (Advanced DSP) and Phase 8 (Distribution).
 
 **Focus:** Major architectural changes requiring deep SuperCollider work
 
-### Noise Source Integration [Medium]
-Add multi-colored noise generator before filter and amp stages.
+### Noise Source Integration [Medium] ✅ COMPLETE
+Added in v0.3.4. See `docs/v0.3.4_noise_source.md`.
 
-- [ ] Add noise oscillator to voice (white, pink, brown/red, blue, violet)
-- [ ] `NS` / `NOISE` - Noise level (mix amount into signal path)
-- [ ] `NS.CLR` / `NOISE.CLR` - Noise color (0=white, 1=pink, 2=brown, 3=blue, 4=violet)
-- [ ] Insert point: after oscillator mix, before filter
-- [ ] Envelope option: noise follows amp envelope or constant level
-- [ ] Update SynthDef with noise UGens (WhiteNoise, PinkNoise, BrownNoise, etc.)
-
-See: `docs/v0.3.4_noise_source.md` for detailed implementation plan.
+- [x] NW (noise type: white/pink/brown)
+- [x] Dedicated envelope (NA/ND/NC/NE)
+- [x] Oscillator FM routing (NP/NM)
+- [x] Source level controls (PV/MV/NV)
+- [x] Gate mode (NG: drone/gated)
 
 ### Oscillator Sync [Medium]
 Add hard sync between primary and modulator oscillators.
@@ -30,18 +27,12 @@ Add hard sync between primary and modulator oscillators.
 
 See: `docs/v0.3.4_oscillator_sync.md` for detailed implementation plan.
 
-### Additional Filter Types [Medium]
-Expand filter options beyond SVF.
+### Additional Filter Types [Medium] ✅ COMPLETE
+Added in v0.3.4. See `docs/v0.3.4_filter_types.md`.
 
-- [ ] `FT` / `FILT.TYPE` extended modes:
-  - Current: 0=LP, 1=HP, 2=BP, 3=Notch
-  - Add: 4=Ladder (Moog-style 24dB/oct)
-  - Add: 5=Formant (vowel filter)
-  - Add: 6=Comb (as filter, not resonator)
-- [ ] Consider separate filter UGens or multi-mode SynthDef
-- [ ] Maintain filter envelope compatibility across types
-
-See: `docs/v0.3.4_filter_types.md` for detailed implementation plan.
+- [x] FT 0-13: 14 filter algorithms
+- [x] SVF, MoogFF, RLPF, RHPF, DFM1, BMoog, Latch-SC
+- [x] MC/MQ modbus routing to filter
 
 ### Additional Voice Types [Very High]
 - [ ] `VOICE <0-N>` - Voice type selector
@@ -152,3 +143,28 @@ Expand beyond Apple Silicon macOS.
 - **[Very High]** - 4+ weeks, major architectural changes, deep domain expertise required
 
 **Note:** Modulation System (LFO, Aux Envelopes) moved to `ON_HOLD.md` due to SuperCollider UGen complexity limits.
+
+---
+
+## Future Refactors
+
+### Command Naming Convention Overhaul [Medium]
+Redesign command naming for consistency, memorability, and inferability.
+
+**Current Issues:**
+- Inconsistent prefix patterns (POSC vs PRI, MOSC vs MOD, AENV vs AEG)
+- Long aliases don't always map intuitively to short forms
+- New users struggle to guess command names
+- Some abbreviations conflict or overlap
+
+**Goals:**
+- Establish clear, consistent prefix conventions
+- Make short forms predictable from long forms
+- Group related commands with shared prefixes
+- Reduce cognitive load for learning commands
+
+**Considerations:**
+- Backward compatibility with existing scenes
+- Teletype-inspired terseness vs readability
+- Logical groupings by function vs signal flow
+- Alias system can provide migration path

@@ -21,6 +21,19 @@
 - MC renamed from MF.F (modbus to filter cutoff)
 - MQ added (modbus to filter resonance)
 
+**Noise Source Integration**
+- Added noise generator as third sound source (NW 0-2: white/pink/brown)
+- Dedicated noise envelope (NA attack, ND decay, NC curve, NE amount)
+- Noise → oscillator FM routing (NP → primary, NM → modulator)
+- Individual source level controls (PV primary, MV modulator, NV noise)
+- NG gate mode (0=drone, 1=gated) follows AEG convention
+- Automatic gain compensation prevents clipping when mixing sources
+- NE 0 bypasses envelope for constant noise level
+- Total synth parameters now 88
+
+**RND.FX Expanded**
+- Now randomizes all FX blocks: filter, lo-fi, ring mod, resonator, delay, EQ, reverb
+
 ---
 
 ## v0.3.3 (December 2025)

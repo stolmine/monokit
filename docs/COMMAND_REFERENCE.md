@@ -130,7 +130,7 @@ Same operations as P.* but with explicit pattern number:
 - `GTE <a> <b>`, `LTE <a> <b>` - Greater/less than or equal
 - Infix: `>`, `<`, `>=`, `<=`, `==`, `!=`
 
-## Synth Parameters (77 total)
+## Synth Parameters (88 total)
 
 ### Primary Oscillator
 - `PF <hz>` - Primary frequency (20-20000)
@@ -140,6 +140,21 @@ Same operations as P.* but with explicit pattern number:
 - `MF <hz>` - Modulator frequency (20-20000)
 - `MW <0-3>` - Modulator waveform (0=sine, 1=triangle, 2=sawtooth, 3=feedback)
 - `FB <0-16383>` - Feedback amount
+
+### Noise Source
+- `NW <0-2>` - Noise type (0=white, 1=pink, 2=brown)
+- `NA <1-10000>` - Noise envelope attack (ms)
+- `ND <1-10000>` - Noise envelope decay (ms)
+- `NC <-8 to 8>` - Noise envelope curve
+- `NE <0-16383>` - Noise envelope amount (0=bypass)
+- `NP <0-16383>` - Noise → primary oscillator FM
+- `NM <0-16383>` - Noise → modulator oscillator FM
+- `NV <0-16383>` - Noise volume
+- `NG <0|1>` - Noise gate (0=drone, 1=gated)
+
+### Source Levels
+- `PV <0-16383>` - Primary oscillator volume
+- `MV <0-16383>` - Modulator oscillator volume
 
 ### Discontinuity (Waveshaping)
 - `DC <0-16383>` - Discontinuity amount

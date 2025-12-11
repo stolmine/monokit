@@ -133,6 +133,21 @@ Real-time waveform visualization at 20Hz update rate.
 - `MOSC.FREQ` / `MF <20-20000>` - Frequency (Hz)
 - `MOSC.WAVE` / `MW <0-2>` - Waveform (0=Sin, 1=Tri, 2=Saw)
 
+**Noise Source:**
+- `NOISE.WAV` / `NW <0-2>` - Type (0=White, 1=Pink, 2=Brown)
+- `NOEV.ATK` / `NA <1-10000>` - Envelope attack (ms)
+- `NOEV.DEC` / `ND <1-10000>` - Envelope decay (ms)
+- `NOEV.CRV` / `NC <-8 to 8>` - Envelope curve
+- `NOISE.ENV` / `NE <0-16383>` - Envelope amount (0=bypass)
+- `NOISE.PRI` / `NP <0-16383>` - Noise → primary FM
+- `NOISE.MOD` / `NM <0-16383>` - Noise → modulator FM
+- `NOISE.VOL` / `NV <0-16383>` - Noise volume
+- `NOISE.GATE` / `NG <0|1>` - Gate mode (0=drone, 1=gated)
+
+**Source Levels:**
+- `PRI.VOL` / `PV <0-16383>` - Primary volume
+- `MOD.VOL` / `MV <0-16383>` - Modulator volume
+
 ### FM Synthesis
 
 **FM Modulation:**
@@ -176,7 +191,7 @@ Real-time waveform visualization at 20Hz update rate.
 - `ROUT.MD` / `MD` - Mod → Discontinuity
 - `ROUT.MT` / `MT` - Mod → Tracking
 - `ROUT.MA` / `MA` - Mod → Amplitude
-- `ROUT.MF` / `MF.F` - Mod → Filter cutoff
+- `ROUT.MC` / `MC` - Mod → Filter cutoff
 
 **Mix Routing:**
 - `MBUS.MIX` / `MX <0-16383>` - Mix amount
@@ -1247,7 +1262,8 @@ Notes are saved with scenes. 8 lines maximum.
 | `ROUT.MD <0\|1>` | `MD` | Mod → Disc |
 | `ROUT.MT <0\|1>` | `MT` | Mod → Track |
 | `ROUT.MA <0\|1>` | `MA` | Mod → Amp |
-| `ROUT.MF <0\|1>` | `MF.F` | Mod → Filter |
+| `ROUT.MC <0\|1>` | `MC` | Mod → Filter |
+| `ROUT.MQ <0\|1>` | `MQ` | Mod → Resonance |
 | `MBUS.MIX <amt>` | `MX` | Mix amount |
 | `MBUS.MMX <0\|1>` | `MM` | Mod → Mix |
 | `MBUS.EMX <0\|1>` | `ME` | Env → Mix |

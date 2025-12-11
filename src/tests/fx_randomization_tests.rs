@@ -7,7 +7,7 @@ fn test_rnd_fx_executes() {
     let mut output_called = false;
     let result = handle_rnd_fx(&metro_tx, 5, |msg| {
         output_called = true;
-        assert!(msg.contains("RANDOMIZED ALL FX"));
+        assert!(msg.contains("RANDOMIZED FX"));
     });
     assert!(result.is_ok());
     assert!(output_called);
@@ -59,7 +59,7 @@ fn test_rnd_fx_sends_all_params() {
     while let Ok(_) = rx.try_recv() {
         param_count += 1;
     }
-    assert_eq!(param_count, 12);
+    assert_eq!(param_count, 24);  // filter(4) + lofi(3) + ringmod(3) + reso(3) + delay(4) + eq(3) + reverb(4)
 }
 
 #[test]

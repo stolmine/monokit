@@ -339,47 +339,70 @@ where
 {
     let mut rng = rand::thread_rng();
 
+    // Filter
     let fc = rng.gen_range(200.0..=8000.0);
     metro_tx.send(MetroCommand::SendParam("fc".to_string(), OscType::Float(fc)))?;
-
     let fq = rng.gen_range(0..=8000);
     metro_tx.send(MetroCommand::SendParam("fq".to_string(), OscType::Int(fq)))?;
-
     let ft = rng.gen_range(0..=13);
     metro_tx.send(MetroCommand::SendParam("ft".to_string(), OscType::Int(ft)))?;
-
     let fe = rng.gen_range(0..=8000);
     metro_tx.send(MetroCommand::SendParam("fe".to_string(), OscType::Int(fe)))?;
 
+    // Lo-Fi
+    let lb = rng.gen_range(4..=16);
+    metro_tx.send(MetroCommand::SendParam("lb".to_string(), OscType::Int(lb)))?;
+    let ls = rng.gen_range(2000..=48000);
+    metro_tx.send(MetroCommand::SendParam("ls".to_string(), OscType::Int(ls)))?;
+    let lm = rng.gen_range(0..=8000);
+    metro_tx.send(MetroCommand::SendParam("lm".to_string(), OscType::Int(lm)))?;
+
+    // Ring Mod
+    let rgf = rng.gen_range(20.0..=2000.0);
+    metro_tx.send(MetroCommand::SendParam("rgf".to_string(), OscType::Float(rgf)))?;
+    let rgw = rng.gen_range(0..=3);
+    metro_tx.send(MetroCommand::SendParam("rgw".to_string(), OscType::Int(rgw)))?;
+    let rgm = rng.gen_range(0..=8000);
+    metro_tx.send(MetroCommand::SendParam("rgm".to_string(), OscType::Int(rgm)))?;
+
+    // Resonator
+    let rf = rng.gen_range(50.0..=2000.0);
+    metro_tx.send(MetroCommand::SendParam("rf".to_string(), OscType::Float(rf)))?;
+    let rd = rng.gen_range(50..=2000);
+    metro_tx.send(MetroCommand::SendParam("rd".to_string(), OscType::Int(rd)))?;
+    let rm = rng.gen_range(0..=8000);
+    metro_tx.send(MetroCommand::SendParam("rm".to_string(), OscType::Int(rm)))?;
+
+    // Delay
     let dt = rng.gen_range(50..=500);
     metro_tx.send(MetroCommand::SendParam("dt".to_string(), OscType::Int(dt)))?;
-
     let df = rng.gen_range(0..=10000);
     metro_tx.send(MetroCommand::SendParam("df".to_string(), OscType::Int(df)))?;
-
     let dlp = rng.gen_range(1000.0..=15000.0);
     metro_tx.send(MetroCommand::SendParam("dlp".to_string(), OscType::Float(dlp)))?;
-
     let dw = rng.gen_range(0..=8000);
     metro_tx.send(MetroCommand::SendParam("dw".to_string(), OscType::Int(dw)))?;
 
+    // EQ
+    let el = rng.gen_range(-12..=12);
+    metro_tx.send(MetroCommand::SendParam("el".to_string(), OscType::Int(el)))?;
+    let em = rng.gen_range(-12..=12);
+    metro_tx.send(MetroCommand::SendParam("em".to_string(), OscType::Int(em)))?;
+    let eh = rng.gen_range(-12..=12);
+    metro_tx.send(MetroCommand::SendParam("eh".to_string(), OscType::Int(eh)))?;
+
+    // Reverb
     let rv = rng.gen_range(0..=10000);
     metro_tx.send(MetroCommand::SendParam("rv".to_string(), OscType::Int(rv)))?;
-
     let rp = rng.gen_range(0..=50);
     metro_tx.send(MetroCommand::SendParam("rp".to_string(), OscType::Int(rp)))?;
-
     let rh = rng.gen_range(0..=10000);
     metro_tx.send(MetroCommand::SendParam("rh".to_string(), OscType::Int(rh)))?;
-
     let rw = rng.gen_range(0..=8000);
     metro_tx.send(MetroCommand::SendParam("rw".to_string(), OscType::Int(rw)))?;
 
     if debug_level >= TIER_VERBOSE {
-        output(format!(
-            "RANDOMIZED ALL FX: FC={:.1} FQ={} FT={} FE={} DT={} DF={} DLP={:.1} DW={} RV={} RP={} RH={} RW={}",
-            fc, fq, ft, fe, dt, df, dlp, dw, rv, rp, rh, rw
-        ));
+        output("RANDOMIZED FX: FILT/LOFI/RING/RESO/DLY/EQ/VERB".to_string());
     }
 
     Ok(())

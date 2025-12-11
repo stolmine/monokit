@@ -1,3 +1,4 @@
+use chrono::Local;
 use rosc::{encoder, OscMessage, OscPacket, OscType};
 use std::env;
 use std::fs::{self, File, OpenOptions};
@@ -15,7 +16,6 @@ use crate::audio_devices;
 pub struct ScsynthDirect {
     child: Option<Child>,
     osc_socket: Option<UdpSocket>,
-    recording_index: u32,
     recording_path_prefix: Option<String>,
     is_recording: bool,
 }
@@ -25,7 +25,6 @@ impl ScsynthDirect {
         Ok(Self {
             child: None,
             osc_socket: None,
-            recording_index: 1,
             recording_path_prefix: None,
             is_recording: false,
         })
@@ -457,11 +456,14 @@ impl ScsynthDirect {
             return Err("Already recording".to_string());
         }
 
+        // Generate timestamp in YYMMDD_HHMMSS format (matches SC Date.getDate.stamp)
+        let timestamp = Local::now().format("%y%m%d_%H%M%S").to_string();
+
         // Generate file path
         let file_path = if let Some(ref prefix) = self.recording_path_prefix {
-            format!("{}_{}.wav", prefix, self.recording_index)
+            format!("{}_{}.wav", prefix, timestamp)
         } else {
-            format!("{}/monokit_audio_{}.wav", dir, self.recording_index)
+            format!("{}/monokit_{}.wav", dir, timestamp)
         };
 
         // Create socket for OSC communication
@@ -519,7 +521,6 @@ impl ScsynthDirect {
         )?;
 
         self.is_recording = true;
-        self.recording_index += 1;
 
         Ok(())
     }

@@ -21,7 +21,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | ER/NR Rhythm Operators | Low | **DONE** |
 | Frappe Theme | Low | **DONE** |
 | Additional Filter Types | Medium | **DONE** |
-| Noise Source | Medium | Not started |
+| Noise Source | Medium | **DONE** |
 | Oscillator Sync | Medium-High | Not started |
 
 ---
@@ -37,9 +37,8 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **Tempo-Synced Delay** [Low] - DS parameter for musical delay times
 
 ### P3 - Future / Large Effort
-- **Noise Source Integration** [Medium] - DSP addition (see v0.3.4_noise_source.md)
+- **Noise Source Integration** [Medium] - **DONE** (see v0.3.4_noise_source.md)
 - **Oscillator Sync** [Medium] - DSP addition (see v0.3.4_oscillator_sync.md)
-- **Additional Filter Types** [Medium] - DSP addition (see v0.3.4_filter_types.md)
 - **Cross-Platform Compatibility** [High] - Linux/Windows/Intel Mac
 - **Sample Playback System** [Very High] - Major feature
 - **Additional Voice Types** [Very High] - Architecture change

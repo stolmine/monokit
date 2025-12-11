@@ -45,6 +45,7 @@ dark-light = "1.0"
 
 # Timing infrastructure
 spin_sleep = "1.2"
+chrono = "0.4"
 audio_thread_priority = "0.32"
 
 # Socket buffer configuration

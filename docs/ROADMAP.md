@@ -35,6 +35,8 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **State Highlight Timing Verification** [Low] - Audit SEQ/TOG timing
 - **Dynamic Grid Layout** [Medium] - Responsive UI spacing
 - **Tempo-Synced Delay** [Low] - DS parameter for musical delay times
+- **Manual Update + Voice Architecture Diagram** [Low] - Fill documentation gaps, add ASCII voice architecture diagram
+- **Gain Staging Audit** [Medium] - Review clipping behavior with modbus/noise routing; consider automatic output level detection via existing meter OSC for testing; balance preventing unwanted distortion vs preserving intentional clipping
 
 ### P3 - Future / Large Effort
 - **Noise Source Integration** [Medium] - **DONE** (see v0.3.4_noise_source.md)
@@ -110,8 +112,9 @@ For detailed completion records, see:
 
 ### Core Voice & DSP
 - HD2-style dual oscillator with FM, discontinuity, and complex modulation
+- Noise source with dedicated envelope and oscillator FM routing
 - Full DSP signal chain with 10+ effect blocks
-- 77 real-time parameters
+- 88 real-time parameters
 
 ### Language & Scripting
 - Page-based interface with 8 scripts + Metro + Init

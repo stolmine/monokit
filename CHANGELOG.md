@@ -34,6 +34,33 @@
 **RND.FX Expanded**
 - Now randomizes all FX blocks: filter, lo-fi, ring mod, resonator, delay, EQ, reverb
 
+**ModBus Envelope (MBA/MBD)**
+- Added envelope control for modbus depth
+- MBA: modbus envelope amount (0-16383)
+- MBD: modbus envelope decay (ms)
+- Allows per-trigger modulation intensity sweeps
+
+**Script Undo/Redo**
+- Ctrl+Z: Undo last script edit
+- Ctrl+Y: Redo undone edit
+- Per-script undo history (up to 50 states)
+
+**Frappe Theme**
+- Added Catppuccin Frappe theme variant
+
+**Recording Timestamps**
+- Auto-generated filenames now include timestamp
+- Format: monokit_YYYYMMDD_HHMMSS.wav
+
+### Bug Fixes
+
+**Latch-SC Filter Clock Rate**
+- Fixed silence issue with FT 12-13 at low cutoff frequencies
+- Clock rate now properly clamped to 100-20000 Hz
+
+**Audio-Rate ModBus Routing**
+- MC/MQ now use audio-rate modOsc signal for smooth modulation
+
 ---
 
 ## v0.3.3 (December 2025)

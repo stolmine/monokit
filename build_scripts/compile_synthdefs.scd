@@ -255,17 +255,65 @@ SynthDef(\monokit, {
     lofi = Latch.ar(lofi, Impulse.ar(lofiRate));
     sig = (sig * (1 - lofiMix)) + (lofi * lofiMix);
 
-    // MC: audio-rate filter cutoff modulation
+    // Multi-Mode Filter (FT 0-13)
+    // MC: audio-rate filter cutoff modulation (modOsc * modBus * toggle * range)
     filterCutoff = fcSmooth + ((fkSmooth / 16383) * primaryFreq) + (filterEnv * (feSmooth / 16383) * 5000) + (modOsc * modBus * mf_f * 5000);
     filterCutoff = filterCutoff.clip(20, 20000);
-    // MQ: audio-rate filter resonance modulation
-    filterQ = ((fqSmooth / 16383) * 0.9 + 0.1) + (modOsc * modBus * mf_q * 0.5);
-    filterQ = filterQ.clip(0.1, 1.0);
-    sig = Select.ar(ft.clip(0, 3).round, [
-        SVF.ar(sig, filterCutoff, filterQ, 1, 0, 0, 0, 0),
-        SVF.ar(sig, filterCutoff, filterQ, 0, 1, 0, 0, 0),
-        SVF.ar(sig, filterCutoff, filterQ, 0, 0, 1, 0, 0),
-        SVF.ar(sig, filterCutoff, filterQ, 0, 0, 0, 1, 0)
+    // MQ: audio-rate filter resonance modulation (base resonance calculation per filter type)
+    sig = Select.ar(ft.clip(0, 13).round, [
+        // 0: SVF LP
+        SVF.ar(sig, filterCutoff,
+            (((fqSmooth / 16383) * 0.9 + 0.1) + (modOsc * modBus * mf_q * 0.5)).clip(0.1, 1.0),
+            1, 0, 0, 0, 0),
+        // 1: SVF HP
+        SVF.ar(sig, filterCutoff,
+            (((fqSmooth / 16383) * 0.9 + 0.1) + (modOsc * modBus * mf_q * 0.5)).clip(0.1, 1.0),
+            0, 1, 0, 0, 0),
+        // 2: SVF BP
+        SVF.ar(sig, filterCutoff,
+            (((fqSmooth / 16383) * 0.9 + 0.1) + (modOsc * modBus * mf_q * 0.5)).clip(0.1, 1.0),
+            0, 0, 1, 0, 0),
+        // 3: SVF Notch
+        SVF.ar(sig, filterCutoff,
+            (((fqSmooth / 16383) * 0.9 + 0.1) + (modOsc * modBus * mf_q * 0.5)).clip(0.1, 1.0),
+            0, 0, 0, 1, 0),
+        // 4: MoogFF (Moog ladder LP)
+        MoogFF.ar(sig, filterCutoff,
+            (((fqSmooth / 16383) * 4.0) + (modOsc * modBus * mf_q * 2.0)).clip(0, 4)),
+        // 5: RLPF (resonant LP 12dB)
+        RLPF.ar(sig, filterCutoff,
+            ((1.0 - (fqSmooth / 16383) * 0.95) - (modOsc * modBus * mf_q * 0.5)).clip(0.05, 1.0)),
+        // 6: RHPF (resonant HP 12dB)
+        RHPF.ar(sig, filterCutoff,
+            ((1.0 - (fqSmooth / 16383) * 0.95) - (modOsc * modBus * mf_q * 0.5)).clip(0.05, 1.0)),
+        // 7: DFM1 LP (diode filter LP)
+        DFM1.ar(sig, filterCutoff,
+            (((fqSmooth / 16383) * 1.1) + (modOsc * modBus * mf_q * 0.5)).clip(0, 1.1),
+            1.0, 0.0),
+        // 8: DFM1 HP (diode filter HP)
+        DFM1.ar(sig, filterCutoff,
+            (((fqSmooth / 16383) * 1.1) + (modOsc * modBus * mf_q * 0.5)).clip(0, 1.1),
+            0.0, 1.0),
+        // 9: BMoog LP (24dB saturating LP)
+        BMoog.ar(sig, filterCutoff,
+            (((fqSmooth / 16383) * 0.95) + (modOsc * modBus * mf_q * 0.5)).clip(0, 0.95),
+            1, 0),
+        // 10: BMoog HP (24dB saturating HP)
+        BMoog.ar(sig, filterCutoff,
+            (((fqSmooth / 16383) * 0.95) + (modOsc * modBus * mf_q * 0.5)).clip(0, 0.95),
+            0, 1),
+        // 11: BMoog BP (24dB saturating BP)
+        BMoog.ar(sig, filterCutoff,
+            (((fqSmooth / 16383) * 0.95) + (modOsc * modBus * mf_q * 0.5)).clip(0, 0.95),
+            2, 0),
+        // 12: Latch-SC LP (switched-capacitor style LP)
+        SVF.ar(Latch.ar(sig, Impulse.ar(filterCutoff * 50)), filterCutoff,
+            (((fqSmooth / 16383) * 0.9 + 0.1) + (modOsc * modBus * mf_q * 0.5)).clip(0.1, 1.0),
+            1, 0, 0, 0, 0),
+        // 13: Latch-SC HP (switched-capacitor style HP)
+        SVF.ar(Latch.ar(sig, Impulse.ar(filterCutoff * 50)), filterCutoff,
+            (((fqSmooth / 16383) * 0.9 + 0.1) + (modOsc * modBus * mf_q * 0.5)).clip(0.1, 1.0),
+            0, 1, 0, 0, 0)
     ]);
 
     ringModOsc = Select.ar(rgw.clip(0, 3).round, [

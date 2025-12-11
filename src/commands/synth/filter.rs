@@ -8,7 +8,7 @@ use super::common::{define_bool_param, define_float_param, define_int_param, def
 
 define_float_param!(handle_fc, "fc", 20.0, 20000.0, "FC", "FILTER CUTOFF", "Failed to parse filter cutoff frequency", "HZ");
 define_int_param!(handle_fq, "fq", 0, 16383, "FQ", "FILTER RESONANCE", "Failed to parse filter resonance");
-define_mode_param!(handle_ft, "ft", 0, 3, "FT", "FILTER TYPE MUST BE 0 (LP), 1 (HP), 2 (BP), OR 3 (NOTCH)", "FILTER TYPE", "Failed to parse filter type");
+define_mode_param!(handle_ft, "ft", 0, 13, "FT", "FILTER TYPE MUST BE 0-13", "FILTER TYPE", "Failed to parse filter type");
 define_int_param!(handle_fe, "fe", 0, 16383, "FE", "FILTER ENVELOPE AMOUNT", "Failed to parse filter envelope amount");
 define_int_param_ms!(handle_fed, "fed", 1, 10000, "FED", "FILTER ENVELOPE DECAY", "Failed to parse filter envelope decay time");
 define_int_param!(handle_fk, "fk", 0, 16383, "FK", "FILTER KEY TRACKING", "Failed to parse filter key tracking amount");

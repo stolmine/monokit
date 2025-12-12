@@ -153,6 +153,7 @@ s.waitForBoot {
         var aAtk, aCrv, pAtk, pCrv, fmAtk, fmCrv, dAtk, dCrv, fbAtk, fbCrv, flAtk, flCrv;
         // Noise source variables
         var nwVal, naSmooth, ndSmooth, ncVal, neSmooth, npSmooth, nmSmooth, nvSmooth, ngVal, pvSmooth, mvSmooth;
+        var nvDynamic, pvDynamic, mvDynamic;
         var noiseRaw, noiseEnv, noiseShaped, noiseToPrimary, noiseToMod;
         var totalLevel, gainComp;
 
@@ -202,10 +203,16 @@ s.waitForBoot {
         neSmooth = Lag.kr(ne / 16383, 0.01);
         npSmooth = Lag.kr(np / 16383, 0.01);
         nmSmooth = Lag.kr(nm / 16383, 0.01);
-        nvSmooth = Lag.kr(nv / 16383, 0.01);
+
+        // Force dynamic evaluation of volume params (workaround for SC optimizer bug)
+        nvDynamic = Lag.kr(nv, 0);
+        pvDynamic = Lag.kr(pv, 0);
+        mvDynamic = Lag.kr(mv, 0);
+
+        nvSmooth = Lag.kr(nvDynamic / 16383, 0.01);
         ngVal = ng.clip(0, 1).round;
-        pvSmooth = Lag.kr(pv / 16383, 0.01);
-        mvSmooth = Lag.kr(mv / 16383, 0.01);
+        pvSmooth = Lag.kr(pvDynamic / 16383, 0.01);
+        mvSmooth = Lag.kr(mvDynamic / 16383, 0.01);
 
         // Resolve per-envelope attack times (ms -> seconds, with global fallback)
         aAtk = Select.kr(aenv_atk >= 0, [env_atk, aenv_atk]) / 1000;
@@ -226,15 +233,24 @@ s.waitForBoot {
         // Envelope model: output = base + (envelope * amount)
         // Exception: ampEnv is multiplicative (0→1 gating)
 
+        // Force dynamic evaluation of decay params (workaround for SC optimizer bug)
+        adDynamic = Lag.kr(ad, 0);
+        pdDynamic = Lag.kr(pd, 0);
+        fdDynamic = Lag.kr(fd, 0);
+        ddDynamic = Lag.kr(dd, 0);
+        fbdDynamic = Lag.kr(fbd, 0);
+        fedDynamic = Lag.kr(fed, 0);
+        mbdDynamic = Lag.kr(mbd, 0);
+
         // Trigger and envelopes
         trig = Trig1.kr(t_gate, 0.001);
-        pitchEnv = EnvGen.kr(Env.perc(pAtk, pd / 1000, 1, pCrv), trig);
-        ampEnv = EnvGen.kr(Env.perc(aAtk, ad / 1000, 1, aCrv), trig);
-        fmEnv = EnvGen.kr(Env.perc(fmAtk, fd / 1000, 1, fmCrv), trig);
-        dcEnv = EnvGen.kr(Env.perc(dAtk, dd / 1000, 1, dCrv), trig);
-        fbEnv = EnvGen.kr(Env.perc(fbAtk, fbd / 1000, 1, fbCrv), trig);
-        filterEnv = EnvGen.kr(Env.perc(flAtk, fed / 1000, 1, flCrv), trig);
-        modBusEnv = EnvGen.kr(Env.perc(0.001, mbd / 1000, 1, -4), trig);
+        pitchEnv = EnvGen.kr(Env.perc(pAtk, pdDynamic / 1000, 1, pCrv), trig);
+        ampEnv = EnvGen.kr(Env.perc(aAtk, adDynamic / 1000, 1, aCrv), trig);
+        fmEnv = EnvGen.kr(Env.perc(fmAtk, fdDynamic / 1000, 1, fmCrv), trig);
+        dcEnv = EnvGen.kr(Env.perc(dAtk, ddDynamic / 1000, 1, dCrv), trig);
+        fbEnv = EnvGen.kr(Env.perc(fbAtk, fbdDynamic / 1000, 1, fbCrv), trig);
+        filterEnv = EnvGen.kr(Env.perc(flAtk, fedDynamic / 1000, 1, flCrv), trig);
+        modBusEnv = EnvGen.kr(Env.perc(0.001, mbdDynamic / 1000, 1, -4), trig);
 
         // Noise generator (white/pink/brown)
         noiseRaw = Select.ar(nwVal, [
@@ -310,7 +326,7 @@ s.waitForBoot {
         gainComp = (1 / totalLevel.sqrt).clip(0.5, 1.5);
 
         // Mix all three sources with individual levels
-        sig = (primaryOsc * pvSmooth) + (modOsc * mvSmooth) + (noiseShaped * nvSmooth);
+        sig = (primaryOsc * K2A.ar(pvSmooth)) + (modOsc * K2A.ar(mvSmooth)) + (noiseShaped * K2A.ar(nvSmooth));
 
         // Apply gain compensation
         sig = sig * gainComp;

@@ -99,13 +99,13 @@ Press `esc` or `alt + h` to access it. `Ctrl f` will search the help system, use
 
 This software is a TUI (terminal user interface) app. It is designed to run in a 50x18 terminal window.
 
-There is no line length limit, however. The TUI will also scale to whatever window size you choose and zoom attractively with `cmd +/-`.
+There is no line length limit, however. The TUI will also scale to whatever size you choose and zoom attractively with `cmd +/-`. iTerm2 handles this beautifully.
 
-It is optimized for true color terminals like iTerm2, but will run with a limited color range on the native MacOS terminal (8 bit depth).
+Monokit is optimized for true color terminals like iTerm2, but will run with a limited color range on the native MacOS terminal (8 bit depth, 256 colors).
 
-I'd suggest exploring `/themes/themes.toml` if you do not like the look of your instance.
+I'd suggest exploring `/themes/themes.toml` if you do not like the look of your instance. Themes are easily customizable and take simple hex values for all fields.
 
-Themes and saved scenes can be modified directly under ~/.config/monokit. 
+Themes and saved scenes can be modified directly under ~/library/application support/monokit. 
 
 ## Configuration
 

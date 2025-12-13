@@ -40,6 +40,7 @@ pub fn highlight_stateful_operators(
     script_index: usize,
     toggle_state: &HashMap<String, usize>,
     toggle_last_value: &HashMap<String, i16>,
+    direct_validation: &HashMap<String, bool>,
 ) -> HighlightedLine {
     let mut segments = Vec::new();
     let mut line_pos = 0;
@@ -53,7 +54,7 @@ pub fn highlight_stateful_operators(
             line_pos
         };
 
-        let cmd_segments = highlight_single_command(cmd, cmd_start, script_index, toggle_state, toggle_last_value);
+        let cmd_segments = highlight_single_command(cmd, cmd_start, script_index, toggle_state, toggle_last_value, direct_validation);
         segments.extend(cmd_segments.segments);
 
         line_pos = cmd_start + cmd.len();
@@ -100,17 +101,31 @@ pub fn highlight_stateful_operators(
     HighlightedLine { segments }
 }
 
+fn is_variable_assignment(parts: &[&str]) -> bool {
+    if parts.is_empty() {
+        return false;
+    }
+    let first = parts[0].to_uppercase();
+    if first.len() != 1 {
+        return false;
+    }
+    let ch = first.chars().next().unwrap();
+    matches!(ch, 'A' | 'B' | 'C' | 'D' | 'I' | 'J' | 'K' | 'X' | 'Y' | 'Z' | 'T')
+}
+
 fn highlight_single_command(
     cmd: &str,
     cmd_start_in_line: usize,
     script_index: usize,
     toggle_state: &HashMap<String, usize>,
     toggle_last_value: &HashMap<String, i16>,
+    direct_validation: &HashMap<String, bool>,
 ) -> HighlightedLine {
     let mut segments = Vec::new();
     let mut current_pos = 0;
 
     let parts: Vec<&str> = cmd.split_whitespace().collect();
+    let is_var_assignment = is_variable_assignment(&parts);
 
     let mut i = 0;
     while i < parts.len() {
@@ -164,6 +179,30 @@ fn highlight_single_command(
                     }
 
                     let key = format!("seq_{}_{}", script_index, pattern);
+
+                    if !is_var_assignment {
+                        if direct_validation.get(&key) == Some(&false) {
+                            if start_pos > current_pos {
+                                segments.push(HighlightedSegment {
+                                    text: cmd[current_pos..start_pos].to_string(),
+                                    is_highlighted: false,
+                                });
+                            }
+                            let full_expr_end = cmd[start_pos..]
+                                .find(&format!("\"{}\"", pattern))
+                                .or_else(|| cmd[start_pos..].find(&format!("'{}'", pattern)))
+                                .map(|p| start_pos + p + pattern.len() + 2)
+                                .unwrap_or(cmd.len());
+                            segments.push(HighlightedSegment {
+                                text: cmd[start_pos..full_expr_end].to_string(),
+                                is_highlighted: false,
+                            });
+                            current_pos = full_expr_end;
+                            i += 1 + consumed;
+                            continue;
+                        }
+                    }
+
                     let current_index = toggle_state.get(&key).copied().unwrap_or(0);
 
                     if let Some(highlighted_segments) = highlight_seq_pattern(
@@ -206,6 +245,30 @@ fn highlight_single_command(
                 let next_idx = i + 3;
                 let key = format!("{}_{}", script_index, parts[i..next_idx].join("_"));
 
+                if !is_var_assignment {
+                    if direct_validation.get(&key) == Some(&false) {
+                        let tog_start = cmd[current_pos..].find("TOG").map(|p| current_pos + p);
+                        if let Some(start_pos) = tog_start {
+                            if start_pos > current_pos {
+                                segments.push(HighlightedSegment {
+                                    text: cmd[current_pos..start_pos].to_string(),
+                                    is_highlighted: false,
+                                });
+                            }
+                            let val2_end = find_whole_word(&cmd[start_pos..], parts[i+2])
+                                .map(|p| start_pos + p + parts[i+2].len())
+                                .unwrap_or(cmd.len());
+                            segments.push(HighlightedSegment {
+                                text: cmd[start_pos..val2_end].to_string(),
+                                is_highlighted: false,
+                            });
+                            current_pos = val2_end;
+                        }
+                        i += 3;
+                        continue;
+                    }
+                }
+
                 let tog_start = cmd[current_pos..].find("TOG").map(|p| current_pos + p);
                 if let Some(start_pos) = tog_start {
                     if start_pos > current_pos {
@@ -239,6 +302,30 @@ fn highlight_single_command(
             if i + 2 < parts.len() {
                 let next_idx = i + 3;
                 let key = format!("{}_{}", script_index, parts[i..next_idx].join("_"));
+
+                if !is_var_assignment {
+                    if direct_validation.get(&key) == Some(&false) {
+                        let eith_start = cmd[current_pos..].find("EITH").map(|p| current_pos + p);
+                        if let Some(start_pos) = eith_start {
+                            if start_pos > current_pos {
+                                segments.push(HighlightedSegment {
+                                    text: cmd[current_pos..start_pos].to_string(),
+                                    is_highlighted: false,
+                                });
+                            }
+                            let val2_end = find_whole_word(&cmd[start_pos..], parts[i+2])
+                                .map(|p| start_pos + p + parts[i+2].len())
+                                .unwrap_or(cmd.len());
+                            segments.push(HighlightedSegment {
+                                text: cmd[start_pos..val2_end].to_string(),
+                                is_highlighted: false,
+                            });
+                            current_pos = val2_end;
+                        }
+                        i += 3;
+                        continue;
+                    }
+                }
 
                 let eith_start = cmd[current_pos..].find("EITH").map(|p| current_pos + p);
                 if let Some(start_pos) = eith_start {
@@ -644,9 +731,10 @@ mod tests {
         state.insert("seq_0_C3 E3 G3".to_string(), 1);
         let mut last_value = HashMap::new();
         last_value.insert("seq_0_C3 E3 G3".to_string(), 4);
+        let direct_validation = HashMap::new();
 
         let line = "N ON SEQ \"C3 E3 G3\"";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -662,9 +750,10 @@ mod tests {
         let state = HashMap::new();
         let mut last_value = HashMap::new();
         last_value.insert("seq_0_C3 E3 G3".to_string(), 0);
+        let direct_validation = HashMap::new();
 
         let line = "N ON SEQ \"C3 E3 G3\"";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -681,8 +770,10 @@ mod tests {
         let mut last_value = HashMap::new();
         last_value.insert("0_TOG_10_20".to_string(), 10);
 
+        let direct_validation = HashMap::new();
+
         let line = "N ON TOG 10 20";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -700,8 +791,10 @@ mod tests {
         let mut last_value = HashMap::new();
         last_value.insert("0_TOG_10_20".to_string(), 20);
 
+        let direct_validation = HashMap::new();
+
         let line = "N ON TOG 10 20";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -720,8 +813,10 @@ mod tests {
         let mut last_value = HashMap::new();
         last_value.insert("0_TOG_2000_0".to_string(), 2000);
 
+        let direct_validation = HashMap::new();
+
         let line = "DC TOG 2000 0";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -744,8 +839,10 @@ mod tests {
         let mut last_value = HashMap::new();
         last_value.insert("0_TOG_2000_0".to_string(), 0);
 
+        let direct_validation = HashMap::new();
+
         let line = "DC TOG 2000 0";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -764,8 +861,10 @@ mod tests {
         let mut last_value = HashMap::new();
         last_value.insert("seq_0_C3*2 E3".to_string(), 0);
 
+        let direct_validation = HashMap::new();
+
         let line = "N ON SEQ \"C3*2 E3\"";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -780,8 +879,9 @@ mod tests {
     fn test_no_operators() {
         let state = HashMap::new();
         let last_value = HashMap::new();
+        let direct_validation = HashMap::new();
         let line = "N ON 60";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
 
         assert_eq!(result.segments.len(), 1);
         assert_eq!(result.segments[0].text, "N ON 60");
@@ -798,8 +898,10 @@ mod tests {
         let mut last_value = HashMap::new();
         last_value.insert("seq_alt_0_5 3 <1 0> 4_2".to_string(), 1);
 
+        let direct_validation = HashMap::new();
+
         let line = "PF SEQ \"5 3 <1 0> 4\"";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
 
         // Find the highlighted segments
         let highlighted: Vec<_> = result.segments
@@ -825,8 +927,10 @@ mod tests {
         let mut last_value = HashMap::new();
         last_value.insert("seq_alt_0_5 3 <1 0> 4_2".to_string(), 0);
 
+        let direct_validation = HashMap::new();
+
         let line = "PF SEQ \"5 3 <1 0> 4\"";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
 
         // Find the highlighted segments
         let highlighted: Vec<_> = result.segments
@@ -852,8 +956,10 @@ mod tests {
         let mut last_value = HashMap::new();
         last_value.insert("seq_rnd_0_5 3 {1 0} 4_2".to_string(), 1);
 
+        let direct_validation = HashMap::new();
+
         let line = "PF SEQ \"5 3 {1 0} 4\"";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
 
         // Find the highlighted segments
         let highlighted: Vec<_> = result.segments
@@ -879,8 +985,10 @@ mod tests {
         let mut last_value = HashMap::new();
         last_value.insert("seq_rnd_0_5 3 {1 0} 4_2".to_string(), 0);
 
+        let direct_validation = HashMap::new();
+
         let line = "PF SEQ \"5 3 {1 0} 4\"";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
 
         // Find the highlighted segments
         let highlighted: Vec<_> = result.segments
@@ -903,8 +1011,10 @@ mod tests {
         let mut last_value = HashMap::new();
         last_value.insert("seq_0_0 10 2".to_string(), 10);
 
+        let direct_validation = HashMap::new();
+
         let line = "N ON SEQ\"0 10 2\"";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -919,8 +1029,9 @@ mod tests {
     fn test_highlight_seq_unterminated_quote() {
         let state = HashMap::new();
         let last_value = HashMap::new();
+        let direct_validation = HashMap::new();
         let line = "N ON SEQ \"C3 E3";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
 
         // Should not panic, should treat the whole line as non-highlighted
         assert!(!result.segments.is_empty());
@@ -935,8 +1046,10 @@ mod tests {
         let mut last_value = HashMap::new();
         last_value.insert("seq_0_5000*15 1250".to_string(), 5000);
 
+        let direct_validation = HashMap::new();
+
         let line = "PF SEQ \"5000*15 1250\"; AD 5; PA 0";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -959,8 +1072,10 @@ mod tests {
         let mut last_value = HashMap::new();
         last_value.insert("0_EITH_10_20".to_string(), 10);
 
+        let direct_validation = HashMap::new();
+
         let line = "N ON EITH 10 20";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -978,8 +1093,10 @@ mod tests {
         let mut last_value = HashMap::new();
         last_value.insert("0_EITH_100_200".to_string(), 200);
 
+        let direct_validation = HashMap::new();
+
         let line = "PF EITH 100 200";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()

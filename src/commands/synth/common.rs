@@ -30,7 +30,14 @@ macro_rules! define_int_param {
                 patterns.toggle_state.clone(),
                 patterns.toggle_last_value.clone()
             );
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+            let value: i32 = if let Some((expr_val, consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                if consumed > 0 && parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let key = format!("{}_{}", script_index, parts[1..1+consumed].join("_"));
+                        patterns.direct_validation.insert(key, true);
+                    }
+                }
                 expr_val as i32
             } else {
                 parts[1]
@@ -40,6 +47,14 @@ macro_rules! define_int_param {
             if value < $min || value > $max {
                 patterns.toggle_state = state_snapshot.0;
                 patterns.toggle_last_value = state_snapshot.1;
+                if parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let end_idx = parts.len().min(4);
+                        let key = format!("{}_{}", script_index, parts[1..end_idx].join("_"));
+                        patterns.direct_validation.insert(key, false);
+                    }
+                }
                 output(format!("ERROR: {} MUST BE BETWEEN {} AND {}", $display_name, $min, $max));
                 return Ok(());
             }
@@ -80,7 +95,14 @@ macro_rules! define_int_param_ms {
                 patterns.toggle_state.clone(),
                 patterns.toggle_last_value.clone()
             );
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+            let value: i32 = if let Some((expr_val, consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                if consumed > 0 && parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let key = format!("{}_{}", script_index, parts[1..1+consumed].join("_"));
+                        patterns.direct_validation.insert(key, true);
+                    }
+                }
                 expr_val as i32
             } else {
                 parts[1]
@@ -90,6 +112,14 @@ macro_rules! define_int_param_ms {
             if value < $min || value > $max {
                 patterns.toggle_state = state_snapshot.0;
                 patterns.toggle_last_value = state_snapshot.1;
+                if parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let end_idx = parts.len().min(4);
+                        let key = format!("{}_{}", script_index, parts[1..end_idx].join("_"));
+                        patterns.direct_validation.insert(key, false);
+                    }
+                }
                 output(format!("ERROR: {} MUST BE BETWEEN {} AND {} MS", $display_name, $min, $max));
                 return Ok(());
             }
@@ -132,7 +162,14 @@ macro_rules! define_float_param {
                 patterns.toggle_state.clone(),
                 patterns.toggle_last_value.clone()
             );
-            let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+            let value: f32 = if let Some((expr_val, consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                if consumed > 0 && parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let key = format!("{}_{}", script_index, parts[1..1+consumed].join("_"));
+                        patterns.direct_validation.insert(key, true);
+                    }
+                }
                 expr_val as f32
             } else {
                 parts[1]
@@ -142,6 +179,14 @@ macro_rules! define_float_param {
             if value < $min || value > $max {
                 patterns.toggle_state = state_snapshot.0;
                 patterns.toggle_last_value = state_snapshot.1;
+                if parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let end_idx = parts.len().min(4);
+                        let key = format!("{}_{}", script_index, parts[1..end_idx].join("_"));
+                        patterns.direct_validation.insert(key, false);
+                    }
+                }
                 output(format!("ERROR: {} MUST BE BETWEEN {} AND {} {}", $display_name, $min, $max, $unit));
                 return Ok(());
             }
@@ -182,7 +227,14 @@ macro_rules! define_bool_param {
                 patterns.toggle_state.clone(),
                 patterns.toggle_last_value.clone()
             );
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+            let value: i32 = if let Some((expr_val, consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                if consumed > 0 && parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let key = format!("{}_{}", script_index, parts[1..1+consumed].join("_"));
+                        patterns.direct_validation.insert(key, true);
+                    }
+                }
                 expr_val as i32
             } else {
                 parts[1]
@@ -192,6 +244,14 @@ macro_rules! define_bool_param {
             if !(0..=1).contains(&value) {
                 patterns.toggle_state = state_snapshot.0;
                 patterns.toggle_last_value = state_snapshot.1;
+                if parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let end_idx = parts.len().min(4);
+                        let key = format!("{}_{}", script_index, parts[1..end_idx].join("_"));
+                        patterns.direct_validation.insert(key, false);
+                    }
+                }
                 output("ERROR: VALUE MUST BE 0 OR 1".to_string());
                 return Ok(());
             }
@@ -232,7 +292,14 @@ macro_rules! define_mode_param {
                 patterns.toggle_state.clone(),
                 patterns.toggle_last_value.clone()
             );
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+            let value: i32 = if let Some((expr_val, consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                if consumed > 0 && parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let key = format!("{}_{}", script_index, parts[1..1+consumed].join("_"));
+                        patterns.direct_validation.insert(key, true);
+                    }
+                }
                 expr_val as i32
             } else {
                 parts[1]
@@ -242,6 +309,14 @@ macro_rules! define_mode_param {
             if value < $min || value > $max {
                 patterns.toggle_state = state_snapshot.0;
                 patterns.toggle_last_value = state_snapshot.1;
+                if parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let end_idx = parts.len().min(4);
+                        let key = format!("{}_{}", script_index, parts[1..end_idx].join("_"));
+                        patterns.direct_validation.insert(key, false);
+                    }
+                }
                 output(format!("ERROR: {}", $error_msg));
                 return Ok(());
             }
@@ -282,7 +357,14 @@ macro_rules! define_mode_param_with_names {
                 patterns.toggle_state.clone(),
                 patterns.toggle_last_value.clone()
             );
-            let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+            let value: i32 = if let Some((expr_val, consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                if consumed > 0 && parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let key = format!("{}_{}", script_index, parts[1..1+consumed].join("_"));
+                        patterns.direct_validation.insert(key, true);
+                    }
+                }
                 expr_val as i32
             } else {
                 parts[1]
@@ -292,6 +374,14 @@ macro_rules! define_mode_param_with_names {
             if value < $min || value > $max {
                 patterns.toggle_state = state_snapshot.0;
                 patterns.toggle_last_value = state_snapshot.1;
+                if parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let end_idx = parts.len().min(4);
+                        let key = format!("{}_{}", script_index, parts[1..end_idx].join("_"));
+                        patterns.direct_validation.insert(key, false);
+                    }
+                }
                 output(format!("ERROR: {}", $error_msg));
                 return Ok(());
             }

@@ -8,6 +8,7 @@ use crate::types::{Page, SearchScope};
 pub fn render_metro_page(app: &crate::App) -> Paragraph<'static> {
     let toggle_state_snapshot = app.patterns.toggle_state.clone();
     let toggle_last_value_snapshot = app.patterns.toggle_last_value.clone();
+    let direct_validation_snapshot = app.patterns.direct_validation.clone();
 
     let state = app.metro_state.lock().unwrap();
     let bpm = 15000.0 / state.interval_ms as f32;
@@ -87,6 +88,7 @@ pub fn render_metro_page(app: &crate::App) -> Paragraph<'static> {
                             script_index,
                             &toggle_state_snapshot,
                             &toggle_last_value_snapshot,
+                            &direct_validation_snapshot,
                         );
 
                         for segment_span in segment_highlighted.to_spans(normal_color, highlight_color) {
@@ -114,6 +116,7 @@ pub fn render_metro_page(app: &crate::App) -> Paragraph<'static> {
                     script_index,
                     &toggle_state_snapshot,
                     &toggle_last_value_snapshot,
+                    &direct_validation_snapshot,
                 );
 
                 if app.show_conditional_highlight {

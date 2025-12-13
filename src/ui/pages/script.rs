@@ -11,6 +11,7 @@ pub fn render_script_page(app: &crate::App, num: u8) -> Paragraph<'static> {
 
     let toggle_state_snapshot = app.patterns.toggle_state.clone();
     let toggle_last_value_snapshot = app.patterns.toggle_last_value.clone();
+    let direct_validation_snapshot = app.patterns.direct_validation.clone();
 
     let should_highlight_search = app.search_mode && !app.search_query.is_empty();
     let current_match_line_col = if should_highlight_search && !app.search_matches.is_empty() {
@@ -68,6 +69,7 @@ pub fn render_script_page(app: &crate::App, num: u8) -> Paragraph<'static> {
                             script_index,
                             &toggle_state_snapshot,
                             &toggle_last_value_snapshot,
+                            &direct_validation_snapshot,
                         );
 
                         for segment_span in segment_highlighted.to_spans(normal_color, highlight_color) {
@@ -95,6 +97,7 @@ pub fn render_script_page(app: &crate::App, num: u8) -> Paragraph<'static> {
                     script_index,
                     &toggle_state_snapshot,
                     &toggle_last_value_snapshot,
+                    &direct_validation_snapshot,
                 );
 
                 if app.show_conditional_highlight {

@@ -29,6 +29,9 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 | Feature | Effort | Status |
 |---------|--------|--------|
+| Multi-Synth Architecture | High | **DONE** |
+| Noise Envelope & Gating | Medium | Not started |
+| Noise FM Routing Fix | Low | Not started |
 | Oscillator Sync | Medium | Not started |
 
 ---
@@ -55,6 +58,75 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 ---
 
 ## Recent Updates (December 2025)
+
+### Noise Envelope & Gating [PLANNED]
+Re-implement envelope and gate control in the noise synth after multi-synth architecture split.
+
+**Requirements:**
+- Add envelope (NA, ND, NC, NE) back to monokit_noise SynthDef
+- Add gate control (NG) for triggerable vs drone noise
+- Output multiple buses from noise synth:
+  - Bus 18: Envelope-shaped noise for main output (controlled by NV)
+  - Bus 19: Raw noise for FM modulation (controlled by NP/NM)
+- This allows independent control of noise as audio source vs modulation source
+- Envelope affects main output but not FM routing
+- NP/NM act as VCA amounts controlling noise→prim and noise→mod FM
+
+**Architecture:**
+```
+monokit_noise:
+  noise → [envelope + NV] → Bus 18 (to main synth audio mix)
+  noise → [NP scaling] → Bus 19 (to monokit_primary FM input)
+  noise → [NM scaling] → Bus 20 (to monokit_mod FM input)
+```
+
+**Files to modify:**
+- build_scripts/compile_synthdefs.scd (monokit_noise SynthDef)
+- build_scripts/compile_synthdefs.scd (monokit_primary - read Bus 19 for FM)
+- build_scripts/compile_synthdefs.scd (monokit_mod - read Bus 20 for FM)
+- sc/monokit_server.scd (same changes for runtime server)
+
+### Noise FM Routing Fix [PLANNED]
+Ensure noise FM modulation works even when NV is at zero.
+
+**Problem:**
+- Currently noise FM (NP/NM) may be tied to NV volume control
+- NP and NM should work independently as FM amounts
+- Users should be able to use noise as FM source without hearing it
+
+**Solution:**
+- Separate noise FM routing from noise audio volume
+- NP controls noise→primary FM amount (independent of NV)
+- NM controls noise→mod FM amount (independent of NV)
+- This is achieved by the bus architecture above
+
+**Testing:**
+- Set NV=0, NP=16383 - should hear FM modulation on primary, no noise audio
+- Set NV=0, NM=16383 - should hear FM modulation on mod, no noise audio
+- Set NV=16383, NP=0, NM=0 - should hear noise audio, no FM
+
+### Multi-Synth Architecture [COMPLETE]
+Fixed SuperCollider optimizer bug causing volume parameter cross-talk (NV/PV/MV).
+
+**Problem:**
+- SC optimizer incorrectly conflated volume parameters when in same SynthDef
+- NV (noise volume), PV (primary volume), MV (mod volume) shared parameter graph
+- Changing one parameter affected others due to optimizer collapse
+
+**Solution:**
+- Split monolithic SynthDef into 4 separate SynthDefs with audio bus routing
+- monokit_noise: Noise source → Bus 16
+- monokit_mod: Modulator → Bus 17
+- monokit_primary: Primary oscillator → Bus 18
+- monokit_main: Reads buses 16/17/18, processes effects, outputs final audio
+- Each source has isolated volume parameter graph preventing cross-talk
+
+**Implementation:**
+- [x] Created 4-synth architecture with bus routing
+- [x] Updated build process to compile 7 synthdefs (4 sources + 3 utilities)
+- [x] Verified volume parameters now operate independently
+- [x] Maintained single-trigger interface (Rust sends to all 4 synths)
+- [x] Files: build_scripts/compile_synthdefs.scd, sc/monokit_server.scd
 
 ### Envelope Parameter Scaling Fix [COMPLETE]
 Fixed FM and Disc envelope amount parameter ranges.

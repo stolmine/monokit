@@ -12,6 +12,12 @@ if(outDev.notNil && (outDev.size > 0), {
 // Disable input to avoid sample rate mismatch issues
 s.options.numInputBusChannels = 0;
 
+// Check if MiPlaits UGen is available
+if(UGen.findRespondingMethodFor(\ar, \MiPlaits).isNil, {
+    "WARNING: MiPlaits UGen not found! Plaits voice will not work.".postln;
+    "Install mi-UGens from: https://github.com/v7b1/mi-UGens".postln;
+});
+
 s.waitForBoot {
     SynthDef(\monokit, {
         // Defaults match RST command values
@@ -654,6 +660,40 @@ s.waitForBoot {
         Out.ar(0, [sigL, sigR]);
     }).add;
 
+    SynthDef(\monokit_plaits, {
+        arg t_gate = 0,
+            pitch = 131,
+            detune = 0,
+            engine = 0,
+            harmonics = 0.5,
+            timbre = 0.5,
+            morph = 0.5,
+            decay = 0.5,
+            lpg = 0.5,
+            plv = 8192,
+            pav = 0;
+
+        var freq = pitch * (2 ** (detune / 1200));
+
+        var sig = MiPlaits.ar(
+            pitch: freq.cpsmidi,
+            engine: engine.clip(0, 15),
+            harm: harmonics.clip(0, 1),
+            timbre: timbre.clip(0, 1),
+            morph: morph.clip(0, 1),
+            trigger: t_gate,
+            level: 0.8,
+            lpg_colour: lpg.clip(0, 1),
+            decay: decay.clip(0, 1)
+        );
+
+        var main = sig[0] * (plv / 16383.0);
+        var aux = sig[1] * (pav / 16383.0);
+
+        Out.ar(19, main);
+        Out.ar(20, aux);
+    }).add;
+
     SynthDef(\monokit_spectrum, {
         var sigL, sigR, mono, bands, freqs, clips, data;
 
@@ -706,7 +746,11 @@ s.waitForBoot {
 
     s.sync;
 
-    ~voice = Synth(\monokit);
+    ~noise = Synth(\monokit_noise, target: s, addAction: \addToHead);
+    ~mod = Synth(\monokit_mod, target: s, addAction: \addToHead);
+    ~primary = Synth(\monokit_primary, target: s, addAction: \addToHead);
+    ~plaits = Synth(\monokit_plaits, target: s, addAction: \addToHead);
+    ~main = Synth(\monokit_main, target: s, addAction: \addToTail);
     ~spectrum = Synth(\monokit_spectrum, addAction: \addToTail);
     ~scope = Synth(\monokit_scope, addAction: \addToTail);
 
@@ -751,24 +795,50 @@ s.waitForBoot {
     }).play;
 
     OSCdef(\monokit_trigger, { |msg|
-        ~voice.set(\t_gate, 1);
+        ~noise.set(\t_gate, 1);
+        ~mod.set(\t_gate, 1);
+        ~primary.set(\t_gate, 1);
+        ~main.set(\t_gate, 1);
         // t_gate automatically resets after one control block, but we
         // schedule a reset anyway for backwards compatibility
         SystemClock.sched(0.01, {
-            ~voice.set(\t_gate, 0);
+            ~noise.set(\t_gate, 0);
+            ~mod.set(\t_gate, 0);
+            ~primary.set(\t_gate, 0);
+            ~main.set(\t_gate, 0);
             nil;
         });
     }, '/monokit/trigger');
 
     OSCdef(\monokit_volume, { |msg|
         var vol = msg[1].asFloat.clip(0, 1);
-        ~voice.set(\volume, vol);
+        ~main.set(\volume, vol);
     }, '/monokit/volume');
 
     OSCdef(\monokit_param, { |msg|
         var paramName = msg[1].asSymbol;
         var paramValue = msg[2].asFloat;
-        ~voice.set(paramName, paramValue);
+        var routeParam = { |pName, pValue|
+            case
+                // Noise synth
+                { #[nw, nv].includes(pName) } { ~noise.set(pName, pValue) }
+                // Mod synth
+                { #[mf, mw, mv, fb, fba, fbd, nm, mb, mba, mbd, md, fbev_atk, fbev_crv].includes(pName) } { ~mod.set(pName, pValue) }
+                // Primary synth
+                { #[pf, pw, pv, fm, fa, fd, pa, pd, np, tk, mt, mp, penv_atk, penv_crv, fmev_atk, fmev_crv].includes(pName) } { ~primary.set(pName, pValue) }
+                // Plaits synth - map t_gate_plaits to t_gate
+                { pName == \t_gate_plaits } { ~plaits.set(\t_gate, pValue) }
+                { #[engine, harmonics, timbre, morph, decay, lpg, plv, pav, pitch, detune].includes(pName) } { ~plaits.set(pName, pValue) }
+                // Global envelope parameters - send to all synths that need them
+                { #[env_atk, env_crv].includes(pName) } {
+                    ~mod.set(pName, pValue);
+                    ~primary.set(pName, pValue);
+                    ~main.set(pName, pValue);
+                }
+                // Main synth (everything else - effects, filters, etc.)
+                { true } { ~main.set(pName, pValue) };
+        };
+        routeParam.(paramName, paramValue);
     }, '/monokit/param');
 
     // Scope timespan control: rate = 128 / (ms * 44.1)
@@ -825,7 +895,10 @@ s.waitForBoot {
     OSCdef(\monokit_slew, { |msg|
         var slewMs = msg[1].asFloat.clip(0, 10000);
         var slewSec = slewMs / 1000;
-        ~voice.set(\slew_time, slewSec);
+        ~noise.set(\slew_time, slewSec);
+        ~mod.set(\slew_time, slewSec);
+        ~primary.set(\slew_time, slewSec);
+        ~main.set(\slew_time, slewSec);
         ("SLEW TIME SET TO" + slewMs + "MS").postln;
     }, '/monokit/slew');
 
@@ -833,7 +906,16 @@ s.waitForBoot {
         var paramName = msg[1].asString;
         var slewTime = msg[2].asFloat.clip(0, 10);
         var slewArgName = ("slew_" ++ paramName).asSymbol;
-        ~voice.set(slewArgName, slewTime);
+        var paramSym = paramName.asSymbol;
+
+        case
+            // Mod synth parameters
+            { #[mf, fb].includes(paramSym) } { ~mod.set(slewArgName, slewTime) }
+            // Primary synth parameters
+            { #[pf, fm].includes(paramSym) } { ~primary.set(slewArgName, slewTime) }
+            // Main synth parameters (everything else)
+            { true } { ~main.set(slewArgName, slewTime) };
+
         ("SLEW" + paramName.toUpper + "SET TO" + (slewTime * 1000) + "MS").postln;
     }, '/monokit/slew/param');
 
@@ -853,11 +935,17 @@ s.waitForBoot {
                 ~diagTimestamps = ~diagTimestamps.drop(1);
             });
         });
-        // Set t_gate high immediately
-        ~voice.set(\t_gate, 1);
+        // Set t_gate high immediately on all synths except plaits
+        ~noise.set(\t_gate, 1);
+        ~mod.set(\t_gate, 1);
+        ~primary.set(\t_gate, 1);
+        ~main.set(\t_gate, 1);
         // t_gate auto-resets, but schedule explicit reset for safety
         SystemClock.sched(0.01, {
-            ~voice.set(\t_gate, 0);
+            ~noise.set(\t_gate, 0);
+            ~mod.set(\t_gate, 0);
+            ~primary.set(\t_gate, 0);
+            ~main.set(\t_gate, 0);
             nil;
         });
     }, '/monokit/trigger');

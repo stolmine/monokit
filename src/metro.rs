@@ -1,5 +1,5 @@
 use crate::osc_utils::{create_bundle, OSC_LATENCY_MS};
-use crate::types::{DelayedCommand, MetroCommand, MetroEvent, MetroState, SyncMode, OSC_ADDR, MONOKIT_NODE_ID, route_param_to_node, NOISE_NODE_ID, MOD_NODE_ID, PRIMARY_NODE_ID, MAIN_NODE_ID};
+use crate::types::{DelayedCommand, MetroCommand, MetroEvent, MetroState, SyncMode, OSC_ADDR, MONOKIT_NODE_ID, route_param_to_node, NOISE_NODE_ID, MOD_NODE_ID, PRIMARY_NODE_ID, MAIN_NODE_ID, PLAITS_NODE_ID};
 use rosc::{encoder, OscMessage, OscPacket, OscType};
 use spin_sleep::SpinSleeper;
 use audio_thread_priority::promote_current_thread_to_real_time;
@@ -12,32 +12,67 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 const OSC_BUFFER_SIZE: usize = 4 * 1024 * 1024; // 4MB buffer to prevent packet loss
+const OSC_LOG_PATH: &str = "/tmp/monokit_osc.log";
+
+fn format_osc_args(args: &[OscType]) -> String {
+    args.iter()
+        .map(|arg| match arg {
+            OscType::Int(i) => i.to_string(),
+            OscType::Float(f) => format!("{:.3}", f),
+            OscType::String(s) => format!("\"{}\"", s),
+            OscType::Long(l) => l.to_string(),
+            OscType::Double(d) => format!("{:.3}", d),
+            OscType::Bool(b) => b.to_string(),
+            OscType::Char(c) => format!("'{}'", c),
+            _ => format!("{:?}", arg),
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn log_osc_message(msg: &OscMessage, label: &str) {
+    let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S%.3f");
+    let args_str = format_osc_args(&msg.args);
+    let log_line = format!("[{}] {} → {} {}\n", timestamp, label, msg.addr, args_str);
+
+    if let Ok(mut file) = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(OSC_LOG_PATH)
+    {
+        let _ = file.write_all(log_line.as_bytes());
+    }
+}
 
 #[cfg(feature = "scsynth-direct")]
 fn create_param_message(param_name: &str, value: OscType) -> OscMessage {
     let node_id = route_param_to_node(param_name);
-    OscMessage {
+    let msg = OscMessage {
         addr: "/n_set".to_string(),
         args: vec![
             OscType::Int(node_id),
             OscType::String(param_name.to_string()),
             value,
         ],
-    }
+    };
+    log_osc_message(&msg, "CREATE_PARAM");
+    msg
 }
 
 #[cfg(not(feature = "scsynth-direct"))]
 fn create_param_message(param_name: &str, value: OscType) -> OscMessage {
-    OscMessage {
+    let msg = OscMessage {
         addr: "/monokit/param".to_string(),
         args: vec![OscType::String(param_name.to_string()), value],
-    }
+    };
+    log_osc_message(&msg, "CREATE_PARAM");
+    msg
 }
 
 #[cfg(feature = "scsynth-direct")]
 fn create_trigger_messages() -> Vec<OscMessage> {
     // Send t_gate to all 4 synths
-    vec![
+    let messages = vec![
         OscMessage {
             addr: "/n_set".to_string(),
             args: vec![OscType::Int(NOISE_NODE_ID), OscType::String("t_gate".to_string()), OscType::Int(1)],
@@ -54,15 +89,21 @@ fn create_trigger_messages() -> Vec<OscMessage> {
             addr: "/n_set".to_string(),
             args: vec![OscType::Int(MAIN_NODE_ID), OscType::String("t_gate".to_string()), OscType::Int(1)],
         },
-    ]
+    ];
+    for msg in &messages {
+        log_osc_message(msg, "CREATE_TRIGGER");
+    }
+    messages
 }
 
 #[cfg(not(feature = "scsynth-direct"))]
 fn create_trigger_message() -> OscMessage {
-    OscMessage {
+    let msg = OscMessage {
         addr: "/monokit/trigger".to_string(),
         args: vec![],
-    }
+    };
+    log_osc_message(&msg, "CREATE_TRIGGER");
+    msg
 }
 
 #[cfg(feature = "scsynth-direct")]
@@ -337,6 +378,8 @@ impl MetroTimingStats {
 
 /// Send OSC - uses timestamps for internal timing, immediate for MIDI sync
 fn send_osc(socket: Option<&UdpSocket>, msg: OscMessage, use_timestamp: bool) {
+    log_osc_message(&msg, "SEND");
+
     if let Some(socket) = socket {
         let packet = if use_timestamp {
             create_bundle(vec![msg], OSC_LATENCY_MS)
@@ -465,6 +508,27 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                         send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
                     }
                     metro_timing.trigger_count += 1;
+                }
+                MetroCommand::SendPlaitsTrigger => {
+                    #[cfg(feature = "scsynth-direct")]
+                    {
+                        let msg = OscMessage {
+                            addr: "/n_set".to_string(),
+                            args: vec![OscType::Int(PLAITS_NODE_ID), OscType::String("t_gate".to_string()), OscType::Int(1)],
+                        };
+                        log_osc_message(&msg, "CREATE_PLAITS_TRIGGER");
+                        send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
+                    }
+                    #[cfg(not(feature = "scsynth-direct"))]
+                    {
+                        // For sclang mode, send via /monokit/param with plaits-specific parameter
+                        let msg = OscMessage {
+                            addr: "/monokit/param".to_string(),
+                            args: vec![OscType::String("t_gate_plaits".to_string()), OscType::Int(1)],
+                        };
+                        log_osc_message(&msg, "CREATE_PLAITS_TRIGGER");
+                        send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
+                    }
                 }
                 MetroCommand::SendVolume(value) => {
                     let msg = create_volume_message(value);

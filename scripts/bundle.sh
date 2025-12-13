@@ -53,7 +53,18 @@ sleep 2
 REPO_ROOT="$(pwd)"
 SYNTHDEF_OUTPUT="${REPO_ROOT}/sc/synthdefs"
 
-"${SCLANG}" "${REPO_ROOT}/build_scripts/compile_synthdefs.scd"
+echo "  Running sclang (timeout: 30s)..."
+# macOS requires running sclang from its own directory - see docs/SCLANG_MACOS_FIX.md
+if ! (cd /Applications/SuperCollider.app/Contents/MacOS && \
+      timeout 30 ./sclang "${REPO_ROOT}/build_scripts/compile_synthdefs.scd" 2>&1); then
+    EXIT_CODE=$?
+    if [ $EXIT_CODE -eq 124 ]; then
+        echo "ERROR: SynthDef compilation timed out after 30 seconds"
+    else
+        echo "ERROR: SynthDef compilation failed with exit code $EXIT_CODE"
+    fi
+    exit 1
+fi
 
 # Verify synthdefs were created
 if [ -d "${SYNTHDEF_OUTPUT}" ] && [ -n "$(ls -A ${SYNTHDEF_OUTPUT}/*.scsyndef 2>/dev/null)" ]; then

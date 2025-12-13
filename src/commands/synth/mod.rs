@@ -9,6 +9,7 @@ pub mod envelopes;
 pub mod effects;
 pub mod noise;
 pub mod source_levels;
+pub mod plaits;
 
 pub use oscillator::*;
 pub use modulation::*;
@@ -20,3 +21,4 @@ pub use envelopes::*;
 pub use effects::*;
 pub use noise::*;
 pub use source_levels::*;
+pub use plaits::*;

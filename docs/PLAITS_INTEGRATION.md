@@ -23,26 +23,30 @@ Plaits was integrated as a **5th parallel sound source** that feeds into the pre
 ```
 Sound Sources (Parallel):
   monokit_noise    → Bus 18 ──┐
-  monokit_mod      → Bus 17 ──┤
-  monokit_primary  → Bus 16 ──┤
-  monokit_plaits:              │
-    - Main output  → Bus 19 ──┤──→ monokit_main (pre-filter mix)
-    - AUX output   → Bus 20 ──┘         ↓
+  monokit_mod      → Bus 17 ──┤──→ monokit_main (pre-filter mix)
+  monokit_primary  → Bus 16 ──┘         ↓
                                     SVF Filter
                                          ↓
-                                    Effects Chain
-                                    (Lofi, Ring Mod, Compressor,
-                                     Delay, Reverb, EQ, Pitch Shift)
+                                    Discontinuity
                                          ↓
-                                      Output
+                                    [Post-Filter VCA] ← VOL, VCA mode
+                                         ↓
+                                         ├──→ Effects Chain
+                                         │    (Lofi, Ring Mod, Compressor,
+                                         │     Delay, Reverb, EQ, Pitch Shift)
+                                         │         ↓
+  monokit_plaits:                        │      Output
+    - Main output  → Bus 19 ──┐          │
+    - AUX output   → Bus 20 ──┴──────────┘ (post-VCA mix, bypasses filter)
 ```
 
 ### Key Design Decisions
 
-**Pre-Filter Routing**
-- Plaits feeds into monokit_main's pre-filter mix (line 1016 in compile_synthdefs.scd)
-- This ensures Plaits passes through the same filter as HD2 sources
-- Maintains consistent signal flow and sonic coherence
+**Post-VCA Routing**
+- Plaits mixes post-VCA in monokit_main (after filter and discontinuity)
+- Plaits bypasses the HD2 filter/distortion chain entirely
+- Maintains independent sonic character for Plaits engines
+- Both Plaits and HD2 share the same effects chain (delay, reverb, EQ, etc.)
 
 **Dual Output Architecture**
 - Plaits provides two outputs per engine (main + aux)
@@ -87,7 +91,7 @@ The runtime uses 5 parallel SynthDefs:
 - Graceful degradation if mi-UGens not installed (warning only)
 - Installation instructions included in bundle script output
 
-### Rust Side (Complete - Debugging Required)
+### Rust Side (Complete)
 
 **Module Structure**
 Created `src/commands/synth/plaits/` module:
@@ -97,8 +101,8 @@ Created `src/commands/synth/plaits/` module:
 
 **Type System Updates**
 - Added PLAITS_NODE_ID constant (1004) to src/types.rs
-- Updated parameter routing in route_to_node() function
-- Added plaits parameters to routing table (line 742)
+- Updated parameter routing in route_param_to_node() function
+- Added plaits parameters to routing table (line 747)
 
 **Command Integration**
 - Added 10 Plaits commands to command dispatcher (src/commands/mod.rs)
@@ -283,42 +287,40 @@ PL.ENG 12; PLV 10000; PL.MORPH 8000  # Bell tones
 - Now checks 8 SynthDefs (was 7)
 - Lines 156-164: Updated build summary documentation
 
-## 7. Known Issues
+## 7. Bugs Fixed During Integration
 
-### Commands Show as Unknown (Runtime Issue)
+### Node ID Conflict (1004 Duplicate)
+**Problem:** Initial implementation used node ID 1004 which conflicted with existing synth allocation.
 
-**Symptoms**
-All Plaits commands (PL.ENG, PL.HARM, PLV, PLTR, etc.) are registered in code but show as "unknown command" at runtime.
+**Solution:** Established 5-synth architecture with clear node ID assignments:
+- 1000: monokit_noise
+- 1001: monokit_mod
+- 1002: monokit_primary
+- 1003: monokit_main
+- 1004: monokit_plaits
 
-**Evidence**
-- Commands are present in src/commands/mod.rs dispatcher (verified)
-- Module structure is correct (mod.rs → engine.rs + params.rs)
-- Public exports are in place (pub use plaits::*)
-- Parameter routing exists in types.rs (line 742)
+### PLV/PAV Double-Scaling Bug
+**Problem:** Volume parameters (PLV, PAV) were being scaled twice:
+- Once in Rust (dividing by 16383)
+- Again in SuperCollider SynthDef
 
-**Possible Causes**
-1. **Stale Binary Cache** - Old monokit binary running without new commands
-2. **Module Import Issue** - plaits module not properly exported from synth module
-3. **Feature Gate Issue** - Commands conditionally compiled out
-4. **Macro Expansion Issue** - define_int_param/define_mode_param not generating code
+This resulted in Plaits being nearly inaudible even at maximum values.
 
-**Debugging Steps**
-1. Clean build: `cargo clean && cargo build --release`
-2. Verify binary freshness: Check monokit binary timestamp vs. source files
-3. Add debug logging to command dispatcher: Print all registered commands at startup
-4. Test command matching: Add println! before match statement in mod.rs
-5. Check macro expansion: `cargo expand commands::synth::plaits` to verify generated code
-6. Verify module tree: Ensure plaits re-exports propagate to top-level commands module
+**Solution:** Updated parameter handling to use integer range (0-16383) in Rust and perform scaling once in SuperCollider SynthDef, matching the pattern used by other volume parameters (PV, MV, NV).
 
-**Temporary Workaround**
-None - commands must be recognized for Plaits to function.
+### VCA Bypass Implementation
+**Problem:** Initial routing had Plaits mixing pre-VCA, which meant the master volume control (VOL) didn't affect Plaits output. This created inconsistent volume behavior.
 
-**Impact**
-Plaits integration is complete in SuperCollider (SynthDef works, buses routed correctly) but unusable from Rust CLI until command registration issue is resolved.
+**Solution:** Moved Plaits mixing to post-VCA stage:
+- HD2 sources (noise, mod, primary) → filter → discontinuity → VCA
+- Plaits outputs (main, aux) mix after VCA
+- Both signals then share the effects chain
+- Master volume (VOL) now affects entire mix consistently
+- Plaits maintains independent character by bypassing HD2's filter/distortion
 
 ## 8. Testing Recommendations
 
-Once command recognition is resolved, test in this order:
+Test in this order to verify Plaits functionality:
 
 ### Basic Plaits Functionality
 ```
@@ -421,7 +423,7 @@ DW 8000           # Delay wet
 PLTR              # Should hear delayed chords
 ```
 
-## 9. Commits
+## 9. Integration Commits
 
 Integration work completed across 3 commits:
 

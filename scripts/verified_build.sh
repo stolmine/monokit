@@ -35,14 +35,27 @@ pkill -9 scsynth 2>/dev/null || true
 sleep 2
 echo "  Running: sclang build_scripts/compile_synthdefs.scd"
 echo "  Timeout: 30 seconds"
-timeout 30 /Applications/SuperCollider.app/Contents/MacOS/sclang build_scripts/compile_synthdefs.scd > /tmp/synthdef_compile.log 2>&1
-echo "  Compilation complete"
+# macOS requires running sclang from its own directory - see docs/SCLANG_MACOS_FIX.md
+REPO_ROOT="$(pwd)"
+if (cd /Applications/SuperCollider.app/Contents/MacOS && \
+    timeout 30 ./sclang "${REPO_ROOT}/build_scripts/compile_synthdefs.scd" 2>&1 | tee /tmp/synthdef_compile.log); then
+    echo "  Compilation complete"
+else
+    EXIT_CODE=$?
+    if [ $EXIT_CODE -eq 124 ]; then
+        echo -e "${RED}ERROR: SynthDef compilation timed out after 30 seconds${NC}"
+    else
+        echo -e "${RED}ERROR: SynthDef compilation failed with exit code $EXIT_CODE${NC}"
+    fi
+    echo "Last 50 lines of compilation log:"
+    tail -50 /tmp/synthdef_compile.log
+    exit 1
+fi
 
 # Step 4: Verify synthdefs were created
 echo -e "${YELLOW}STEP 4: Verifying SynthDef compilation${NC}"
-echo "  Checking for 8 required SynthDef files..."
 
-# Check all required synthdefs
+# Define required synthdefs
 REQUIRED_SYNTHDEFS=(
     "monokit_noise.scsyndef"
     "monokit_mod.scsyndef"
@@ -53,6 +66,8 @@ REQUIRED_SYNTHDEFS=(
     "monokit_scope.scsyndef"
     "monokit_recorder.scsyndef"
 )
+
+echo "  Checking for ${#REQUIRED_SYNTHDEFS[@]} required SynthDef files..."
 
 for synthdef in "${REQUIRED_SYNTHDEFS[@]}"; do
     if [ ! -f "sc/synthdefs/$synthdef" ]; then
@@ -79,8 +94,20 @@ echo "  Main SynthDef MD5: $SOURCE_MD5"
 echo -e "${YELLOW}STEP 5: Building bundle${NC}"
 echo "  Running bundle.sh (this may take a moment)..."
 echo "  - Compiling Rust binary..."
-./scripts/bundle.sh > /tmp/bundle.log 2>&1
-echo "  Bundle build complete"
+echo "  Timeout: 120 seconds"
+if timeout 120 ./scripts/bundle.sh 2>&1 | tee /tmp/bundle.log; then
+    echo "  Bundle build complete"
+else
+    EXIT_CODE=$?
+    if [ $EXIT_CODE -eq 124 ]; then
+        echo -e "${RED}ERROR: Bundle build timed out after 120 seconds${NC}"
+    else
+        echo -e "${RED}ERROR: Bundle build failed with exit code $EXIT_CODE${NC}"
+    fi
+    echo "Last 50 lines of bundle log:"
+    tail -50 /tmp/bundle.log
+    exit 1
+fi
 
 # Step 6: Verify bundle was created
 echo -e "${YELLOW}STEP 6: Verifying bundle${NC}"
@@ -94,7 +121,7 @@ fi
 echo "  ✓ Bundle executable found"
 
 # Verify all synthdefs were copied to bundle
-echo "  Verifying 7 SynthDefs copied to bundle..."
+echo "  Verifying ${#REQUIRED_SYNTHDEFS[@]} SynthDefs copied to bundle..."
 for synthdef in "${REQUIRED_SYNTHDEFS[@]}"; do
     if [ ! -f "dist/bundle/monokit-dev-aarch64-apple-darwin/Resources/synthdefs/$synthdef" ]; then
         echo -e "${RED}ERROR: $synthdef not copied to bundle!${NC}"

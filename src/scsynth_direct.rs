@@ -304,6 +304,7 @@ impl ScsynthDirect {
             synthdefs_dir.join("monokit_noise.scsyndef"),
             synthdefs_dir.join("monokit_mod.scsyndef"),
             synthdefs_dir.join("monokit_primary.scsyndef"),
+            synthdefs_dir.join("monokit_plaits.scsyndef"),
             synthdefs_dir.join("monokit_main.scsyndef"),
             synthdefs_dir.join("monokit_spectrum.scsyndef"),
             synthdefs_dir.join("monokit_scope.scsyndef"),
@@ -341,13 +342,13 @@ impl ScsynthDirect {
             "/s_new",
             vec![
                 OscType::String("monokit_spectrum".to_string()),
-                OscType::Int(1004),
+                OscType::Int(1005),
                 OscType::Int(1),
                 OscType::Int(0),
             ],
         )?;
         if !silent {
-            eprintln!("[monokit]   Created monokit_spectrum (node 1004)");
+            eprintln!("[monokit]   Created monokit_spectrum (node 1005)");
         }
 
         Self::send_osc_message_static(
@@ -355,13 +356,13 @@ impl ScsynthDirect {
             "/s_new",
             vec![
                 OscType::String("monokit_scope".to_string()),
-                OscType::Int(1005),
+                OscType::Int(1006),
                 OscType::Int(1),
                 OscType::Int(0),
             ],
         )?;
         if !silent {
-            eprintln!("[monokit]   Created monokit_scope (node 1005)");
+            eprintln!("[monokit]   Created monokit_scope (node 1006)");
         }
 
         thread::sleep(Duration::from_millis(500));
@@ -385,7 +386,7 @@ impl ScsynthDirect {
     }
 
     fn spawn_voice_synths(socket: &UdpSocket, silent: bool) -> Result<(), String> {
-        use crate::types::{VoiceSynths, PRIMARY_BUS, MOD_BUS, NOISE_BUS};
+        use crate::types::{VoiceSynths, PRIMARY_BUS, MOD_BUS, NOISE_BUS, PLAITS_MAIN_BUS, PLAITS_AUX_BUS};
 
         let synths = VoiceSynths::new();
 
@@ -443,6 +444,24 @@ impl ScsynthDirect {
             eprintln!("[monokit]   Created monokit_primary (node {})", synths.primary_node);
         }
 
+        Self::send_osc_message_static(
+            socket,
+            "/s_new",
+            vec![
+                OscType::String("monokit_plaits".to_string()),
+                OscType::Int(synths.plaits_node),
+                OscType::Int(0),
+                OscType::Int(0),
+                OscType::String("plaitsMainBus".to_string()),
+                OscType::Int(PLAITS_MAIN_BUS),
+                OscType::String("plaitsAuxBus".to_string()),
+                OscType::Int(PLAITS_AUX_BUS),
+            ],
+        )?;
+        if !silent {
+            eprintln!("[monokit]   Created monokit_plaits (node {})", synths.plaits_node);
+        }
+
         thread::sleep(Duration::from_millis(50));
 
         Self::send_osc_message_static(
@@ -459,6 +478,10 @@ impl ScsynthDirect {
                 OscType::Int(MOD_BUS),
                 OscType::String("noiseBus".to_string()),
                 OscType::Int(NOISE_BUS),
+                OscType::String("plaitsMainBus".to_string()),
+                OscType::Int(PLAITS_MAIN_BUS),
+                OscType::String("plaitsAuxBus".to_string()),
+                OscType::Int(PLAITS_AUX_BUS),
             ],
         )?;
         if !silent {

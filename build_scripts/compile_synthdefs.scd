@@ -6,15 +6,31 @@
 // Output to sibling sc/synthdefs directory (relative to this script's parent)
 var thisDir = thisProcess.nowExecutingPath.dirname;
 var synthdefs_dir = thisDir +/+ "../sc/synthdefs/";
+var hasMiPlaits;
 
 // Ensure output directory exists
 File.mkdir(synthdefs_dir);
 ("Output directory: " ++ synthdefs_dir).postln;
 
 // Check if MiPlaits UGen is available
-if(UGen.findRespondingMethodFor(\ar, \MiPlaits).isNil, {
+"Checking for MiPlaits...".postln;
+hasMiPlaits = try {
+    var result = MiPlaits.notNil;
+    ("  MiPlaits class check result: " ++ result).postln;
+    result;
+} {
+    |error|
+    ("  MiPlaits check failed with error: " ++ error).postln;
+    false;
+};
+
+("  hasMiPlaits = " ++ hasMiPlaits).postln;
+
+if(hasMiPlaits.not, {
     "WARNING: MiPlaits UGen not found! Plaits voice will not work.".postln;
     "Install mi-UGens from: https://github.com/v7b1/mi-UGens".postln;
+}, {
+    "✓ MiPlaits UGen found and will be used".postln;
 });
 
 "Compiling SynthDefs to binary format...".postln;
@@ -788,41 +804,51 @@ SynthDef(\monokit_primary, {
 
 "  monokit_primary.scsyndef".postln;
 
-SynthDef(\monokit_plaits, {
-    arg t_gate = 0,
-        pitch = 131,
-        detune = 0,
-        engine = 0,
-        harmonics = 0.5,
-        timbre = 0.5,
-        morph = 0.5,
-        decay = 0.5,
-        lpg = 0.5,
-        plv = 8192,
-        pav = 0;
+// Conditional Plaits SynthDef - only use MiPlaits if available
+if(hasMiPlaits, {
+    SynthDef(\monokit_plaits, {
+        arg t_gate = 0,
+            pitch = 131,
+            detune = 0,
+            engine = 0,
+            harmonics = 0.5,
+            timbre = 0.5,
+            morph = 0.5,
+            decay = 0.5,
+            lpg = 0.5,
+            plv = 8192,
+            pav = 0;
 
-    var freq = pitch * (2 ** (detune / 1200));
+        var freq = pitch * (2 ** (detune / 1200));
 
-    var sig = MiPlaits.ar(
-        pitch: freq.cpsmidi,
-        engine: engine.clip(0, 15),
-        harm: harmonics.clip(0, 1),
-        timbre: timbre.clip(0, 1),
-        morph: morph.clip(0, 1),
-        trigger: t_gate,
-        level: 0.8,
-        lpg_colour: lpg.clip(0, 1),
-        decay: decay.clip(0, 1)
-    );
+        var sig = MiPlaits.ar(
+            pitch: freq.cpsmidi,
+            engine: engine.clip(0, 15),
+            harm: harmonics.clip(0, 1),
+            timbre: timbre.clip(0, 1),
+            morph: morph.clip(0, 1),
+            trigger: t_gate,
+            level: 0.8,
+            lpg_colour: lpg.clip(0, 1),
+            decay: decay.clip(0, 1)
+        );
 
-    var main = sig[0] * (plv / 16383.0);
-    var aux = sig[1] * (pav / 16383.0);
+        var main = sig[0] * (plv / 16383.0);
+        var aux = sig[1] * (pav / 16383.0);
 
-    Out.ar(19, main);
-    Out.ar(20, aux);
-}).writeDefFile(synthdefs_dir);
-
-"  monokit_plaits.scsyndef".postln;
+        Out.ar(19, main);
+        Out.ar(20, aux);
+    }).writeDefFile(synthdefs_dir);
+    "  monokit_plaits.scsyndef (with MiPlaits)".postln;
+}, {
+    SynthDef(\monokit_plaits, {
+        arg t_gate = 0, pitch = 131, detune = 0, engine = 0, harmonics = 0.5,
+            timbre = 0.5, morph = 0.5, decay = 0.5, lpg = 0.5, plv = 8192, pav = 0;
+        Out.ar(19, Silent.ar);
+        Out.ar(20, Silent.ar);
+    }).writeDefFile(synthdefs_dir);
+    "  monokit_plaits.scsyndef (STUB - MiPlaits not available)".postln;
+});
 
 SynthDef(\monokit_main, {
     // Defaults match RST command values
@@ -1012,8 +1038,9 @@ SynthDef(\monokit_main, {
     // Primary frequency tracking for filter key tracking
     primaryFreq = pf;
 
-    // Mix all sources (pre-filter)
-    sig = primaryIn + modIn + noiseIn + plaitsMainIn + plaitsAuxIn;
+    // Mix oscillator sources (pre-filter)
+    // NOTE: Plaits mixed in post-VCA to preserve its own envelope
+    sig = primaryIn + modIn + noiseIn;
 
     // Discontinuity: base + (envelope * amount)
     discontinuity = dcAmount + (dcEnv * daCtl / 16383);
@@ -1121,6 +1148,9 @@ SynthDef(\monokit_main, {
     // VCA mode: 0=drone (always 1.0), 1=gated (uses ampEnv)
     amp = Select.kr(vca_mode.clip(0, 1), [1.0, ampEnv]) * volumeSmooth * (1 + (modOsc * modBusValue * ma * 0.5));
     sig = sig * amp;
+
+    // Mix Plaits post-VCA (bypasses envelope gating, preserves Plaits internal envelope)
+    sig = sig + plaitsMainIn + plaitsAuxIn;
 
     // Compressor
     compThresh = (ctSmooth / 16383).clip(0.001, 1);

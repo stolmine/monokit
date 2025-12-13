@@ -40,13 +40,14 @@ echo "  Compilation complete"
 
 # Step 4: Verify synthdefs were created
 echo -e "${YELLOW}STEP 4: Verifying SynthDef compilation${NC}"
-echo "  Checking for 7 required SynthDef files..."
+echo "  Checking for 8 required SynthDef files..."
 
 # Check all required synthdefs
 REQUIRED_SYNTHDEFS=(
     "monokit_noise.scsyndef"
     "monokit_mod.scsyndef"
     "monokit_primary.scsyndef"
+    "monokit_plaits.scsyndef"
     "monokit_main.scsyndef"
     "monokit_spectrum.scsyndef"
     "monokit_scope.scsyndef"
@@ -149,13 +150,14 @@ echo ""
 echo "Creating build manifest..."
 cat > dist/bundle/BUILD_MANIFEST.txt <<EOF
 Build Date: $(date)
-Multi-Synth Architecture: 4 source synths + utilities
+Multi-Synth Architecture: 5 source synths + utilities
 Main SynthDef MD5: $SOURCE_MD5
 
 SynthDefs Included:
   - monokit_noise.scsyndef (noise generator)
   - monokit_mod.scsyndef (modulator oscillator)
   - monokit_primary.scsyndef (primary oscillator with FM)
+  - monokit_plaits.scsyndef (Mutable Instruments Plaits voice)
   - monokit_main.scsyndef (effects processor)
   - monokit_spectrum.scsyndef (spectrum analyzer)
   - monokit_scope.scsyndef (oscilloscope)

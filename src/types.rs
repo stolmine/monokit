@@ -696,6 +696,11 @@ pub const MOD_BUS: i32 = 17;
 pub const NOISE_BUS: i32 = 18;
 
 // Multi-synth architecture: node IDs for the 4 voice synths
+pub const NOISE_NODE_ID: i32 = 1000;
+pub const MOD_NODE_ID: i32 = 1001;
+pub const PRIMARY_NODE_ID: i32 = 1002;
+pub const MAIN_NODE_ID: i32 = 1003;
+
 pub struct VoiceSynths {
     pub noise_node: i32,
     pub mod_node: i32,
@@ -706,10 +711,27 @@ pub struct VoiceSynths {
 impl VoiceSynths {
     pub fn new() -> Self {
         VoiceSynths {
-            noise_node: 1000,
-            mod_node: 1001,
-            primary_node: 1002,
-            main_node: 1003,
+            noise_node: NOISE_NODE_ID,
+            mod_node: MOD_NODE_ID,
+            primary_node: PRIMARY_NODE_ID,
+            main_node: MAIN_NODE_ID,
         }
+    }
+}
+
+// Parameter routing: maps parameter names to their target synth node
+pub fn route_param_to_node(param: &str) -> i32 {
+    match param {
+        // Noise synth parameters
+        "nw" | "nv" => NOISE_NODE_ID,
+
+        // Modulator synth parameters
+        "mf" | "mw" | "mv" | "fb" | "fba" | "fbd" | "mb" | "mba" | "mbd" | "md" => MOD_NODE_ID,
+
+        // Primary synth parameters
+        "pf" | "pw" | "pv" | "fm" | "fa" | "fd" | "pa" | "pd" | "dc" | "dm" | "dd" | "tk" => PRIMARY_NODE_ID,
+
+        // Main synth parameters (effects, filters, etc.) - everything else
+        _ => MAIN_NODE_ID,
     }
 }

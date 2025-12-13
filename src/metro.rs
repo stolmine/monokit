@@ -1,5 +1,5 @@
 use crate::osc_utils::{create_bundle, OSC_LATENCY_MS};
-use crate::types::{DelayedCommand, MetroCommand, MetroEvent, MetroState, SyncMode, OSC_ADDR, MONOKIT_NODE_ID};
+use crate::types::{DelayedCommand, MetroCommand, MetroEvent, MetroState, SyncMode, OSC_ADDR, MONOKIT_NODE_ID, route_param_to_node, NOISE_NODE_ID, MOD_NODE_ID, PRIMARY_NODE_ID, MAIN_NODE_ID};
 use rosc::{encoder, OscMessage, OscPacket, OscType};
 use spin_sleep::SpinSleeper;
 use audio_thread_priority::promote_current_thread_to_real_time;
@@ -15,10 +15,11 @@ const OSC_BUFFER_SIZE: usize = 4 * 1024 * 1024; // 4MB buffer to prevent packet 
 
 #[cfg(feature = "scsynth-direct")]
 fn create_param_message(param_name: &str, value: OscType) -> OscMessage {
+    let node_id = route_param_to_node(param_name);
     OscMessage {
         addr: "/n_set".to_string(),
         args: vec![
-            OscType::Int(MONOKIT_NODE_ID),
+            OscType::Int(node_id),
             OscType::String(param_name.to_string()),
             value,
         ],
@@ -34,16 +35,26 @@ fn create_param_message(param_name: &str, value: OscType) -> OscMessage {
 }
 
 #[cfg(feature = "scsynth-direct")]
-fn create_trigger_message() -> OscMessage {
-    // Use t_gate (TrigControl) which automatically resets after one control block
-    OscMessage {
-        addr: "/n_set".to_string(),
-        args: vec![
-            OscType::Int(MONOKIT_NODE_ID),
-            OscType::String("t_gate".to_string()),
-            OscType::Int(1),
-        ],
-    }
+fn create_trigger_messages() -> Vec<OscMessage> {
+    // Send t_gate to all 4 synths
+    vec![
+        OscMessage {
+            addr: "/n_set".to_string(),
+            args: vec![OscType::Int(NOISE_NODE_ID), OscType::String("t_gate".to_string()), OscType::Int(1)],
+        },
+        OscMessage {
+            addr: "/n_set".to_string(),
+            args: vec![OscType::Int(MOD_NODE_ID), OscType::String("t_gate".to_string()), OscType::Int(1)],
+        },
+        OscMessage {
+            addr: "/n_set".to_string(),
+            args: vec![OscType::Int(PRIMARY_NODE_ID), OscType::String("t_gate".to_string()), OscType::Int(1)],
+        },
+        OscMessage {
+            addr: "/n_set".to_string(),
+            args: vec![OscType::Int(MAIN_NODE_ID), OscType::String("t_gate".to_string()), OscType::Int(1)],
+        },
+    ]
 }
 
 #[cfg(not(feature = "scsynth-direct"))]
@@ -441,9 +452,18 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                     send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
                 }
                 MetroCommand::SendTrigger => {
-                    // t_gate (TrigControl) automatically resets - single message is all we need
-                    let msg = create_trigger_message();
-                    send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
+                    // Send t_gate to all 4 synths in multi-synth architecture
+                    #[cfg(feature = "scsynth-direct")]
+                    {
+                        for msg in create_trigger_messages() {
+                            send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
+                        }
+                    }
+                    #[cfg(not(feature = "scsynth-direct"))]
+                    {
+                        let msg = create_trigger_message();
+                        send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
+                    }
                     metro_timing.trigger_count += 1;
                 }
                 MetroCommand::SendVolume(value) => {

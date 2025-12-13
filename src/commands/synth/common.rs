@@ -26,6 +26,10 @@ macro_rules! define_int_param {
                 output(format!("ERROR: {} REQUIRES A VALUE ({}-{})", $error_cmd, $min, $max));
                 return Ok(());
             }
+            let state_snapshot = (
+                patterns.toggle_state.clone(),
+                patterns.toggle_last_value.clone()
+            );
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
                 expr_val as i32
             } else {
@@ -34,6 +38,8 @@ macro_rules! define_int_param {
                     .context($parse_ctx)?
             };
             if value < $min || value > $max {
+                patterns.toggle_state = state_snapshot.0;
+                patterns.toggle_last_value = state_snapshot.1;
                 output(format!("ERROR: {} MUST BE BETWEEN {} AND {}", $display_name, $min, $max));
                 return Ok(());
             }
@@ -70,6 +76,10 @@ macro_rules! define_int_param_ms {
                 output(format!("ERROR: {} REQUIRES A TIME VALUE ({}-{} MS)", $error_cmd, $min, $max));
                 return Ok(());
             }
+            let state_snapshot = (
+                patterns.toggle_state.clone(),
+                patterns.toggle_last_value.clone()
+            );
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
                 expr_val as i32
             } else {
@@ -78,6 +88,8 @@ macro_rules! define_int_param_ms {
                     .context($parse_ctx)?
             };
             if value < $min || value > $max {
+                patterns.toggle_state = state_snapshot.0;
+                patterns.toggle_last_value = state_snapshot.1;
                 output(format!("ERROR: {} MUST BE BETWEEN {} AND {} MS", $display_name, $min, $max));
                 return Ok(());
             }
@@ -116,6 +128,10 @@ macro_rules! define_float_param {
                     $min, $max));
                 return Ok(());
             }
+            let state_snapshot = (
+                patterns.toggle_state.clone(),
+                patterns.toggle_last_value.clone()
+            );
             let value: f32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
                 expr_val as f32
             } else {
@@ -124,6 +140,8 @@ macro_rules! define_float_param {
                     .context($parse_ctx)?
             };
             if value < $min || value > $max {
+                patterns.toggle_state = state_snapshot.0;
+                patterns.toggle_last_value = state_snapshot.1;
                 output(format!("ERROR: {} MUST BE BETWEEN {} AND {} {}", $display_name, $min, $max, $unit));
                 return Ok(());
             }
@@ -160,6 +178,10 @@ macro_rules! define_bool_param {
                 output(format!("ERROR: {} REQUIRES A VALUE (0 OR 1)", $error_cmd));
                 return Ok(());
             }
+            let state_snapshot = (
+                patterns.toggle_state.clone(),
+                patterns.toggle_last_value.clone()
+            );
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
                 expr_val as i32
             } else {
@@ -168,6 +190,8 @@ macro_rules! define_bool_param {
                     .context($parse_ctx)?
             };
             if !(0..=1).contains(&value) {
+                patterns.toggle_state = state_snapshot.0;
+                patterns.toggle_last_value = state_snapshot.1;
                 output("ERROR: VALUE MUST BE 0 OR 1".to_string());
                 return Ok(());
             }
@@ -204,6 +228,10 @@ macro_rules! define_mode_param {
                 output(format!("ERROR: {} REQUIRES A VALUE ({}-{})", $error_cmd, $min, $max));
                 return Ok(());
             }
+            let state_snapshot = (
+                patterns.toggle_state.clone(),
+                patterns.toggle_last_value.clone()
+            );
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
                 expr_val as i32
             } else {
@@ -212,6 +240,8 @@ macro_rules! define_mode_param {
                     .context($parse_ctx)?
             };
             if value < $min || value > $max {
+                patterns.toggle_state = state_snapshot.0;
+                patterns.toggle_last_value = state_snapshot.1;
                 output(format!("ERROR: {}", $error_msg));
                 return Ok(());
             }
@@ -248,6 +278,10 @@ macro_rules! define_mode_param_with_names {
                 output(format!("ERROR: {} REQUIRES A VALUE ({}-{})", $error_cmd, $min, $max));
                 return Ok(());
             }
+            let state_snapshot = (
+                patterns.toggle_state.clone(),
+                patterns.toggle_last_value.clone()
+            );
             let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
                 expr_val as i32
             } else {
@@ -256,6 +290,8 @@ macro_rules! define_mode_param_with_names {
                     .context($parse_ctx)?
             };
             if value < $min || value > $max {
+                patterns.toggle_state = state_snapshot.0;
+                patterns.toggle_last_value = state_snapshot.1;
                 output(format!("ERROR: {}", $error_msg));
                 return Ok(());
             }

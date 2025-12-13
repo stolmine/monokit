@@ -65,7 +65,6 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
         return Some(result);
     }
 
-    // Check for SEQ expression
     if let Some(result) = seq::eval_seq_expression(&expr, parts, start_idx, patterns, script_index) {
         return Some(result);
     }

@@ -8,6 +8,9 @@ use crate::types::{Page, SearchScope};
 pub fn render_init_page(app: &crate::App) -> Paragraph<'static> {
     let init_script = app.scripts.get_script(9);
 
+    let toggle_state_snapshot = app.patterns.toggle_state.clone();
+    let toggle_last_value_snapshot = app.patterns.toggle_last_value.clone();
+
     let should_highlight_search = app.search_mode && !app.search_query.is_empty();
     let script_index = 9;
     let current_match_line_col = if should_highlight_search && !app.search_matches.is_empty() {
@@ -63,8 +66,8 @@ pub fn render_init_page(app: &crate::App) -> Paragraph<'static> {
                         let segment_highlighted = highlight_stateful_operators(
                             &segment_text,
                             script_index,
-                            &app.patterns.toggle_state,
-                            &app.patterns.toggle_last_value,
+                            &toggle_state_snapshot,
+                            &toggle_last_value_snapshot,
                         );
 
                         for segment_span in segment_highlighted.to_spans(normal_color, highlight_color) {
@@ -90,8 +93,8 @@ pub fn render_init_page(app: &crate::App) -> Paragraph<'static> {
                 let highlighted = highlight_stateful_operators(
                     line_content,
                     script_index,
-                    &app.patterns.toggle_state,
-                    &app.patterns.toggle_last_value,
+                    &toggle_state_snapshot,
+                    &toggle_last_value_snapshot,
                 );
 
                 if app.show_conditional_highlight {

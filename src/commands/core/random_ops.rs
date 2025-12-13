@@ -79,9 +79,7 @@ pub fn handle_eith<F>(
     if let Some((a, a_consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         if let Some((b, _b_consumed)) = eval_expression(&parts, 1 + a_consumed, variables, patterns, counters, scripts, script_index, scale) {
             let key = format!("{}_EITH_{}_{}", script_index, parts[1], parts[1 + a_consumed]);
-            let selected_index = if rand::thread_rng().gen_bool(0.5) { 0 } else { 1 };
-            patterns.toggle_state.insert(key, selected_index);
-            let result = if selected_index == 0 { a } else { b };
+            let result = *patterns.toggle_last_value.get(&key).unwrap_or(&a);
             output(format!("{}", result));
         } else {
             output("ERROR: FAILED TO EVALUATE SECOND VALUE".to_string());
@@ -110,9 +108,7 @@ pub fn handle_tog<F>(
     if let Some((a, a_consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
         if let Some((b, _b_consumed)) = eval_expression(&parts, 1 + a_consumed, variables, patterns, counters, scripts, script_index, scale) {
             let key = format!("{}_TOG_{}_{}", script_index, parts[1], parts[1 + a_consumed]);
-            let counter = patterns.toggle_state.entry(key).or_insert(0);
-            let result = if *counter % 2 == 0 { a } else { b };
-            *counter = counter.wrapping_add(1);
+            let result = *patterns.toggle_last_value.get(&key).unwrap_or(&a);
             output(format!("{}", result));
         } else {
             output("ERROR: FAILED TO EVALUATE SECOND VALUE".to_string());

@@ -6,6 +6,9 @@ use crate::ui::search_highlight::highlight_matches_in_line;
 use crate::types::{Page, SearchScope};
 
 pub fn render_metro_page(app: &crate::App) -> Paragraph<'static> {
+    let toggle_state_snapshot = app.patterns.toggle_state.clone();
+    let toggle_last_value_snapshot = app.patterns.toggle_last_value.clone();
+
     let state = app.metro_state.lock().unwrap();
     let bpm = 15000.0 / state.interval_ms as f32;
     let status = if state.active { "ON" } else { "OFF" };
@@ -82,8 +85,8 @@ pub fn render_metro_page(app: &crate::App) -> Paragraph<'static> {
                         let segment_highlighted = highlight_stateful_operators(
                             &segment_text,
                             script_index,
-                            &app.patterns.toggle_state,
-                            &app.patterns.toggle_last_value,
+                            &toggle_state_snapshot,
+                            &toggle_last_value_snapshot,
                         );
 
                         for segment_span in segment_highlighted.to_spans(normal_color, highlight_color) {
@@ -109,8 +112,8 @@ pub fn render_metro_page(app: &crate::App) -> Paragraph<'static> {
                 let highlighted = highlight_stateful_operators(
                     line_content,
                     script_index,
-                    &app.patterns.toggle_state,
-                    &app.patterns.toggle_last_value,
+                    &toggle_state_snapshot,
+                    &toggle_last_value_snapshot,
                 );
 
                 if app.show_conditional_highlight {

@@ -9,6 +9,9 @@ pub fn render_script_page(app: &crate::App, num: u8) -> Paragraph<'static> {
     let script_index = (num - 1) as usize;
     let script = app.scripts.get_script(script_index);
 
+    let toggle_state_snapshot = app.patterns.toggle_state.clone();
+    let toggle_last_value_snapshot = app.patterns.toggle_last_value.clone();
+
     let should_highlight_search = app.search_mode && !app.search_query.is_empty();
     let current_match_line_col = if should_highlight_search && !app.search_matches.is_empty() {
         let current_match = &app.search_matches[app.search_current_match];
@@ -63,8 +66,8 @@ pub fn render_script_page(app: &crate::App, num: u8) -> Paragraph<'static> {
                         let segment_highlighted = highlight_stateful_operators(
                             &segment_text,
                             script_index,
-                            &app.patterns.toggle_state,
-                            &app.patterns.toggle_last_value,
+                            &toggle_state_snapshot,
+                            &toggle_last_value_snapshot,
                         );
 
                         for segment_span in segment_highlighted.to_spans(normal_color, highlight_color) {
@@ -90,8 +93,8 @@ pub fn render_script_page(app: &crate::App, num: u8) -> Paragraph<'static> {
                 let highlighted = highlight_stateful_operators(
                     line_content,
                     script_index,
-                    &app.patterns.toggle_state,
-                    &app.patterns.toggle_last_value,
+                    &toggle_state_snapshot,
+                    &toggle_last_value_snapshot,
                 );
 
                 if app.show_conditional_highlight {

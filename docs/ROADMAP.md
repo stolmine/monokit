@@ -61,7 +61,8 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **MIDI CC and Note Input** [Medium] - External control, performance capability
 
 ### P2 - Polish & Documentation
-- **State Highlight Timing Verification** [Low] - Audit SEQ/TOG timing
+- **State Highlight Desync Research** [Medium] - TOG/SEQ/EITH highlighting still desyncs after out-of-bounds values despite rollback implementation, dual mutation removal, and snapshot isolation. Root cause investigation needed. May require fundamental architecture change to expression evaluation timing.
+- **Validation Pass 2** [Low] - Unclosed quotes on SEQ still pass through validation. Need comprehensive audit of quote parsing, bracket balancing, and string literal handling across all command types.
 - **Dynamic Grid Layout** [Medium] - Responsive UI spacing
 - **Tempo-Synced Delay** [Low] - DS parameter for musical delay times
 - **Manual Update + Voice Architecture Diagram** [Low] - Fill documentation gaps, add ASCII voice architecture diagram

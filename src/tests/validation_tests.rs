@@ -118,12 +118,15 @@ fn test_validate_seq_unclosed_quote() {
     assert!(validate_script_command("SEQ 'C3 E3").is_err());
     assert!(validate_script_command("SEQ \"").is_err());
     assert!(validate_script_command("SEQ '").is_err());
+    assert!(validate_script_command("A SEQ \"5 <1 0> 3").is_err());
 }
 
 #[test]
 fn test_validate_seq_valid() {
     assert!(validate_script_command("PF SEQ \"C3 E3\"").is_ok());
     assert!(validate_script_command("PA SEQ 'x _ x _'").is_ok());
+    assert!(validate_script_command("A SEQ \"5 <1 0> 3\"").is_ok());
+    assert!(validate_script_command("B SEQ '1 2 3'").is_ok());
 }
 
 #[test]

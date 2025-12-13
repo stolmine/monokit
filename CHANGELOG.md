@@ -36,11 +36,11 @@
 
 **Multi-Voice Trigger Indicators**
 - Added separate trigger indicators in header for Complex and Plaits voices
-  - C = Complex oscillators (TR command)
+  - H = Complex oscillators (TR command)
   - P = Plaits macro oscillator (PLTR command)
 - Replaced single "TR" indicator with multi-voice awareness
 - Both indicators can be active simultaneously
-- Updated HEADER command descriptions to reflect C/P terminology
+- Updated HEADER command descriptions to reflect H/P terminology
 
 ### Bug Fixes
 

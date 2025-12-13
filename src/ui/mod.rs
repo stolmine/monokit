@@ -518,6 +518,8 @@ pub fn run_app<B: ratatui::backend::Backend>(
                             }
                             return Ok(());
                         }
+                        // Re-render immediately to show updated state (fixes TOG/SEQ/EITH highlight delay)
+                        terminal.draw(|f| ui(f, app))?;
                     }
                     KeyCode::Char('k') if !is_help && app.is_script_page() && key.modifiers.contains(KeyModifiers::CONTROL) => {
                         app.delete_entire_line();

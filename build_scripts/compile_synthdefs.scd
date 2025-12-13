@@ -11,6 +11,12 @@ var synthdefs_dir = thisDir +/+ "../sc/synthdefs/";
 File.mkdir(synthdefs_dir);
 ("Output directory: " ++ synthdefs_dir).postln;
 
+// Check if MiPlaits UGen is available
+if(UGen.findRespondingMethodFor(\ar, \MiPlaits).isNil, {
+    "WARNING: MiPlaits UGen not found! Plaits voice will not work.".postln;
+    "Install mi-UGens from: https://github.com/v7b1/mi-UGens".postln;
+});
+
 "Compiling SynthDefs to binary format...".postln;
 
 // Defaults match RST command values
@@ -782,6 +788,42 @@ SynthDef(\monokit_primary, {
 
 "  monokit_primary.scsyndef".postln;
 
+SynthDef(\monokit_plaits, {
+    arg t_gate = 0,
+        pitch = 131,
+        detune = 0,
+        engine = 0,
+        harmonics = 0.5,
+        timbre = 0.5,
+        morph = 0.5,
+        decay = 0.5,
+        lpg = 0.5,
+        plv = 8192,
+        pav = 0;
+
+    var freq = pitch * (2 ** (detune / 1200));
+
+    var sig = MiPlaits.ar(
+        pitch: freq.cpsmidi,
+        engine: engine.clip(0, 15),
+        harm: harmonics.clip(0, 1),
+        timbre: timbre.clip(0, 1),
+        morph: morph.clip(0, 1),
+        trigger: t_gate,
+        level: 0.8,
+        lpg_colour: lpg.clip(0, 1),
+        decay: decay.clip(0, 1)
+    );
+
+    var main = sig[0] * (plv / 16383.0);
+    var aux = sig[1] * (pav / 16383.0);
+
+    Out.ar(19, main);
+    Out.ar(20, aux);
+}).writeDefFile(synthdefs_dir);
+
+"  monokit_plaits.scsyndef".postln;
+
 SynthDef(\monokit_main, {
     // Defaults match RST command values
     arg pf = 131,     // Primary freq (C3) - needed for tracking
@@ -866,14 +908,16 @@ SynthDef(\monokit_main, {
         aenv_crv = -100, denv_crv = -100, flev_crv = -100,
         primaryBus = 16,
         modBus = 17,
-        noiseBus = 18;
+        noiseBus = 18,
+        plaitsMainBus = 19,
+        plaitsAuxBus = 20;
 
     // All var declarations at top
     var trig, ampEnv, dcEnv, filterEnv, modBusEnv;
     var modBusValue, dcAmount;
     var primaryFreq, modOsc;
     var sig, amp, discontinuity;
-    var primaryIn, modIn, noiseIn;
+    var primaryIn, modIn, noiseIn, plaitsMainIn, plaitsAuxIn;
     var filterCutoff, filterQ;
     var resonatorFreq, resonatorDelay, resonatorDecay, resonatorMix, resonated;
     var delayTime, delayFeedback, delayWet, sigL, sigR, delayedL, delayedR;
@@ -951,10 +995,12 @@ SynthDef(\monokit_main, {
     filterEnv = EnvGen.kr(Env.perc(flAtk, fedDynamic / 1000, 1, flCrv), trig);
     modBusEnv = EnvGen.kr(Env.perc(0.001, mbdDynamic / 1000, 1, -4), trig);
 
-    // Read audio from the 3 source busses
+    // Read audio from the 5 source busses
     primaryIn = InFeedback.ar(primaryBus, 1);
     modIn = InFeedback.ar(modBus, 1);
     noiseIn = InFeedback.ar(noiseBus, 1);
+    plaitsMainIn = InFeedback.ar(plaitsMainBus, 1);
+    plaitsAuxIn = InFeedback.ar(plaitsAuxBus, 1);
 
     // Use modIn for modulation routing
     modOsc = modIn;
@@ -966,8 +1012,8 @@ SynthDef(\monokit_main, {
     // Primary frequency tracking for filter key tracking
     primaryFreq = pf;
 
-    // Mix all sources
-    sig = primaryIn + modIn + noiseIn;
+    // Mix all sources (pre-filter)
+    sig = primaryIn + modIn + noiseIn + plaitsMainIn + plaitsAuxIn;
 
     // Discontinuity: base + (envelope * amount)
     discontinuity = dcAmount + (dcEnv * daCtl / 16383);
@@ -1345,14 +1391,16 @@ SynthDef(\monokit_recorder, { |bufnum|
 "  monokit_recorder.scsyndef".postln;
 
 "".postln;
-"SynthDefs compiled successfully to " ++ synthdefs_dir.postln;
+("SynthDefs compiled successfully to " ++ synthdefs_dir).postln;
 "  - monokit.scsyndef (monolithic - backward compatibility)".postln;
 "  - monokit_noise.scsyndef (noise generator)".postln;
 "  - monokit_mod.scsyndef (modulator oscillator)".postln;
 "  - monokit_primary.scsyndef (primary oscillator)".postln;
+"  - monokit_plaits.scsyndef (Plaits voice)".postln;
+"  - monokit_main.scsyndef (main signal path)".postln;
 "  - monokit_spectrum.scsyndef (spectrum analyzer)".postln;
 "  - monokit_scope.scsyndef (oscilloscope)".postln;
 "  - monokit_recorder.scsyndef (audio recorder)".postln;
-"NOTE: Runtime uses 4-synth architecture (noise, mod, primary, main)".postln;
+"NOTE: Runtime uses 5-synth architecture (noise, mod, primary, plaits, main)".postln;
 0.exit;
 )

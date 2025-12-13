@@ -52,7 +52,7 @@ jobs:
           # macOS requires running sclang from its own directory - see docs/SCLANG_MACOS_FIX.md
           REPO_ROOT="$(pwd)"
           (cd /Applications/SuperCollider.app/Contents/MacOS && \
-           timeout 30 ./sclang "${REPO_ROOT}/build_scripts/compile_synthdefs.scd") || true
+           ./sclang "${REPO_ROOT}/build_scripts/compile_synthdefs.scd") || true
           ls -la sc/synthdefs/
 
       - name: Run tests

@@ -8,7 +8,7 @@ Quick reference and links to all project documentation.
 
 | Document | Description | Lines |
 |----------|-------------|-------|
-| [ROADMAP.md](ROADMAP.md) | Current priorities, v0.3.4 progress | ~160 |
+| [ROADMAP.md](ROADMAP.md) | Current priorities, v0.4.0 complete | ~160 |
 | [CHANGELOG.md](CHANGELOG.md) | Version history, recent updates | ~150 |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Project structure, key files | ~180 |
 | [COMMAND_REFERENCE.md](COMMAND_REFERENCE.md) | Complete command reference | ~400 |
@@ -25,7 +25,8 @@ Quick reference and links to all project documentation.
 | Document | Description |
 |----------|-------------|
 | [scsynth_direct_integration.md](scsynth_direct_integration.md) | Direct scsynth integration |
-| [DSP_TIER1_IMPLEMENTATION_PLAN.md](DSP_TIER1_IMPLEMENTATION_PLAN.md) | Filter, Resonator, Delay, Reverb |
+| [PLAITS_INTEGRATION.md](PLAITS_INTEGRATION.md) | Plaits voice implementation |
+| [DSP_TIER1_IMPLEMENTATION_PLAN.md](../DSP_TIER1_IMPLEMENTATION_PLAN.md) | Filter, Resonator, Delay, Reverb |
 | [EFFECT_ROUTING_DESIGN.md](EFFECT_ROUTING_DESIGN.md) | Effect routing system |
 | [MIDI_CLOCK_TIMING_LESSONS.md](MIDI_CLOCK_TIMING_LESSONS.md) | MIDI clock diagnostics |
 
@@ -38,18 +39,16 @@ Quick reference and links to all project documentation.
 
 ---
 
-## Current Status (v0.3.4)
+## Current Status (v0.4.0)
 
 | Feature | Status |
 |---------|--------|
-| Config Flag Standardization | **DONE** |
-| SCRIPT Expression Support | **DONE** |
-| MC/MQ Filter Routing | **DONE** |
-| ModBus Envelope (MBA/MBD) | **DONE** |
-| Script Undo/Redo | **DONE** |
-| ER/NR Rhythm Operators | **DONE** |
-| Additional Filter Types | **DONE** |
-| Noise Source | **DONE** |
+| Plaits Pitch Control (PL.FREQ/PLF) | **DONE** |
+| 3-Letter Plaits Aliases | **DONE** |
+| PLTR Trigger Readout | **DONE** |
+| Multi-Voice Trigger Indicators (C/P) | **DONE** |
+| RND.PL Fixes | **DONE** |
+| Debug Tier Refactor | Not started |
 | Oscillator Sync | Not started |
 
 ---
@@ -65,9 +64,10 @@ All communication from Rust CLI to SuperCollider server uses UDP (127.0.0.1:5712
 - **Reset:** `/monokit/reset` (no arguments)
 - **Recording:** `/monokit/rec`, `/monokit/rec/stop`, `/monokit/rec/path`
 
-**Parameter Names:**
+**Parameter Names (97 total):**
 - Oscillator/FM: pf, pw, mf, mw, fb, fba, fbd, dc, dm, dd, tk, mb, mp, md, mt, ma, fm, mx, mm, me
 - Noise: nw, na, nd, nc, ne, np, nm, nv, ng
+- Plaits: pitch, harmonics, timbre, morph, engine, decay, lpg, plv, pav
 - Source Levels: pv, mv
 - Envelopes: ad, pd, fd, dd, pa, fa, da
 - Lo-Fi: lb, ls, lm

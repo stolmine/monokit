@@ -22,9 +22,10 @@ Hopefully it shows!
 
 ### Sound Engine
 - **Complex oscillator voice** - dual oscillators with selectable waveforms + white/pink/brown noise, independent volume per source
+- **Plaits macro oscillator** - Mutable Instruments Plaits with 16 synthesis engines (VA, FM, wavetable, granular, percussion, physical modeling)
 - **Extensive modulation routing** - mod osc → primary freq/mod freq/filter cutoff/filter Q/discontinuity/VCA; noise → primary FM/mod FM
 - **Full effects chain** - 14-type multimode filter, comb resonator, ring mod, lo-fi (bit/sample rate), compressor, beat repeat, pitch shift, stereo delay, 3-band EQ, plate reverb
-- **88 real-time parameters** - All instantly controllable via terse commands
+- **97 real-time parameters** - All instantly controllable via terse commands
 - **Per-stage envelopes** - Amp, pitch, FM, discontinuity, feedback, filter, noise, modbus - most with independent attack, decay, and curve
 - **Slew control** - 30 voice/fx parameters with 0-10000ms range, each independently settable
 - **VCA modes** - Gate mode for percussion, drone mode for sustained tones; noise has independent gating

@@ -107,6 +107,7 @@ Removed noise envelope parameters that were deprecated in multi-synth architectu
 - **MIDI CC and Note Input** [Medium] - External control, performance capability
 
 ### P2 - Polish & Documentation
+- **Alias & Command Name Standardization** [Low] - Audit all commands for consistent naming patterns; ensure all parameters have appropriate short-form aliases; standardize canonical form patterns (e.g., CATEGORY.PARAM format); document naming conventions for future development
 - **Dynamic Grid Layout** [Medium] - Responsive UI spacing
 - **Tempo-Synced Delay** [Low] - DS parameter for musical delay times
 - **Manual Update + Voice Architecture Diagram** [Low] - Fill documentation gaps, add ASCII voice architecture diagram

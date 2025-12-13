@@ -901,7 +901,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         // Plaits
         "PL.ENG" | "PLE" | "PL.FREQ" | "PLF" | "PL.HARM" | "PLH" | "PL.TIMB" | "PLT" | "PL.MORPH" | "PLM" | "PL.DEC" | "PLD" | "PL.LPG" | "PLL" |
         // Filter
-        "FC" | "FQ" | "FT" | "FE" | "FED" | "FK" |
+        "FC" | "FQ" | "FT" | "FE" | "FED" | "FK" | "MFF" | "MFQ" |
         // Resonator
         "RF" | "RD" | "RM" | "RK" |
         // Delay

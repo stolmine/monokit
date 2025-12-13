@@ -378,24 +378,10 @@ impl ScsynthDirect {
         Ok(())
     }
 
-    fn start_cpu_monitor(socket: &UdpSocket) -> Result<(), String> {
-        // Send sclang code to start a CPU monitoring routine
-        // This runs on the server and sends CPU data every 0.5 seconds
-        let code = r#"
-~cpuRoutine !? { ~cpuRoutine.stop };
-~cpuRoutine = Routine({
-    inf.do {
-        NetAddr("127.0.0.1", 57121).sendMsg('/monokit/cpu', Server.local.avgCPU, Server.local.peakCPU);
-        0.5.wait;
-    };
-}).play;
-"#;
-
-        Self::send_osc_message_static(
-            socket,
-            "/cmd",
-            vec![OscType::String(code.to_string())],
-        )
+    fn start_cpu_monitor(_socket: &UdpSocket) -> Result<(), String> {
+        // CPU monitoring is now handled by meter_thread via /status polling
+        // This function is kept for API compatibility but does nothing
+        Ok(())
     }
 
     fn spawn_voice_synths(socket: &UdpSocket, silent: bool) -> Result<(), String> {

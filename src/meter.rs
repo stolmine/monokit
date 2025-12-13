@@ -46,7 +46,25 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
     #[cfg(feature = "scsynth-direct")]
     let mut initial_boot_complete = false;
 
+    // CPU monitoring: poll /status every 500ms (2Hz)
+    #[cfg(feature = "scsynth-direct")]
+    let mut last_status_poll = std::time::Instant::now();
+    #[cfg(feature = "scsynth-direct")]
+    let status_poll_interval = Duration::from_millis(500);
+
     loop {
+        // Poll scsynth /status for CPU data (scsynth-direct mode only)
+        #[cfg(feature = "scsynth-direct")]
+        if last_status_poll.elapsed() >= status_poll_interval {
+            let status_msg = OscMessage {
+                addr: "/status".to_string(),
+                args: vec![],
+            };
+            if let Ok(packet) = encoder::encode(&OscPacket::Message(status_msg)) {
+                let _ = socket.send_to(&packet, format!("127.0.0.1:{}", SCSYNTH_PORT));
+            }
+            last_status_poll = std::time::Instant::now();
+        }
         match socket.recv_from(&mut buf) {
             Ok((size, _addr)) => {
                 if let Ok((_, packet)) = decoder::decode_udp(&buf[..size]) {
@@ -74,6 +92,19 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
                                 if let Err(e) = event_tx.send(MetroEvent::CpuUpdate(cpu_data)) {
                                     let _ = event_tx.send(MetroEvent::Error(format!("ERROR: CPU UPDATE SEND FAIL: {}", e)));
                                     return;
+                                }
+                            }
+                        } else if msg.addr == "/status.reply" {
+                            // Parse CPU data from scsynth /status.reply
+                            // Format: [unused, numUGens, numSynths, numGroups, numSynthDefs,
+                            //          avgCPU, peakCPU, sampleRate, actualSampleRate]
+                            #[cfg(feature = "scsynth-direct")]
+                            if msg.args.len() >= 7 {
+                                if let Some(cpu_data) = parse_status_reply_cpu(&msg.args) {
+                                    if let Err(e) = event_tx.send(MetroEvent::CpuUpdate(cpu_data)) {
+                                        let _ = event_tx.send(MetroEvent::Error(format!("ERROR: CPU UPDATE SEND FAIL: {}", e)));
+                                        return;
+                                    }
                                 }
                             }
                         } else if msg.addr == "/monokit/scope" {
@@ -331,6 +362,30 @@ fn parse_cpu_message(args: &[OscType]) -> Option<CpuData> {
     };
 
     let peak_cpu = match &args[1] {
+        OscType::Float(f) => *f,
+        OscType::Double(d) => *d as f32,
+        _ => return None,
+    };
+
+    Some(CpuData { avg_cpu, peak_cpu })
+}
+
+#[cfg(feature = "scsynth-direct")]
+fn parse_status_reply_cpu(args: &[OscType]) -> Option<CpuData> {
+    // /status.reply format: [unused, numUGens, numSynths, numGroups, numSynthDefs,
+    //                        avgCPU, peakCPU, sampleRate, actualSampleRate]
+    // avgCPU is at index 5, peakCPU at index 6
+    if args.len() < 7 {
+        return None;
+    }
+
+    let avg_cpu = match &args[5] {
+        OscType::Float(f) => *f,
+        OscType::Double(d) => *d as f32,
+        _ => return None,
+    };
+
+    let peak_cpu = match &args[6] {
         OscType::Float(f) => *f,
         OscType::Double(d) => *d as f32,
         _ => return None,

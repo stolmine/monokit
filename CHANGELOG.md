@@ -2,14 +2,46 @@
 
 ## v0.3.61 (December 2025)
 
+### Architecture Changes
+
+**Validation-Aware Highlighting**
+- Implemented two-tier highlighting system for stateful operators
+- Variables (A, B, C, etc.) always highlight based on toggle_state
+  - State advances regardless of validation in usage contexts
+  - Exempt from validation checks (multi-context usage)
+- Direct parameter usage (PF TOG 100 200) tracks validation results
+  - Added direct_validation HashMap to PatternStorage
+  - Only highlights if validation succeeded
+  - Skips highlighting on validation failure
+- All 6 parameter macros record validation results for TOG/SEQ/EITH
+- Added is_variable_assignment() helper to distinguish contexts
+
+**State Highlight Mitigation**
+- Removed dual state mutations in random_ops.rs
+  - handle_eith/handle_tog no longer mutate state twice
+  - Single mutation point in eval_expression
+- Added state snapshots for UI highlighting isolation
+  - script.rs, metro.rs, init.rs snapshot toggle_state/toggle_last_value
+  - Highlighting reads from immutable snapshots
+- Completed rollback coverage in all parameter macros
+  - Added rollback to define_int_param_ms, define_bool_param, define_mode_param_with_names
+  - All 6 macros restore state on validation failure
+- Removed StateChanges struct from eval return type
+
 ### Bug Fixes
 
-**TOG/SEQ/EITH Highlighting Accuracy**
+**Stateful Operator Highlighting**
+- Fixed missing prefix text in validation failure paths
+  - Commands like "PF TOG 0 100" now display full text when validation fails
+  - Added prefix segment handling to SEQ, TOG, and EITH operators
+- Fixed inconsistency between toggle_state and toggle_last_value
+  - Validation-aware system ensures accurate highlighting
+  - Variables advance independently of validation results
 - Fixed critical bug where highlighting showed incorrect values for stateful operators
-- Part 1: Store actual returned value in toggle_last_value HashMap
+  - Part 1: Store actual returned value in toggle_last_value HashMap
   - Previously derived value from incremented state (showed NEXT, not CURRENT)
   - Now stores actual returned value before incrementing state
-- Part 2: Eliminate 1-frame delay for interactive commands
+- Eliminated 1-frame delay for interactive commands
   - Event loop rendered UI before executing commands
   - Added immediate re-render after command execution
   - Metro-triggered scripts already worked correctly

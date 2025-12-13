@@ -135,14 +135,9 @@ Real-time waveform visualization at 20Hz update rate.
 
 **Noise Source:**
 - `NOISE.WAV` / `NW <0-2>` - Type (0=White, 1=Pink, 2=Brown)
-- `NOEV.ATK` / `NA <1-10000>` - Envelope attack (ms)
-- `NOEV.DEC` / `ND <1-10000>` - Envelope decay (ms)
-- `NOEV.CRV` / `NC <-8 to 8>` - Envelope curve
-- `NOISE.ENV` / `NE <0-16383>` - Envelope amount (0=bypass)
 - `NOISE.PRI` / `NP <0-16383>` - Noise → primary FM
 - `NOISE.MOD` / `NM <0-16383>` - Noise → modulator FM
 - `NOISE.VOL` / `NV <0-16383>` - Noise volume
-- `NOISE.GATE` / `NG <0|1>` - Gate mode (0=drone, 1=gated)
 
 **Source Levels:**
 - `PRI.VOL` / `PV <0-16383>` - Primary volume

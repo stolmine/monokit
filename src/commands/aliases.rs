@@ -110,14 +110,9 @@ static CANONICAL_TO_ALIAS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new
 
     // Noise controls
     m.insert("NOISE.WAV", "NW");
-    m.insert("NOEV.ATK", "NA");
-    m.insert("NOEV.DEC", "ND");
-    m.insert("NOEV.CRV", "NC");
-    m.insert("NOISE.ENV", "NE");
     m.insert("NOISE.PRI", "NP");
     m.insert("NOISE.MOD", "NM");
     m.insert("NOISE.VOL", "NV");
-    m.insert("NOISE.GATE", "NG");
 
     // Source levels
     m.insert("PRI.VOL", "PV");

@@ -278,14 +278,9 @@ where
     metro_tx.send(MetroCommand::SendParam("eh".to_string(), OscType::Int(0)))?;
 
     metro_tx.send(MetroCommand::SendParam("nw".to_string(), OscType::Int(0)))?;
-    metro_tx.send(MetroCommand::SendParam("na".to_string(), OscType::Int(1)))?;
-    metro_tx.send(MetroCommand::SendParam("nd".to_string(), OscType::Int(100)))?;
-    metro_tx.send(MetroCommand::SendParam("nc".to_string(), OscType::Int(-4)))?;
-    metro_tx.send(MetroCommand::SendParam("ne".to_string(), OscType::Int(16383)))?;
     metro_tx.send(MetroCommand::SendParam("np".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("nm".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("nv".to_string(), OscType::Int(0)))?;
-    metro_tx.send(MetroCommand::SendParam("ng".to_string(), OscType::Int(1)))?;
     metro_tx.send(MetroCommand::SendParam("pv".to_string(), OscType::Int(16383)))?;
     metro_tx.send(MetroCommand::SendParam("mv".to_string(), OscType::Int(0)))?;
 

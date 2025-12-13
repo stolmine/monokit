@@ -176,6 +176,17 @@ else
     echo "    FT 7-8 (DFM1) will not work."
 fi
 
+# mi-UGens (MiPlaits for Plaits voice)
+MI_UGENS_BASE="${HOME}/Library/Application Support/SuperCollider/Extensions/mi-UGens"
+if [ -f "${MI_UGENS_BASE}/MiPlaits.scx" ]; then
+    cp "${MI_UGENS_BASE}/MiPlaits.scx" "${BUNDLE_DIR}/Resources/plugins/"
+    echo "    - MiPlaits.scx (Plaits voice)"
+else
+    echo "    WARNING: MiPlaits.scx not found!"
+    echo "    Plaits voice (PL.* commands) will not work."
+    echo "    Install from: https://github.com/v7b1/mi-UGens"
+fi
+
 # Check if any sc3-plugins were found
 if [ ! -f "${BUNDLE_DIR}/Resources/plugins/BlackrainUGens.scx" ] && \
    [ ! -f "${BUNDLE_DIR}/Resources/plugins/TJUGens.scx" ]; then

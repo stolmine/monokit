@@ -27,10 +27,30 @@ use crate::theme::Theme;
 use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, SyncMode, Variables};
 use crate::utils::split_whitespace_respecting_quotes;
 use anyhow::Result;
+use chrono;
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::sync::{mpsc::Sender, Arc};
 
 pub use aliases::resolve_alias;
 pub use validate::validate_script_command;
+
+fn log_command(msg: &str) {
+    if let Ok(mut file) = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open("/tmp/monokit_commands.log")
+    {
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default();
+        let secs = timestamp.as_secs();
+        let millis = timestamp.subsec_millis();
+        let datetime = chrono::DateTime::<chrono::Utc>::from_timestamp(secs as i64, millis * 1_000_000).unwrap_or_default();
+        let formatted = datetime.format("%Y-%m-%d %H:%M:%S%.3f");
+        let _ = writeln!(file, "[{}] {}", formatted, msg);
+    }
+}
 
 pub fn process_command<F>(
     metro_tx: &Sender<MetroCommand>,
@@ -102,7 +122,14 @@ where
     let parts_owned = split_whitespace_respecting_quotes(trimmed);
     let parts: Vec<&str> = parts_owned.iter().map(|s| s.as_str()).collect();
     let cmd = parts[0].to_uppercase();
+    let original_cmd = cmd.clone();
     let cmd = resolve_alias(&cmd);
+
+    if cmd != original_cmd {
+        log_command(&format!("CMD: {} (alias for {})", trimmed, cmd));
+    } else {
+        log_command(&format!("CMD: {}", trimmed));
+    }
 
     match cmd.as_str() {
         "A" => {
@@ -297,6 +324,33 @@ where
         "PN" => {
             patterns::handle_pn(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
         }
+        "PL.DEC" => {
+            synth_params::handle_pl_dec(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "PL.ENG" => {
+            synth_params::handle_pl_eng(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "PL.FREQ" | "PLF" => {
+            synth_params::handle_pl_freq(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "PL.HARM" => {
+            synth_params::handle_pl_harm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "PL.LPG" => {
+            synth_params::handle_pl_lpg(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "PL.MORPH" => {
+            synth_params::handle_pl_morph(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "PL.TIMB" => {
+            synth_params::handle_pl_timb(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "PLTR" => {
+            misc::handle_pltr(metro_tx)?;
+        }
+        "PLV" => {
+            synth_params::handle_plv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
         "TR" => {
             misc::handle_tr(metro_tx, *debug_level, *out_cfm, output)?;
         }
@@ -401,6 +455,9 @@ where
         }
         "PA" => {
             synth_params::handle_pa(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
+        }
+        "PAV" => {
+            synth_params::handle_pav(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "DD" => {
             synth_params::handle_dd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
@@ -693,6 +750,9 @@ where
         "RND.PALL" => {
             randomization::handle_rnd_pall(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, output)?;
         }
+        "RND.PL" => {
+            randomization::handle_rnd_pl(metro_tx, *debug_level, output)?;
+        }
         "RND.FX" => {
             randomization::handle_rnd_fx(metro_tx, *debug_level, output)?;
         }
@@ -724,6 +784,7 @@ where
             math_ops::handle_map(&parts, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "SCRIPT" | "$" => {
+            log_command(&format!("CMD: {} → DISPATCHED", trimmed));
             return misc::handle_script(&parts, variables, patterns, counters, scripts, script_index, scale);
         }
         "SAVE" => {
@@ -734,6 +795,7 @@ where
                 misc::handle_rst(metro_tx, vca_mode, *debug_level, *out_ess, &mut |_| {})?;
             }
             if scene_cmds::handle_load(&parts, variables, scripts, patterns, notes, current_scene_name, *scramble_enabled, *scramble_mode, *scramble_speed, *scramble_curve, header_scramble, *debug_level, *out_ess, output) {
+                log_command(&format!("CMD: {} → DISPATCHED", trimmed));
                 return Ok(vec![9]);
             }
         }
@@ -995,9 +1057,12 @@ where
             scale::handle_q_bit(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, output);
         }
         _ => {
+            log_command(&format!("CMD: {} → UNKNOWN", trimmed));
             output(format!("UNKNOWN COMMAND: {}", cmd));
         }
-    }
+    };
+
+    log_command(&format!("CMD: {} → DISPATCHED", trimmed));
 
     Ok(vec![])
 }

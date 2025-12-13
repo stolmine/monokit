@@ -130,7 +130,7 @@ Same operations as P.* but with explicit pattern number:
 - `GTE <a> <b>`, `LTE <a> <b>` - Greater/less than or equal
 - Infix: `>`, `<`, `>=`, `<=`, `==`, `!=`
 
-## Synth Parameters (88 total)
+## Synth Parameters (97 total)
 
 ### Primary Oscillator
 - `PF <hz>` - Primary frequency (20-20000)
@@ -144,6 +144,19 @@ Same operations as P.* but with explicit pattern number:
 ### Noise Source
 - `NW <0-2>` - Noise type (0=white, 1=pink, 2=brown)
 - `NV <0-16383>` - Noise volume
+
+### Plaits (Mutable Instruments)
+- `PL.ENG <0-15>` - Engine selection (16 engines)
+- `PL.FREQ <hz>` / `PLF <hz>` - Pitch frequency (20-20000 Hz, supports N syntax)
+- `PL.HARM <0-16383>` - Harmonics (0-16383 int)
+- `PL.TIMB <0-16383>` - Timbre (0-16383 int)
+- `PL.MORPH <0-16383>` - Morph (0-16383 int)
+- `PL.DEC <0-16383>` - Decay (0-16383 int)
+- `PL.LPG <0-16383>` - Lowpass gate (0-16383 int)
+- `PLV <0-16383>` - Main output volume (int)
+- `PAV <0-16383>` - AUX output volume (int)
+- `PLTR` - Trigger Plaits engine
+- `RND.PL` - Randomize all Plaits params
 
 ### Source Levels
 - `PV <0-16383>` - Primary oscillator volume
@@ -187,8 +200,10 @@ Short forms: AD, PD, FD, DD, FBD, FED (decay); PA, FA, DA, FBA, FE (amount)
 - `FE <0-16383>` - Filter envelope amount
 - `FED <ms>` - Filter envelope decay
 - `FK <0-16383>` - Key tracking amount
-- `MC <0|1>` - ModBus → Filter cutoff routing
-- `MQ <0|1>` - ModBus → Filter resonance routing
+- `MF_F <0-16383>` - ModBus → Filter cutoff amount (audio-rate)
+- `MF_Q <0-16383>` - ModBus → Filter resonance amount (audio-rate)
+- `MC <0|1>` - DEPRECATED: Use MF_F instead
+- `MQ <0|1>` - DEPRECATED: Use MF_Q instead
 
 **Filter Types:**
 - 0: SVF LP (lowpass)
@@ -205,6 +220,31 @@ Short forms: AD, PD, FD, DD, FBD, FED (decay); PA, FA, DA, FBA, FE (amount)
 - 11: BMoog BP (24dB saturating BP)
 - 12: Latch-SC LP (switched-cap LP)
 - 13: Latch-SC HP (switched-cap HP)
+
+**ModBus Filter Routing (Audio-Rate):**
+
+The `MF_F` and `MF_Q` parameters route the modbus signal to filter cutoff and resonance for dynamic timbral modulation:
+
+- **MF_F**: Controls audio-rate filter cutoff modulation
+  - Formula: `cutoff += (modOsc * modBusValue * mf_f * 5000)`
+  - Range: 0-16383 (scaled amount, not toggle)
+  - Use with MB to set base modbus amount
+  - Creates dynamic filter sweeps and wobbles
+
+- **MF_Q**: Controls audio-rate filter resonance modulation
+  - Amount varies by filter type (see SynthDef)
+  - Range: 0-16383 (scaled amount, not toggle)
+  - Creates resonance modulation effects
+  - Especially effective with self-oscillating filters
+
+**Usage Example:**
+```
+MB 8000          # Set modbus base amount
+MF_F 10000       # Route modbus to cutoff (strong)
+MF_Q 5000        # Route modbus to resonance (moderate)
+FT 4             # MoogFF for self-oscillation
+FC 500           # Low cutoff to hear sweep
+```
 
 ### Ring Modulator
 - `RGF <20-2000>` - Frequency (Hz)

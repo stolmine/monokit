@@ -123,6 +123,9 @@ static CANONICAL_TO_ALIAS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new
     m.insert("PRI.VOL", "PV");
     m.insert("MOD.VOL", "MV");
 
+    // Plaits
+    m.insert("PL.FREQ", "PLF");
+
     m
 });
 

@@ -347,6 +347,7 @@ pub enum MetroCommand {
     SetScriptIndex(usize),
     SendParam(String, OscType),
     SendTrigger,
+    SendPlaitsTrigger,
     SendVolume(f32),
     StartRecording(String),    // String is the directory path
     StopRecording,
@@ -700,18 +701,22 @@ pub enum ColorMode {
 pub const PRIMARY_BUS: i32 = 16;
 pub const MOD_BUS: i32 = 17;
 pub const NOISE_BUS: i32 = 18;
+pub const PLAITS_MAIN_BUS: i32 = 19;
+pub const PLAITS_AUX_BUS: i32 = 20;
 
-// Multi-synth architecture: node IDs for the 4 voice synths
+// Multi-synth architecture: node IDs for the 5 voice synths
 pub const NOISE_NODE_ID: i32 = 1000;
 pub const MOD_NODE_ID: i32 = 1001;
 pub const PRIMARY_NODE_ID: i32 = 1002;
 pub const MAIN_NODE_ID: i32 = 1003;
+pub const PLAITS_NODE_ID: i32 = 1004;
 
 pub struct VoiceSynths {
     pub noise_node: i32,
     pub mod_node: i32,
     pub primary_node: i32,
     pub main_node: i32,
+    pub plaits_node: i32,
 }
 
 impl VoiceSynths {
@@ -721,6 +726,7 @@ impl VoiceSynths {
             mod_node: MOD_NODE_ID,
             primary_node: PRIMARY_NODE_ID,
             main_node: MAIN_NODE_ID,
+            plaits_node: PLAITS_NODE_ID,
         }
     }
 }
@@ -736,6 +742,9 @@ pub fn route_param_to_node(param: &str) -> i32 {
 
         // Primary synth parameters
         "pf" | "pw" | "pv" | "fm" | "fa" | "fd" | "pa" | "pd" | "dc" | "dm" | "dd" | "tk" => PRIMARY_NODE_ID,
+
+        // Plaits synth parameters
+        "pitch" | "detune" | "engine" | "harmonics" | "timbre" | "morph" | "decay" | "lpg" | "plv" | "pav" | "pl_gate" | "t_gate_plaits" => PLAITS_NODE_ID,
 
         // Main synth parameters (effects, filters, etc.) - everything else
         _ => MAIN_NODE_ID,

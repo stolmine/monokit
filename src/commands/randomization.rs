@@ -503,3 +503,39 @@ where
 
     Ok(())
 }
+
+pub fn handle_rnd_pl<F>(
+    metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    use crate::types::PLAITS_NODE_ID;
+    let mut rng = rand::thread_rng();
+
+    let engine = rng.gen_range(0..=15);
+    let harmonics = rng.gen_range(0..=16383);
+    let timbre = rng.gen_range(0..=16383);
+    let morph = rng.gen_range(0..=16383);
+    let decay = rng.gen_range(0..=16383);
+    let lpg = rng.gen_range(0..=16383);
+
+    // Scale 0-16383 values to 0.0-1.0 floats for SynthDef
+    metro_tx.send(MetroCommand::SendParam("engine".to_string(), OscType::Int(engine)))?;
+    metro_tx.send(MetroCommand::SendParam("harmonics".to_string(), OscType::Float(harmonics as f32 / 16383.0)))?;
+    metro_tx.send(MetroCommand::SendParam("timbre".to_string(), OscType::Float(timbre as f32 / 16383.0)))?;
+    metro_tx.send(MetroCommand::SendParam("morph".to_string(), OscType::Float(morph as f32 / 16383.0)))?;
+    metro_tx.send(MetroCommand::SendParam("decay".to_string(), OscType::Float(decay as f32 / 16383.0)))?;
+    metro_tx.send(MetroCommand::SendParam("lpg".to_string(), OscType::Float(lpg as f32 / 16383.0)))?;
+
+    if debug_level >= TIER_VERBOSE {
+        output(format!(
+            "RANDOMIZED PLAITS: ENG={} HARM={} TIMB={} MORPH={}",
+            engine, harmonics, timbre, morph
+        ));
+    }
+
+    Ok(())
+}

@@ -816,7 +816,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "TR" | "RST" | "HELP" | "REC" | "REC.STOP" | "CLEAR" | "CLR" | "BRK" | "RND.VOICE" | "RND.OSC" | "RND.FM" | "RND.MOD" | "RND.ENV" | "RND.FX" | "RND.FILT" | "RND.DLY" | "RND.VERB" => {
+        "TR" | "PLTR" | "RST" | "HELP" | "REC" | "REC.STOP" | "CLEAR" | "CLR" | "BRK" | "RND.VOICE" | "RND.OSC" | "RND.FM" | "RND.MOD" | "RND.ENV" | "RND.PL" | "RND.FX" | "RND.FILT" | "RND.DLY" | "RND.VERB" => {
             if argc > 0 {
                 return Err(anyhow::anyhow!("{} TAKES NO ARGUMENTS", command));
             }
@@ -897,7 +897,9 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         // Noise controls
         "NW" | "NA" | "ND" | "NC" | "NE" | "NP" | "NM" | "NV" | "NG" |
         // Source levels
-        "PV" | "MV" |
+        "PV" | "MV" | "PLV" | "PAV" |
+        // Plaits
+        "PL.ENG" | "PL.FREQ" | "PLF" | "PL.HARM" | "PL.TIMB" | "PL.MORPH" | "PL.DEC" | "PL.LPG" |
         // Filter
         "FC" | "FQ" | "FT" | "FE" | "FED" | "FK" |
         // Resonator

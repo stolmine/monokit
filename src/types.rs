@@ -688,3 +688,28 @@ pub enum ColorMode {
     TrueColor,
     Color256,
 }
+
+
+// Multi-synth architecture: bus assignments
+pub const PRIMARY_BUS: i32 = 16;
+pub const MOD_BUS: i32 = 17;
+pub const NOISE_BUS: i32 = 18;
+
+// Multi-synth architecture: node IDs for the 4 voice synths
+pub struct VoiceSynths {
+    pub noise_node: i32,
+    pub mod_node: i32,
+    pub primary_node: i32,
+    pub main_node: i32,
+}
+
+impl VoiceSynths {
+    pub fn new() -> Self {
+        VoiceSynths {
+            noise_node: 1000,
+            mod_node: 1001,
+            primary_node: 1002,
+            main_node: 1003,
+        }
+    }
+}

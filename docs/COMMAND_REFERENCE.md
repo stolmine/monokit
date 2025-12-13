@@ -143,14 +143,7 @@ Same operations as P.* but with explicit pattern number:
 
 ### Noise Source
 - `NW <0-2>` - Noise type (0=white, 1=pink, 2=brown)
-- `NA <1-10000>` - Noise envelope attack (ms)
-- `ND <1-10000>` - Noise envelope decay (ms)
-- `NC <-8 to 8>` - Noise envelope curve
-- `NE <0-16383>` - Noise envelope amount (0=bypass)
-- `NP <0-16383>` - Noise → primary oscillator FM
-- `NM <0-16383>` - Noise → modulator oscillator FM
 - `NV <0-16383>` - Noise volume
-- `NG <0|1>` - Noise gate (0=drone, 1=gated)
 
 ### Source Levels
 - `PV <0-16383>` - Primary oscillator volume

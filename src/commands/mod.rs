@@ -348,29 +348,8 @@ where
         "NW" => {
             synth_params::handle_nw(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "NA" => {
-            synth_params::handle_na(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
-        }
-        "ND" => {
-            synth_params::handle_nd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
-        }
-        "NC" => {
-            synth_params::handle_nc(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
-        }
-        "NE" => {
-            synth_params::handle_ne(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
-        }
-        "NP" => {
-            synth_params::handle_np(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
-        }
-        "NM" => {
-            synth_params::handle_nm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
-        }
         "NV" => {
             synth_params::handle_nv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
-        }
-        "NG" => {
-            synth_params::handle_ng(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "PV" => {
             synth_params::handle_pv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;

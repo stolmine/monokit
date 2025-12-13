@@ -25,6 +25,10 @@ echo "  Removed old .scsyndef files"
 
 # Step 3: Compile SynthDefs
 echo -e "${YELLOW}STEP 3: Compiling SynthDefs${NC}"
+# Kill any lingering sclang/scsynth processes to avoid race conditions
+pkill -9 sclang 2>/dev/null || true
+pkill -9 scsynth 2>/dev/null || true
+sleep 2
 timeout 30 /Applications/SuperCollider.app/Contents/MacOS/sclang build_scripts/compile_synthdefs.scd > /tmp/synthdef_compile.log 2>&1
 
 # Step 4: Verify synthdefs were created

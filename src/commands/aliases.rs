@@ -129,6 +129,19 @@ static CANONICAL_TO_ALIAS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new
     m.insert("PL.DEC", "PLD");
     m.insert("PL.LPG", "PLL");
 
+    // Pitch Shift
+    m.insert("PS.MODE", "PSM");
+    m.insert("PS.SEMI", "PSS");
+    m.insert("PS.GRAIN", "PSG");
+    m.insert("PS.MIX", "PSX");
+    m.insert("PS.TARG", "PST");
+
+    // Beat Repeat
+    m.insert("BR.LEN", "BRL");
+    m.insert("BR.REV", "BRR");
+    m.insert("BR.WIN", "BRW");
+    m.insert("BR.MIX", "BRX");
+
     m
 });
 

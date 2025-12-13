@@ -315,12 +315,12 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     KeyCode::Char('v') if key.modifiers.contains(KeyModifiers::CONTROL) && app.current_page == Page::Notes => {
                         app.paste_notes_line();
                     }
-                    KeyCode::Char('z') if key.modifiers.contains(KeyModifiers::CONTROL)
+                    KeyCode::Char('z') | KeyCode::Char('Z') if key.modifiers.contains(KeyModifiers::CONTROL)
                         && !key.modifiers.contains(KeyModifiers::SHIFT)
                         && (app.is_script_page() || app.current_page == Page::Notes) => {
                         app.undo();
                     }
-                    KeyCode::Char('z') if key.modifiers.contains(KeyModifiers::CONTROL)
+                    KeyCode::Char('z') | KeyCode::Char('Z') if key.modifiers.contains(KeyModifiers::CONTROL)
                         && key.modifiers.contains(KeyModifiers::SHIFT)
                         && (app.is_script_page() || app.current_page == Page::Notes) => {
                         app.redo();

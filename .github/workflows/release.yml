@@ -31,6 +31,14 @@ jobs:
           mkdir -p ~/Library/Application\ Support/SuperCollider/Extensions/
           cp -r sc3-plugins/SC3plugins ~/Library/Application\ Support/SuperCollider/Extensions/
 
+      - name: Install mi-UGens
+        run: |
+          # Download and install mi-UGens for Plaits integration
+          curl -L -o mi-UGens.zip "https://github.com/v7b1/mi-UGens/releases/download/v0.0.8/mi-UGens-macOS.zip"
+          unzip mi-UGens.zip
+          mkdir -p ~/Library/Application\ Support/SuperCollider/Extensions/
+          cp -r mi-UGens ~/Library/Application\ Support/SuperCollider/Extensions/
+
       - name: Compile SynthDefs
         run: |
           # Run sclang to compile synthdefs

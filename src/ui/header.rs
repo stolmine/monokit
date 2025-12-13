@@ -138,12 +138,16 @@ pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
 
     // Multi-voice trigger indicators: show at level 2 and above if activity is enabled
     if app.show_activity && app.header_level >= 2 {
-        // C = Complex oscillators (TR command)
-        let c_color = app.theme.activity_color(app.trigger_activity, false, app.activity_hold_ms);
+        // H = HD2/Complex oscillators (TR command)
+        let h_color = app.theme.activity_color(app.trigger_activity, false, app.activity_hold_ms);
         right_spans.push(Span::styled(
-            "C",
-            Style::default().fg(c_color),
+            "H",
+            Style::default().fg(h_color),
         ));
+        right_width += 1;
+
+        // Separator
+        right_spans.push(Span::raw("|"));
         right_width += 1;
 
         // P = Plaits (PLTR command)
@@ -153,7 +157,7 @@ pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
             Style::default().fg(p_color),
         ));
         right_spans.push(Span::raw(" "));
-        right_width += 2; // "P" + space
+        right_width += 3; // "P" + space
     }
 
     // Meters: show at level 1 and above if header meters are enabled

@@ -51,7 +51,7 @@ fn test_header_set_level_2() {
     assert!(result.is_ok());
     assert_eq!(ctx.header_level, 2);
     assert_eq!(ctx.outputs.len(), 1);
-    assert_eq!(ctx.outputs[0], "HEADER LEVEL: 2 (NAV + C/P + METERS)");
+    assert_eq!(ctx.outputs[0], "HEADER LEVEL: 2 (NAV + H|P + METERS)");
 }
 
 #[test]
@@ -63,7 +63,7 @@ fn test_header_set_level_3() {
     assert!(result.is_ok());
     assert_eq!(ctx.header_level, 3);
     assert_eq!(ctx.outputs.len(), 1);
-    assert_eq!(ctx.outputs[0], "HEADER LEVEL: 3 (FULL NAV + C/P + METERS)");
+    assert_eq!(ctx.outputs[0], "HEADER LEVEL: 3 (FULL NAV + H|P + METERS)");
 }
 
 #[test]
@@ -75,7 +75,7 @@ fn test_header_set_level_4() {
     assert!(result.is_ok());
     assert_eq!(ctx.header_level, 4);
     assert_eq!(ctx.outputs.len(), 1);
-    assert_eq!(ctx.outputs[0], "HEADER LEVEL: 4 (FULL NAV + C/P + METERS + CPU)");
+    assert_eq!(ctx.outputs[0], "HEADER LEVEL: 4 (FULL NAV + H|P + METERS + CPU)");
 }
 
 #[test]

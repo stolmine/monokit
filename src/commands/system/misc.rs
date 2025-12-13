@@ -656,9 +656,9 @@ define_enum_select!(
     "ERROR: HEADER TAKES 0-4",
     (0, "NAV ONLY"),
     (1, "NAV + METERS"),
-    (2, "NAV + C/P + METERS"),
-    (3, "FULL NAV + C/P + METERS"),
-    (4, "FULL NAV + C/P + METERS + CPU"),
+    (2, "NAV + H|P + METERS"),
+    (3, "FULL NAV + H|P + METERS"),
+    (4, "FULL NAV + H|P + METERS + CPU"),
 );
 
 pub fn handle_limit<F>(

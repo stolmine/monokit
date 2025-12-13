@@ -39,6 +39,7 @@ pub fn highlight_stateful_operators(
     line: &str,
     script_index: usize,
     toggle_state: &HashMap<String, usize>,
+    toggle_last_value: &HashMap<String, i16>,
 ) -> HighlightedLine {
     let mut segments = Vec::new();
     let mut line_pos = 0;
@@ -52,7 +53,7 @@ pub fn highlight_stateful_operators(
             line_pos
         };
 
-        let cmd_segments = highlight_single_command(cmd, cmd_start, script_index, toggle_state);
+        let cmd_segments = highlight_single_command(cmd, cmd_start, script_index, toggle_state, toggle_last_value);
         segments.extend(cmd_segments.segments);
 
         line_pos = cmd_start + cmd.len();
@@ -104,6 +105,7 @@ fn highlight_single_command(
     cmd_start_in_line: usize,
     script_index: usize,
     toggle_state: &HashMap<String, usize>,
+    toggle_last_value: &HashMap<String, i16>,
 ) -> HighlightedLine {
     let mut segments = Vec::new();
     let mut current_pos = 0;
@@ -170,6 +172,7 @@ fn highlight_single_command(
                         current_index,
                         script_index,
                         toggle_state,
+                        toggle_last_value,
                     ) {
                         segments.extend(highlighted_segments);
                         let seq_end = cmd[start_pos..]
@@ -212,14 +215,12 @@ fn highlight_single_command(
                         });
                     }
 
-                    let current_state = toggle_state.get(&key).copied().unwrap_or(0);
-                    let active_value_index = current_state % 2;
-
                     if let Some(highlighted_segments) = highlight_tog_expression(
                         &cmd[start_pos..],
                         &parts[i+1],
                         &parts[i+2],
-                        active_value_index,
+                        &key,
+                        toggle_last_value,
                     ) {
                         segments.extend(highlighted_segments);
 
@@ -248,13 +249,12 @@ fn highlight_single_command(
                         });
                     }
 
-                    let selected_index = toggle_state.get(&key).copied().unwrap_or(0);
-
                     if let Some(highlighted_segments) = highlight_eith_expression(
                         &cmd[start_pos..],
                         &parts[i+1],
                         &parts[i+2],
-                        selected_index,
+                        &key,
+                        toggle_last_value,
                     ) {
                         segments.extend(highlighted_segments);
 
@@ -297,6 +297,7 @@ fn highlight_seq_pattern(
     current_index: usize,
     script_index: usize,
     toggle_state: &HashMap<String, usize>,
+    toggle_last_value: &HashMap<String, i16>,
 ) -> Option<Vec<HighlightedSegment>> {
     let steps = parse_seq_pattern(pattern).ok()?;
 
@@ -345,6 +346,7 @@ fn highlight_seq_pattern(
                 pattern,
                 token_step_index,
                 toggle_state,
+                toggle_last_value,
             );
             segments.extend(inner_segments);
         } else {
@@ -372,6 +374,7 @@ fn highlight_nested_token(
     pattern: &str,
     step_index: usize,
     toggle_state: &HashMap<String, usize>,
+    toggle_last_value: &HashMap<String, i16>,
 ) -> Vec<HighlightedSegment> {
     let mut segments = Vec::new();
 
@@ -403,21 +406,32 @@ fn highlight_nested_token(
         }];
     }
 
-    // For alternation <a b>, look up the state
+    // For alternation <a b>, look up the last returned value
     // Key format: seq_alt_{script}_{pattern}_{step_index}
-    // For random choice {a b}, look up the last selected index
+    // For random choice {a b}, look up the last returned value
     // Key format: seq_rnd_{script}_{pattern}_{step_index}
-    let active_option_idx = if is_alternation {
-        let alt_key = format!("seq_alt_{}_{}_{}", script_index, pattern, step_index);
-        // The state is incremented AFTER returning, so current state shows what was last returned
-        // We need state - 1 to show what will be returned next, but if state is 0, show 0
-        let state = toggle_state.get(&alt_key).copied().unwrap_or(0);
-        Some(state % options.len())
+    let key = if is_alternation {
+        format!("seq_alt_{}_{}_{}", script_index, pattern, step_index)
     } else {
-        // Random choice {a b} - look up the last selected index
-        let rnd_key = format!("seq_rnd_{}_{}_{}", script_index, pattern, step_index);
-        toggle_state.get(&rnd_key).copied()
+        format!("seq_rnd_{}_{}_{}", script_index, pattern, step_index)
     };
+
+    let active_option_idx = toggle_last_value.get(&key).and_then(|&stored_value| {
+        // Parse each option to find which one matches the stored value
+        options.iter().position(|opt| {
+            // Parse the option as a simple value
+            if let Ok(val) = opt.parse::<i16>() {
+                val == stored_value
+            } else if opt == &"_" || opt == &"." {
+                stored_value == 0
+            } else if opt.to_uppercase() == "X" {
+                stored_value == 1
+            } else {
+                // Try to parse as note name
+                crate::eval::seq::parse_note_name(opt).map_or(false, |v| v == stored_value)
+            }
+        })
+    });
 
     // Build segments: <, then options with one highlighted, then >, then suffix
     segments.push(HighlightedSegment {
@@ -460,7 +474,8 @@ fn highlight_tog_expression(
     line_from_tog: &str,
     val1: &str,
     val2: &str,
-    active_index: usize,
+    key: &str,
+    toggle_last_value: &HashMap<String, i16>,
 ) -> Option<Vec<HighlightedSegment>> {
     let mut segments = Vec::new();
 
@@ -471,6 +486,13 @@ fn highlight_tog_expression(
     // Find val2 as a whole word AFTER val1
     let val2_pos = find_whole_word(&line_from_tog[val1_end..], val2).map(|p| p + val1_end)?;
 
+    // Parse val1 and val2 to compare with stored value
+    let val1_parsed = val1.parse::<i16>().ok();
+    let val2_parsed = val2.parse::<i16>().ok();
+
+    // Get stored value to determine which option to highlight
+    let stored_value = toggle_last_value.get(key);
+
     let tog_to_val1 = &line_from_tog[..val1_pos];
     segments.push(HighlightedSegment {
         text: tog_to_val1.to_string(),
@@ -479,7 +501,7 @@ fn highlight_tog_expression(
 
     segments.push(HighlightedSegment {
         text: val1.to_string(),
-        is_highlighted: active_index == 0,
+        is_highlighted: stored_value.and_then(|&v| val1_parsed.map(|p| p == v)).unwrap_or(false),
     });
 
     let between = &line_from_tog[val1_end..val2_pos];
@@ -490,7 +512,7 @@ fn highlight_tog_expression(
 
     segments.push(HighlightedSegment {
         text: val2.to_string(),
-        is_highlighted: active_index == 1,
+        is_highlighted: stored_value.and_then(|&v| val2_parsed.map(|p| p == v)).unwrap_or(false),
     });
 
     Some(segments)
@@ -500,7 +522,8 @@ fn highlight_eith_expression(
     line_from_eith: &str,
     val1: &str,
     val2: &str,
-    selected_index: usize,
+    key: &str,
+    toggle_last_value: &HashMap<String, i16>,
 ) -> Option<Vec<HighlightedSegment>> {
     let mut segments = Vec::new();
 
@@ -511,6 +534,13 @@ fn highlight_eith_expression(
     // Find val2 as a whole word AFTER val1
     let val2_pos = find_whole_word(&line_from_eith[val1_end..], val2).map(|p| p + val1_end)?;
 
+    // Parse val1 and val2 to compare with stored value
+    let val1_parsed = val1.parse::<i16>().ok();
+    let val2_parsed = val2.parse::<i16>().ok();
+
+    // Get stored value to determine which option to highlight
+    let stored_value = toggle_last_value.get(key);
+
     let eith_to_val1 = &line_from_eith[..val1_pos];
     segments.push(HighlightedSegment {
         text: eith_to_val1.to_string(),
@@ -519,7 +549,7 @@ fn highlight_eith_expression(
 
     segments.push(HighlightedSegment {
         text: val1.to_string(),
-        is_highlighted: selected_index == 0,
+        is_highlighted: stored_value.and_then(|&v| val1_parsed.map(|p| p == v)).unwrap_or(false),
     });
 
     let between = &line_from_eith[val1_end..val2_pos];
@@ -530,7 +560,7 @@ fn highlight_eith_expression(
 
     segments.push(HighlightedSegment {
         text: val2.to_string(),
-        is_highlighted: selected_index == 1,
+        is_highlighted: stored_value.and_then(|&v| val2_parsed.map(|p| p == v)).unwrap_or(false),
     });
 
     Some(segments)
@@ -612,9 +642,11 @@ mod tests {
     fn test_highlight_seq_basic() {
         let mut state = HashMap::new();
         state.insert("seq_0_C3 E3 G3".to_string(), 1);
+        let mut last_value = HashMap::new();
+        last_value.insert("seq_0_C3 E3 G3".to_string(), 4);
 
         let line = "N ON SEQ \"C3 E3 G3\"";
-        let result = highlight_stateful_operators(line, 0, &state);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -628,9 +660,11 @@ mod tests {
     #[test]
     fn test_highlight_seq_first_position() {
         let state = HashMap::new();
+        let mut last_value = HashMap::new();
+        last_value.insert("seq_0_C3 E3 G3".to_string(), 0);
 
         let line = "N ON SEQ \"C3 E3 G3\"";
-        let result = highlight_stateful_operators(line, 0, &state);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -644,9 +678,11 @@ mod tests {
     #[test]
     fn test_highlight_tog_first_value() {
         let state = HashMap::new();
+        let mut last_value = HashMap::new();
+        last_value.insert("0_TOG_10_20".to_string(), 10);
 
         let line = "N ON TOG 10 20";
-        let result = highlight_stateful_operators(line, 0, &state);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -661,9 +697,11 @@ mod tests {
     fn test_highlight_tog_second_value() {
         let mut state = HashMap::new();
         state.insert("0_TOG_10_20".to_string(), 1);
+        let mut last_value = HashMap::new();
+        last_value.insert("0_TOG_10_20".to_string(), 20);
 
         let line = "N ON TOG 10 20";
-        let result = highlight_stateful_operators(line, 0, &state);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -679,9 +717,11 @@ mod tests {
         // Bug: "DC TOG 2000 0" was displaying as "DC TOG 2000 000 0"
         // The "0" was being found inside "2000" instead of as a separate token
         let state = HashMap::new();
+        let mut last_value = HashMap::new();
+        last_value.insert("0_TOG_2000_0".to_string(), 2000);
 
         let line = "DC TOG 2000 0";
-        let result = highlight_stateful_operators(line, 0, &state);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -701,9 +741,11 @@ mod tests {
     fn test_highlight_tog_with_zero_second_value() {
         let mut state = HashMap::new();
         state.insert("0_TOG_2000_0".to_string(), 1);
+        let mut last_value = HashMap::new();
+        last_value.insert("0_TOG_2000_0".to_string(), 0);
 
         let line = "DC TOG 2000 0";
-        let result = highlight_stateful_operators(line, 0, &state);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -719,9 +761,11 @@ mod tests {
     fn test_highlight_seq_with_repeat() {
         let mut state = HashMap::new();
         state.insert("seq_0_C3*2 E3".to_string(), 1);
+        let mut last_value = HashMap::new();
+        last_value.insert("seq_0_C3*2 E3".to_string(), 0);
 
         let line = "N ON SEQ \"C3*2 E3\"";
-        let result = highlight_stateful_operators(line, 0, &state);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -735,8 +779,9 @@ mod tests {
     #[test]
     fn test_no_operators() {
         let state = HashMap::new();
+        let last_value = HashMap::new();
         let line = "N ON 60";
-        let result = highlight_stateful_operators(line, 0, &state);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value);
 
         assert_eq!(result.segments.len(), 1);
         assert_eq!(result.segments[0].text, "N ON 60");
@@ -750,9 +795,11 @@ mod tests {
         state.insert("seq_0_5 3 <1 0> 4".to_string(), 2);
         // Alternation state at 0 means first option (1) will be returned
         state.insert("seq_alt_0_5 3 <1 0> 4_2".to_string(), 0);
+        let mut last_value = HashMap::new();
+        last_value.insert("seq_alt_0_5 3 <1 0> 4_2".to_string(), 1);
 
         let line = "PF SEQ \"5 3 <1 0> 4\"";
-        let result = highlight_stateful_operators(line, 0, &state);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value);
 
         // Find the highlighted segments
         let highlighted: Vec<_> = result.segments
@@ -775,9 +822,11 @@ mod tests {
         state.insert("seq_0_5 3 <1 0> 4".to_string(), 2);
         // Alternation state at 1 means second option (0) will be returned
         state.insert("seq_alt_0_5 3 <1 0> 4_2".to_string(), 1);
+        let mut last_value = HashMap::new();
+        last_value.insert("seq_alt_0_5 3 <1 0> 4_2".to_string(), 0);
 
         let line = "PF SEQ \"5 3 <1 0> 4\"";
-        let result = highlight_stateful_operators(line, 0, &state);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value);
 
         // Find the highlighted segments
         let highlighted: Vec<_> = result.segments
@@ -800,9 +849,11 @@ mod tests {
         state.insert("seq_0_5 3 {1 0} 4".to_string(), 2);
         // Random choice state at 0 means first option (1) was selected
         state.insert("seq_rnd_0_5 3 {1 0} 4_2".to_string(), 0);
+        let mut last_value = HashMap::new();
+        last_value.insert("seq_rnd_0_5 3 {1 0} 4_2".to_string(), 1);
 
         let line = "PF SEQ \"5 3 {1 0} 4\"";
-        let result = highlight_stateful_operators(line, 0, &state);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value);
 
         // Find the highlighted segments
         let highlighted: Vec<_> = result.segments
@@ -825,9 +876,11 @@ mod tests {
         state.insert("seq_0_5 3 {1 0} 4".to_string(), 2);
         // Random choice state at 1 means second option (0) was selected
         state.insert("seq_rnd_0_5 3 {1 0} 4_2".to_string(), 1);
+        let mut last_value = HashMap::new();
+        last_value.insert("seq_rnd_0_5 3 {1 0} 4_2".to_string(), 0);
 
         let line = "PF SEQ \"5 3 {1 0} 4\"";
-        let result = highlight_stateful_operators(line, 0, &state);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value);
 
         // Find the highlighted segments
         let highlighted: Vec<_> = result.segments
@@ -847,9 +900,11 @@ mod tests {
     fn test_highlight_seq_no_space_before_quote() {
         let mut state = HashMap::new();
         state.insert("seq_0_0 10 2".to_string(), 1);
+        let mut last_value = HashMap::new();
+        last_value.insert("seq_0_0 10 2".to_string(), 10);
 
         let line = "N ON SEQ\"0 10 2\"";
-        let result = highlight_stateful_operators(line, 0, &state);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -863,8 +918,9 @@ mod tests {
     #[test]
     fn test_highlight_seq_unterminated_quote() {
         let state = HashMap::new();
+        let last_value = HashMap::new();
         let line = "N ON SEQ \"C3 E3";
-        let result = highlight_stateful_operators(line, 0, &state);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value);
 
         // Should not panic, should treat the whole line as non-highlighted
         assert!(!result.segments.is_empty());
@@ -876,9 +932,11 @@ mod tests {
     fn test_highlight_seq_with_semicolon_separated_commands() {
         let mut state = HashMap::new();
         state.insert("seq_0_5000*15 1250".to_string(), 0);
+        let mut last_value = HashMap::new();
+        last_value.insert("seq_0_5000*15 1250".to_string(), 5000);
 
         let line = "PF SEQ \"5000*15 1250\"; AD 5; PA 0";
-        let result = highlight_stateful_operators(line, 0, &state);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -898,9 +956,11 @@ mod tests {
     fn test_highlight_eith_first_value() {
         let mut state = HashMap::new();
         state.insert("0_EITH_10_20".to_string(), 0);
+        let mut last_value = HashMap::new();
+        last_value.insert("0_EITH_10_20".to_string(), 10);
 
         let line = "N ON EITH 10 20";
-        let result = highlight_stateful_operators(line, 0, &state);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()
@@ -915,9 +975,11 @@ mod tests {
     fn test_highlight_eith_second_value() {
         let mut state = HashMap::new();
         state.insert("0_EITH_100_200".to_string(), 1);
+        let mut last_value = HashMap::new();
+        last_value.insert("0_EITH_100_200".to_string(), 200);
 
         let line = "PF EITH 100 200";
-        let result = highlight_stateful_operators(line, 0, &state);
+        let result = highlight_stateful_operators(line, 0, &state, &last_value);
 
         let highlighted_tokens: Vec<_> = result.segments
             .iter()

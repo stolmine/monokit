@@ -299,16 +299,20 @@ fn eval_step(
         }
         SeqStep::Alternation(options) => {
             let alt_key = format!("seq_alt_{}_{}_{}", script_index, pattern, step_index);
-            let alt_index = patterns.toggle_state.entry(alt_key).or_insert(0);
+            let alt_index = patterns.toggle_state.entry(alt_key.clone()).or_insert(0);
             let idx = *alt_index % options.len();
             *alt_index = (*alt_index).wrapping_add(1);
-            eval_simple_step(&options[idx])
+            let result = eval_simple_step(&options[idx]);
+            patterns.toggle_last_value.insert(alt_key, result);
+            result
         }
         SeqStep::RandomChoice(options) => {
             let idx = rand::thread_rng().gen_range(0..options.len());
             let rnd_key = format!("seq_rnd_{}_{}_{}", script_index, pattern, step_index);
-            patterns.toggle_state.insert(rnd_key, idx);
-            eval_simple_step(&options[idx])
+            patterns.toggle_state.insert(rnd_key.clone(), idx);
+            let result = eval_simple_step(&options[idx]);
+            patterns.toggle_last_value.insert(rnd_key, result);
+            result
         }
     }
 }
@@ -393,6 +397,9 @@ pub fn eval_seq_expression(
 
     let step = &steps[step_index];
     let value = eval_step(step, patterns, script_index, &pattern, step_index);
+
+    // Store the returned value for highlighting
+    patterns.toggle_last_value.insert(key.clone(), value);
 
     // Advance to next step
     let index = patterns.toggle_state.entry(key).or_insert(0);

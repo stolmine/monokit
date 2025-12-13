@@ -58,8 +58,9 @@ pub fn eval_logic_expression(
                     let next_idx = start_idx + 1 + a_consumed + b_consumed;
                     let key = format!("{}_{}", script_index, parts[start_idx..next_idx].join("_"));
                     let selected_index = if rand::thread_rng().gen_bool(0.5) { 0 } else { 1 };
-                    patterns.toggle_state.insert(key, selected_index);
+                    patterns.toggle_state.insert(key.clone(), selected_index);
                     let result = if selected_index == 0 { a } else { b };
+                    patterns.toggle_last_value.insert(key, result);
                     return Some((result, 1 + a_consumed + b_consumed));
                 }
             }
@@ -76,8 +77,9 @@ pub fn eval_logic_expression(
                 if let Some((b, b_consumed)) = eval_expr_fn(parts, start_idx + 1 + a_consumed, variables, patterns, counters, scripts, script_index, scale) {
                     let next_idx = start_idx + 1 + a_consumed + b_consumed;
                     let key = format!("{}_{}", script_index, parts[start_idx..next_idx].join("_"));
-                    let counter = patterns.toggle_state.entry(key).or_insert(0);
+                    let counter = patterns.toggle_state.entry(key.clone()).or_insert(0);
                     let result = if *counter % 2 == 0 { a } else { b };
+                    patterns.toggle_last_value.insert(key.clone(), result);
                     *counter = counter.wrapping_add(1);
                     return Some((result, 1 + a_consumed + b_consumed));
                 }

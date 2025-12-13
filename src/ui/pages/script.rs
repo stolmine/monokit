@@ -64,6 +64,7 @@ pub fn render_script_page(app: &crate::App, num: u8) -> Paragraph<'static> {
                             &segment_text,
                             script_index,
                             &app.patterns.toggle_state,
+                            &app.patterns.toggle_last_value,
                         );
 
                         for segment_span in segment_highlighted.to_spans(normal_color, highlight_color) {
@@ -90,6 +91,7 @@ pub fn render_script_page(app: &crate::App, num: u8) -> Paragraph<'static> {
                     line_content,
                     script_index,
                     &app.patterns.toggle_state,
+                    &app.patterns.toggle_last_value,
                 );
 
                 if app.show_conditional_highlight {

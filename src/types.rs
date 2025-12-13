@@ -252,6 +252,8 @@ pub struct PatternStorage {
     pub working: usize,
     #[serde(skip)]
     pub toggle_state: HashMap<String, usize>,
+    #[serde(skip)]
+    pub toggle_last_value: HashMap<String, i16>,
 }
 
 impl Default for PatternStorage {
@@ -267,6 +269,7 @@ impl Default for PatternStorage {
             ],
             working: 0,
             toggle_state: HashMap::new(),
+            toggle_last_value: HashMap::new(),
         }
     }
 }

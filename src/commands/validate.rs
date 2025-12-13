@@ -919,9 +919,9 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         // Pan
         "PAN" |
         // Beat Repeat
-        "BR.LEN" | "BR.REV" | "BR.WIN" | "BR.MIX" |
+        "BR.LEN" | "BRL" | "BR.REV" | "BRR" | "BR.WIN" | "BRW" | "BR.MIX" | "BRX" |
         // Pitch Shift
-        "PS.MODE" | "PS.SEMI" | "PS.GRAIN" | "PS.MIX" | "PS.TARG" => {
+        "PS.MODE" | "PSM" | "PS.SEMI" | "PSS" | "PS.GRAIN" | "PSG" | "PS.MIX" | "PSX" | "PS.TARG" | "PST" => {
             if argc < 1 {
                 return Err(anyhow::anyhow!("{} REQUIRES AT LEAST 1 ARGUMENT", command));
             }

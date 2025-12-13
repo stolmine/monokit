@@ -1,5 +1,47 @@
 # Changelog
 
+## v0.4.1 (December 2025)
+
+### Bug Fixes
+
+**Redo Keybinding**
+- Fixed Ctrl+Shift+Z redo command not working
+- Issue: Shift+Z produces uppercase 'Z', keybinding only matched lowercase 'z'
+- Both undo and redo now handle both 'z' and 'Z' characters
+- Redo functionality now works as expected on all platforms
+
+### Documentation & Help System
+
+**Deprecated Noise Parameters Removed**
+- Removed non-functional noise envelope parameters from help system
+- Cleaned up: NA (attack), ND (decay), NC (curve), NE (envelope amount), NG (gate)
+- These were removed during multi-synth architecture split in v0.3.5
+- Help now accurately reflects working parameters: NW, NP, NM, NV
+
+**Filter Routing Documentation**
+- Added missing MC/MQ toggle commands to help system
+- ROUT.MC / MC - Enable/disable modulation to filter cutoff
+- ROUT.MQ / MQ - Enable/disable modulation to filter resonance
+- Clarified relationship between toggles (MC/MQ) and amounts (MF_F/MF_Q)
+
+**UI Improvements**
+- Changed trigger indicator from 'C' to 'H' for Complex oscillators
+- Added '|' separator between H and P indicators for better readability
+- Header now displays "H|P" instead of "CP"
+
+### Build & Release Pipeline
+
+**GitHub Actions Workflow Fixes**
+- Added mi-UGens v0.0.8 installation for Plaits integration support
+- Applied macOS sclang workaround (must run from SC app directory)
+- Removed timeout command dependency (not available on macOS by default)
+- Added retry logic for SuperCollider installation (handles CDN failures)
+- Release builds now include full Plaits support with MiPlaits.scx
+
+**Cross-Platform Preparation**
+- Fixed hardcoded `/tmp` paths to use `std::env::temp_dir()`
+- Improved platform-agnostic temporary file handling
+
 ## v0.4.0 (December 2025)
 
 ### Plaits Voice Enhancements

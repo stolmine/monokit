@@ -23,6 +23,8 @@ static CANONICAL_TO_ALIAS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new
     m.insert("FILT.TYP", "FT");
     m.insert("FILT.KEY", "FK");
     m.insert("FLEV.AMT", "FE");
+    m.insert("MODF.CUT", "MFF");
+    m.insert("MODF.RES", "MFQ");
 
     m.insert("RESO.FRQ", "RF");
     m.insert("RESO.DEC", "RD");

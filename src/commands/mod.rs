@@ -555,6 +555,12 @@ where
         "FK" => {
             synth_params::handle_fk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
+        "MFF" => {
+            synth_params::handle_mff(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "MFQ" => {
+            synth_params::handle_mfq(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
         "MC" => {
             synth_params::handle_mc(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }

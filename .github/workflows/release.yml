@@ -19,7 +19,14 @@ jobs:
 
       - name: Install SuperCollider
         run: |
-          brew install --cask supercollider
+          # Retry on transient failures (504 errors, etc.)
+          for i in 1 2 3; do
+            if brew install --cask supercollider; then
+              break
+            fi
+            echo "Attempt $i failed, retrying..."
+            sleep 10
+          done
           # Wait for installation to complete
           sleep 5
 

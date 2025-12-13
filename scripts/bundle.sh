@@ -44,6 +44,11 @@ if [ ! -f "${SCLANG}" ]; then
     exit 1
 fi
 
+# Kill any lingering sclang/scsynth processes to avoid race conditions
+pkill -9 sclang 2>/dev/null || true
+pkill -9 scsynth 2>/dev/null || true
+sleep 2
+
 # Compile SynthDefs - the script uses thisProcess.nowExecutingPath to find output dir
 REPO_ROOT="$(pwd)"
 SYNTHDEF_OUTPUT="${REPO_ROOT}/sc/synthdefs"

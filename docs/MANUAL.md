@@ -298,18 +298,18 @@ Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ → Plate Reverb
 
 Beat repeat activates automatically when `BR.MIX` is greater than 0.
 
-- `BR.LEN <0-7>` - Division (0=1/16, 1=1/8...7=8×)
-- `BR.REV <0|1>` - Reverse playback
-- `BR.WIN <1-50>` - Window size (ms)
-- `BR.MIX <0-16383>` - Beat repeat mix (activates when > 0)
+- `BR.LEN` / `BRL <0-7>` - Division (0=1/16, 1=1/8...7=8×)
+- `BR.REV` / `BRR <0|1>` - Reverse playback
+- `BR.WIN` / `BRW <1-50>` - Window size (ms)
+- `BR.MIX` / `BRX <0-16383>` - Beat repeat mix (activates when > 0)
 
 ### Pitch Shift
 
-- `PS.MODE <0|1>` - Mode (0=Normal, 1=Granular)
-- `PS.SEMI <-24 to 24>` - Pitch shift (semitones)
-- `PS.GRAIN <5-100>` - Grain size (ms)
-- `PS.MIX <0-16383>` - Pitch shift mix
-- `PS.TARG <0|1>` - Target (0=Input, 1=Output)
+- `PS.MODE` / `PSM <0|1>` - Mode (0=Normal, 1=Granular)
+- `PS.SEMI` / `PSS <-24 to 24>` - Pitch shift (semitones)
+- `PS.GRAIN` / `PSG <5-100>` - Grain size (ms)
+- `PS.MIX` / `PSX <0-16383>` - Pitch shift mix
+- `PS.TARG` / `PST <0|1>` - Target (0=Input, 1=Output)
 
 ### Stereo Delay
 
@@ -1315,17 +1315,17 @@ Notes are saved with scenes. 8 lines maximum.
 
 ### Beat Repeat & Pitch Shift
 
-| Command | Description |
-|---------|-------------|
-| `BR.LEN <0-7>` | Division |
-| `BR.REV <0\|1>` | Reverse |
-| `BR.WIN <1-50>` | Window (ms) |
-| `BR.MIX <amt>` | Beat repeat mix (activates >0) |
-| `PS.MODE <0\|1>` | Pitch shift mode |
-| `PS.SEMI <-24-24>` | Semitones |
-| `PS.GRAIN <5-100>` | Grain size (ms) |
-| `PS.MIX <amt>` | Pitch shift mix |
-| `PS.TARG <0\|1>` | Target (In/Out) |
+| Command | Alias | Description |
+|---------|-------|-------------|
+| `BR.LEN <0-7>` | `BRL` | Division |
+| `BR.REV <0\|1>` | `BRR` | Reverse |
+| `BR.WIN <1-50>` | `BRW` | Window (ms) |
+| `BR.MIX <amt>` | `BRX` | Beat repeat mix (activates >0) |
+| `PS.MODE <0\|1>` | `PSM` | Pitch shift mode |
+| `PS.SEMI <-24-24>` | `PSS` | Semitones |
+| `PS.GRAIN <5-100>` | `PSG` | Grain size (ms) |
+| `PS.MIX <amt>` | `PSX` | Pitch shift mix |
+| `PS.TARG <0\|1>` | `PST` | Target (In/Out) |
 
 ### Delay & Reverb
 

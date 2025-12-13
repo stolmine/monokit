@@ -36,7 +36,15 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ---
 
-## v0.3.6 Plan
+## v0.3.6 Progress (December 2025) - COMPLETE
+
+| Feature | Effort | Status |
+|---------|--------|--------|
+| CPU Monitoring Fix | Low | **DONE** |
+
+---
+
+## v0.3.7 Plan
 
 | Feature | Effort | Status |
 |---------|--------|--------|

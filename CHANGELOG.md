@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.3.6 (December 2025)
+
+### Bug Fixes
+
+**CPU Monitoring**
+- Fixed inactive CPU readout in scsynth-direct mode
+- Previous approach used /cmd to execute sclang code (doesn't work with scsynth)
+- New approach: meter_thread polls /status every 500ms (2Hz)
+- Parses /status.reply for avgCPU (index 5) and peakCPU (index 6)
+- CPU percentage now displays correctly in header and live page
+
+---
+
 ## v0.3.5 (December 2025)
 
 ### Architecture Changes

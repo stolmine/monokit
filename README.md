@@ -123,6 +123,8 @@ Heavily inspired by the wonderful [monome Teletype](https://monome.org/docs/tele
 
 And the Industrial Music Electronics [Hertz Donut mk2](https://modulargrid.net/e/industrial-music-electronics-hertz-donut-mk-ii)
 
+Includes [Plaits](https://pichenettes.github.io/mutable-instruments-documentation/modules/plaits/) by Émilie Gillet, praise be!
+
 Made possible with binaries and sound engine from [SuperCollider](https://supercollider.github.io/)
 
 As well as UGens from [sc3-plugins](https://github.com/supercollider/sc3-plugins) (GPL-2.0):

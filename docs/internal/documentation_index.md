@@ -8,11 +8,10 @@ Quick reference and links to all project documentation.
 
 | Document | Description | Lines |
 |----------|-------------|-------|
-| [ROADMAP.md](ROADMAP.md) | Current priorities, v0.4.0 complete | ~160 |
+| [ROADMAP.md](ROADMAP.md) | Current priorities, v0.4.1 in progress | ~180 |
 | [CHANGELOG.md](CHANGELOG.md) | Version history, recent updates | ~150 |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Project structure, key files | ~180 |
-| [COMMAND_REFERENCE.md](COMMAND_REFERENCE.md) | Complete command reference | ~400 |
-| [MANUAL.md](MANUAL.md) | User manual with tutorials | - |
+| [MANUAL.md](MANUAL.md) | User manual with tutorials | ~1615 |
 
 ### History Archive
 | Document | Description |
@@ -39,17 +38,24 @@ Quick reference and links to all project documentation.
 
 ---
 
-## Current Status (v0.4.0)
+## Current Status (v0.4.1 - In Progress)
 
+| Feature | Status |
+|---------|--------|
+| MFF/MFQ Filter Modulation Amounts | **DONE** |
+| Ctrl+Shift+Z Redo Fix | **DONE** |
+| Deprecated Noise Params Removal | **DONE** |
+| Debug Tier Refactor | Not started |
+| Oscillator Sync | Not started |
+
+### v0.4.0 (Complete)
 | Feature | Status |
 |---------|--------|
 | Plaits Pitch Control (PL.FREQ/PLF) | **DONE** |
 | 3-Letter Plaits Aliases | **DONE** |
 | PLTR Trigger Readout | **DONE** |
-| Multi-Voice Trigger Indicators (C/P) | **DONE** |
+| Multi-Voice Trigger Indicators (H\|P → C\|P) | **DONE** |
 | RND.PL Fixes | **DONE** |
-| Debug Tier Refactor | Not started |
-| Oscillator Sync | Not started |
 
 ---
 
@@ -64,14 +70,14 @@ All communication from Rust CLI to SuperCollider server uses UDP (127.0.0.1:5712
 - **Reset:** `/monokit/reset` (no arguments)
 - **Recording:** `/monokit/rec`, `/monokit/rec/stop`, `/monokit/rec/path`
 
-**Parameter Names (97 total):**
+**Parameter Names:**
 - Oscillator/FM: pf, pw, mf, mw, fb, fba, fbd, dc, dm, dd, tk, mb, mp, md, mt, ma, fm, mx, mm, me
-- Noise: nw, na, nd, nc, ne, np, nm, nv, ng
+- Noise: nw, np, nm, nv
 - Plaits: pitch, harmonics, timbre, morph, engine, decay, lpg, plv, pav
 - Source Levels: pv, mv
 - Envelopes: ad, pd, fd, dd, pa, fa, da
 - Lo-Fi: lb, ls, lm
-- Filter: fc, fq, ft (0-13), fe, fed, fk, mc, mq
+- Filter: fc, fq, ft (0-13), fe, fed, fk, mc, mq, mff, mfq
 - Ring Mod: rgf, rgw, rgm
 - Resonator: rf, rd, rm, rk
 - Compressor: ct, cr, ca, cl, cm

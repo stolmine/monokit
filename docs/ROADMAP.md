@@ -55,14 +55,49 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | Multi-Voice Trigger Indicators (P/C) | Low | **DONE** |
 | RND.PL Fixes (validation & scaling) | Low | **DONE** |
 
-## v0.4.1 Plan
+## v0.4.1 Progress (December 2025) - IN PROGRESS
 
 | Feature | Effort | Status |
 |---------|--------|--------|
+| MFF/MFQ Filter Modulation Amounts | Low | **DONE** |
+| Ctrl+Shift+Z Redo Fix | Low | **DONE** |
+| Deprecated Noise Params Removal | Low | **DONE** |
 | Debug Tier Refactor | Low | Not started |
 | Noise Envelope & Gating | Medium | Deferred |
 | Noise FM Routing | Low | Deferred |
 | Oscillator Sync | Medium | Not started |
+
+---
+
+## Recent Updates (v0.4.1)
+
+### MFF/MFQ Filter Modulation Amounts [COMPLETE]
+Added granular control over filter modulation routing.
+
+**Changes:**
+- [x] Added MODF.CUT / MFF command (0-16383) - ModBus → Filter cutoff amount
+- [x] Added MODF.RES / MFQ command (0-16383) - ModBus → Filter resonance amount
+- [x] MC/MQ toggles now work in conjunction with MFF/MFQ amounts
+- [x] Provides fine-grained control over modulation depth per filter parameter
+- [x] Files: src/commands/synth/filter.rs, src/commands/aliases.rs
+
+### Ctrl+Shift+Z Redo Fix [COMPLETE]
+Fixed redo keybinding to properly handle uppercase Z.
+
+**Changes:**
+- [x] Redo now works correctly with Ctrl+Shift+Z
+- [x] Fixed uppercase Z handling in keybinding system
+- [x] Files: src/ui/input.rs
+
+### Deprecated Noise Params Removal [COMPLETE]
+Removed noise envelope parameters that were deprecated in multi-synth architecture split.
+
+**Changes:**
+- [x] Removed NA, ND, NC, NE, NG parameters from command system
+- [x] Noise now uses simple volume control (NV) only
+- [x] Envelope control removed as part of multi-synth architecture
+- [x] Deferred: Full envelope/gating restoration (see "Noise Envelope & Gating" below)
+- [x] Files: src/commands/validate.rs, docs/MANUAL.md
 
 ---
 

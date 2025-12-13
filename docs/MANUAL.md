@@ -95,7 +95,9 @@ The voice starts silent (VCA=1, gated mode). Each `TR` command triggers all enve
 
 **Activity Indicators:**
 - Script indicators (1-8, M, I) pulse when executing
-- TR indicator pulses on each trigger
+- Voice trigger indicators (H|P):
+  - H = HD2/Complex oscillator triggered (TR command)
+  - P = Plaits engine triggered (PLTR command)
 - Smooth decay animation (200ms hold, adjust with `FLASH`)
 
 **Grid View (Tab on Live page):**
@@ -262,8 +264,10 @@ Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ → Plate Reverb
 - 13: Latch-SC HP (switched-cap HP)
 
 **ModBus Routing:**
-- `MC <0|1>` - ModBus → Filter cutoff
-- `MQ <0|1>` - ModBus → Filter resonance
+- `MC <0|1>` - ModBus → Filter cutoff (toggle)
+- `MQ <0|1>` - ModBus → Filter resonance (toggle)
+- `MODF.CUT` / `MFF <0-16383>` - ModBus → Cutoff amount
+- `MODF.RES` / `MFQ <0-16383>` - ModBus → Resonance amount
 
 ### Ring Modulator
 
@@ -1257,8 +1261,12 @@ Notes are saved with scenes. 8 lines maximum.
 | `ROUT.MD <0\|1>` | `MD` | Mod → Disc |
 | `ROUT.MT <0\|1>` | `MT` | Mod → Track |
 | `ROUT.MA <0\|1>` | `MA` | Mod → Amp |
-| `ROUT.MC <0\|1>` | `MC` | Mod → Filter |
-| `ROUT.MQ <0\|1>` | `MQ` | Mod → Resonance |
+| `ROUT.MC <0\|1>` | `MC` | Mod → Filter CUT |
+| `ROUT.MQ <0\|1>` | `MQ` | Mod → Filter RES |
+
+**MOD ROUTING (AMOUNTS):**
+| `MODF.CUT <0-16383>` | `MFF` | Mod→CUT Amount |
+| `MODF.RES <0-16383>` | `MFQ` | Mod→RES Amount |
 | `MBUS.MIX <amt>` | `MX` | Mix amount |
 | `MBUS.MMX <0\|1>` | `MM` | Mod → Mix |
 | `MBUS.EMX <0\|1>` | `ME` | Env → Mix |
@@ -1289,6 +1297,8 @@ Notes are saved with scenes. 8 lines maximum.
 | `FILT.RES <amt>` | `FQ` | Resonance |
 | `FILT.TYP <0-13>` | `FT` | Type (14 filter types) |
 | `FILT.KEY <amt>` | `FK` | Key tracking |
+| `MODF.CUT <0-16383>` | `MFF` | Mod→Cutoff amount |
+| `MODF.RES <0-16383>` | `MFQ` | Mod→Res amount |
 | `RING.FRQ <hz>` | `RGF` | Ring mod freq |
 | `RING.WAV <0-3>` | `RGW` | Ring mod wave |
 | `RING.MIX <amt>` | `RGM` | Ring mod mix |

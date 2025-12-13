@@ -25,13 +25,23 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ---
 
-## v0.3.5 Plan
+## v0.3.5 Progress (December 2025) - COMPLETE
 
 | Feature | Effort | Status |
 |---------|--------|--------|
 | Multi-Synth Architecture | High | **DONE** |
+| Parameter Routing System | Medium | **DONE** |
+| Build System Reliability | Low | **DONE** |
+| Scene Path Consistency | Low | **DONE** |
+
+---
+
+## v0.3.6 Plan
+
+| Feature | Effort | Status |
+|---------|--------|--------|
 | Noise Envelope & Gating | Medium | Not started |
-| Noise FM Routing Fix | Low | Not started |
+| Noise FM Routing | Low | Not started |
 | Oscillator Sync | Medium | Not started |
 
 ---

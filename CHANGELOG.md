@@ -1,5 +1,54 @@
 # Changelog
 
+## v0.3.5 (December 2025)
+
+### Architecture Changes
+
+**Multi-Synth Architecture**
+- Restructured from monolithic SynthDef into 4 modular synths
+- monokit_noise (node 1000, bus 18): Noise generator
+- monokit_mod (node 1001, bus 17): Modulator oscillator
+- monokit_primary (node 1002, bus 16): Primary oscillator
+- monokit_main (node 1003): Effects processor and mixer
+- Fixes SuperCollider optimizer bug causing parameter cross-talk (NV/PV/MV)
+- Each source has isolated volume parameter graph preventing conflicts
+
+**Parameter Routing System**
+- Intelligent parameter routing to correct synth nodes
+- Noise params (NW, NV) → node 1000
+- Mod params (MF, MW, MV, FB, etc.) → node 1001
+- Primary params (PF, PW, PV, FM, etc.) → node 1002
+- Effects params (FC, FQ, etc.) → node 1003
+- Trigger (t_gate) broadcasts to all 4 synths for envelope sync
+
+### Bug Fixes
+
+**Build System Reliability**
+- Fixed race condition in sclang compilation causing intermittent hangs
+- Added process cleanup (pkill sclang/scsynth) before compilation
+- Added 2-second delay for clean state
+- Both bundle.sh and verified_build.sh now reliable
+
+**Scene Path Consistency**
+- Removed XDG location (~/.config/monokit/scenes) fallback
+- Now consistently uses platform-native Application Support location
+- macOS: ~/Library/Application Support/monokit/scenes
+- Ensures all user scenes accessible from bundle
+
+**Noise Implementation**
+- Simplified to basic noise source (NW waveform, NV volume only)
+- Removed unsupported envelope/gate/FM parameters from Rust layer
+- Aligned command reference with actual SynthDef capabilities
+
+### Infrastructure
+
+**Documentation**
+- Added build race condition investigation docs
+- Added noise restoration documentation
+- Updated command reference to reflect current noise parameters
+
+---
+
 ## v0.3.4 (December 2025)
 
 ### New Features
@@ -22,14 +71,10 @@
 - MQ added (modbus to filter resonance)
 
 **Noise Source Integration**
-- Added noise generator as third sound source (NW 0-2: white/pink/brown)
-- Dedicated noise envelope (NA attack, ND decay, NC curve, NE amount)
-- Noise → oscillator FM routing (NP → primary, NM → modulator)
-- Individual source level controls (PV primary, MV modulator, NV noise)
-- NG gate mode (0=drone, 1=gated) follows AEG convention
-- Automatic gain compensation prevents clipping when mixing sources
-- NE 0 bypasses envelope for constant noise level
-- Total synth parameters now 88
+- Added noise generator as third sound source
+- NW: Waveform selection (0=white, 1=pink, 2=brown)
+- NV: Noise volume (0-16383)
+- Simple mixing with primary and modulator oscillators
 
 **RND.FX Expanded**
 - Now randomizes all FX blocks: filter, lo-fi, ring mod, resonator, delay, EQ, reverb

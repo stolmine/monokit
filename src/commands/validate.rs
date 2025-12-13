@@ -899,7 +899,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         // Source levels
         "PV" | "MV" | "PLV" | "PAV" |
         // Plaits
-        "PL.ENG" | "PL.FREQ" | "PLF" | "PL.HARM" | "PL.TIMB" | "PL.MORPH" | "PL.DEC" | "PL.LPG" |
+        "PL.ENG" | "PLE" | "PL.FREQ" | "PLF" | "PL.HARM" | "PLH" | "PL.TIMB" | "PLT" | "PL.MORPH" | "PLM" | "PL.DEC" | "PLD" | "PL.LPG" | "PLL" |
         // Filter
         "FC" | "FQ" | "FT" | "FE" | "FED" | "FK" |
         // Resonator

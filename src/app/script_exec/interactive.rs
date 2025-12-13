@@ -133,6 +133,8 @@ impl App {
 
             if sub_cmd.eq_ignore_ascii_case("TR") {
                 self.trigger_activity = Some(std::time::Instant::now());
+            } else if sub_cmd.eq_ignore_ascii_case("PLTR") {
+                self.plaits_trigger_activity = Some(std::time::Instant::now());
             }
 
             // Mark parameter activity

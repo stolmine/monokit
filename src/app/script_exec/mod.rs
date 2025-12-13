@@ -25,8 +25,11 @@ impl App {
         metro_interval: &mut u64,
         depth: Option<usize>,
     ) {
-        if cmd_to_run.trim().eq_ignore_ascii_case("TR") {
+        let trimmed = cmd_to_run.trim();
+        if trimmed.eq_ignore_ascii_case("TR") {
             self.trigger_activity = Some(std::time::Instant::now());
+        } else if trimmed.eq_ignore_ascii_case("PLTR") {
+            self.plaits_trigger_activity = Some(std::time::Instant::now());
         }
 
         // Mark parameter activity

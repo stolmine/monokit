@@ -81,9 +81,107 @@ src/
 ```
 
 ### SuperCollider
-- **sc/monokit_server.scd** (626 lines) - Sound engine
-  - `\monokit` SynthDef with 88 parameters
-  - Signal chain: Oscillators → FM → Mix → Discontinuity → Lo-Fi → SVF Filter → Ring Mod → Comb Resonator → Amp → Compressor → Pan → Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ → Plate Reverb
+- **sc/monokit_server.scd** - Multi-synth sound engine
+  - 5-synth architecture with audio bus routing
+  - 97 total parameters across all voices
+  - See Voice Architecture diagram below for signal flow
+
+---
+
+## Voice Architecture
+
+Monokit uses a multi-synth architecture with separate SynthDefs for each voice, communicating via audio buses:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   RUST CLI (Command Layer)                  │
+│  Commands: TR, PLTR, PF, PLF, PLH, etc.                    │
+└────────────────────┬────────────────────────────────────────┘
+                     │ OSC Messages (/n_set)
+                     │ Node Routing by Parameter
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│              SUPERCOLLIDER (Audio Engine)                    │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
+│  │ monokit_noise│  │ monokit_mod  │  │monokit_primary│     │
+│  │  (Node 1002) │  │  (Node 1003) │  │  (Node 1004)  │     │
+│  ├──────────────┤  ├──────────────┤  ├──────────────┤     │
+│  │ Params:      │  │ Params:      │  │ Params:       │     │
+│  │  NW, NV      │  │  MF, MW, MV  │  │  PF, PW, PV   │     │
+│  │              │  │  FB, FBA,FBD │  │  FM, FA, FD   │     │
+│  │ [Noise Gen]  │  │              │  │  PA, PD       │     │
+│  │      │       │  │ [FM Osc]     │  │  DC, DM, DD   │     │
+│  │      ▼       │  │      │       │  │  TK           │     │
+│  │  Out→Bus 18  │  │      ▼       │  │              │     │
+│  └──────────────┘  │  Out→Bus 17  │  │ [Complex Osc]│     │
+│                    └──────────────┘  │      │       │     │
+│                                      │      ▼       │     │
+│  ┌──────────────┐                    │  Out→Bus 16  │     │
+│  │monokit_plaits│                    └──────────────┘     │
+│  │  (Node 1005) │                                          │
+│  ├──────────────┤                                          │
+│  │ Params:      │                                          │
+│  │  PLF, PLE    │                                          │
+│  │  PLH, PLT    │                                          │
+│  │  PLM, PLD    │                                          │
+│  │  PLL, PLV    │                                          │
+│  │              │                                          │
+│  │ [MiPlaits]   │                                          │
+│  │  Main │ AUX  │                                          │
+│  │    ▼     ▼   │                                          │
+│  │ Out→19  Out→20                                          │
+│  └──────────────┘                                          │
+│          │   │                                             │
+│  ┌───────┴───┴────────────────────────────────────┐       │
+│  │           monokit_main (Node 1006)             │       │
+│  ├────────────────────────────────────────────────┤       │
+│  │ In: Bus 16 (Primary) + Bus 17 (Mod) +         │       │
+│  │     Bus 18 (Noise) + Bus 19/20 (Plaits)       │       │
+│  │                                                 │       │
+│  │ Signal Chain:                                  │       │
+│  │  Mix Sources → Discontinuity → Lo-Fi →        │       │
+│  │  Filter (14 types) → Ring Mod → Resonator →   │       │
+│  │  VCA/Envelope → Compressor → Pan →            │       │
+│  │  Beat Repeat → Pitch Shift → Stereo Delay →  │       │
+│  │  3-Band EQ → Plate Reverb                     │       │
+│  │                                                 │       │
+│  │ Params: FC, FQ, FT, DT, DF, RV, etc. (60+)   │       │
+│  │                      │                         │       │
+│  │                      ▼                         │       │
+│  │                 Out→ Audio                     │       │
+│  └────────────────────────────────────────────────┘       │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+Trigger Commands:
+  TR   → Triggers monokit_noise, monokit_mod, monokit_primary, monokit_main
+  PLTR → Triggers monokit_plaits only
+
+UI Indicators:
+  C → Complex oscillators active (TR triggered)
+  P → Plaits voice active (PLTR triggered)
+```
+
+### Voice Parameter Routing
+
+Parameters are automatically routed to the correct synth node based on name:
+
+| Parameter Pattern | Target Node | Voice |
+|------------------|-------------|-------|
+| `NW`, `NV` | Node 1002 | Noise generator |
+| `MF`, `MW`, `MV`, `FB*`, `MB*` | Node 1003 | Modulator oscillator |
+| `PF`, `PW`, `PV`, `FM`, `FA`, `PA`, `DC`, `DM`, `TK` | Node 1004 | Primary oscillator |
+| `pitch`, `detune`, `PL*`, `PLV`, `PAV` | Node 1005 | Plaits voice |
+| All others (filters, effects, etc.) | Node 1006 | Main signal path |
+
+This architecture allows:
+- Independent voice control and triggering
+- Isolated parameter spaces (no cross-talk)
+- Parallel voice development
+- Multiple voices active simultaneously
+- Efficient CPU usage (voices only process when needed)
 
 ---
 

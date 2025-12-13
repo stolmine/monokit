@@ -137,6 +137,24 @@ where
     Ok(())
 }
 
+pub fn handle_pltr<F>(
+    metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
+    out_cfm: bool,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    metro_tx
+        .send(MetroCommand::SendPlaitsTrigger)
+        .context("Failed to send Plaits trigger to metro thread")?;
+    if debug_level >= TIER_CONFIRMS || out_cfm {
+        output("PLAITS TRIGGERED".to_string());
+    }
+    Ok(())
+}
+
 pub fn handle_vol<F>(
     parts: &[&str],
     metro_tx: &Sender<MetroCommand>,
@@ -448,7 +466,7 @@ pub fn handle_help<F>(
     output("DEBUG <0-5>  SET VERBOSITY LEVEL".to_string());
     output("HEADER       SHOW CURRENT HEADER LEVEL".to_string());
     output("HEADER <0-4>    SET HEADER VERBOSITY".to_string());
-    output("                0=NAV ONLY, 1=+METERS, 2=+TR".to_string());
+    output("                0=NAV ONLY, 1=+METERS, 2=+C/P".to_string());
     output("                3=FULL NAV, 4=+CPU (DEFAULT)".to_string());
     output("PRINT \"TEXT\"    OUTPUT LITERAL STRING".to_string());
     output("PRINT <EXPR>    EVALUATE AND PRINT EXPRESSION".to_string());
@@ -638,9 +656,9 @@ define_enum_select!(
     "ERROR: HEADER TAKES 0-4",
     (0, "NAV ONLY"),
     (1, "NAV + METERS"),
-    (2, "NAV + TR + METERS"),
-    (3, "FULL NAV + TR + METERS"),
-    (4, "FULL NAV + TR + METERS + CPU"),
+    (2, "NAV + C/P + METERS"),
+    (3, "FULL NAV + C/P + METERS"),
+    (4, "FULL NAV + C/P + METERS + CPU"),
 );
 
 pub fn handle_limit<F>(

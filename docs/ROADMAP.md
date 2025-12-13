@@ -41,16 +41,27 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | Feature | Effort | Status |
 |---------|--------|--------|
 | CPU Monitoring Fix | Low | **DONE** |
+| Plaits Integration | High | **DONE** |
 
 ---
 
-## v0.3.7 Plan
+## v0.4.0 Progress (December 2025) - COMPLETE
+
+| Feature | Effort | Status |
+|---------|--------|--------|
+| Plaits Pitch Control (PL.FREQ/PLF) | Low | **DONE** |
+| Plaits Parameter Aliases (3-letter) | Low | **DONE** |
+| PLTR Trigger Readout | Low | **DONE** |
+| Multi-Voice Trigger Indicators (P/C) | Low | **DONE** |
+| RND.PL Fixes (validation & scaling) | Low | **DONE** |
+
+## v0.4.1 Plan
 
 | Feature | Effort | Status |
 |---------|--------|--------|
 | Debug Tier Refactor | Low | Not started |
-| Noise Envelope & Gating | Medium | Not started |
-| Noise FM Routing | Low | Not started |
+| Noise Envelope & Gating | Medium | Deferred |
+| Noise FM Routing | Low | Deferred |
 | Oscillator Sync | Medium | Not started |
 
 ---
@@ -262,3 +273,40 @@ See `docs/history/FUTURE.md` for detailed plans.
 ## Contributing
 
 Feature requests and suggestions welcome. All contributions should maintain the project's terse command syntax and CLI-native philosophy.
+
+### Plaits Enhancements [v0.3.7]
+
+**PL.FREQ - Pitch/Frequency Control**
+- Native-style command taking raw +/- 14-bit values
+- Note name (N) support with scale-aware transposition
+- Routes to monokit_plaits pitch parameter
+- Independent from complex oscillator pitch (PF)
+
+**3-Letter Parameter Aliases**
+- PLH → PL.HARM (harmonics)
+- PLT → PL.TIMB (timbre)
+- PLE → PL.ENG (engine)
+- PLM → PL.MORPH (morph)
+- PLD → PL.DEC (decay)
+- PLL → PL.LPG (lowpass gate)
+- Improves legibility and distinguishes from complex oscillator commands
+
+**PLTR Trigger Readout**
+- Add REPL confirmation when PLTR is triggered
+- Similar to TR readout for complex oscillators
+- Shows engine number and current parameter state
+
+**Multi-Voice Trigger Indicators** ✓
+- [x] Header indicators for trigger state:
+  - P = Plaits trigger active
+  - C = Complex oscillators trigger active (renamed from HD2)
+- [x] Single-character display for space efficiency
+- [x] Replaces current "TR" indicator with multi-voice awareness
+
+**Terminology Update: HD2 → Complex** (In Progress)
+- [x] Rename "TR" to "C/P" in UI header indicators
+- [ ] Update remaining HD2 references in docs to "Complex"
+- C = Complex (dual FM oscillator architecture)
+- P = Plaits (Mutable Instruments macro oscillator)
+- Note: Core docs already use appropriate terminology
+

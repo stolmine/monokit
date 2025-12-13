@@ -1,5 +1,54 @@
 # Changelog
 
+## v0.4.0 (December 2025)
+
+### Plaits Voice Enhancements
+
+**Pitch Control**
+- Added PL.FREQ / PLF command for Plaits pitch control (20-20000 Hz)
+- Supports Hz values and N syntax for note-to-frequency conversion
+- Works with expressions, TOG, EITH, SEQ patterns
+- Independent pitch control from complex oscillators
+
+**3-Letter Parameter Aliases**
+- Added concise aliases for all Plaits parameters to improve legibility
+  - PLH → PL.HARM (harmonics)
+  - PLT → PL.TIMB (timbre)
+  - PLE → PL.ENG (engine)
+  - PLM → PL.MORPH (morph)
+  - PLD → PL.DEC (decay)
+  - PLL → PL.LPG (lowpass gate)
+  - PLF → PL.FREQ (pitch)
+- Distinguishes Plaits commands from complex oscillator commands
+
+**PLTR Trigger Readout**
+- Added confirmation output when PLTR command is triggered
+- Shows "PLAITS TRIGGERED" message
+- Respects debug level settings (TIER_CONFIRMS)
+
+**RND.PL Fixes**
+- Fixed parameter scaling for harmonics/timbre/morph/decay/lpg
+- Changed from OscType::Int(0-16383) to OscType::Float(0.0-1.0)
+- Now properly randomizes all Plaits parameters
+- Added RND.PL to command validation (was showing "unknown command")
+
+### UI Enhancements
+
+**Multi-Voice Trigger Indicators**
+- Added separate trigger indicators in header for Complex and Plaits voices
+  - C = Complex oscillators (TR command)
+  - P = Plaits macro oscillator (PLTR command)
+- Replaced single "TR" indicator with multi-voice awareness
+- Both indicators can be active simultaneously
+- Updated HEADER command descriptions to reflect C/P terminology
+
+### Bug Fixes
+
+**Plaits Parameter Routing**
+- Fixed "pitch" and "detune" parameter routing to PLAITS_NODE_ID
+- Previously pitch was being sent to MAIN_NODE_ID instead of Plaits synth
+- Ensures PLF/PL.FREQ commands properly affect Plaits voice
+
 ## v0.3.61 (December 2025)
 
 ### Architecture Changes
@@ -52,7 +101,33 @@
 
 ## v0.3.6 (December 2025)
 
+### New Features
+
+**Plaits Integration (Mutable Instruments)**
+- Added Plaits as 5th parallel sound source (node 1004)
+- 16 synthesis engines: VA, FM, wavetable, granular, percussion, physical modeling
+- 9 new commands: PL.ENG, PL.HARM, PL.TIMB, PL.MORPH, PL.DEC, PL.LPG, PLV, PAV, PLTR
+- Dual outputs (main + aux) with independent volume control
+- RND.PL randomization command for exploring sounds
+- Post-VCA routing: Plaits bypasses HD2 filter/distortion, shares effects chain
+- mi-UGens (MiPlaits.scx) bundled in release
+
 ### Bug Fixes
+
+**Plaits Node ID Conflict**
+- Fixed node 1004 conflict by establishing clear 5-synth architecture
+- Node assignments: 1000=noise, 1001=mod, 1002=primary, 1003=main, 1004=plaits
+
+**Plaits Volume Double-Scaling**
+- Fixed PLV/PAV being nearly inaudible at max values
+- Volume parameters now scaled once (in SuperCollider) not twice
+- Matches pattern used by other volume parameters (PV, MV, NV)
+
+**Plaits VCA Bypass**
+- Fixed master volume (VOL) not affecting Plaits output
+- Moved Plaits mixing to post-VCA stage
+- Master volume now controls entire mix consistently
+- Plaits maintains independent character by bypassing filter/distortion
 
 **CPU Monitoring**
 - Fixed inactive CPU readout in scsynth-direct mode

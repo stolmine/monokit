@@ -132,19 +132,28 @@ pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
         }
     }
 
-    // Build right-side content (TR + meters)
+    // Build right-side content (C/P indicators + meters)
     let mut right_spans: Vec<Span<'static>> = Vec::new();
     let mut right_width = 0;
 
-    // TR indicator: show at level 2 and above if activity is enabled
+    // Multi-voice trigger indicators: show at level 2 and above if activity is enabled
     if app.show_activity && app.header_level >= 2 {
-        let tr_color = app.theme.activity_color(app.trigger_activity, false, app.activity_hold_ms);
+        // C = Complex oscillators (TR command)
+        let c_color = app.theme.activity_color(app.trigger_activity, false, app.activity_hold_ms);
         right_spans.push(Span::styled(
-            "TR",
-            Style::default().fg(tr_color),
+            "C",
+            Style::default().fg(c_color),
+        ));
+        right_width += 1;
+
+        // P = Plaits (PLTR command)
+        let p_color = app.theme.activity_color(app.plaits_trigger_activity, false, app.activity_hold_ms);
+        right_spans.push(Span::styled(
+            "P",
+            Style::default().fg(p_color),
         ));
         right_spans.push(Span::raw(" "));
-        right_width += 3; // "TR" + space
+        right_width += 2; // "P" + space
     }
 
     // Meters: show at level 1 and above if header meters are enabled

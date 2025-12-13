@@ -324,29 +324,29 @@ where
         "PN" => {
             patterns::handle_pn(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
         }
-        "PL.DEC" => {
+        "PL.DEC" | "PLD" => {
             synth_params::handle_pl_dec(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "PL.ENG" => {
+        "PL.ENG" | "PLE" => {
             synth_params::handle_pl_eng(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "PL.FREQ" | "PLF" => {
             synth_params::handle_pl_freq(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "PL.HARM" => {
+        "PL.HARM" | "PLH" => {
             synth_params::handle_pl_harm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "PL.LPG" => {
+        "PL.LPG" | "PLL" => {
             synth_params::handle_pl_lpg(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "PL.MORPH" => {
+        "PL.MORPH" | "PLM" => {
             synth_params::handle_pl_morph(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "PL.TIMB" => {
+        "PL.TIMB" | "PLT" => {
             synth_params::handle_pl_timb(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "PLTR" => {
-            misc::handle_pltr(metro_tx)?;
+            misc::handle_pltr(metro_tx, *debug_level, *out_cfm, output)?;
         }
         "PLV" => {
             synth_params::handle_plv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;

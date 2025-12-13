@@ -125,6 +125,12 @@ static CANONICAL_TO_ALIAS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new
 
     // Plaits
     m.insert("PL.FREQ", "PLF");
+    m.insert("PL.HARM", "PLH");
+    m.insert("PL.TIMB", "PLT");
+    m.insert("PL.ENG", "PLE");
+    m.insert("PL.MORPH", "PLM");
+    m.insert("PL.DEC", "PLD");
+    m.insert("PL.LPG", "PLL");
 
     m
 });

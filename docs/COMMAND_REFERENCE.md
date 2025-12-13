@@ -146,13 +146,13 @@ Same operations as P.* but with explicit pattern number:
 - `NV <0-16383>` - Noise volume
 
 ### Plaits (Mutable Instruments)
-- `PL.ENG <0-15>` - Engine selection (16 engines)
+- `PL.ENG <0-15>` / `PLE <0-15>` - Engine selection (16 engines)
 - `PL.FREQ <hz>` / `PLF <hz>` - Pitch frequency (20-20000 Hz, supports N syntax)
-- `PL.HARM <0-16383>` - Harmonics (0-16383 int)
-- `PL.TIMB <0-16383>` - Timbre (0-16383 int)
-- `PL.MORPH <0-16383>` - Morph (0-16383 int)
-- `PL.DEC <0-16383>` - Decay (0-16383 int)
-- `PL.LPG <0-16383>` - Lowpass gate (0-16383 int)
+- `PL.HARM <0-16383>` / `PLH <0-16383>` - Harmonics (0-16383 int)
+- `PL.TIMB <0-16383>` / `PLT <0-16383>` - Timbre (0-16383 int)
+- `PL.MORPH <0-16383>` / `PLM <0-16383>` - Morph (0-16383 int)
+- `PL.DEC <0-16383>` / `PLD <0-16383>` - Decay (0-16383 int)
+- `PL.LPG <0-16383>` / `PLL <0-16383>` - Lowpass gate (0-16383 int)
 - `PLV <0-16383>` - Main output volume (int)
 - `PAV <0-16383>` - AUX output volume (int)
 - `PLTR` - Trigger Plaits engine

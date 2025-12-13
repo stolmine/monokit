@@ -1091,7 +1091,7 @@ dependencies = [
 
 [[package]]
 name = "monokit"
-version = "0.3.6"
+version = "0.3.61"
 dependencies = [
  "anyhow",
  "audio_thread_priority",

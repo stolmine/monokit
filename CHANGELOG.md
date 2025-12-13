@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.3.61 (December 2025)
+
+### Bug Fixes
+
+**TOG/SEQ/EITH Highlighting Accuracy**
+- Fixed critical bug where highlighting showed incorrect values for stateful operators
+- Part 1: Store actual returned value in toggle_last_value HashMap
+  - Previously derived value from incremented state (showed NEXT, not CURRENT)
+  - Now stores actual returned value before incrementing state
+- Part 2: Eliminate 1-frame delay for interactive commands
+  - Event loop rendered UI before executing commands
+  - Added immediate re-render after command execution
+  - Metro-triggered scripts already worked correctly
+- Highlighting now shows correct current value for both interactive and scripted commands
+- All 602 tests pass including 17 highlighting-specific tests
+
+---
+
 ## v0.3.6 (December 2025)
 
 ### Bug Fixes

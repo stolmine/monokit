@@ -299,6 +299,17 @@ where
     metro_tx.send(MetroCommand::SendParam("ps_mix".to_string(), OscType::Int(0)))?;
     metro_tx.send(MetroCommand::SendParam("ps_targ".to_string(), OscType::Int(0)))?;
 
+    metro_tx.send(MetroCommand::SendParam("pitch".to_string(), OscType::Float(131.0)))?;
+    metro_tx.send(MetroCommand::SendParam("detune".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("engine".to_string(), OscType::Int(0)))?;
+    metro_tx.send(MetroCommand::SendParam("harmonics".to_string(), OscType::Int(8192)))?;
+    metro_tx.send(MetroCommand::SendParam("timbre".to_string(), OscType::Int(8192)))?;
+    metro_tx.send(MetroCommand::SendParam("morph".to_string(), OscType::Int(8192)))?;
+    metro_tx.send(MetroCommand::SendParam("decay".to_string(), OscType::Int(8192)))?;
+    metro_tx.send(MetroCommand::SendParam("lpg".to_string(), OscType::Int(8192)))?;
+    metro_tx.send(MetroCommand::SendParam("plv".to_string(), OscType::Int(8192)))?;
+    metro_tx.send(MetroCommand::SendParam("pav".to_string(), OscType::Int(0)))?;
+
     metro_tx.send(MetroCommand::SendVolume(1.0))?;
 
     metro_tx.send(MetroCommand::SendParam("slew_time".to_string(), OscType::Int(0)))?;

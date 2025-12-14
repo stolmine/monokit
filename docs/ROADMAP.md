@@ -62,6 +62,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | MFF/MFQ Filter Modulation Amounts | Low | **DONE** |
 | Ctrl+Shift+Z Redo Fix | Low | **DONE** |
 | Deprecated Noise Params Removal | Low | **DONE** |
+| Plaits RST Coverage | Low | **DONE** |
 | Debug Tier Refactor | Low | Not started |
 | Noise Envelope & Gating | Medium | Deferred |
 | Noise FM Routing | Low | Deferred |
@@ -98,6 +99,23 @@ Removed noise envelope parameters that were deprecated in multi-synth architectu
 - [x] Envelope control removed as part of multi-synth architecture
 - [x] Deferred: Full envelope/gating restoration (see "Noise Envelope & Gating" below)
 - [x] Files: src/commands/validate.rs, docs/MANUAL.md
+
+### Plaits RST Coverage [COMPLETE]
+Added core Plaits oscillator parameters to RST command for complete reset coverage.
+
+**Changes:**
+- [x] Added pitch (131 Hz C3 default)
+- [x] Added detune (0 cents default)
+- [x] Added engine (0 default)
+- [x] Added harmonics (8192/0.5 default)
+- [x] Added timbre (8192/0.5 default)
+- [x] Added morph (8192/0.5 default)
+- [x] Added decay (8192/0.5 default)
+- [x] Added lpg (8192/0.5 default)
+- [x] Added plv main volume (8192/0.5 default)
+- [x] Added pav aux volume (0 default)
+- [x] RST now fully resets Plaits oscillator to defaults
+- [x] Files: src/commands/system/misc.rs
 
 ---
 

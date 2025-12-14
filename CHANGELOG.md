@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.4.1 (December 2025)
+## v0.4.11 (December 2025) - Maintenance Release
 
 ### Internal Refactoring
 

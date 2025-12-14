@@ -11,6 +11,12 @@
 - Centralized output control through ExecutionContext.output() method
 - Removed unused TIER_VERBOSE constant (tier 5)
 - Migrated all variable, pattern, and system commands to use ExecutionContext
+- Fixed tier violations: SLEW (tier 1 → 4), PRINT (tier 1 → 2)
+- Added missing tier gates to scene commands (SAVE, LOAD, SCENES, DELETE)
+- Added missing tier gates to preset commands (PSET, PSET.SAVE, PSET.DEL, PSETS)
+- Added missing tier gates to recording commands (REC, REC.STOP, REC.PATH)
+- All commands now properly respect debug level settings at tier 0 (TIER_SILENT)
+- Documentation: DEBUG_TIERS.md, TIER_0_COMMANDS.md, TIER_FIXES_SUMMARY.md
 - No behavioral changes - purely architectural improvement for maintainability
 
 ### Bug Fixes

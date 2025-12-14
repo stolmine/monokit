@@ -29,6 +29,9 @@ Project structure, key files, and technical documentation.
 - **DRY_REFACTOR_PLAN.md** - Codebase refactoring plan
 - **UI_REFINEMENT_PLAN.md** - UI enhancements
 - **MIDI_CLOCK_TIMING_LESSONS.md** - MIDI clock sync diagnostics
+- **DEBUG_TIERS.md** - Debug tier classification system
+- **TIER_0_COMMANDS.md** - Tier 0 (silent) command analysis
+- **TIER_FIXES_SUMMARY.md** - Debug tier fixes summary
 
 ### History
 - **history/CHANGELOG.md** - Detailed completion records
@@ -70,6 +73,7 @@ src/
 │   └── script_exec/ - Script execution
 ├── commands/ (~8,167 lines) - Command processing
 │   ├── mod.rs - Main dispatcher
+│   ├── context.rs - ExecutionContext struct
 │   ├── validate.rs - Command validation
 │   ├── aliases.rs - 93 aliases
 │   ├── core/ - Language primitives
@@ -240,7 +244,50 @@ Audio output → Recording (optional)
 - Reduced process_command from 109 → 3 parameters
 - Eliminated 165 duplicate tier checks
 - Centralized output via ExecutionContext.output()
+- Fixed tier violations and missing gates
 - ~200 lines removed in dispatcher alone
+- See DEBUG_TIERS.md for tier classification
+
+---
+
+## Command Execution Architecture
+
+### ExecutionContext (v0.4.1)
+
+**Location:** `src/commands/context.rs`
+
+All command processing flows through the `ExecutionContext` struct, which groups 47+ parameters into a single context object.
+
+**Benefits:**
+- Simplified function signatures (109 → 3 parameters)
+- Centralized output control via tier system
+- Eliminated 165 duplicate tier checks across codebase
+- Consistent output gating through `should_output()` method
+
+**Key Components:**
+
+1. **Core State:** metro, variables, patterns, counters, scripts, scale
+2. **Output Control:** debug_level, out_err, out_ess, out_qry, out_cfm
+3. **Display Settings:** theme, header, meters, spectrum, etc.
+4. **System State:** MIDI, sync, notes, recording, audio devices
+
+**Tier System:**
+
+Commands use `OutputCategory` enum for output classification:
+- `Error` - Tier 1: Error messages only
+- `Essential` - Tier 2: Critical information
+- `Query` - Tier 3: Query results
+- `Confirm` - Tier 4: Parameter confirmations
+
+Output shown when: `debug_level >= tier` OR category override enabled
+
+**Usage Example:**
+```rust
+ctx.output(OutputCategory::Confirm,
+    format!("PF: {}", freq), output);
+```
+
+See DEBUG_TIERS.md for complete tier classification.
 
 ---
 

@@ -28,6 +28,9 @@ Quick reference and links to all project documentation.
 | [DSP_TIER1_IMPLEMENTATION_PLAN.md](../DSP_TIER1_IMPLEMENTATION_PLAN.md) | Filter, Resonator, Delay, Reverb |
 | [EFFECT_ROUTING_DESIGN.md](EFFECT_ROUTING_DESIGN.md) | Effect routing system |
 | [MIDI_CLOCK_TIMING_LESSONS.md](MIDI_CLOCK_TIMING_LESSONS.md) | MIDI clock diagnostics |
+| [DEBUG_TIERS.md](../DEBUG_TIERS.md) | Debug tier classification system |
+| [TIER_0_COMMANDS.md](../TIER_0_COMMANDS.md) | Tier 0 (silent) command analysis |
+| [TIER_FIXES_SUMMARY.md](../TIER_FIXES_SUMMARY.md) | Debug tier fixes summary |
 
 ### Release & Distribution
 | Document | Description |
@@ -46,6 +49,7 @@ Quick reference and links to all project documentation.
 | Ctrl+Shift+Z Redo Fix | **DONE** |
 | Deprecated Noise Params Removal | **DONE** |
 | Debug Tier Refactor | **DONE** |
+| ExecutionContext Refactor | **DONE** |
 | Oscillator Sync | Not started |
 
 ### v0.4.0 (Complete)

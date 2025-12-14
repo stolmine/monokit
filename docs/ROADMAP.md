@@ -117,6 +117,33 @@ Added core Plaits oscillator parameters to RST command for complete reset covera
 - [x] RST now fully resets Plaits oscillator to defaults
 - [x] Files: src/commands/system/misc.rs
 
+### Debug Tier Refactor [COMPLETE]
+Centralized command execution through ExecutionContext and fixed tier violations.
+
+**Architecture Changes:**
+- [x] Created ExecutionContext struct grouping 47+ parameters
+- [x] Reduced process_command signature from 109 → 3 parameters
+- [x] Eliminated 165 duplicate tier checks across codebase
+- [x] Centralized output control via ExecutionContext.output()
+- [x] Files: src/commands/context.rs, src/commands/mod.rs
+
+**Tier Violation Fixes:**
+- [x] Fixed SLEW/SLEW.ALL tier violation (tier 1 → tier 4)
+- [x] Fixed PRINT tier violation (tier 1 → tier 2)
+- [x] Added missing tier gates to SAVE, LOAD, SCENES, DELETE
+- [x] Added missing tier gates to PSET, PSET.SAVE, PSET.DEL, PSETS
+- [x] Added missing tier gates to REC, REC.STOP, REC.PATH
+- [x] All commands now respect tier 0 (TIER_SILENT) properly
+- [x] Files: src/commands/slew.rs, src/commands/system/misc.rs
+- [x] Files: src/commands/system/scene.rs, src/commands/system/preset.rs
+
+**Documentation:**
+- [x] Created DEBUG_TIERS.md - Complete tier classification
+- [x] Created TIER_0_COMMANDS.md - Tier 0 analysis
+- [x] Created TIER_FIXES_SUMMARY.md - Fix summary
+- [x] Updated ARCHITECTURE.md - Added ExecutionContext section
+- [x] Updated CHANGELOG.md - Added tier fixes to v0.4.1
+
 ---
 
 ## Prioritized Incomplete Items

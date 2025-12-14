@@ -235,6 +235,13 @@ Audio output → Recording (optional)
 - Boolean toggle macro, Integer enum macro
 - ~800+ lines removed
 
+**Phase 6: Debug Tier & Output Routing (v0.4.1)**
+- Created ExecutionContext struct grouping 47+ parameters
+- Reduced process_command from 109 → 3 parameters
+- Eliminated 165 duplicate tier checks
+- Centralized output via ExecutionContext.output()
+- ~200 lines removed in dispatcher alone
+
 ---
 
 ## Script Validation System

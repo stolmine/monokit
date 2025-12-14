@@ -45,7 +45,7 @@ Quick reference and links to all project documentation.
 | MFF/MFQ Filter Modulation Amounts | **DONE** |
 | Ctrl+Shift+Z Redo Fix | **DONE** |
 | Deprecated Noise Params Removal | **DONE** |
-| Debug Tier Refactor | Not started |
+| Debug Tier Refactor | **DONE** |
 | Oscillator Sync | Not started |
 
 ### v0.4.0 (Complete)

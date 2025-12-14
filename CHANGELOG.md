@@ -1,5 +1,32 @@
 # Changelog
 
+## v0.4.12 (December 2025) - Bug Fixes
+
+### Bug Fixes
+
+**Beat Repeat and Pitch Shift Short Aliases**
+- Fixed missing short aliases for beat repeat and pitch shift commands
+- Registered aliases: BRL, BRR, BRW, BRX for beat repeat (len, rev, win, mix)
+- Registered aliases: PSM, PSS, PSG, PSX, PST for pitch shift (mode, semi, grain, mix, targ)
+- These commands were functional but missing from alias registration system
+- Alias system now recognizes both full and short command names
+
+**Envelope Parameter Error Output**
+- Fixed envelope parameter validation errors not respecting tier system
+- Error messages now properly filtered by TIER_ERRORS (tier 1)
+- Affects all envelope parameters across voice, filter, FM, and disc envelopes
+- Ensures DEBUG 0 fully silences error output as expected
+
+**Test Suite Updates**
+- Updated all 602 tests to use ExecutionContext refactor
+- All tests passing with new command execution architecture
+- Ensures regression coverage for ExecutionContext changes
+
+**GitHub Release Workflow**
+- Fixed hardcoded bundle size in release notes
+- Bundle size now calculated dynamically from artifact
+- Release notes show accurate bundle file size
+
 ## v0.4.11 (December 2025) - Maintenance Release
 
 ### Internal Refactoring

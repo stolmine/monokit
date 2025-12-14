@@ -8,8 +8,8 @@ Quick reference and links to all project documentation.
 
 | Document | Description | Lines |
 |----------|-------------|-------|
-| [ROADMAP.md](ROADMAP.md) | Current priorities, v0.4.1 in progress | ~180 |
-| [CHANGELOG.md](CHANGELOG.md) | Version history, recent updates | ~150 |
+| [ROADMAP.md](ROADMAP.md) | Current priorities, v0.4.12 complete | ~395 |
+| [CHANGELOG.md](CHANGELOG.md) | Version history, recent updates | ~477 |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Project structure, key files | ~180 |
 | [MANUAL.md](MANUAL.md) | User manual with tutorials | ~1615 |
 
@@ -41,8 +41,17 @@ Quick reference and links to all project documentation.
 
 ---
 
-## Current Status (v0.4.1 - In Progress)
+## Current Status (v0.4.12 - Complete)
 
+| Feature | Status |
+|---------|--------|
+| Beat Repeat/Pitch Shift Short Aliases | **DONE** |
+| Envelope Parameter Tier Fixes | **DONE** |
+| ExecutionContext Test Updates | **DONE** |
+| Dynamic Bundle Size in Release | **DONE** |
+| CPU Readout Fixed Width | **DONE** |
+
+### v0.4.11 (Complete)
 | Feature | Status |
 |---------|--------|
 | MFF/MFQ Filter Modulation Amounts | **DONE** |
@@ -50,7 +59,6 @@ Quick reference and links to all project documentation.
 | Deprecated Noise Params Removal | **DONE** |
 | Debug Tier Refactor | **DONE** |
 | ExecutionContext Refactor | **DONE** |
-| Oscillator Sync | Not started |
 
 ### v0.4.0 (Complete)
 | Feature | Status |

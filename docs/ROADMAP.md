@@ -55,7 +55,19 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | Multi-Voice Trigger Indicators (P/C) | Low | **DONE** |
 | RND.PL Fixes (validation & scaling) | Low | **DONE** |
 
-## v0.4.1 Progress (December 2025) - IN PROGRESS
+## v0.4.12 Progress (December 2025) - COMPLETE
+
+| Feature | Effort | Status |
+|---------|--------|--------|
+| Beat Repeat/Pitch Shift Short Aliases | Low | **DONE** |
+| Envelope Parameter Tier Fixes | Low | **DONE** |
+| ExecutionContext Test Updates | Low | **DONE** |
+| Dynamic Bundle Size in Release | Low | **DONE** |
+| CPU Readout Fixed Width | Low | **DONE** |
+
+---
+
+## v0.4.11 Progress (December 2025) - COMPLETE
 
 | Feature | Effort | Status |
 |---------|--------|--------|
@@ -64,6 +76,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | Deprecated Noise Params Removal | Low | **DONE** |
 | Plaits RST Coverage | Low | **DONE** |
 | Debug Tier Refactor | Low | **DONE** |
+| ExecutionContext Refactor | Medium | **DONE** |
 | Noise Envelope & Gating | Medium | Deferred |
 | Noise FM Routing | Low | Deferred |
 | Oscillator Sync | Medium | Not started |
@@ -152,7 +165,6 @@ Centralized command execution through ExecutionContext and fixed tier violations
 - **MIDI CC and Note Input** [Medium] - External control, performance capability
 
 ### P2 - Polish & Documentation
-- **CPU Readout Fixed Width** [Low] - Ensure CPU percentage always uses 2-digit space formatting in header to prevent BPM readout from shifting horizontally
 - **Alias & Command Name Standardization** [Low] - Audit all commands for consistent naming patterns; ensure all parameters have appropriate short-form aliases; standardize canonical form patterns (e.g., CATEGORY.PARAM format); document naming conventions for future development
 - **Dynamic Grid Layout** [Medium] - Responsive UI spacing
 - **Tempo-Synced Delay** [Low] - DS parameter for musical delay times

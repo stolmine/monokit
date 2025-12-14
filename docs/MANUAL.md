@@ -72,10 +72,14 @@ The voice starts silent (VCA=1, gated mode). Each `TR` command triggers all enve
 - `Ctrl+Z` - Undo (page-local)
 - `Ctrl+Shift+Z` - Redo
 - `Ctrl+Left/Right` - Word movement
+- `Ctrl+Shift+1-8` - Toggle script 1-8 mute
+- `Ctrl+Shift+M` - Toggle metro script mute
+- `Ctrl+Shift+I` - Toggle init script mute
 
 **REPL (Live page):**
 - `Ctrl+Up/Down` - Scroll output history
 - `CLEAR` - Clear all output
+- `Ctrl+Q` - Quit application
 
 **Search:**
 - `Ctrl+F` - Enter search mode
@@ -289,6 +293,13 @@ Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ → Plate Reverb
 - `COMP.ATK` / `CA <1-500>` - Attack (ms)
 - `COMP.REL` / `CL <10-2000>` - Release (ms)
 - `COMP.MKP` / `CM <0-16383>` - Makeup gain
+- `CR.MIX` / `CRMIX <0-16383>` - Dry/wet mix
+
+**Dry/Wet Mix:**
+- 0 = 100% dry (bypass compression)
+- 16383 = 100% wet (fully compressed)
+- Enables parallel compression techniques
+- Default: 16383 (backward compatible)
 
 ### Pan
 
@@ -497,6 +508,72 @@ EV 4: TR                   # Every 4th execution
 L 0 7: PF N I              # Loop I from 0-7, set freq
 A 0; B 0                   # Reset two variables
 ```
+
+### Script Mutes
+
+Individual mute toggles for scripts 1-8, M (metro), and I (init).
+
+**Commands:**
+```
+MUTE              # Show all mute states
+MUTE <1-8|M|I>    # Toggle script mute
+MUTE <1-8|M|I> <0|1>  # Set mute (0=unmuted, 1=muted)
+MUTE.1-8, MUTE.M, MUTE.I  # Direct mute commands
+```
+
+**Hotkeys:**
+- `Ctrl+Shift+1-8` - Toggle script 1-8 mute
+- `Ctrl+Shift+M` - Toggle metro script mute
+- `Ctrl+Shift+I` - Toggle init script mute
+
+**Features:**
+- Muted scripts skip execution but preserve content
+- Visual [MUTED] indicators in script page titles
+- Mute state persists in saved scenes
+- Enables workflow where scripts can be prepared without executing
+
+**Examples:**
+```
+MUTE 1            # Toggle script 1 mute
+MUTE M 1          # Mute metro script
+MUTE.3            # Toggle script 3 mute
+Ctrl+Shift+5      # Toggle script 5 mute (hotkey)
+```
+
+### Page Navigation
+
+Programmatic page switching via PAGE command.
+
+**Commands:**
+```
+PAGE <page>       # Navigate to page
+PG <page>         # Short alias
+```
+
+**Supported Pages:**
+- `PAGE LIVE` / `PAGE L` - Live page (REPL)
+- `PAGE 1-8` - Script pages 1-8
+- `PAGE M` - Metro script page
+- `PAGE I` - Init script page
+- `PAGE P` - Pattern page
+- `PAGE V` - Variables page
+- `PAGE N` - Notes page
+- `PAGE S` - Scope page
+- `PAGE HELP` / `PAGE H` - Help page
+- `PAGE GRID` / `PAGE G` - Grid view (sets Live to grid mode)
+
+**Examples:**
+```
+PAGE 1            # Switch to script 1 page
+PG HELP           # Switch to help page
+PAGE V            # Switch to variables page
+```
+
+**Use Cases:**
+- Script-controlled UI navigation
+- Metro scripts that switch pages
+- Automated presentations
+- Future animated transitions
 
 ### Scenes and Presets
 
@@ -1128,6 +1205,10 @@ Notes are saved with scenes. 8 lines maximum.
 | `Ctrl+C/X/V` | Copy/cut/paste line |
 | `Ctrl+Z` | Undo (page-local) |
 | `Ctrl+Shift+Z` | Redo |
+| `Ctrl+Shift+1-8` | Toggle script 1-8 mute |
+| `Ctrl+Shift+M` | Toggle metro mute |
+| `Ctrl+Shift+I` | Toggle init mute |
+| `Ctrl+Q` | Quit application |
 
 ### Variables & Math
 
@@ -1311,6 +1392,7 @@ Notes are saved with scenes. 8 lines maximum.
 | `COMP.ATK <ms>` | `CA` | Compressor attack |
 | `COMP.REL <ms>` | `CL` | Compressor release |
 | `COMP.MKP <amt>` | `CM` | Compressor makeup |
+| `CR.MIX <0-16383>` | `CRMIX` | Compressor dry/wet mix |
 | `OUT.PAN <amt>` | `PAN` | Stereo pan |
 
 ### Beat Repeat & Pitch Shift
@@ -1370,6 +1452,9 @@ Notes are saved with scenes. 8 lines maximum.
 | `SC.DIAG <0\|1>` | SC diagnostics |
 | `SC.DIAG REPORT` | Write SC report |
 | `SCRIPT <1-8>` | Execute script |
+| `MUTE [<1-8\|M\|I>] [<0\|1>]` | Query/toggle/set script mutes |
+| `MUTE.1-8, MUTE.M, MUTE.I` | Direct script mute commands |
+| `PAGE <page>` / `PG <page>` | Navigate to page |
 | `DEL <ms>: <cmd>` | Delayed execution |
 | `DEL.CLR` | Clear pending |
 | `DEL.X <n> <ms>: <cmd>` | Repeat n times |

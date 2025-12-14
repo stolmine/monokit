@@ -33,20 +33,23 @@ Hopefully it shows!
 ### Scripting Language
 - **Flexible scripting** - Hundreds of unique commands for controlling sequencing, synthesis, and UI at runtime. Most take expressions as arguments for further complexity.
 - **8 script slots** - Each with 8 lines of code
+- **Script mutes** - Individual mute toggles for each script (Ctrl+Shift+1-8/M/I)
 - **Metro script** - Runs on internal or MIDI clock
 - **Init script** - Runs on scene load
--**Variables** - 8 global variables, 4 incrementing accumulators, 2 local vars per script, several specialized variables for use with particular commands
+- **Variables** - 8 global variables, 4 incrementing accumulators, 2 local vars per script, several specialized variables for use with particular commands
 - **Pattern system** - 6 patterns × 64 steps with full manipulation (push, pop, rotate, shuffle, scale, etc.)
 - **SEQ notation** - Inline sequences with note names, raw values, repeats, toggles, random choice
 - **Control flow** - IF/ELIF/ELSE, loops, probability, every-N, skip-N
 
 ### Interface
 - **TUI with 10 pages** - Live, Scripts 1-8, Metro, Init, Patterns, Variables, Notes, Scope, Help
+- **Page navigation** - Programmatic page switching via PAGE/PG commands
 - **Real-time meters** - Peak/RMS audio levels, 15-band spectrum analyzer
 - **Oscilloscope** - Multiple render modes (braille, block, line, dot)
 - **Activity indicators** - Visual feedback for script execution and triggers
 - **48 color themes** - True color and 256-color fallback support
 - **Global search** - Search help pages or scripts with Ctrl+F
+- **Quick quit** - Ctrl+Q to quit instantly from anywhere
 
 ### Recording & Sync
 - **Direct recording** - 24-bit stereo WAV to current working directory

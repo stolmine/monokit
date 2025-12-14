@@ -35,6 +35,20 @@ Monokit uses a **PREFIX.SUFFIX** naming convention for canonical command forms:
 - `TR` - Trigger voice (sends gate pulse)
 - `VOL <0.0-1.0>` - Set master volume
 
+## Page Navigation
+- `PAGE <page>` / `PG <page>` - Navigate to page
+- Pages: LIVE/L, 1-8, M, I, P, V, N, S, HELP/H, GRID/G
+- `PAGE LIVE` - Live page (REPL)
+- `PAGE 1-8` - Script pages
+- `PAGE M` - Metro script page
+- `PAGE I` - Init script page
+- `PAGE P` - Pattern page
+- `PAGE V` - Variables page
+- `PAGE N` - Notes page
+- `PAGE S` - Scope page
+- `PAGE HELP` - Help page
+- `PAGE GRID` - Grid view (Live page)
+
 ## Metro/Timing
 - `M` / `M <ms>` - Get/set metro interval (milliseconds)
 - `M.BPM <bpm>` - Set tempo as BPM
@@ -54,6 +68,17 @@ Monokit uses a **PREFIX.SUFFIX** naming convention for canonical command forms:
 - Scripts 1-8: User scripts
 - M script (index 8): Called on each metro tick
 - I script (index 9): Called on startup
+
+## Script Mutes
+- `MUTE` - Show all mute states
+- `MUTE <1-8|M|I>` - Toggle script mute
+- `MUTE <1-8|M|I> <0|1>` - Set script mute (0=unmuted, 1=muted)
+- `MUTE.1` through `MUTE.8` - Direct script mutes
+- `MUTE.M` - Metro script mute
+- `MUTE.I` - Init script mute
+- Hotkeys: Ctrl+Shift+1-8, Ctrl+Shift+M, Ctrl+Shift+I
+- Muted scripts skip execution but preserve content
+- Mute state persists in scenes
 
 ## Scenes
 - `SAVE <name>` - Save current scene
@@ -263,6 +288,7 @@ FC 500           # Low cutoff to hear sweep
 - `CA <1-500>` - Attack (ms)
 - `CL <10-2000>` - Release (ms)
 - `CM <0-16383>` - Makeup gain
+- `CR.MIX <0-16383>` / `CRMIX` - Dry/wet mix (0=dry, 16383=wet)
 
 ### Pan
 - `PAN <-16383 to +16383>` - Stereo position
@@ -382,6 +408,10 @@ FC 500           # Low cutoff to hear sweep
 - `Ctrl+K` - Delete line
 - `Ctrl+C` / `Ctrl+X` / `Ctrl+V` - Copy/Cut/Paste
 - `Ctrl+Z` / `Ctrl+Shift+Z` - Undo/Redo
+- `Ctrl+Shift+1-8` - Toggle script 1-8 mute
+- `Ctrl+Shift+M` - Toggle metro script mute
+- `Ctrl+Shift+I` - Toggle init script mute
+- `Ctrl+Q` - Quit application
 
 ### Search
 - `Ctrl+F` - Enter search mode

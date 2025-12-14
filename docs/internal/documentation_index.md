@@ -8,10 +8,10 @@ Quick reference and links to all project documentation.
 
 | Document | Description | Lines |
 |----------|-------------|-------|
-| [ROADMAP.md](ROADMAP.md) | Current priorities, v0.4.12 complete | ~395 |
-| [CHANGELOG.md](CHANGELOG.md) | Version history, recent updates | ~477 |
+| [ROADMAP.md](ROADMAP.md) | Current priorities, v0.4.2.1 complete | ~395 |
+| [CHANGELOG.md](CHANGELOG.md) | Version history, recent updates | ~585 |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Project structure, key files | ~180 |
-| [MANUAL.md](MANUAL.md) | User manual with tutorials | ~1615 |
+| [MANUAL.md](MANUAL.md) | User manual with tutorials | ~1625 |
 
 ### History Archive
 | Document | Description |
@@ -25,6 +25,8 @@ Quick reference and links to all project documentation.
 |----------|-------------|
 | [scsynth_direct_integration.md](scsynth_direct_integration.md) | Direct scsynth integration |
 | [PLAITS_INTEGRATION.md](PLAITS_INTEGRATION.md) | Plaits voice implementation |
+| [SAMPLE_PLAYBACK_DESIGN.md](SAMPLE_PLAYBACK_DESIGN.md) | Sample playback design |
+| [MICLOUDS_INTEGRATION.md](MICLOUDS_INTEGRATION.md) | MiClouds integration notes |
 | [DSP_TIER1_IMPLEMENTATION_PLAN.md](../DSP_TIER1_IMPLEMENTATION_PLAN.md) | Filter, Resonator, Delay, Reverb |
 | [EFFECT_ROUTING_DESIGN.md](EFFECT_ROUTING_DESIGN.md) | Effect routing system |
 | [MIDI_CLOCK_TIMING_LESSONS.md](MIDI_CLOCK_TIMING_LESSONS.md) | MIDI clock diagnostics |
@@ -41,15 +43,15 @@ Quick reference and links to all project documentation.
 
 ---
 
-## Current Status (v0.4.12 - Complete)
+## Current Status (v0.4.2.1 - Complete)
 
 | Feature | Status |
 |---------|--------|
-| Beat Repeat/Pitch Shift Short Aliases | **DONE** |
-| Envelope Parameter Tier Fixes | **DONE** |
-| ExecutionContext Test Updates | **DONE** |
-| Dynamic Bundle Size in Release | **DONE** |
-| CPU Readout Fixed Width | **DONE** |
+| Script Mutes (Ctrl+Shift+1-8/M/I) | **DONE** |
+| Page Navigation Commands (PAGE) | **DONE** |
+| Compressor Dry/Wet Mix (CR.MIX) | **DONE** |
+| Hotkey Improvements (Ctrl+Q quit) | **DONE** |
+| Error Message Formatting (≤46 chars) | **DONE** |
 
 ### v0.4.11 (Complete)
 | Feature | Status |

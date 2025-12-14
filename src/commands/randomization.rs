@@ -33,6 +33,9 @@ where
     metro_tx.send(MetroCommand::SendParam("fba".to_string(), OscType::Int(fba)))?;
     metro_tx.send(MetroCommand::SendParam("fbd".to_string(), OscType::Int(fbd)))?;
 
+    if debug_level >= TIER_CONFIRMS {
+        output(format!("RND.VOICE: PF={:.1} PW={} MF={:.1} MW={} FM={} FB={}", pf, pw, mf, mw, fm, fb));
+    }
 
     Ok(())
 }
@@ -57,6 +60,9 @@ where
     metro_tx.send(MetroCommand::SendParam("mf".to_string(), OscType::Float(mf)))?;
     metro_tx.send(MetroCommand::SendParam("mw".to_string(), OscType::Int(mw)))?;
 
+    if debug_level >= TIER_CONFIRMS {
+        output(format!("RND.OSC: PF={:.1} PW={} MF={:.1} MW={}", pf, pw, mf, mw));
+    }
 
     Ok(())
 }
@@ -81,6 +87,9 @@ where
     metro_tx.send(MetroCommand::SendParam("fba".to_string(), OscType::Int(fba)))?;
     metro_tx.send(MetroCommand::SendParam("fbd".to_string(), OscType::Int(fbd)))?;
 
+    if debug_level >= TIER_CONFIRMS {
+        output("RANDOMIZED FM".to_string());
+    }
 
     Ok(())
 }
@@ -109,6 +118,9 @@ where
     metro_tx.send(MetroCommand::SendParam("mt".to_string(), OscType::Int(mt)))?;
     metro_tx.send(MetroCommand::SendParam("ma".to_string(), OscType::Int(ma)))?;
 
+    if debug_level >= TIER_CONFIRMS {
+        output(format!("RANDOMIZED MODULATION MB={} TK={} MP={} MD={} MT={} MA={}", mb, tk, mp, md, mt, ma));
+    }
 
     Ok(())
 }
@@ -141,6 +153,9 @@ where
     metro_tx.send(MetroCommand::SendParam("fa".to_string(), OscType::Int(fa)))?;
     metro_tx.send(MetroCommand::SendParam("da".to_string(), OscType::Int(da)))?;
 
+    if debug_level >= TIER_CONFIRMS {
+        output(format!("RANDOMIZED ENVELOPES ATK={} DEC={} CRV={:.2} PA={:.2} FA={} DA={}", env_atk, env_dec, env_crv, pa, fa, da));
+    }
 
     Ok(())
 }
@@ -159,6 +174,8 @@ pub fn handle_rnd_p<F>(
 where
     F: FnMut(String),
 {
+    use crate::types::TIER_CONFIRMS;
+
     let (mut min, mut max) = if parts.len() >= 3 {
         let min_val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
             expr_val
@@ -186,6 +203,11 @@ where
     for i in 0..pattern.length {
         pattern.data[i] = rng.gen_range(min..=max);
     }
+
+    if debug_level >= TIER_CONFIRMS {
+        output(format!("RANDOMIZED PATTERN {} RANGE {} TO {}", patterns.working, min, max));
+    }
+
     Ok(())
 }
 
@@ -249,6 +271,12 @@ where
     for i in 0..pattern.length {
         pattern.data[i] = rng.gen_range(min..=max);
     }
+
+    use crate::types::TIER_CONFIRMS;
+    if debug_level >= TIER_CONFIRMS {
+        output(format!("RANDOMIZED PATTERN {} RANGE {} TO {}", pat, min, max));
+    }
+
     Ok(())
 }
 
@@ -295,6 +323,12 @@ where
             pattern.data[i] = rng.gen_range(min..=max);
         }
     }
+
+    use crate::types::TIER_CONFIRMS;
+    if debug_level >= TIER_CONFIRMS {
+        output(format!("RANDOMIZED ALL PATTERNS RANGE {} TO {}", min, max));
+    }
+
     Ok(())
 }
 
@@ -369,6 +403,12 @@ where
     metro_tx.send(MetroCommand::SendParam("rh".to_string(), OscType::Int(rh)))?;
     let rw = rng.gen_range(0..=8000);
     metro_tx.send(MetroCommand::SendParam("rw".to_string(), OscType::Int(rw)))?;
+
+    use crate::types::TIER_CONFIRMS;
+    if debug_level >= TIER_CONFIRMS {
+        output("RANDOMIZED FX".to_string());
+    }
+
     Ok(())
 }
 
@@ -394,6 +434,10 @@ where
     let fe = rng.gen_range(0..=8000);
     metro_tx.send(MetroCommand::SendParam("fe".to_string(), OscType::Int(fe)))?;
 
+    use crate::types::TIER_CONFIRMS;
+    if debug_level >= TIER_CONFIRMS {
+        output("RANDOMIZED FILTER".to_string());
+    }
 
     Ok(())
 }
@@ -420,6 +464,10 @@ where
     let dw = rng.gen_range(0..=8000);
     metro_tx.send(MetroCommand::SendParam("dw".to_string(), OscType::Int(dw)))?;
 
+    use crate::types::TIER_CONFIRMS;
+    if debug_level >= TIER_CONFIRMS {
+        output("RANDOMIZED DELAY".to_string());
+    }
 
     Ok(())
 }
@@ -446,6 +494,10 @@ where
     let rw = rng.gen_range(0..=8000);
     metro_tx.send(MetroCommand::SendParam("rw".to_string(), OscType::Int(rw)))?;
 
+    use crate::types::TIER_CONFIRMS;
+    if debug_level >= TIER_CONFIRMS {
+        output("RANDOMIZED REVERB".to_string());
+    }
 
     Ok(())
 }

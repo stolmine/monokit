@@ -31,8 +31,8 @@ fn test_debug_level_0_blocks_print() {
 }
 
 #[test]
-fn test_debug_level_1_allows_print() {
-    let mut ctx = TestContext::new().with_debug_level(1);
+fn test_debug_level_2_allows_print() {
+    let mut ctx = TestContext::new().with_debug_level(2);
 
     let result = ctx.run("PRINT 42");
 

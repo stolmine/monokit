@@ -84,7 +84,8 @@ fn test_slew_valid_parameter_names() {
         0,
         &create_test_scale(),
         &metro_tx,
-        1,
+        4,
+        false,
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());
@@ -117,7 +118,8 @@ fn test_slew_invalid_parameter_name() {
         0,
         &create_test_scale(),
         &metro_tx,
-        1,
+        4,
+        false,
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());
@@ -143,7 +145,8 @@ fn test_slew_time_range_validation() {
         0,
         &create_test_scale(),
         &metro_tx,
-        1,
+        4,
+        false,
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());
@@ -161,7 +164,8 @@ fn test_slew_time_range_validation() {
         0,
         &create_test_scale(),
         &metro_tx,
-        1,
+        4,
+        false,
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());
@@ -179,7 +183,8 @@ fn test_slew_time_range_validation() {
         0,
         &create_test_scale(),
         &metro_tx,
-        1,
+        4,
+        false,
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());
@@ -196,7 +201,8 @@ fn test_slew_time_range_validation() {
         0,
         &create_test_scale(),
         &metro_tx,
-        1,
+        4,
+        false,
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());
@@ -222,7 +228,8 @@ fn test_slew_all_time_range_validation() {
         0,
         &create_test_scale(),
         &metro_tx,
-        1,
+        4,
+        false,
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());
@@ -244,7 +251,8 @@ fn test_slew_all_time_range_validation() {
         0,
         &create_test_scale(),
         &metro_tx,
-        1,
+        4,
+        false,
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());
@@ -273,6 +281,7 @@ fn test_slew_various_valid_params() {
         &create_test_scale(),
             &metro_tx,
             0,
+            false,
             |_| {},
         );
         assert!(result.is_ok());
@@ -300,7 +309,8 @@ fn test_slew_canonical_parameter_names() {
         0,
         &create_test_scale(),
         &metro_tx,
-        1,
+        4,
+        false,
         |output: String| outputs.push(output),
     );
     assert!(result.is_ok());

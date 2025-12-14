@@ -93,6 +93,12 @@ jobs:
           name: macos-arm64-bundle
           path: dist/
 
+      - name: Get bundle size
+        id: bundle_size
+        run: |
+          SIZE=$(du -h dist/*.tar.gz | cut -f1)
+          echo "size=$SIZE" >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
@@ -115,7 +121,7 @@ jobs:
 
             ## What's Included
 
-            This is a self-contained bundle (~16MB) that includes:
+            This is a self-contained bundle (${{ steps.bundle_size.outputs.size }}) that includes:
             - monokit binary
             - scsynth audio engine
             - All required plugins and SynthDefs

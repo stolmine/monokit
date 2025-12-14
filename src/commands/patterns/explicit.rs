@@ -4,28 +4,19 @@ use anyhow::{Context, Result};
 
 pub fn handle_pn_l<F>(
     parts: &[&str],
-    variables: &Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &ScriptStorage,
-    script_index: usize,
-    scale: &ScaleState,
-    debug_level: u8,
-    out_err: bool,
-    out_qry: bool,
-    out_cfm: bool,
+    ctx: &mut crate::commands::context::ExecutionContext,
     mut output: F,
 ) -> Result<()>
 where
     F: FnMut(String),
 {
+    use crate::types::OutputCategory;
+
     if parts.len() < 2 {
-        if debug_level >= TIER_ERRORS || out_err {
-            output("ERROR: PN.L REQUIRES PATTERN NUMBER (0-5)".to_string());
-        }
+        ctx.output(OutputCategory::Error, "ERROR: PN.L REQUIRES PATTERN NUMBER (0-5)".to_string(), &mut output);
         return Ok(());
     }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, ctx.variables, ctx.patterns, ctx.counters, ctx.scripts, ctx.script_index, ctx.scale) {
         expr_val as usize
     } else {
         parts[1]
@@ -33,22 +24,16 @@ where
             .context("Failed to parse pattern number")?
     };
     if pat > 5 {
-        if debug_level >= TIER_ERRORS || out_err {
-            output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
-        }
+        ctx.output(OutputCategory::Error, "ERROR: PATTERN NUMBER MUST BE 0-5".to_string(), &mut output);
         return Ok(());
     }
     if parts.len() == 2 {
-        let pattern = &patterns.patterns[pat];
-        if debug_level >= TIER_QUERIES || out_qry {
-            output(format!("PN.L {} = {}", pat, pattern.length));
-        }
+        let pattern = &ctx.patterns.patterns[pat];
+        ctx.output(OutputCategory::Query, format!("PN.L {} = {}", pat, pattern.length), &mut output);
     } else {
-        let value: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
+        let value: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, ctx.variables, ctx.patterns, ctx.counters, ctx.scripts, ctx.script_index, ctx.scale) {
             if expr_val < 1 || expr_val > 64 {
-                if debug_level >= TIER_ERRORS || out_err {
-                    output("ERROR: PATTERN LENGTH MUST BE 1-64".to_string());
-                }
+                ctx.output(OutputCategory::Error, "ERROR: PATTERN LENGTH MUST BE 1-64".to_string(), &mut output);
                 return Ok(());
             }
             expr_val as usize
@@ -58,44 +43,31 @@ where
                 .context("Failed to parse pattern length")?
         };
         if value < 1 || value > 64 {
-            if debug_level >= TIER_ERRORS || out_err {
-                output("ERROR: PATTERN LENGTH MUST BE 1-64".to_string());
-            }
+            ctx.output(OutputCategory::Error, "ERROR: PATTERN LENGTH MUST BE 1-64".to_string(), &mut output);
             return Ok(());
         }
-        let pattern = &mut patterns.patterns[pat];
+        let pattern = &mut ctx.patterns.patterns[pat];
         pattern.length = value;
-        if debug_level >= TIER_CONFIRMS || out_cfm {
-            output(format!("SET PATTERN {} LENGTH TO {}", pat, value));
-        }
+        ctx.output(OutputCategory::Confirm, format!("SET PATTERN {} LENGTH TO {}", pat, value), &mut output);
     }
     Ok(())
 }
 
 pub fn handle_pn_i<F>(
     parts: &[&str],
-    variables: &Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &ScriptStorage,
-    script_index: usize,
-    scale: &ScaleState,
-    debug_level: u8,
-    out_err: bool,
-    out_qry: bool,
-    out_cfm: bool,
+    ctx: &mut crate::commands::context::ExecutionContext,
     mut output: F,
 ) -> Result<()>
 where
     F: FnMut(String),
 {
+    use crate::types::OutputCategory;
+
     if parts.len() < 2 {
-        if debug_level >= TIER_ERRORS || out_err {
-            output("ERROR: PN.I REQUIRES PATTERN NUMBER (0-5)".to_string());
-        }
+        ctx.output(OutputCategory::Error, "ERROR: PN.I REQUIRES PATTERN NUMBER (0-5)".to_string(), &mut output);
         return Ok(());
     }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, ctx.variables, ctx.patterns, ctx.counters, ctx.scripts, ctx.script_index, ctx.scale) {
         expr_val as usize
     } else {
         parts[1]
@@ -103,22 +75,16 @@ where
             .context("Failed to parse pattern number")?
     };
     if pat > 5 {
-        if debug_level >= TIER_ERRORS || out_err {
-            output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
-        }
+        ctx.output(OutputCategory::Error, "ERROR: PATTERN NUMBER MUST BE 0-5".to_string(), &mut output);
         return Ok(());
     }
     if parts.len() == 2 {
-        let pattern = &patterns.patterns[pat];
-        if debug_level >= TIER_QUERIES || out_qry {
-            output(format!("PN.I {} = {}", pat, pattern.index));
-        }
+        let pattern = &ctx.patterns.patterns[pat];
+        ctx.output(OutputCategory::Query, format!("PN.I {} = {}", pat, pattern.index), &mut output);
     } else {
-        let value: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
+        let value: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, ctx.variables, ctx.patterns, ctx.counters, ctx.scripts, ctx.script_index, ctx.scale) {
             if expr_val < 0 || expr_val > 63 {
-                if debug_level >= TIER_ERRORS || out_err {
-                    output("ERROR: PATTERN INDEX MUST BE 0-63".to_string());
-                }
+                ctx.output(OutputCategory::Error, "ERROR: PATTERN INDEX MUST BE 0-63".to_string(), &mut output);
                 return Ok(());
             }
             expr_val as usize
@@ -128,16 +94,12 @@ where
                 .context("Failed to parse pattern index")?
         };
         if value > 63 {
-            if debug_level >= TIER_ERRORS || out_err {
-                output("ERROR: PATTERN INDEX MUST BE 0-63".to_string());
-            }
+            ctx.output(OutputCategory::Error, "ERROR: PATTERN INDEX MUST BE 0-63".to_string(), &mut output);
             return Ok(());
         }
-        let pattern = &mut patterns.patterns[pat];
+        let pattern = &mut ctx.patterns.patterns[pat];
         pattern.index = value;
-        if debug_level >= TIER_CONFIRMS || out_cfm {
-            output(format!("SET PATTERN {} INDEX TO {}", pat, value));
-        }
+        ctx.output(OutputCategory::Confirm, format!("SET PATTERN {} INDEX TO {}", pat, value), &mut output);
     }
     Ok(())
 }
@@ -150,28 +112,19 @@ pub use super::working::{
 
 pub fn handle_pn<F>(
     parts: &[&str],
-    variables: &Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &ScriptStorage,
-    script_index: usize,
-    scale: &ScaleState,
-    debug_level: u8,
-    out_err: bool,
-    out_qry: bool,
-    out_cfm: bool,
+    ctx: &mut crate::commands::context::ExecutionContext,
     mut output: F,
 ) -> Result<()>
 where
     F: FnMut(String),
 {
+    use crate::types::OutputCategory;
+
     if parts.len() < 3 {
-        if debug_level >= TIER_ERRORS || out_err {
-            output("ERROR: PN NEEDS PAT (0-5) AND IDX (0-63)".to_string());
-        }
+        ctx.output(OutputCategory::Error, "ERROR: PN NEEDS PAT (0-5) AND IDX (0-63)".to_string(), &mut output);
         return Ok(());
     }
-    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+    let pat: usize = if let Some((expr_val, _)) = eval_expression(&parts, 1, ctx.variables, ctx.patterns, ctx.counters, ctx.scripts, ctx.script_index, ctx.scale) {
         expr_val as usize
     } else {
         parts[1]
@@ -179,16 +132,12 @@ where
             .context("Failed to parse pattern number")?
     };
     if pat > 5 {
-        if debug_level >= TIER_ERRORS || out_err {
-            output("ERROR: PATTERN NUMBER MUST BE 0-5".to_string());
-        }
+        ctx.output(OutputCategory::Error, "ERROR: PATTERN NUMBER MUST BE 0-5".to_string(), &mut output);
         return Ok(());
     }
-    let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
+    let idx: usize = if let Some((expr_val, _)) = eval_expression(&parts, 2, ctx.variables, ctx.patterns, ctx.counters, ctx.scripts, ctx.script_index, ctx.scale) {
         if expr_val < 0 || expr_val > 63 {
-            if debug_level >= TIER_ERRORS || out_err {
-                output("ERROR: PATTERN INDEX MUST BE 0-63".to_string());
-            }
+            ctx.output(OutputCategory::Error, "ERROR: PATTERN INDEX MUST BE 0-63".to_string(), &mut output);
             return Ok(());
         }
         expr_val as usize
@@ -198,29 +147,23 @@ where
             .context("Failed to parse pattern index")?
     };
     if idx > 63 {
-        if debug_level >= TIER_ERRORS || out_err {
-            output("ERROR: PATTERN INDEX MUST BE 0-63".to_string());
-        }
+        ctx.output(OutputCategory::Error, "ERROR: PATTERN INDEX MUST BE 0-63".to_string(), &mut output);
         return Ok(());
     }
     if parts.len() == 3 {
-        let pattern = &patterns.patterns[pat];
-        if debug_level >= TIER_QUERIES || out_qry {
-            output(format!("PN {} {} = {}", pat, idx, pattern.data[idx]));
-        }
+        let pattern = &ctx.patterns.patterns[pat];
+        ctx.output(OutputCategory::Query, format!("PN {} {} = {}", pat, idx, pattern.data[idx]), &mut output);
     } else {
-        let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 3, variables, patterns, counters, scripts, script_index, scale) {
+        let val: i16 = if let Some((expr_val, _)) = eval_expression(&parts, 3, ctx.variables, ctx.patterns, ctx.counters, ctx.scripts, ctx.script_index, ctx.scale) {
             expr_val
         } else {
             parts[3]
                 .parse()
                 .context("Failed to parse pattern value")?
         };
-        let pattern = &mut patterns.patterns[pat];
+        let pattern = &mut ctx.patterns.patterns[pat];
         pattern.data[idx] = val;
-        if debug_level >= TIER_CONFIRMS || out_cfm {
-            output(format!("SET PN {} {} TO {}", pat, idx, val));
-        }
+        ctx.output(OutputCategory::Confirm, format!("SET PN {} {} TO {}", pat, idx, val), &mut output);
     }
     Ok(())
 }

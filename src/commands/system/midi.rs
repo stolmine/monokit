@@ -1,20 +1,17 @@
-use crate::midi::{MidiConnection, MidiTimingStats};
+use crate::commands::context::ExecutionContext;
+use crate::midi::MidiConnection;
 use crate::types::MetroCommand;
 use anyhow::Result;
-use std::sync::{mpsc::Sender, Arc};
 
 pub fn handle_midi_in<F>(
     parts: &[&str],
-    metro_tx: &Sender<MetroCommand>,
-    midi_connection: &mut Option<MidiConnection>,
-    timing_stats: &Arc<MidiTimingStats>,
+    ctx: &mut ExecutionContext,
     mut output: F,
 ) -> Result<()>
 where
     F: FnMut(String),
 {
     if parts.len() == 1 {
-        // List available MIDI inputs
         match crate::midi::list_midi_inputs() {
             Ok(devices) => {
                 if devices.is_empty() {
@@ -24,7 +21,7 @@ where
                     for device in devices {
                         output(format!("  {}", device.to_uppercase()));
                     }
-                    if midi_connection.is_some() {
+                    if ctx.midi_connection.is_some() {
                         output("CONNECTED: YES".to_string());
                     }
                 }
@@ -34,11 +31,10 @@ where
             }
         }
     } else {
-        // Connect to specified device
         let device_name = parts[1..].join(" ");
-        match crate::midi::connect_midi_input(&device_name, metro_tx.clone(), Some(timing_stats.clone())) {
+        match crate::midi::connect_midi_input(&device_name, ctx.metro_tx.clone(), Some(ctx.midi_timing_stats.clone())) {
             Ok(conn) => {
-                *midi_connection = Some(conn);
+                *ctx.midi_connection = Some(conn);
                 output(format!("CONNECTED TO MIDI INPUT: {}", device_name.to_uppercase()));
                 output("USE M.SYNC 1 TO ENABLE MIDI CLOCK SYNC".to_string());
             }
@@ -52,8 +48,7 @@ where
 
 pub fn handle_midi_diag<F>(
     parts: &[&str],
-    metro_tx: &Sender<MetroCommand>,
-    timing_stats: &Arc<MidiTimingStats>,
+    ctx: &mut ExecutionContext,
     mut output: F,
 ) -> Result<()>
 where
@@ -67,22 +62,20 @@ where
     } else {
         match parts[1] {
             "1" => {
-                timing_stats.enable();
-                metro_tx.send(MetroCommand::EnableMidiTimingDiag)?;
+                ctx.midi_timing_stats.enable();
+                ctx.metro_tx.send(MetroCommand::EnableMidiTimingDiag)?;
                 output("MIDI TIMING DIAGNOSTICS ENABLED".to_string());
                 output("COLLECTING TIMING DATA...".to_string());
             }
             "0" => {
-                timing_stats.disable();
-                metro_tx.send(MetroCommand::DisableMidiTimingDiag)?;
+                ctx.midi_timing_stats.disable();
+                ctx.metro_tx.send(MetroCommand::DisableMidiTimingDiag)?;
                 output("MIDI TIMING DIAGNOSTICS DISABLED".to_string());
             }
             "REPORT" | "R" => {
-                // Write MIDI callback timing to file
-                let result = timing_stats.write_report();
+                let result = ctx.midi_timing_stats.write_report();
                 output(result);
-                // Also trigger metro thread report (will append to same concepts)
-                metro_tx.send(MetroCommand::PrintMidiTimingReport)?;
+                ctx.metro_tx.send(MetroCommand::PrintMidiTimingReport)?;
             }
             _ => {
                 output("INVALID ARGUMENT. USE 1, 0, OR REPORT".to_string());

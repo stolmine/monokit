@@ -1,10 +1,10 @@
+use crate::commands::context::ExecutionContext;
 use crate::types::MetroCommand;
 use anyhow::Result;
-use std::sync::mpsc::Sender;
 
 pub fn handle_sc_diag<F>(
     parts: &[&str],
-    metro_tx: &Sender<MetroCommand>,
+    ctx: &mut ExecutionContext,
     mut output: F,
 ) -> Result<()>
 where
@@ -20,23 +20,23 @@ where
     } else {
         match parts[1] {
             "1" => {
-                metro_tx.send(MetroCommand::SendScDiag(1))?;
+                ctx.metro_tx.send(MetroCommand::SendScDiag(1))?;
                 output("SC TIMING DIAGNOSTICS ENABLED".to_string());
             }
             "0" => {
-                metro_tx.send(MetroCommand::SendScDiag(0))?;
+                ctx.metro_tx.send(MetroCommand::SendScDiag(0))?;
                 output("SC TIMING DIAGNOSTICS DISABLED".to_string());
             }
             "REPORT" | "R" => {
-                metro_tx.send(MetroCommand::SendScDiagReport)?;
+                ctx.metro_tx.send(MetroCommand::SendScDiagReport)?;
                 output("SC TIMING REPORT REQUESTED".to_string());
             }
             "TRIGGERS" | "T" => {
-                metro_tx.send(MetroCommand::GetTriggerCount)?;
+                ctx.metro_tx.send(MetroCommand::GetTriggerCount)?;
                 output("CHECK CONSOLE FOR TRIGGER COUNT".to_string());
             }
             "RST" => {
-                metro_tx.send(MetroCommand::ResetTriggerCount)?;
+                ctx.metro_tx.send(MetroCommand::ResetTriggerCount)?;
                 output("TRIGGER COUNTER RESET".to_string());
             }
             _ => {

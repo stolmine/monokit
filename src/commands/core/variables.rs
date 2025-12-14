@@ -1,38 +1,27 @@
 use crate::commands::common::parse_i16_expr;
-use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_ERRORS, TIER_QUERIES, TIER_CONFIRMS};
+use crate::commands::context::ExecutionContext;
+use crate::types::OutputCategory;
 use anyhow::Result;
 
 macro_rules! define_variable_handler {
     ($fn_name:ident, $var_name:literal, $var_field:ident) => {
         pub fn $fn_name<F>(
             parts: &[&str],
-            variables: &mut Variables,
-            patterns: &mut PatternStorage,
-            counters: &mut Counters,
-            scripts: &ScriptStorage,
-            script_index: usize,
-            scale: &ScaleState,
-            debug_level: u8,
-            out_qry: bool,
-            out_cfm: bool,
+            ctx: &mut ExecutionContext,
             mut output: F,
         ) where
             F: FnMut(String),
         {
             if parts.len() == 1 {
-                if debug_level >= TIER_QUERIES || out_qry {
-                    output(format!("{} = {}", $var_name, variables.$var_field));
-                }
+                ctx.output(OutputCategory::Query, format!("{} = {}", $var_name, ctx.variables.$var_field), &mut output);
             } else {
                 let Some(value) = parse_i16_expr(
-                    parts, 1, variables, patterns, counters, scripts, script_index, scale, $var_name, &mut output
+                    parts, 1, ctx.variables, ctx.patterns, ctx.counters, ctx.scripts, ctx.script_index, ctx.scale, $var_name, &mut output
                 ) else {
                     return;
                 };
-                variables.$var_field = value;
-                if debug_level >= TIER_CONFIRMS || out_cfm {
-                    output(format!("SET {} TO {}", $var_name, value));
-                }
+                ctx.variables.$var_field = value;
+                ctx.output(OutputCategory::Confirm, format!("SET {} TO {}", $var_name, value), &mut output);
             }
         }
     };
@@ -40,43 +29,28 @@ macro_rules! define_variable_handler {
     (script, $fn_name:ident, $var_name:literal, $var_field:ident) => {
         pub fn $fn_name<F>(
             parts: &[&str],
-            variables: &Variables,
-            patterns: &mut PatternStorage,
-            counters: &mut Counters,
-            scripts: &mut ScriptStorage,
-            script_index: usize,
-            scale: &ScaleState,
-            debug_level: u8,
-            out_err: bool,
-            out_qry: bool,
-            out_cfm: bool,
+            ctx: &mut ExecutionContext,
             mut output: F,
         ) -> Result<()>
         where
             F: FnMut(String),
         {
-            if script_index >= 10 {
-                if debug_level >= TIER_ERRORS || out_err {
-                    output(format!("ERROR: {} REQUIRES SCRIPT CONTEXT", $var_name));
-                }
+            if ctx.script_index >= 10 {
+                ctx.output(OutputCategory::Error, format!("ERROR: {} REQUIRES SCRIPT CONTEXT", $var_name), &mut output);
                 return Ok(());
             }
             if parts.len() == 1 {
-                if debug_level >= TIER_QUERIES || out_qry {
-                    output(format!("{} = {}", $var_name, scripts.scripts[script_index].$var_field));
-                }
+                ctx.output(OutputCategory::Query, format!("{} = {}", $var_name, ctx.scripts.scripts[ctx.script_index].$var_field), &mut output);
             } else {
                 let value: i16 = if let Some(v) = parse_i16_expr(
-                    parts, 1, variables, patterns, counters, scripts, script_index, scale, $var_name, &mut output
+                    parts, 1, ctx.variables, ctx.patterns, ctx.counters, ctx.scripts, ctx.script_index, ctx.scale, $var_name, &mut output
                 ) {
                     v
                 } else {
                     return Ok(());
                 };
-                scripts.scripts[script_index].$var_field = value;
-                if debug_level >= TIER_CONFIRMS || out_cfm {
-                    output(format!("SET {} TO {}", $var_name, value));
-                }
+                ctx.scripts.scripts[ctx.script_index].$var_field = value;
+                ctx.output(OutputCategory::Confirm, format!("SET {} TO {}", $var_name, value), &mut output);
             }
             Ok(())
         }
@@ -96,32 +70,22 @@ define_variable_handler!(script, handle_variable_k, "K", k);
 
 pub fn handle_variable_i<F>(
     parts: &[&str],
-    variables: &mut Variables,
-    debug_level: u8,
-    out_err: bool,
-    out_qry: bool,
-    out_cfm: bool,
+    ctx: &mut ExecutionContext,
     mut output: F,
 ) where
     F: FnMut(String),
 {
     if parts.len() == 1 {
-        if debug_level >= TIER_QUERIES || out_qry {
-            output(format!("I = {}", variables.i));
-        }
+        ctx.output(OutputCategory::Query, format!("I = {}", ctx.variables.i), &mut output);
     } else {
         let value: i16 = match parts[1].parse() {
             Ok(v) => v,
             Err(_) => {
-                if debug_level >= TIER_ERRORS || out_err {
-                    output("ERROR: FAILED TO PARSE VALUE FOR I".to_string());
-                }
+                ctx.output(OutputCategory::Error, "ERROR: FAILED TO PARSE VALUE FOR I".to_string(), &mut output);
                 return;
             }
         };
-        variables.i = value;
-        if debug_level >= TIER_CONFIRMS || out_cfm {
-            output(format!("SET I TO {}", value));
-        }
+        ctx.variables.i = value;
+        ctx.output(OutputCategory::Confirm, format!("SET I TO {}", value), &mut output);
     }
 }

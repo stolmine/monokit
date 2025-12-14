@@ -63,7 +63,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | Ctrl+Shift+Z Redo Fix | Low | **DONE** |
 | Deprecated Noise Params Removal | Low | **DONE** |
 | Plaits RST Coverage | Low | **DONE** |
-| Debug Tier Refactor | Low | Not started |
+| Debug Tier Refactor | Low | **DONE** |
 | Noise Envelope & Gating | Medium | Deferred |
 | Noise FM Routing | Low | Deferred |
 | Oscillator Sync | Medium | Not started |

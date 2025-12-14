@@ -2,6 +2,17 @@
 
 ## v0.4.1 (December 2025)
 
+### Internal Refactoring
+
+**Debug Tier & Output Routing Refactor**
+- Created ExecutionContext struct to group 47+ command parameters
+- Reduced process_command signature from 109 → 3 parameters
+- Eliminated 165 duplicate tier checks across command handlers
+- Centralized output control through ExecutionContext.output() method
+- Removed unused TIER_VERBOSE constant (tier 5)
+- Migrated all variable, pattern, and system commands to use ExecutionContext
+- No behavioral changes - purely architectural improvement for maintainability
+
 ### Bug Fixes
 
 **Redo Keybinding**

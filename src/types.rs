@@ -19,7 +19,6 @@ pub const TIER_ERRORS: u8 = 1;
 pub const TIER_ESSENTIAL: u8 = 2;
 pub const TIER_QUERIES: u8 = 3;
 pub const TIER_CONFIRMS: u8 = 4;
-pub const TIER_VERBOSE: u8 = 5;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum OutputCategory {

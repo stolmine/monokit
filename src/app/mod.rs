@@ -3,7 +3,7 @@ use crate::terminal::TerminalCapabilities;
 use crate::theme::Theme;
 use crate::types::{
     ColorMode, Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, NotesStorage, OutputCategory, Page, ParamActivity, PatternStorage, ScaleState, ScopeData, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
-    TIER_CONFIRMS, TIER_ERRORS, TIER_ESSENTIAL, TIER_QUERIES, TIER_VERBOSE,
+    TIER_CONFIRMS, TIER_ERRORS, TIER_ESSENTIAL, TIER_QUERIES,
 };
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -359,7 +359,7 @@ impl App {
             OutputCategory::Essential => TIER_ESSENTIAL,
             OutputCategory::Query => TIER_QUERIES,
             OutputCategory::Confirm => TIER_CONFIRMS,
-            OutputCategory::Verbose => TIER_VERBOSE,
+            OutputCategory::Verbose => return false, // Verbose tier removed, always suppress
         };
 
         // Tier check OR category override
@@ -368,7 +368,7 @@ impl App {
             OutputCategory::Essential => self.out_ess,
             OutputCategory::Query => self.out_qry,
             OutputCategory::Confirm => self.out_cfm,
-            OutputCategory::Verbose => false, // No override for verbose
+            OutputCategory::Verbose => false,
         }
     }
 
@@ -385,61 +385,67 @@ impl App {
         self.if_else_condition = true;
 
         let mut output_messages = Vec::new();
-        let result = crate::commands::process_command(
-            &self.metro_tx,
-            &mut metro_interval,
-            &mut self.br_len,
-            &mut self.sync_mode,
-            &mut self.midi_connection,
-            &self.midi_timing_stats,
-            &mut self.variables,
-            &mut self.patterns,
-            &mut self.counters,
-            &mut self.scripts,
+
+        // Construct ExecutionContext
+        let mut ctx = crate::commands::context::ExecutionContext {
+            metro_tx: &self.metro_tx,
+            metro_interval: &mut metro_interval,
+            variables: &mut self.variables,
+            patterns: &mut self.patterns,
+            counters: &mut self.counters,
+            scripts: &mut self.scripts,
             script_index,
-            &mut self.scale,
-            &mut self.theme,
-            &mut self.debug_level,
-            &mut self.activity_hold_ms,
-            &mut self.show_cpu,
-            &mut self.show_bpm,
-            &mut self.header_level,
-            &mut self.limiter_enabled,
-            &mut self.notes,
-            &mut self.load_rst,
-            &mut self.load_clr,
-            &mut self.vca_mode,
-            &mut self.show_conditional_highlight,
-            &mut self.scope_settings,
-            &mut self.show_meters_header,
-            &mut self.show_meters_grid,
-            &mut self.show_spectrum,
-            &mut self.show_activity,
-            &mut self.show_grid,
-            &mut self.show_grid_view,
-            &mut self.show_seq_highlight,
-            &mut self.grid_mode,
-            &mut self.current_scene_name,
-            &mut self.title_mode,
-            &mut self.title_timer_enabled,
-            &mut self.title_timer_interval_secs,
-            &mut self.title_timer_last_toggle,
-            &mut self.out_err,
-            &mut self.out_ess,
-            &mut self.out_qry,
-            &mut self.out_cfm,
-            &self.audio_devices,
-            &mut self.header_scramble,
-            &mut self.scramble_enabled,
-            &mut self.scramble_mode,
-            &mut self.scramble_speed,
-            &mut self.scramble_curve,
-            &mut self.ascii_meters,
-            &mut self.autoload,
-            &self.terminal_caps,
-            self.color_mode,
-            &mut self.script_break,
-            &mut self.ev_counters,
+            scale: &mut self.scale,
+            debug_level: &mut self.debug_level,
+            out_err: &mut self.out_err,
+            out_ess: &mut self.out_ess,
+            out_qry: &mut self.out_qry,
+            out_cfm: &mut self.out_cfm,
+            theme: &mut self.theme,
+            activity_hold_ms: &mut self.activity_hold_ms,
+            show_cpu: &mut self.show_cpu,
+            show_bpm: &mut self.show_bpm,
+            header_level: &mut self.header_level,
+            limiter_enabled: &mut self.limiter_enabled,
+            show_meters_header: &mut self.show_meters_header,
+            show_meters_grid: &mut self.show_meters_grid,
+            show_spectrum: &mut self.show_spectrum,
+            show_activity: &mut self.show_activity,
+            show_grid: &mut self.show_grid,
+            show_grid_view: &mut self.show_grid_view,
+            show_seq_highlight: &mut self.show_seq_highlight,
+            grid_mode: &mut self.grid_mode,
+            scope_settings: &mut self.scope_settings,
+            br_len: &mut self.br_len,
+            sync_mode: &mut self.sync_mode,
+            midi_connection: &mut self.midi_connection,
+            midi_timing_stats: &self.midi_timing_stats,
+            notes: &mut self.notes,
+            load_rst: &mut self.load_rst,
+            load_clr: &mut self.load_clr,
+            vca_mode: &mut self.vca_mode,
+            show_conditional_highlight: &mut self.show_conditional_highlight,
+            current_scene_name: &mut self.current_scene_name,
+            title_mode: &mut self.title_mode,
+            title_timer_enabled: &mut self.title_timer_enabled,
+            title_timer_interval_secs: &mut self.title_timer_interval_secs,
+            title_timer_last_toggle: &mut self.title_timer_last_toggle,
+            audio_devices: &self.audio_devices,
+            header_scramble: &mut self.header_scramble,
+            scramble_enabled: &mut self.scramble_enabled,
+            scramble_mode: &mut self.scramble_mode,
+            scramble_speed: &mut self.scramble_speed,
+            scramble_curve: &mut self.scramble_curve,
+            ascii_meters: &mut self.ascii_meters,
+            autoload: &mut self.autoload,
+            terminal_caps: &self.terminal_caps,
+            color_mode: self.color_mode,
+            script_break: &mut self.script_break,
+            ev_counters: &mut self.ev_counters,
+        };
+
+        let result = crate::commands::process_command(
+            &mut ctx,
             command,
             |msg| {
                 output_messages.push(msg);

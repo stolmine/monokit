@@ -152,6 +152,7 @@ Centralized command execution through ExecutionContext and fixed tier violations
 - **MIDI CC and Note Input** [Medium] - External control, performance capability
 
 ### P2 - Polish & Documentation
+- **CPU Readout Fixed Width** [Low] - Ensure CPU percentage always uses 2-digit space formatting in header to prevent BPM readout from shifting horizontally
 - **Alias & Command Name Standardization** [Low] - Audit all commands for consistent naming patterns; ensure all parameters have appropriate short-form aliases; standardize canonical form patterns (e.g., CATEGORY.PARAM format); document naming conventions for future development
 - **Dynamic Grid Layout** [Medium] - Responsive UI spacing
 - **Tempo-Synced Delay** [Low] - DS parameter for musical delay times

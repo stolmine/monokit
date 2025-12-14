@@ -165,8 +165,12 @@ Centralized command execution through ExecutionContext and fixed tier violations
 - **MIDI CC and Note Input** [Medium] - External control, performance capability
 
 ### P2 - Polish & Documentation
+- **MiClouds Granular Effect** [Low-Medium] - Add MiClouds (Mutable Instruments) as global effect with 14 parameters (CL.TRIG + 13 params), 4 modes (grain/pitch/loop/spectral), pattern-based triggering, freeze mode for sound design (see MICLOUDS_INTEGRATION.md)
+- **Global Distortion/Saturation** [Low-Medium] - Natural-sounding saturation/distortion effect with antialiasing; options include smooth clipping (SmoothClipS), wavefolding (LockhartWavefolder), analog tape emulation, or waveshaping with proper oversampling to avoid aliasing artifacts; multiple modes for different saturation characters (tube, tape, soft clip, fold)
 - **Page Navigation Commands** [Low] - Commands to programmatically switch pages (LIVE, HELP, GRID, etc.) enabling animated UI transitions and script-controlled navigation
 - **Script Mutes** [Low] - Individual mute toggles for scripts 1-8, M, and I to disable execution without clearing content
+- **Title Timer Persistence** [Low] - Ensure TITLE.TIMER setting persists correctly; currently seems to require kickstarting in some cases
+- **Compressor Dry/Wet** [Low] - Add dry/wet mix control for parallel compression capability
 - **Alias & Command Name Standardization** [Low] - Audit all commands for consistent naming patterns; ensure all parameters have appropriate short-form aliases; standardize canonical form patterns (e.g., CATEGORY.PARAM format); document naming conventions for future development
 - **Dynamic Grid Layout** [Medium] - Responsive UI spacing
 - **Tempo-Synced Delay** [Low] - DS parameter for musical delay times
@@ -176,7 +180,8 @@ Centralized command execution through ExecutionContext and fixed tier violations
 
 ### P3 - Future / Large Effort
 - **Cross-Platform Compatibility** [High] - Linux/Windows/Intel Mac
-- **Sample Playback System** [Very High] - Major feature
+- **Sample Playback System** [Very High] - Major feature (see SAMPLE_PLAYBACK_DESIGN.md)
+- **Song Mode/Arranger** [Very High] - Pattern chaining, arrangement sequencing, section management for complete song construction beyond loop-based performance
 - **Additional Voice Types** [Very High] - Architecture change
 - **Optional Polyphony** [Very High] - Architecture change
 

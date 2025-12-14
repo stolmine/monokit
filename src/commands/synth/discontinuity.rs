@@ -22,7 +22,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: DC REQUIRES A VALUE (0-16383)".to_string());
+        output("DC: REQUIRES VALUE".to_string());
         return Ok(());
     }
     let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -33,7 +33,7 @@ where
             .context("Failed to parse discontinuity amount")?
     };
     if !(0..=16383).contains(&value) {
-        output("ERROR: DC MUST BE 0-16383".to_string());
+        output("DC: RANGE 0-16383".to_string());
         return Ok(());
     }
     if let Ok(mut f) = std::fs::OpenOptions::new().append(true).create(true).open("/tmp/monokit_debug.txt") {
@@ -48,5 +48,5 @@ where
     Ok(())
 }
 
-define_mode_param!(handle_dm, "dm", 0, 6, "DM", "MODE MUST BE 0-6 (FOLD/TANH/SOFT/HARD/ASYM/RECT/CRUSH)", "DISCONTINUITY MODE", "Failed to parse discontinuity mode");
+define_mode_param!(handle_dm, "dm", 0, 6, "DM", "RANGE 0-6", "DISCONTINUITY MODE", "Failed to parse discontinuity mode");
 define_int_param_ms!(handle_dd, "dd", 1, 10000, "DD", "DISCONTINUITY DECAY", "Failed to parse discontinuity decay time");

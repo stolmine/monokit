@@ -23,7 +23,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: BR.LEN REQUIRES A VALUE (0-7)".to_string());
+        output("BR.LEN: REQUIRES VALUE".to_string());
         return Ok(());
     }
     let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -77,7 +77,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: BR.REV REQUIRES A VALUE (0-1)".to_string());
+        output("BR.REV: REQUIRES VALUE".to_string());
         return Ok(());
     }
     let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -88,7 +88,7 @@ where
             .context("Failed to parse beat repeat reverse")?
     };
     if value != 0 && value != 1 {
-        output("ERROR: VALUE MUST BE 0 OR 1".to_string());
+        output("BR.REV: RANGE 0-1".to_string());
         return Ok(());
     }
     metro_tx
@@ -117,7 +117,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: BR.WIN REQUIRES A VALUE (1-50)".to_string());
+        output("BR.WIN: REQUIRES VALUE".to_string());
         return Ok(());
     }
     let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -154,7 +154,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: BR.MIX REQUIRES A VALUE (0-16383)".to_string());
+        output("BR.MIX: REQUIRES VALUE".to_string());
         return Ok(());
     }
     let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {

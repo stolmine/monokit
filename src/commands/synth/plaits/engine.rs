@@ -11,7 +11,7 @@ define_mode_param!(
     0,
     15,
     "PL.ENG",
-    "ENGINE MUST BE 0-15",
+    "RANGE 0-15",
     "PLAITS ENGINE",
     "Failed to parse engine value"
 );

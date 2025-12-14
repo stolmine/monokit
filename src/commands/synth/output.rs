@@ -15,14 +15,14 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: VOL REQUIRES A VALUE (0.0-1.0)".to_string());
+        output("VOL: REQUIRES VALUE".to_string());
         return Ok(());
     }
     let value: f32 = parts[1]
         .parse()
         .context("Failed to parse volume value as float")?;
     if !(0.0..=1.0).contains(&value) {
-        output("ERROR: VOLUME MUST BE BETWEEN 0.0 AND 1.0".to_string());
+        output("VOL: RANGE 0.0-1.0".to_string());
         return Ok(());
     }
     metro_tx
@@ -50,7 +50,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: PAN REQUIRES A VALUE (-16383 TO 16383)".to_string());
+        output("PAN: REQUIRES VALUE".to_string());
         return Ok(());
     }
     let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -61,7 +61,7 @@ where
             .context("Failed to parse pan position")?
     };
     if !(-16383..=16383).contains(&value) {
-        output("ERROR: PAN MUST BE -16383 TO 16383".to_string());
+        output("PAN: RANGE -16383 TO 16383".to_string());
         return Ok(());
     }
     metro_tx
@@ -119,7 +119,7 @@ where
                 output("VCA: GATED".to_string());
             }
             _ => {
-                output("ERROR: VCA TAKES 0 (DRONE) OR 1 (GATED)".to_string());
+                output("VCA: RANGE 0-1".to_string());
             }
         }
     }

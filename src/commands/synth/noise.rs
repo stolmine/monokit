@@ -12,7 +12,7 @@ define_mode_param!(
     0,
     2,
     "NW",
-    "NOISE TYPE MUST BE 0 (WHITE), 1 (PINK), OR 2 (BROWN)",
+    "RANGE 0-2",
     "NOISE TYPE",
     "Failed to parse noise type"
 );

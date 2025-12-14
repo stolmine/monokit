@@ -23,7 +23,7 @@ macro_rules! define_int_param {
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                output(format!("ERROR: {} REQUIRES A VALUE ({}-{})", $error_cmd, $min, $max));
+                output(format!("{}: REQUIRES VALUE", $error_cmd));
                 return Ok(());
             }
             let state_snapshot = (
@@ -55,7 +55,7 @@ macro_rules! define_int_param {
                         patterns.direct_validation.insert(key, false);
                     }
                 }
-                output(format!("ERROR: {} MUST BE BETWEEN {} AND {}", $display_name, $min, $max));
+                output(format!("{}: RANGE {}-{}", $error_cmd, $min, $max));
                 return Ok(());
             }
             metro_tx
@@ -88,7 +88,7 @@ macro_rules! define_int_param_ms {
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                output(format!("ERROR: {} REQUIRES A TIME VALUE ({}-{} MS)", $error_cmd, $min, $max));
+                output(format!("{}: REQUIRES VALUE", $error_cmd));
                 return Ok(());
             }
             let state_snapshot = (
@@ -120,7 +120,7 @@ macro_rules! define_int_param_ms {
                         patterns.direct_validation.insert(key, false);
                     }
                 }
-                output(format!("ERROR: {} MUST BE BETWEEN {} AND {} MS", $display_name, $min, $max));
+                output(format!("{}: RANGE {}-{} MS", $error_cmd, $min, $max));
                 return Ok(());
             }
             metro_tx
@@ -153,9 +153,7 @@ macro_rules! define_float_param {
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                output(format!("ERROR: {} REQUIRES A {} VALUE ({}-{})", $error_cmd,
-                    if $unit.is_empty() { "VALUE" } else { $unit },
-                    $min, $max));
+                output(format!("{}: REQUIRES VALUE", $error_cmd));
                 return Ok(());
             }
             let state_snapshot = (
@@ -187,7 +185,7 @@ macro_rules! define_float_param {
                         patterns.direct_validation.insert(key, false);
                     }
                 }
-                output(format!("ERROR: {} MUST BE BETWEEN {} AND {} {}", $display_name, $min, $max, $unit));
+                output(format!("{}: RANGE {}-{} {}", $error_cmd, $min, $max, $unit));
                 return Ok(());
             }
             metro_tx
@@ -220,7 +218,7 @@ macro_rules! define_bool_param {
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                output(format!("ERROR: {} REQUIRES A VALUE (0 OR 1)", $error_cmd));
+                output(format!("{}: REQUIRES VALUE", $error_cmd));
                 return Ok(());
             }
             let state_snapshot = (
@@ -252,7 +250,7 @@ macro_rules! define_bool_param {
                         patterns.direct_validation.insert(key, false);
                     }
                 }
-                output("ERROR: VALUE MUST BE 0 OR 1".to_string());
+                output(format!("{}: RANGE 0-1", $error_cmd));
                 return Ok(());
             }
             metro_tx
@@ -285,7 +283,7 @@ macro_rules! define_mode_param {
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                output(format!("ERROR: {} REQUIRES A VALUE ({}-{})", $error_cmd, $min, $max));
+                output(format!("{}: REQUIRES VALUE", $error_cmd));
                 return Ok(());
             }
             let state_snapshot = (
@@ -317,7 +315,7 @@ macro_rules! define_mode_param {
                         patterns.direct_validation.insert(key, false);
                     }
                 }
-                output(format!("ERROR: {}", $error_msg));
+                output(format!("{}: {}", $error_cmd, $error_msg));
                 return Ok(());
             }
             metro_tx
@@ -350,7 +348,7 @@ macro_rules! define_mode_param_with_names {
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                output(format!("ERROR: {} REQUIRES A VALUE ({}-{})", $error_cmd, $min, $max));
+                output(format!("{}: REQUIRES VALUE", $error_cmd));
                 return Ok(());
             }
             let state_snapshot = (
@@ -382,7 +380,7 @@ macro_rules! define_mode_param_with_names {
                         patterns.direct_validation.insert(key, false);
                     }
                 }
-                output(format!("ERROR: {}", $error_msg));
+                output(format!("{}: {}", $error_cmd, $error_msg));
                 return Ok(());
             }
             metro_tx
@@ -416,7 +414,7 @@ macro_rules! define_plaits_param {
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                output(format!("ERROR: {} REQUIRES A VALUE (0-16383)", $error_cmd));
+                output(format!("{}: REQUIRES VALUE", $error_cmd));
                 return Ok(());
             }
             let state_snapshot = (
@@ -448,7 +446,7 @@ macro_rules! define_plaits_param {
                         patterns.direct_validation.insert(key, false);
                     }
                 }
-                output(format!("ERROR: {} MUST BE BETWEEN 0 AND 16383", $display_name));
+                output(format!("{}: RANGE 0-16383", $error_cmd));
                 return Ok(());
             }
             let scaled_value = value as f32 / 16383.0;

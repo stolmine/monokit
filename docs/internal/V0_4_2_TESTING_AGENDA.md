@@ -1,8 +1,14 @@
 # v0.4.2 Manual Testing Agenda
 
-**Version:** v0.4.2 "Workflow Enhancement"
+**Version:** v0.4.2.1 "Workflow Enhancement + UX Fixes"
 **Date:** December 2025
 **Tester:** _______________
+
+**NOTE:** This agenda updated for v0.4.2.1 which includes:
+- Hotkey fix: Alt+Shift → Ctrl+Shift (terminal compatibility)
+- Quit hotkey: Ctrl+Q added
+- Error messages shortened to ≤ 46 characters
+- Help documentation added for PAGE and N1-N4
 
 ---
 
@@ -54,11 +60,11 @@
 2. Script is currently active (unmuted)
 
 **Test Steps:**
-1. Press Alt+Shift+1
+1. Press Ctrl+Shift+1 (UPDATED: was Alt+Shift+1)
 2. Verify output: "SCRIPT 1: MUTED"
 3. Navigate to Script 1 page (Alt+1)
 4. Verify title shows: " SCRIPT 1 [MUTED] "
-5. Press Alt+Shift+1 again
+5. Press Ctrl+Shift+1 again
 6. Verify output: "SCRIPT 1: ACTIVE"
 7. Verify title shows: " SCRIPT 1 " (no [MUTED])
 
@@ -192,15 +198,15 @@
 ### Test 1.9: All Hotkey Combinations
 
 **Test Steps:**
-1. Press Alt+Shift+1 through Alt+Shift+8 in sequence
+1. Press Ctrl+Shift+1 through Ctrl+Shift+8 in sequence (UPDATED: was Alt+Shift)
 2. Verify each outputs "SCRIPT N: MUTED" where N=1-8
 3. Navigate to each script page (Alt+1 through Alt+8)
 4. Verify each shows "[MUTED]" in title
-5. Press Alt+Shift+M
+5. Press Ctrl+Shift+M
 6. Verify: "SCRIPT M: MUTED"
 7. Navigate to Metro page (Alt+M)
 8. Verify title shows " METRO [MUTED] "
-9. Press Alt+Shift+I
+9. Press Ctrl+Shift+I
 10. Verify: "SCRIPT I: MUTED"
 11. Navigate to Init page (Alt+I)
 12. Verify title shows " INIT [MUTED] "
@@ -666,11 +672,12 @@ Execute each command and verify correct page:
 
 **Test Steps:**
 1. Execute: `CR.MIX -1000`
-2. Verify: Value clamps to 0 (no error, just clips)
-3. Execute: `CR.MIX 20000`
-4. Verify: Value clamps to 16383
+2. Verify error: "CR.MIX: RANGE 0-16383" (UPDATED: shortened format)
+3. Verify message ≤ 46 characters
+4. Execute: `CR.MIX 20000`
+5. Verify error: "CR.MIX: RANGE 0-16383"
 
-**Expected:** Values clamp to valid range ✅ / ❌
+**Expected:** Error messages are terse and ≤ 46 chars ✅ / ❌
 
 ---
 
@@ -700,12 +707,25 @@ Execute each command and verify correct page:
 ### Edge 4: Rapid Mute Toggling
 
 **Test Steps:**
-1. Rapidly press Alt+Shift+1 ten times
+1. Rapidly press Ctrl+Shift+1 ten times (UPDATED: was Alt+Shift+1)
 2. Verify: Final state is consistent
 3. Execute: `MUTE` (query)
 4. Verify: Script 1 shows correct state (muted or active based on odd/even toggles)
 
 **Expected:** Rapid toggling doesn't desync state ✅ / ❌
+
+---
+
+### Edge 5: Quit During Rapid Operations (NEW)
+
+**Test Steps:**
+1. Execute in script: `L 1 20: PAGE 1; PAGE 2; PAGE 3; PAGE LIVE`
+2. While pages are switching rapidly, press Ctrl+Q
+3. Verify: Application quits immediately
+4. Restart monokit
+5. Verify: Clean startup (no corruption)
+
+**Expected:** Ctrl+Q quits instantly from any state ✅ / ❌
 
 ---
 

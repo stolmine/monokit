@@ -22,7 +22,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: PS.MODE REQUIRES A VALUE (0-1)".to_string());
+        output("PS.MODE: REQUIRES VALUE".to_string());
         return Ok(());
     }
     let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -33,7 +33,7 @@ where
             .context("Failed to parse pitch shift mode")?
     };
     if value != 0 && value != 1 {
-        output("ERROR: VALUE MUST BE 0 OR 1".to_string());
+        output("PS.MODE: RANGE 0-1".to_string());
         return Ok(());
     }
     metro_tx
@@ -67,7 +67,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: PS.SEMI REQUIRES A VALUE (-24 TO 24)".to_string());
+        output("PS.SEMI: REQUIRES VALUE".to_string());
         return Ok(());
     }
     let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -104,7 +104,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: PS.GRAIN REQUIRES A VALUE (5-100)".to_string());
+        output("PS.GRAIN: REQUIRES VALUE".to_string());
         return Ok(());
     }
     let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -141,7 +141,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: PS.MIX REQUIRES A VALUE (0-16383)".to_string());
+        output("PS.MIX: REQUIRES VALUE".to_string());
         return Ok(());
     }
     let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -178,7 +178,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: PS.TARG REQUIRES A VALUE (0-1)".to_string());
+        output("PS.TARG: REQUIRES VALUE".to_string());
         return Ok(());
     }
     let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
@@ -189,7 +189,7 @@ where
             .context("Failed to parse pitch shift target")?
     };
     if value != 0 && value != 1 {
-        output("ERROR: VALUE MUST BE 0 OR 1".to_string());
+        output("PS.TARG: RANGE 0-1".to_string());
         return Ok(());
     }
     metro_tx

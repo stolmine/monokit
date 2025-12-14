@@ -297,6 +297,14 @@ pub fn run_app<B: ratatui::backend::Backend>(
                 }
 
                 match key.code {
+                    KeyCode::Char('q') | KeyCode::Char('Q') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        app.should_quit = true;
+                        // Stop SuperCollider before quitting
+                        if let Ok(mut sc) = sc_process.lock() {
+                            sc.stop();
+                        }
+                        return Ok(());
+                    }
                     KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) && app.is_script_page() => {
                         app.copy_line();
                     }
@@ -431,34 +439,34 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     KeyCode::Char('8') if has_alt => {
                         app.go_to_page(Page::Script8);
                     }
-                    KeyCode::Char('1') | KeyCode::Char('!') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                    KeyCode::Char('1') if key.modifiers.contains(KeyModifiers::CONTROL | KeyModifiers::SHIFT) => {
                         app.toggle_script_mute(0);
                     }
-                    KeyCode::Char('2') | KeyCode::Char('@') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                    KeyCode::Char('2') if key.modifiers.contains(KeyModifiers::CONTROL | KeyModifiers::SHIFT) => {
                         app.toggle_script_mute(1);
                     }
-                    KeyCode::Char('3') | KeyCode::Char('#') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                    KeyCode::Char('3') if key.modifiers.contains(KeyModifiers::CONTROL | KeyModifiers::SHIFT) => {
                         app.toggle_script_mute(2);
                     }
-                    KeyCode::Char('4') | KeyCode::Char('$') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                    KeyCode::Char('4') if key.modifiers.contains(KeyModifiers::CONTROL | KeyModifiers::SHIFT) => {
                         app.toggle_script_mute(3);
                     }
-                    KeyCode::Char('5') | KeyCode::Char('%') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                    KeyCode::Char('5') if key.modifiers.contains(KeyModifiers::CONTROL | KeyModifiers::SHIFT) => {
                         app.toggle_script_mute(4);
                     }
-                    KeyCode::Char('6') | KeyCode::Char('^') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                    KeyCode::Char('6') if key.modifiers.contains(KeyModifiers::CONTROL | KeyModifiers::SHIFT) => {
                         app.toggle_script_mute(5);
                     }
-                    KeyCode::Char('7') | KeyCode::Char('&') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                    KeyCode::Char('7') if key.modifiers.contains(KeyModifiers::CONTROL | KeyModifiers::SHIFT) => {
                         app.toggle_script_mute(6);
                     }
-                    KeyCode::Char('8') | KeyCode::Char('*') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                    KeyCode::Char('8') if key.modifiers.contains(KeyModifiers::CONTROL | KeyModifiers::SHIFT) => {
                         app.toggle_script_mute(7);
                     }
-                    KeyCode::Char('M') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                    KeyCode::Char('m') | KeyCode::Char('M') if key.modifiers.contains(KeyModifiers::CONTROL | KeyModifiers::SHIFT) => {
                         app.toggle_script_mute(8);
                     }
-                    KeyCode::Char('I') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                    KeyCode::Char('i') | KeyCode::Char('I') if key.modifiers.contains(KeyModifiers::CONTROL | KeyModifiers::SHIFT) => {
                         app.toggle_script_mute(9);
                     }
                     KeyCode::Up if is_help => {

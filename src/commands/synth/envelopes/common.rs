@@ -24,14 +24,7 @@ macro_rules! define_int_param {
         {
             if parts.len() < 2 {
                 if debug_level >= crate::types::TIER_ERRORS || out_err {
-                    output(format!(
-                        "ERROR: {} REQUIRES A {} VALUE ({}-{} {})",
-                        $error_prefix,
-                        if $unit.is_empty() { "VALUE" } else { "TIME" },
-                        $min,
-                        $max,
-                        $unit
-                    ));
+                    output(format!("{}: REQUIRES VALUE", $error_prefix));
                 }
                 return Ok(());
             }
@@ -54,8 +47,8 @@ macro_rules! define_int_param {
             if !($min..=$max).contains(&value) {
                 if debug_level >= crate::types::TIER_ERRORS || out_err {
                     output(format!(
-                        "ERROR: {} MUST BE BETWEEN {} AND {} {}",
-                        $output_desc, $min, $max, $unit
+                        "{}: RANGE {}-{} {}",
+                        $error_prefix, $min, $max, $unit
                     ));
                 }
                 return Ok(());
@@ -99,10 +92,7 @@ macro_rules! define_float_param {
         {
             if parts.len() < 2 {
                 if debug_level >= crate::types::TIER_ERRORS || out_err {
-                    output(format!(
-                        "ERROR: {} REQUIRES A VALUE ({} TO {})",
-                        $error_prefix, $min, $max
-                    ));
+                    output(format!("{}: REQUIRES VALUE", $error_prefix));
                 }
                 return Ok(());
             }
@@ -125,8 +115,8 @@ macro_rules! define_float_param {
             if !($min..=$max).contains(&value) {
                 if debug_level >= crate::types::TIER_ERRORS || out_err {
                     output(format!(
-                        "ERROR: {} MUST BE BETWEEN {} AND {}",
-                        $output_desc, $min, $max
+                        "{}: RANGE {}-{}",
+                        $error_prefix, $min, $max
                     ));
                 }
                 return Ok(());

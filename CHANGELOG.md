@@ -1,5 +1,35 @@
 # Changelog
 
+## v0.4.2.1 (December 2025) - UX Fixes
+
+### Bug Fixes
+
+**Hotkey Compatibility**
+- Fixed script mute hotkeys not working in terminal emulators
+- Changed from Alt+Shift to Ctrl+Shift combinations (reliable across all terminals)
+- New: Ctrl+Shift+1-8 (toggle script mutes), Ctrl+Shift+M (metro), Ctrl+Shift+I (init)
+- Added Ctrl+Q hotkey to quit application immediately (works during any operation)
+
+**Error Messages**
+- Fixed parameter validation errors exceeding 46-character terminal width limit
+- Changed format from "ERROR: DISPLAY NAME MUST BE BETWEEN X AND Y" to "CMD: RANGE X-Y"
+- Updated all parameter macros system-wide (60+ parameters)
+- Example: "CR.MIX: RANGE 0-16383" (was 57 chars, now 22 chars)
+- All error messages now ≤ 46 characters (Teletype-inspired terseness)
+
+**Documentation**
+- Added PAGE command documentation to help system
+- Enhanced N1-N4 counter command documentation with examples
+- Added MUTE command documentation to help system
+- Updated hotkey documentation (Ctrl+Shift, Ctrl+Q)
+
+### Testing
+- All 602 tests passing
+- Verified hotkeys work in iTerm2, Terminal.app
+- Verified error messages comply with 46-char limit
+
+---
+
 ## v0.4.2 (December 2025) - Workflow Enhancement
 
 ### New Features

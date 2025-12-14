@@ -30,7 +30,7 @@ where
     F: FnMut(String),
 {
     if parts.len() < 2 {
-        output("ERROR: PL.FREQ REQUIRES HZ VALUE (20-20000)".to_string());
+        output("PL.FREQ: REQUIRES VALUE".to_string());
         return Ok(());
     }
     let state_snapshot = (
@@ -62,7 +62,7 @@ where
                 patterns.direct_validation.insert(key, false);
             }
         }
-        output("ERROR: PLAITS PITCH MUST BE BETWEEN 20 AND 20000 HZ".to_string());
+        output("PL.FREQ: RANGE 20-20000 HZ".to_string());
         return Ok(());
     }
     metro_tx

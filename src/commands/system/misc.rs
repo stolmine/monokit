@@ -268,6 +268,7 @@ where
     ctx.metro_tx.send(MetroCommand::SendParam("ca".to_string(), OscType::Int(10)))?;
     ctx.metro_tx.send(MetroCommand::SendParam("cl".to_string(), OscType::Int(100)))?;
     ctx.metro_tx.send(MetroCommand::SendParam("cm".to_string(), OscType::Int(0)))?;
+    ctx.metro_tx.send(MetroCommand::SendParam("cr_mix".to_string(), OscType::Int(16383)))?;
 
     ctx.metro_tx.send(MetroCommand::SendParam("el".to_string(), OscType::Int(0)))?;
     ctx.metro_tx.send(MetroCommand::SendParam("em".to_string(), OscType::Int(0)))?;
@@ -1214,5 +1215,143 @@ pub fn handle_compat_mode<F>(
             output("COMPAT.MODE: 1 (BASIC)".to_string());
         }
         _ => output("ERROR: COMPAT.MODE TAKES 0 OR 1".to_string()),
+    }
+}
+
+fn parse_script_id(id_str: &str) -> Option<usize> {
+    let upper = id_str.to_uppercase();
+    match upper.as_str() {
+        "M" => Some(8),
+        "I" => Some(9),
+        _ => {
+            if let Ok(num) = id_str.parse::<usize>() {
+                if num >= 1 && num <= 8 {
+                    Some(num - 1)
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        }
+    }
+}
+
+fn script_id_label(index: usize) -> String {
+    match index {
+        0..=7 => format!("{}", index + 1),
+        8 => "M".to_string(),
+        9 => "I".to_string(),
+        _ => format!("{}", index),
+    }
+}
+
+pub fn handle_mute<F>(
+    parts: &[&str],
+    script_mutes: &mut crate::types::ScriptMutes,
+    variables: &Variables,
+    patterns: &mut PatternStorage,
+    counters: &mut Counters,
+    scripts: &ScriptStorage,
+    script_index: usize,
+    scale: &ScaleState,
+    debug_level: u8,
+    out_qry: bool,
+    out_cfm: bool,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    use crate::eval::eval_expression;
+    use crate::types::{TIER_CONFIRMS, TIER_QUERIES};
+
+    if parts.len() == 1 {
+        if debug_level >= TIER_QUERIES || out_qry {
+            output("SCRIPT MUTES:".to_string());
+            for i in 0..10 {
+                let label = script_id_label(i);
+                let status = if script_mutes.muted[i] { "MUTED" } else { "ACTIVE" };
+                output(format!("  {}: {}", label, status));
+            }
+        }
+        return;
+    }
+
+    let Some(index) = parse_script_id(parts[1]) else {
+        output("ERROR: INVALID SCRIPT ID (USE 1-8, M, I)".to_string());
+        return;
+    };
+
+    if parts.len() == 2 {
+        script_mutes.muted[index] = !script_mutes.muted[index];
+        let label = script_id_label(index);
+        let status = if script_mutes.muted[index] { "MUTED" } else { "ACTIVE" };
+        if debug_level >= TIER_CONFIRMS || out_cfm {
+            output(format!("SCRIPT {}: {}", label, status));
+        }
+        return;
+    }
+
+    if let Some((val, _)) = eval_expression(&parts, 2, variables, patterns, counters, scripts, script_index, scale) {
+        script_mutes.muted[index] = val != 0;
+        let label = script_id_label(index);
+        let status = if script_mutes.muted[index] { "MUTED" } else { "ACTIVE" };
+        if debug_level >= TIER_CONFIRMS || out_cfm {
+            output(format!("SCRIPT {}: {}", label, status));
+        }
+    } else {
+        output("ERROR: INVALID MUTE VALUE EXPRESSION".to_string());
+    }
+}
+
+pub fn handle_page<F>(
+    parts: &[&str],
+    current_page: &mut crate::types::Page,
+    show_grid_view: &mut bool,
+    debug_level: u8,
+    out_cfm: bool,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    use crate::types::{Page, TIER_CONFIRMS};
+
+    if parts.len() < 2 {
+        output("ERROR: PAGE REQUIRES PAGE NAME OR NUMBER".to_string());
+        return;
+    }
+
+    let page_arg = parts[1].to_uppercase();
+    let target_page = match page_arg.as_str() {
+        "LIVE" | "L" => Page::Live,
+        "HELP" | "H" => Page::Help,
+        "GRID" | "G" => {
+            *show_grid_view = true;
+            Page::Live
+        }
+        "1" => Page::Script1,
+        "2" => Page::Script2,
+        "3" => Page::Script3,
+        "4" => Page::Script4,
+        "5" => Page::Script5,
+        "6" => Page::Script6,
+        "7" => Page::Script7,
+        "8" => Page::Script8,
+        "M" => Page::Metro,
+        "I" => Page::Init,
+        "P" => Page::Pattern,
+        "V" => Page::Variables,
+        "N" => Page::Notes,
+        "S" => Page::Scope,
+        _ => {
+            output(format!("ERROR: INVALID PAGE \"{}\"", page_arg));
+            return;
+        }
+    };
+
+    *current_page = target_page;
+
+    if debug_level >= TIER_CONFIRMS || out_cfm {
+        output(format!("PAGE: {}", current_page.name()));
     }
 }

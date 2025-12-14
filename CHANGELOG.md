@@ -1,8 +1,59 @@
 # Changelog
 
+## v0.4.2 (December 2025) - Workflow Enhancement
+
+### New Features
+
+**Script Mutes**
+- Individual mute toggles for scripts 1-8, M (metro), and I (init)
+- Muted scripts skip execution but preserve content
+- Hotkeys: Alt+Shift+1-8, Alt+Shift+M, Alt+Shift+I for quick toggling
+- Commands: MUTE (query), MUTE <id> (toggle), MUTE <id> <0|1> (set)
+- Direct commands: MUTE.1-8, MUTE.M, MUTE.I
+- Visual [MUTED] indicators in script page titles
+- Mute state persists in scenes
+- Enables workflow where scripts can be prepared without executing
+
+**Page Navigation Commands**
+- Programmatic page switching via PAGE command
+- Supported pages: PAGE LIVE, PAGE 1-8, PAGE M, PAGE I, PAGE P, PAGE V, PAGE N, PAGE S, PAGE HELP, PAGE GRID
+- Short aliases: PG (page), L/LIVE, H/HELP, G/GRID
+- Script-controlled UI navigation (works from metro scripts)
+- Enables future animated transitions
+- PAGE GRID sets grid view mode
+
+**Compressor Dry/Wet Mix**
+- Added CR.MIX / CRMIX parameter (0-16383) for parallel compression
+- 0 = 100% dry (bypass compression), 16383 = 100% wet (fully compressed)
+- Dry/wet blending uses XFade2 for smooth crossfading
+- Default 16383 maintains backward compatibility
+- Added to RST defaults and RND.FX randomization
+- Enables parallel compression mixing techniques
+
+### Bug Fixes
+
+**Title Timer Persistence**
+- Fixed TITLE.TIMER setting not persisting correctly on startup
+- Timer now initializes properly when enabled from config
+- title_timer_last_toggle now set to current time when loading enabled timer
+- Eliminates need to "kickstart" timer after restart
+
+### Testing
+
+- All 602 tests passing
+- Updated fx_randomization test to account for CR.MIX parameter
+- Script mutes tested with hotkeys, commands, and scene persistence
+- Page navigation tested across all page types
+
 ## v0.4.12 (December 2025) - Bug Fixes
 
 ### Bug Fixes
+
+**Title Timer Persistence**
+- Fixed TITLE.TIMER setting not persisting correctly on startup
+- Timer now initializes properly when enabled from config
+- title_timer_last_toggle now set to current time when loading enabled timer from config
+- Eliminates need to "kickstart" timer after restart
 
 **Beat Repeat and Pitch Shift Short Aliases**
 - Fixed missing short aliases for beat repeat and pitch shift commands

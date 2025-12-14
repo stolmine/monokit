@@ -605,6 +605,9 @@ where
         "CM" => {
             synth_params::handle_cm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
+        "CR.MIX" => {
+            synth_params::handle_cr_mix(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
         "EL" => {
             synth_params::handle_el(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
@@ -799,13 +802,13 @@ where
             return misc::handle_script(&parts, variables, patterns, counters, scripts, script_index, scale);
         }
         "SAVE" => {
-            scene_cmds::handle_save(&parts, scripts, patterns, notes, current_scene_name, *scramble_enabled, *scramble_mode, *scramble_speed, *scramble_curve, header_scramble, *debug_level, *out_ess, output);
+            scene_cmds::handle_save(&parts, scripts, patterns, notes, current_scene_name, *scramble_enabled, *scramble_mode, *scramble_speed, *scramble_curve, header_scramble, *debug_level, *out_ess, &*ctx.script_mutes, output);
         }
         "LOAD" => {
             if *load_rst {
                 misc::handle_rst(ctx, &mut |_| {})?;
             }
-            if scene_cmds::handle_load(&parts, &mut *ctx.variables, &mut *ctx.scripts, &mut *ctx.patterns, &mut *ctx.notes, &mut *ctx.current_scene_name, *ctx.scramble_enabled, *ctx.scramble_mode, *ctx.scramble_speed, *ctx.scramble_curve, &mut *ctx.header_scramble, *ctx.debug_level, *ctx.out_ess, output) {
+            if scene_cmds::handle_load(&parts, &mut *ctx.variables, &mut *ctx.scripts, &mut *ctx.patterns, &mut *ctx.notes, &mut *ctx.current_scene_name, *ctx.scramble_enabled, *ctx.scramble_mode, *ctx.scramble_speed, *ctx.scramble_curve, &mut *ctx.header_scramble, *ctx.debug_level, *ctx.out_ess, &mut *ctx.script_mutes, output) {
                 log_command(&format!("CMD: {} → DISPATCHED", trimmed));
                 return Ok(vec![9]);
             }
@@ -985,6 +988,20 @@ where
         }
         "COMPAT.MODE" => {
             misc::handle_compat_mode(&parts, ascii_meters, scope_settings, output);
+        }
+        "MUTE" | "MUTE.1" | "MUTE.2" | "MUTE.3" | "MUTE.4" | "MUTE.5" | "MUTE.6" | "MUTE.7" | "MUTE.8" | "MUTE.M" | "MUTE.I" => {
+            let script_mutes = &mut *ctx.script_mutes;
+            let adjusted_parts = if cmd.starts_with("MUTE.") {
+                let script_id = &cmd[5..];
+                vec!["MUTE", script_id]
+            } else {
+                parts.clone()
+            };
+            misc::handle_mute(&adjusted_parts, script_mutes, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_qry, *out_cfm, output);
+        }
+        "PAGE" => {
+            let current_page = &mut *ctx.current_page;
+            misc::handle_page(&parts, current_page, show_grid_view, *debug_level, *out_cfm, output);
         }
         "N1" => {
             counters::handle_n1(counters, *debug_level, *out_qry, output);

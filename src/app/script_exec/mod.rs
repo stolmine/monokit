@@ -70,6 +70,7 @@ impl App {
             show_seq_highlight: &mut self.show_seq_highlight,
             grid_mode: &mut self.grid_mode,
             scope_settings: &mut self.scope_settings,
+            current_page: &mut self.current_page,
             br_len: &mut self.br_len,
             sync_mode: &mut self.sync_mode,
             midi_connection: &mut self.midi_connection,
@@ -96,6 +97,7 @@ impl App {
             color_mode: self.color_mode,
             script_break: &mut self.script_break,
             ev_counters: &mut self.ev_counters,
+            script_mutes: &mut self.script_mutes,
         };
 
         let result = process_command(
@@ -193,6 +195,19 @@ impl App {
         if script_index >= 10 {
             if self.should_output(crate::types::OutputCategory::Error) {
                 self.add_output(format!("INVALID SCRIPT INDEX {}", script_index));
+            }
+            return;
+        }
+
+        if self.script_mutes.muted[script_index] {
+            let script_name = match script_index {
+                0..=7 => format!("SCRIPT {}", script_index + 1),
+                8 => "SCRIPT M".to_string(),
+                9 => "SCRIPT I".to_string(),
+                _ => format!("SCRIPT {}", script_index),
+            };
+            if self.should_output(crate::types::OutputCategory::Confirm) {
+                self.add_output(format!("{} MUTED", script_name));
             }
             return;
         }

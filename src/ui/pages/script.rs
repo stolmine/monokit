@@ -130,10 +130,16 @@ pub fn render_script_page(app: &crate::App, num: u8) -> Paragraph<'static> {
         }
     }
 
+    let title = if app.script_mutes.muted[script_index] {
+        format!(" SCRIPT {} [MUTED] ", num)
+    } else {
+        format!(" SCRIPT {} ", num)
+    };
+
     let mut block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::default().fg(app.theme.border))
-        .title(format!(" SCRIPT {} ", num))
+        .title(title)
         .title_style(Style::default().fg(app.theme.foreground));
 
     if let Some(error_msg) = &app.script_error {

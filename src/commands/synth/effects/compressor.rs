@@ -11,3 +11,4 @@ define_float_param!(handle_cr, "cr", 1.0, 20.0, "CR", "COMPRESSOR RATIO", "Faile
 define_int_param_ms!(handle_ca, "ca", 1, 500, "CA", "COMPRESSOR ATTACK", "Failed to parse compressor attack");
 define_int_param_ms!(handle_cl, "cl", 10, 2000, "CL", "COMPRESSOR RELEASE", "Failed to parse compressor release");
 define_int_param!(handle_cm, "cm", 0, 16383, "CM", "COMPRESSOR MAKEUP GAIN", "Failed to parse compressor makeup gain");
+define_int_param!(handle_cr_mix, "cr_mix", 0, 16383, "CR.MIX", "COMPRESSOR DRY/WET MIX", "Failed to parse compressor dry/wet mix");

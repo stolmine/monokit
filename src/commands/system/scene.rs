@@ -1,4 +1,4 @@
-use crate::types::{NotesStorage, PatternStorage, ScriptStorage, Variables, TIER_ERRORS, TIER_ESSENTIAL, TIER_QUERIES, TIER_CONFIRMS};
+use crate::types::{NotesStorage, PatternStorage, ScriptMutes, ScriptStorage, Variables, TIER_ERRORS, TIER_ESSENTIAL, TIER_QUERIES, TIER_CONFIRMS};
 
 pub fn handle_save<F>(
     parts: &[&str],
@@ -13,6 +13,7 @@ pub fn handle_save<F>(
     header_scramble: &mut Option<crate::scramble::ScrambleAnimation>,
     debug_level: u8,
     out_ess: bool,
+    script_mutes: &ScriptMutes,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -22,7 +23,7 @@ pub fn handle_save<F>(
         return;
     }
     let name = parts[1..].join(" ");
-    let scene = crate::scene::Scene::from_app_state(scripts, patterns, notes);
+    let scene = crate::scene::Scene::from_app_state(scripts, patterns, notes, script_mutes);
     match crate::scene::save_scene(&name, &scene) {
         Ok(()) => {
             *current_scene_name = Some(name.clone());
@@ -55,6 +56,7 @@ pub fn handle_load<F>(
     header_scramble: &mut Option<crate::scramble::ScrambleAnimation>,
     debug_level: u8,
     out_ess: bool,
+    script_mutes: &mut ScriptMutes,
     mut output: F,
 ) -> bool
 where
@@ -67,7 +69,7 @@ where
     let name = parts[1..].join(" ");
     match crate::scene::load_scene(&name) {
         Ok(scene) => {
-            scene.apply_to_app_state(scripts, patterns, notes);
+            scene.apply_to_app_state(scripts, patterns, notes, script_mutes);
             *variables = crate::types::Variables::default();
             *current_scene_name = Some(name.clone());
             let _ = crate::config::save_last_scene(&name);

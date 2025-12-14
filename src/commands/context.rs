@@ -2,8 +2,8 @@ use crate::midi::{MidiConnection, MidiTimingStats};
 use crate::terminal::TerminalCapabilities;
 use crate::theme::Theme;
 use crate::types::{
-    ColorMode, Counters, MetroCommand, NotesStorage, OutputCategory, PatternStorage, ScaleState,
-    ScriptStorage, ScopeSettings, SyncMode, Variables, TIER_CONFIRMS, TIER_ERRORS,
+    ColorMode, Counters, MetroCommand, NotesStorage, OutputCategory, Page, PatternStorage, ScaleState,
+    ScriptMutes, ScriptStorage, ScopeSettings, SyncMode, Variables, TIER_CONFIRMS, TIER_ERRORS,
     TIER_ESSENTIAL, TIER_QUERIES,
 };
 use std::sync::{mpsc::Sender, Arc};
@@ -45,6 +45,7 @@ pub struct ExecutionContext<'a> {
     pub show_seq_highlight: &'a mut bool,
     pub grid_mode: &'a mut u8,
     pub scope_settings: &'a mut ScopeSettings,
+    pub current_page: &'a mut Page,
 
     // System state
     pub br_len: &'a mut usize,
@@ -73,6 +74,7 @@ pub struct ExecutionContext<'a> {
     pub color_mode: ColorMode,
     pub script_break: &'a mut bool,
     pub ev_counters: &'a mut [[u32; 8]; 10],
+    pub script_mutes: &'a mut ScriptMutes,
 }
 
 impl<'a> ExecutionContext<'a> {

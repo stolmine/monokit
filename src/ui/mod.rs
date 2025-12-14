@@ -431,6 +431,36 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     KeyCode::Char('8') if has_alt => {
                         app.go_to_page(Page::Script8);
                     }
+                    KeyCode::Char('1') | KeyCode::Char('!') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                        app.toggle_script_mute(0);
+                    }
+                    KeyCode::Char('2') | KeyCode::Char('@') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                        app.toggle_script_mute(1);
+                    }
+                    KeyCode::Char('3') | KeyCode::Char('#') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                        app.toggle_script_mute(2);
+                    }
+                    KeyCode::Char('4') | KeyCode::Char('$') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                        app.toggle_script_mute(3);
+                    }
+                    KeyCode::Char('5') | KeyCode::Char('%') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                        app.toggle_script_mute(4);
+                    }
+                    KeyCode::Char('6') | KeyCode::Char('^') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                        app.toggle_script_mute(5);
+                    }
+                    KeyCode::Char('7') | KeyCode::Char('&') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                        app.toggle_script_mute(6);
+                    }
+                    KeyCode::Char('8') | KeyCode::Char('*') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                        app.toggle_script_mute(7);
+                    }
+                    KeyCode::Char('M') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                        app.toggle_script_mute(8);
+                    }
+                    KeyCode::Char('I') if has_alt && key.modifiers.contains(KeyModifiers::SHIFT) => {
+                        app.toggle_script_mute(9);
+                    }
                     KeyCode::Up if is_help => {
                         app.help_scroll = app.help_scroll.saturating_sub(1);
                     }

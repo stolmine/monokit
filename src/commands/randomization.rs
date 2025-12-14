@@ -394,6 +394,10 @@ where
     let eh = rng.gen_range(-12..=12);
     metro_tx.send(MetroCommand::SendParam("eh".to_string(), OscType::Int(eh)))?;
 
+    // Compressor (favor wet side for parallel compression)
+    let cr_mix = rng.gen_range(8192..=16383);
+    metro_tx.send(MetroCommand::SendParam("cr_mix".to_string(), OscType::Int(cr_mix)))?;
+
     // Reverb
     let rv = rng.gen_range(0..=10000);
     metro_tx.send(MetroCommand::SendParam("rv".to_string(), OscType::Int(rv)))?;

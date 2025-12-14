@@ -55,6 +55,17 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | Multi-Voice Trigger Indicators (P/C) | Low | **DONE** |
 | RND.PL Fixes (validation & scaling) | Low | **DONE** |
 
+## v0.4.2 Progress (December 2025) - COMPLETE
+
+| Feature | Effort | Status |
+|---------|--------|--------|
+| Script Mutes (hotkeys + commands) | Low | **DONE** |
+| Page Navigation Commands | Low | **DONE** |
+| Title Timer Persistence Fix | Low | **DONE** |
+| Compressor Dry/Wet Mix | Low | **DONE** |
+
+---
+
 ## v0.4.12 Progress (December 2025) - COMPLETE
 
 | Feature | Effort | Status |
@@ -169,7 +180,6 @@ Centralized command execution through ExecutionContext and fixed tier violations
 - **Global Distortion/Saturation** [Low-Medium] - Natural-sounding saturation/distortion effect with antialiasing; options include smooth clipping (SmoothClipS), wavefolding (LockhartWavefolder), analog tape emulation, or waveshaping with proper oversampling to avoid aliasing artifacts; multiple modes for different saturation characters (tube, tape, soft clip, fold)
 - **Page Navigation Commands** [Low] - Commands to programmatically switch pages (LIVE, HELP, GRID, etc.) enabling animated UI transitions and script-controlled navigation
 - **Script Mutes** [Low] - Individual mute toggles for scripts 1-8, M, and I to disable execution without clearing content
-- **Title Timer Persistence** [Low] - Ensure TITLE.TIMER setting persists correctly; currently seems to require kickstarting in some cases
 - **Compressor Dry/Wet** [Low] - Add dry/wet mix control for parallel compression capability
 - **Alias & Command Name Standardization** [Low] - Audit all commands for consistent naming patterns; ensure all parameters have appropriate short-form aliases; standardize canonical form patterns (e.g., CATEGORY.PARAM format); document naming conventions for future development
 - **Dynamic Grid Layout** [Medium] - Responsive UI spacing

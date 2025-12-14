@@ -913,7 +913,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         // Ring Mod
         "RGF" | "RGW" | "RGM" |
         // Compressor
-        "CT" | "CR" | "CA" | "CL" | "CM" |
+        "CT" | "CR" | "CA" | "CL" | "CM" | "CR.MIX" | "CRMIX" |
         // EQ (EL=low, EM=mid, EH=high, EF=freq, EQ=Q bandwidth)
         "EL" | "EM" | "EH" | "EF" | "EQ" |
         // Pan
@@ -1061,6 +1061,33 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
                 return Err(anyhow::anyhow!("COMPAT TAKES NO ARGUMENTS"));
             }
             Ok(())
+        }
+        "MUTE" | "MUTE.1" | "MUTE.2" | "MUTE.3" | "MUTE.4" | "MUTE.5" | "MUTE.6" | "MUTE.7" | "MUTE.8" | "MUTE.M" | "MUTE.I" => {
+            if command.starts_with("MUTE.") {
+                if argc > 1 {
+                    return Err(anyhow::anyhow!("{} TAKES 0-1 ARGUMENTS", command));
+                }
+                Ok(())
+            } else if argc > 2 {
+                return Err(anyhow::anyhow!("MUTE TAKES 0-2 ARGUMENTS"));
+            } else if argc == 1 {
+                validate_script_reference(parts[1])?;
+                Ok(())
+            } else {
+                Ok(())
+            }
+        }
+        "PAGE" | "PG" => {
+            if argc != 1 {
+                return Err(anyhow::anyhow!("PAGE TAKES EXACTLY 1 ARGUMENT"));
+            }
+            let page_arg = parts[1].to_uppercase();
+            match page_arg.as_str() {
+                "LIVE" | "L" | "HELP" | "H" | "GRID" | "G" |
+                "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" |
+                "M" | "I" | "P" | "V" | "N" | "S" => Ok(()),
+                _ => Err(anyhow::anyhow!("INVALID PAGE \"{}\"", page_arg))
+            }
         }
         _ => {
             Err(anyhow::anyhow!("UNKNOWN COMMAND: {}", command))

@@ -1,7 +1,7 @@
 use crate::commands::process_command;
 use crate::midi::{MidiConnection, MidiTimingStats};
 use crate::theme::Theme;
-use crate::types::{Counters, MetroCommand, NotesStorage, PatternStorage, ScaleState, ScriptStorage, SyncMode, Variables};
+use crate::types::{Counters, MetroCommand, NotesStorage, Page, PatternStorage, ScaleState, ScriptStorage, SyncMode, Variables};
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::Arc;
 
@@ -115,6 +115,8 @@ pub struct TestContext {
     pub color_mode: crate::types::ColorMode,
     pub script_break: bool,
     pub ev_counters: [[u32; 8]; 10],
+    pub script_mutes: crate::types::ScriptMutes,
+    pub current_page: Page,
     pub outputs: Vec<String>,
 }
 
@@ -185,6 +187,8 @@ impl Default for TestContext {
             color_mode: crate::types::ColorMode::TrueColor,
             script_break: false,
             ev_counters: [[0; 8]; 10],
+            script_mutes: crate::types::ScriptMutes::default(),
+            current_page: Page::Live,
             outputs: Vec::new(),
         }
     }
@@ -227,6 +231,7 @@ impl TestContext {
             show_seq_highlight: &mut self.show_seq_highlight,
             grid_mode: &mut self.grid_mode,
             scope_settings: &mut self.scope_settings,
+            current_page: &mut self.current_page,
             br_len: &mut self.br_len,
             sync_mode: &mut self.sync_mode,
             midi_connection: &mut self.midi_connection,
@@ -253,6 +258,7 @@ impl TestContext {
             color_mode: self.color_mode,
             script_break: &mut self.script_break,
             ev_counters: &mut self.ev_counters,
+            script_mutes: &mut self.script_mutes,
         };
 
         process_command(

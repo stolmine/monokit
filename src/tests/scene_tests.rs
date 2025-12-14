@@ -1,5 +1,5 @@
 use crate::scene::{sanitize_name, scene_path, Scene, ScenePattern, SceneScript};
-use crate::types::NotesStorage;
+use crate::types::{NotesStorage, ScriptMutes};
 use super::common::{create_test_patterns, create_test_scripts};
 
 #[test]
@@ -27,6 +27,7 @@ fn test_scene_serialization_roundtrip() {
         }],
         pattern_working: 0,
         notes: vec![],
+        script_mutes: vec![],
     };
 
     let json = serde_json::to_string(&scene).unwrap();
@@ -61,7 +62,8 @@ fn test_scene_from_app_state() {
     patterns.working = 2;
 
     let notes = NotesStorage::default();
-    let scene = Scene::from_app_state(&scripts, &patterns, &notes);
+    let script_mutes = ScriptMutes::default();
+    let scene = Scene::from_app_state(&scripts, &patterns, &notes, &script_mutes);
 
     assert_eq!(scene.version, 1);
     assert_eq!(scene.scripts.len(), 10);
@@ -103,13 +105,15 @@ fn test_scene_apply_to_app_state() {
         }],
         pattern_working: 1,
         notes: vec![],
+        script_mutes: vec![],
     };
 
     let mut scripts = create_test_scripts();
     let mut patterns = create_test_patterns();
     let mut notes = NotesStorage::default();
+    let mut script_mutes = ScriptMutes::default();
 
-    scene.apply_to_app_state(&mut scripts, &mut patterns, &mut notes);
+    scene.apply_to_app_state(&mut scripts, &mut patterns, &mut notes, &mut script_mutes);
 
     assert_eq!(scripts.scripts[0].lines[0], "A 10");
     assert_eq!(scripts.scripts[0].lines[1], "B 20");

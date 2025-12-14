@@ -143,10 +143,16 @@ pub fn render_metro_page(app: &crate::App) -> Paragraph<'static> {
         }
     }
 
+    let title = if app.script_mutes.muted[8] {
+        " METRO [MUTED] "
+    } else {
+        " METRO "
+    };
+
     let mut block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::default().fg(app.theme.border))
-        .title(" METRO ")
+        .title(title)
         .title_style(Style::default().fg(app.theme.foreground));
 
     if let Some(error_msg) = &app.script_error {

@@ -59,6 +59,7 @@ static CANONICAL_TO_ALIAS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new
     m.insert("COMP.ATK", "CA");
     m.insert("COMP.REL", "CL");
     m.insert("COMP.MKP", "CM");
+    m.insert("COMP.MIX", "CRMIX");
 
     m.insert("EQ.LOW", "EL");
     m.insert("EQ.MID", "EM");
@@ -141,6 +142,9 @@ static CANONICAL_TO_ALIAS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new
     m.insert("BR.REV", "BRR");
     m.insert("BR.WIN", "BRW");
     m.insert("BR.MIX", "BRX");
+
+    // Page navigation
+    m.insert("PG", "PAGE");
 
     m
 });

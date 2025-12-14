@@ -2,7 +2,7 @@ use crate::midi::{MidiConnection, MidiTimingStats};
 use crate::terminal::TerminalCapabilities;
 use crate::theme::Theme;
 use crate::types::{
-    ColorMode, Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, NotesStorage, OutputCategory, Page, ParamActivity, PatternStorage, ScaleState, ScopeData, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
+    ColorMode, Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, NotesStorage, OutputCategory, Page, ParamActivity, PatternStorage, ScaleState, ScopeData, ScriptMutes, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
     TIER_CONFIRMS, TIER_ERRORS, TIER_ESSENTIAL, TIER_QUERIES,
 };
 use std::sync::mpsc::Sender;
@@ -110,6 +110,7 @@ pub struct App {
     pub autoload: bool,
     pub script_undo_stacks: [UndoStack; 10],
     pub notes_undo_stack: UndoStack,
+    pub script_mutes: ScriptMutes,
 }
 
 impl App {
@@ -194,7 +195,11 @@ impl App {
             title_mode: config.display.title_mode,
             title_timer_enabled: config.display.title_timer_enabled,
             title_timer_interval_secs: config.display.title_timer_interval_secs,
-            title_timer_last_toggle: None,
+            title_timer_last_toggle: if config.display.title_timer_enabled {
+                Some(std::time::Instant::now())
+            } else {
+                None
+            },
             out_err: config.display.out_err,
             out_ess: config.display.out_ess,
             out_qry: config.display.out_qry,
@@ -240,6 +245,13 @@ impl App {
             autoload: config.display.autoload,
             script_undo_stacks: Default::default(),
             notes_undo_stack: UndoStack::new(),
+            script_mutes: ScriptMutes::default(),
+        }
+    }
+
+    pub fn toggle_script_mute(&mut self, index: usize) {
+        if index < 10 {
+            self.script_mutes.muted[index] = !self.script_mutes.muted[index];
         }
     }
 
@@ -416,6 +428,7 @@ impl App {
             show_seq_highlight: &mut self.show_seq_highlight,
             grid_mode: &mut self.grid_mode,
             scope_settings: &mut self.scope_settings,
+            current_page: &mut self.current_page,
             br_len: &mut self.br_len,
             sync_mode: &mut self.sync_mode,
             midi_connection: &mut self.midi_connection,
@@ -442,6 +455,7 @@ impl App {
             color_mode: self.color_mode,
             script_break: &mut self.script_break,
             ev_counters: &mut self.ev_counters,
+            script_mutes: &mut self.script_mutes,
         };
 
         let result = crate::commands::process_command(

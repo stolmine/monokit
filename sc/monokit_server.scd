@@ -85,6 +85,7 @@ s.waitForBoot {
             ca = 10,      // Compressor attack ms (1-500)
             cl = 100,     // Compressor release ms (10-2000)
             cm = 0,       // Compressor makeup gain (0-16383)
+            cr_mix = 16383, // Compressor dry/wet mix (0-16383, default 16383=100% wet)
             el = 0,       // EQ low shelf dB (-24 to +24)
             em = 0,       // EQ mid peak dB (-24 to +24)
             ef = 1000,    // EQ mid frequency Hz (200-8000)
@@ -142,7 +143,7 @@ s.waitForBoot {
         var rmodeSmooth, reverbWetSmooth, rinputGate, rroomSize, reverbInput;
         var lofi, lofiBits, lofiRate, lofiMix;
         var ringMod, ringModOsc, ringModMix;
-        var compressed, compThresh, compRatio;
+        var drySig, wetSig, compressed, compThresh, compRatio, compMixAmt;
         var eqSig;
         var panPos;
         var beatRepeatBufL, beatRepeatBufR, brBufSize, brWritePos, brReadPos, brLoopLen;
@@ -446,17 +447,22 @@ s.waitForBoot {
         amp = Select.kr(vca_mode.clip(0, 1), [1.0, ampEnv]) * volumeSmooth * (1 + (modOsc * modBus * ma * 0.5));
         sig = sig * amp;
 
-        // Compressor
+        // Compressor with dry/wet mix
+        drySig = sig;
         compThresh = (ctSmooth / 16383).clip(0.001, 1);
         compRatio = 1 / cr.clip(1, 20);
-        sig = Compander.ar(sig, sig,
+        wetSig = Compander.ar(sig, sig,
             thresh: compThresh,
             slopeBelow: 1,
             slopeAbove: compRatio,
             clampTime: ca / 1000,
             relaxTime: cl / 1000
         );
-        sig = sig * (1 + (cmSmooth / 16383 * 2));  // Makeup gain (up to 3x)
+        wetSig = wetSig * (1 + (cmSmooth / 16383 * 2));  // Makeup gain (up to 3x)
+
+        // Dry/wet mix (0=100% dry, 16383=100% wet)
+        compMixAmt = Lag.kr(cr_mix / 16383, 0.01);
+        sig = XFade2.ar(drySig, wetSig, compMixAmt * 2 - 1);
 
         // Pan control
         panPos = (panSmooth / 16383).clip(-1, 1);

@@ -311,6 +311,19 @@ impl ScriptStorage {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ScriptMutes {
+    pub muted: [bool; 10],
+}
+
+impl Default for ScriptMutes {
+    fn default() -> Self {
+        Self {
+            muted: [false; 10],
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NotesStorage {
     pub lines: [String; 8],
 }

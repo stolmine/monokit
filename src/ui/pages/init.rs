@@ -132,10 +132,16 @@ pub fn render_init_page(app: &crate::App) -> Paragraph<'static> {
         }
     }
 
+    let title = if app.script_mutes.muted[9] {
+        " INIT [MUTED] "
+    } else {
+        " INIT "
+    };
+
     let mut block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::default().fg(app.theme.border))
-        .title(" INIT ")
+        .title(title)
         .title_style(Style::default().fg(app.theme.foreground));
 
     if let Some(error_msg) = &app.script_error {

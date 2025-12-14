@@ -1,5 +1,6 @@
 mod aliases;
 pub mod common;
+pub mod context;
 mod core;
 mod gate;
 mod patterns;
@@ -53,66 +54,70 @@ fn log_command(msg: &str) {
 }
 
 pub fn process_command<F>(
-    metro_tx: &Sender<MetroCommand>,
-    metro_interval: &mut u64,
-    br_len: &mut usize,
-    sync_mode: &mut SyncMode,
-    midi_connection: &mut Option<MidiConnection>,
-    midi_timing_stats: &Arc<MidiTimingStats>,
-    variables: &mut Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &mut ScriptStorage,
-    script_index: usize,
-    scale: &mut ScaleState,
-    theme: &mut Theme,
-    debug_level: &mut u8,
-    activity_hold_ms: &mut f32,
-    show_cpu: &mut bool,
-    show_bpm: &mut bool,
-    header_level: &mut u8,
-    limiter_enabled: &mut bool,
-    notes: &mut crate::types::NotesStorage,
-    load_rst: &mut bool,
-    load_clr: &mut bool,
-    vca_mode: &mut bool,
-    show_conditional_highlight: &mut bool,
-    scope_settings: &mut crate::types::ScopeSettings,
-    show_meters_header: &mut bool,
-    show_meters_grid: &mut bool,
-    show_spectrum: &mut bool,
-    show_activity: &mut bool,
-    show_grid: &mut bool,
-    show_grid_view: &mut bool,
-    show_seq_highlight: &mut bool,
-    grid_mode: &mut u8,
-    current_scene_name: &mut Option<String>,
-    title_mode: &mut u8,
-    title_timer_enabled: &mut bool,
-    title_timer_interval_secs: &mut u16,
-    title_timer_last_toggle: &mut Option<std::time::Instant>,
-    out_err: &mut bool,
-    out_ess: &mut bool,
-    out_qry: &mut bool,
-    out_cfm: &mut bool,
-    audio_devices: &[String],
-    header_scramble: &mut Option<crate::scramble::ScrambleAnimation>,
-    scramble_enabled: &mut bool,
-    scramble_mode: &mut u8,
-    scramble_speed: &mut u8,
-    scramble_curve: &mut u8,
-    ascii_meters: &mut bool,
-    autoload: &mut bool,
-    terminal_caps: &crate::terminal::TerminalCapabilities,
-    color_mode: crate::types::ColorMode,
-    script_break: &mut bool,
-    ev_counters: &mut [[u32; 8]; 10],
+    ctx: &mut context::ExecutionContext,
     input: &str,
     mut output: F,
 ) -> Result<Vec<usize>>
 where
     F: FnMut(String),
 {
+    // Extract fields from context for backward compatibility with existing command handlers
+    // Use reborrowing for mutable references to avoid moving
+    let metro_tx = ctx.metro_tx;
+    let metro_interval = &mut *ctx.metro_interval;
+    let variables = &mut *ctx.variables;
+    let patterns = &mut *ctx.patterns;
+    let counters = &mut *ctx.counters;
+    let scripts = &mut *ctx.scripts;
+    let script_index = ctx.script_index;
+    let scale = &mut *ctx.scale;
+    let theme = &mut *ctx.theme;
+    let debug_level = &mut *ctx.debug_level;
+    let activity_hold_ms = &mut *ctx.activity_hold_ms;
+    let show_cpu = &mut *ctx.show_cpu;
+    let show_bpm = &mut *ctx.show_bpm;
+    let header_level = &mut *ctx.header_level;
+    let limiter_enabled = &mut *ctx.limiter_enabled;
+    let notes = &mut *ctx.notes;
+    let load_rst = &mut *ctx.load_rst;
+    let load_clr = &mut *ctx.load_clr;
+    let vca_mode = &mut *ctx.vca_mode;
+    let show_conditional_highlight = &mut *ctx.show_conditional_highlight;
+    let scope_settings = &mut *ctx.scope_settings;
+    let show_meters_header = &mut *ctx.show_meters_header;
+    let show_meters_grid = &mut *ctx.show_meters_grid;
+    let show_spectrum = &mut *ctx.show_spectrum;
+    let show_activity = &mut *ctx.show_activity;
+    let show_grid = &mut *ctx.show_grid;
+    let show_grid_view = &mut *ctx.show_grid_view;
+    let show_seq_highlight = &mut *ctx.show_seq_highlight;
+    let grid_mode = &mut *ctx.grid_mode;
+    let current_scene_name = &mut *ctx.current_scene_name;
+    let title_mode = &mut *ctx.title_mode;
+    let title_timer_enabled = &mut *ctx.title_timer_enabled;
+    let title_timer_interval_secs = &mut *ctx.title_timer_interval_secs;
+    let title_timer_last_toggle = &mut *ctx.title_timer_last_toggle;
+    let out_err = &mut *ctx.out_err;
+    let out_ess = &mut *ctx.out_ess;
+    let out_qry = &mut *ctx.out_qry;
+    let out_cfm = &mut *ctx.out_cfm;
+    let audio_devices = ctx.audio_devices;
+    let header_scramble = &mut *ctx.header_scramble;
+    let scramble_enabled = &mut *ctx.scramble_enabled;
+    let scramble_mode = &mut *ctx.scramble_mode;
+    let scramble_speed = &mut *ctx.scramble_speed;
+    let scramble_curve = &mut *ctx.scramble_curve;
+    let ascii_meters = &mut *ctx.ascii_meters;
+    let autoload = &mut *ctx.autoload;
+    let terminal_caps = ctx.terminal_caps;
+    let color_mode = ctx.color_mode;
+    let script_break = &mut *ctx.script_break;
+    let ev_counters = &mut *ctx.ev_counters;
+    let br_len = &mut *ctx.br_len;
+    let sync_mode = &mut *ctx.sync_mode;
+    let midi_connection = &mut *ctx.midi_connection;
+    let midi_timing_stats = ctx.midi_timing_stats;
+
     let trimmed = input.trim();
 
     if trimmed.is_empty() {
@@ -133,196 +138,196 @@ where
 
     match cmd.as_str() {
         "A" => {
-            variables::handle_variable_a(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_qry, *out_cfm, output);
+            variables::handle_variable_a(&parts, ctx, output);
         }
         "B" => {
-            variables::handle_variable_b(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_qry, *out_cfm, output);
+            variables::handle_variable_b(&parts, ctx, output);
         }
         "C" => {
-            variables::handle_variable_c(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_qry, *out_cfm, output);
+            variables::handle_variable_c(&parts, ctx, output);
         }
         "D" => {
-            variables::handle_variable_d(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_qry, *out_cfm, output);
+            variables::handle_variable_d(&parts, ctx, output);
         }
         "I" => {
-            variables::handle_variable_i(&parts, variables, *debug_level, *out_err, *out_qry, *out_cfm, output);
+            variables::handle_variable_i(&parts, ctx, output);
         }
         "X" => {
-            variables::handle_variable_x(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_qry, *out_cfm, output);
+            variables::handle_variable_x(&parts, ctx, output);
         }
         "Y" => {
-            variables::handle_variable_y(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_qry, *out_cfm, output);
+            variables::handle_variable_y(&parts, ctx, output);
         }
         "Z" => {
-            variables::handle_variable_z(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_qry, *out_cfm, output);
+            variables::handle_variable_z(&parts, ctx, output);
         }
         "T" => {
-            variables::handle_variable_t(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_qry, *out_cfm, output);
+            variables::handle_variable_t(&parts, ctx, output);
         }
         "J" => {
-            variables::handle_variable_j(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            variables::handle_variable_j(&parts, ctx, output)?;
         }
         "K" => {
-            variables::handle_variable_k(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            variables::handle_variable_k(&parts, ctx, output)?;
         }
         "P.N" => {
-            patterns::handle_pattern_n(&parts, patterns, *debug_level, *out_err, *out_qry, *out_cfm, output);
+            patterns::handle_pattern_n(&parts, ctx, output);
         }
         "P.L" => {
-            patterns::handle_pattern_l(&parts, patterns, *debug_level, *out_err, *out_qry, *out_cfm, output);
+            patterns::handle_pattern_l(&parts, ctx, output);
         }
         "P.I" => {
-            patterns::handle_pattern_i(&parts, patterns, *debug_level, *out_err, *out_qry, *out_cfm, output);
+            patterns::handle_pattern_i(&parts, ctx, output);
         }
         "P.HERE" => {
-            patterns::handle_pattern_here(patterns, *debug_level, *out_err, *out_qry, *out_cfm, output);
+            patterns::handle_pattern_here(ctx, output);
         }
         "P.NEXT" => {
-            patterns::handle_pattern_next(patterns, *debug_level, *out_err, *out_qry, *out_cfm, output);
+            patterns::handle_pattern_next(ctx, output);
         }
         "P.PREV" => {
-            patterns::handle_pattern_prev(patterns, *debug_level, *out_err, *out_qry, *out_cfm, output);
+            patterns::handle_pattern_prev(ctx, output);
         }
         "P.PUSH" => {
-            patterns::handle_pattern_push(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pattern_push(&parts, ctx, output)?;
         }
         "P.POP" => {
-            patterns::handle_pattern_pop(patterns, *debug_level, *out_err, *out_qry, *out_cfm, output);
+            patterns::handle_pattern_pop(ctx, output);
         }
         "P.INS" => {
-            patterns::handle_pattern_ins(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pattern_ins(&parts, ctx, output)?;
         }
         "P.RM" => {
-            patterns::handle_pattern_rm(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pattern_rm(&parts, ctx, output)?;
         }
         "P.REV" => {
-            patterns::handle_pattern_rev(patterns, *debug_level, *out_err, *out_qry, *out_cfm, output);
+            patterns::handle_pattern_rev(ctx, output);
         }
         "P.ROT" => {
-            patterns::handle_pattern_rot(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pattern_rot(&parts, ctx, output)?;
         }
         "P.SHUF" => {
-            patterns::handle_pattern_shuf(patterns, *debug_level, *out_err, *out_qry, *out_cfm, output);
+            patterns::handle_pattern_shuf(ctx, output);
         }
         "P.SORT" => {
-            patterns::handle_pattern_sort(patterns, *debug_level, *out_err, *out_qry, *out_cfm, output);
+            patterns::handle_pattern_sort(ctx, output);
         }
         "P.RND" => {
-            patterns::handle_pattern_rnd(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pattern_rnd(&parts, ctx, output)?;
         }
         "P.ADD" => {
-            patterns::handle_pattern_add(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pattern_add(&parts, ctx, output)?;
         }
         "P.SUB" => {
-            patterns::handle_pattern_sub(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pattern_sub(&parts, ctx, output)?;
         }
         "P.MUL" => {
-            patterns::handle_pattern_mul(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pattern_mul(&parts, ctx, output)?;
         }
         "P.DIV" => {
-            patterns::handle_pattern_div(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pattern_div(&parts, ctx, output)?;
         }
         "P.MOD" => {
-            patterns::handle_pattern_mod(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pattern_mod(&parts, ctx, output)?;
         }
         "P.SCALE" => {
-            patterns::handle_pattern_scale(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pattern_scale(&parts, ctx, output)?;
         }
         "P.MIN" => {
-            patterns::handle_pattern_min(patterns, *debug_level, *out_err, *out_qry, *out_cfm, output);
+            patterns::handle_pattern_min(ctx, output);
         }
         "P.MAX" => {
-            patterns::handle_pattern_max(patterns, *debug_level, *out_err, *out_qry, *out_cfm, output);
+            patterns::handle_pattern_max(ctx, output);
         }
         "P.SUM" => {
-            patterns::handle_pattern_sum(patterns, *debug_level, *out_err, *out_qry, *out_cfm, output);
+            patterns::handle_pattern_sum(ctx, output);
         }
         "P.AVG" => {
-            patterns::handle_pattern_avg(patterns, *debug_level, *out_err, *out_qry, *out_cfm, output);
+            patterns::handle_pattern_avg(ctx, output);
         }
         "P.FND" => {
-            patterns::handle_pattern_fnd(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pattern_fnd(&parts, ctx, output)?;
         }
         "P" => {
-            patterns::handle_pattern(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pattern(&parts, ctx, output)?;
         }
         "PN.L" => {
-            patterns::handle_pn_l(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_l(&parts, ctx, output)?;
         }
         "PN.I" => {
-            patterns::handle_pn_i(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_i(&parts, ctx, output)?;
         }
         "PN.HERE" => {
-            patterns::handle_pn_here(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_here(&parts, ctx, output)?;
         }
         "PN.NEXT" => {
-            patterns::handle_pn_next(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_next(&parts, ctx, output)?;
         }
         "PN.PREV" => {
-            patterns::handle_pn_prev(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_prev(&parts, ctx, output)?;
         }
         "PN.PUSH" => {
-            patterns::handle_pn_push(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_push(&parts, ctx, output)?;
         }
         "PN.POP" => {
-            patterns::handle_pn_pop(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_pop(&parts, ctx, output)?;
         }
         "PN.INS" => {
-            patterns::handle_pn_ins(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_ins(&parts, ctx, output)?;
         }
         "PN.RM" => {
-            patterns::handle_pn_rm(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_rm(&parts, ctx, output)?;
         }
         "PN.REV" => {
-            patterns::handle_pn_rev(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_rev(&parts, ctx, output)?;
         }
         "PN.ROT" => {
-            patterns::handle_pn_rot(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_rot(&parts, ctx, output)?;
         }
         "PN.SHUF" => {
-            patterns::handle_pn_shuf(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_shuf(&parts, ctx, output)?;
         }
         "PN.SORT" => {
-            patterns::handle_pn_sort(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_sort(&parts, ctx, output)?;
         }
         "PN.RND" => {
-            patterns::handle_pn_rnd(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_rnd(&parts, ctx, output)?;
         }
         "PN.ADD" => {
-            patterns::handle_pn_add(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_add(&parts, ctx, output)?;
         }
         "PN.SUB" => {
-            patterns::handle_pn_sub(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_sub(&parts, ctx, output)?;
         }
         "PN.MUL" => {
-            patterns::handle_pn_mul(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_mul(&parts, ctx, output)?;
         }
         "PN.DIV" => {
-            patterns::handle_pn_div(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_div(&parts, ctx, output)?;
         }
         "PN.MOD" => {
-            patterns::handle_pn_mod(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_mod(&parts, ctx, output)?;
         }
         "PN.SCALE" => {
-            patterns::handle_pn_scale(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_scale(&parts, ctx, output)?;
         }
         "PN.MIN" => {
-            patterns::handle_pn_min(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_min(&parts, ctx, output)?;
         }
         "PN.MAX" => {
-            patterns::handle_pn_max(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_max(&parts, ctx, output)?;
         }
         "PN.SUM" => {
-            patterns::handle_pn_sum(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_sum(&parts, ctx, output)?;
         }
         "PN.AVG" => {
-            patterns::handle_pn_avg(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_avg(&parts, ctx, output)?;
         }
         "PN.FND" => {
-            patterns::handle_pn_fnd(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn_fnd(&parts, ctx, output)?;
         }
         "PN" => {
-            patterns::handle_pn(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_err, *out_qry, *out_cfm, output)?;
+            patterns::handle_pn(&parts, ctx, output)?;
         }
         "PL.DEC" | "PLD" => {
             synth_params::handle_pl_dec(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
@@ -346,43 +351,43 @@ where
             synth_params::handle_pl_timb(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "PLTR" => {
-            misc::handle_pltr(metro_tx, *debug_level, *out_cfm, output)?;
+            misc::handle_pltr(ctx, output)?;
         }
         "PLV" => {
             synth_params::handle_plv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "TR" => {
-            misc::handle_tr(metro_tx, *debug_level, *out_cfm, output)?;
+            misc::handle_tr(ctx, output)?;
         }
         "BRK" => {
             *script_break = true;
         }
         "VOL" => {
-            misc::handle_vol(&parts, metro_tx, *debug_level, *out_cfm, output)?;
+            misc::handle_vol(&parts, ctx, output)?;
         }
         "M" => {
-            metro_cmds::handle_m(&parts, metro_interval, metro_tx, *debug_level, *out_qry, *out_ess, output)?;
+            metro_cmds::handle_m(&parts, ctx, output)?;
         }
         "M.BPM" => {
-            metro_cmds::handle_m_bpm(&parts, metro_interval, metro_tx, *debug_level, *out_ess, output)?;
+            metro_cmds::handle_m_bpm(&parts, ctx, output)?;
         }
         "M.ACT" => {
-            metro_cmds::handle_m_act(&parts, metro_tx, *debug_level, *out_ess, output)?;
+            metro_cmds::handle_m_act(&parts, ctx, output)?;
         }
         "M.SCRIPT" => {
-            metro_cmds::handle_m_script(&parts, metro_tx, *debug_level, *out_ess, output)?;
+            metro_cmds::handle_m_script(&parts, ctx, output)?;
         }
         "M.SYNC" => {
-            metro_cmds::handle_m_sync(&parts, sync_mode, metro_tx, *debug_level, *out_qry, *out_ess, output)?;
+            metro_cmds::handle_m_sync(&parts, ctx, output)?;
         }
         "MIDI.IN" | "MIDI" => {
-            midi_cmds::handle_midi_in(&parts, metro_tx, midi_connection, midi_timing_stats, output)?;
+            midi_cmds::handle_midi_in(&parts, ctx, output)?;
         }
         "MIDI.DIAG" => {
-            midi_cmds::handle_midi_diag(&parts, metro_tx, midi_timing_stats, output)?;
+            midi_cmds::handle_midi_diag(&parts, ctx, output)?;
         }
         "SC.DIAG" => {
-            sc_cmds::handle_sc_diag(&parts, metro_tx, output)?;
+            sc_cmds::handle_sc_diag(&parts, ctx, output)?;
         }
         "AUDIO.OUT" | "AUDIO" => {
             system::handle_audio_out(&parts, metro_tx, audio_devices, output)?;
@@ -649,10 +654,10 @@ where
             synth_params::handle_ps_targ(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "SLEW" => {
-            slew::handle_slew(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
+            slew::handle_slew(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, *out_cfm, output)?;
         }
         "SLEW.ALL" => {
-            slew::handle_slew_all(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
+            slew::handle_slew_all(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, *out_cfm, output)?;
         }
         "AENV.ATK" | "AA" => {
             synth_params::handle_aenv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
@@ -715,7 +720,7 @@ where
             gate::handle_flev_gate(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
         }
         "RST" => {
-            misc::handle_rst(metro_tx, vca_mode, *debug_level, *out_ess, output)?;
+            misc::handle_rst(ctx, output)?;
         }
         "RND" => {
             random_ops::handle_rnd(&parts, output)?;
@@ -798,9 +803,9 @@ where
         }
         "LOAD" => {
             if *load_rst {
-                misc::handle_rst(metro_tx, vca_mode, *debug_level, *out_ess, &mut |_| {})?;
+                misc::handle_rst(ctx, &mut |_| {})?;
             }
-            if scene_cmds::handle_load(&parts, variables, scripts, patterns, notes, current_scene_name, *scramble_enabled, *scramble_mode, *scramble_speed, *scramble_curve, header_scramble, *debug_level, *out_ess, output) {
+            if scene_cmds::handle_load(&parts, &mut *ctx.variables, &mut *ctx.scripts, &mut *ctx.patterns, &mut *ctx.notes, &mut *ctx.current_scene_name, *ctx.scramble_enabled, *ctx.scramble_mode, *ctx.scramble_speed, *ctx.scramble_curve, &mut *ctx.header_scramble, *ctx.debug_level, *ctx.out_ess, output) {
                 log_command(&format!("CMD: {} → DISPATCHED", trimmed));
                 return Ok(vec![9]);
             }

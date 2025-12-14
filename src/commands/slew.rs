@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_CONFIRMS};
 use anyhow::{Context, Result};
 use std::sync::mpsc::Sender;
 
@@ -18,6 +18,7 @@ pub fn handle_slew<F>(
     scale: &ScaleState,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    out_cfm: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -50,7 +51,7 @@ where
     metro_tx
         .send(MetroCommand::SetParamSlew(param_name, time_sec))
         .context("Failed to send param slew to metro thread")?;
-    if debug_level >= 1 {
+    if debug_level >= TIER_CONFIRMS || out_cfm {
         output(format!("SET {} SLEW TIME TO {} MS", param_input, value_ms));
     }
     Ok(())
@@ -66,6 +67,7 @@ pub fn handle_slew_all<F>(
     scale: &ScaleState,
     metro_tx: &Sender<MetroCommand>,
     debug_level: u8,
+    out_cfm: bool,
     mut output: F,
 ) -> Result<()>
 where
@@ -90,7 +92,7 @@ where
     metro_tx
         .send(MetroCommand::SetSlewTime(time_sec))
         .context("Failed to send slew time to metro thread")?;
-    if debug_level >= 1 {
+    if debug_level >= TIER_CONFIRMS || out_cfm {
         output(format!("SET SLEW TIME TO {} MS", value_ms));
     }
     Ok(())

@@ -626,31 +626,31 @@ where
         "VCA" => {
             synth_params::handle_vca(&parts, vca_mode, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_qry, *out_cfm, output)?;
         }
-        "BR.LEN" => {
+        "BR.LEN" | "BRL" => {
             synth_params::handle_br_len(&parts, *metro_interval, br_len, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "BR.REV" => {
+        "BR.REV" | "BRR" => {
             synth_params::handle_br_rev(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "BR.WIN" => {
+        "BR.WIN" | "BRW" => {
             synth_params::handle_br_win(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "BR.MIX" => {
+        "BR.MIX" | "BRX" => {
             synth_params::handle_br_mix(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "PS.MODE" => {
+        "PS.MODE" | "PSM" => {
             synth_params::handle_ps_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "PS.SEMI" => {
+        "PS.SEMI" | "PSS" => {
             synth_params::handle_ps_semi(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "PS.GRAIN" => {
+        "PS.GRAIN" | "PSG" => {
             synth_params::handle_ps_grain(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "PS.MIX" => {
+        "PS.MIX" | "PSX" => {
             synth_params::handle_ps_mix(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "PS.TARG" => {
+        "PS.TARG" | "PST" => {
             synth_params::handle_ps_targ(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "SLEW" => {

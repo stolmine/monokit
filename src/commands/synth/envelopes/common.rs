@@ -15,6 +15,7 @@ macro_rules! define_int_param {
             script_index: usize,
             metro_tx: &Sender<MetroCommand>,
             debug_level: u8,
+            out_err: bool,
             scale: &ScaleState,
             mut output: F,
         ) -> Result<()>
@@ -22,14 +23,16 @@ macro_rules! define_int_param {
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                output(format!(
-                    "ERROR: {} REQUIRES A {} VALUE ({}-{} {})",
-                    $error_prefix,
-                    if $unit.is_empty() { "VALUE" } else { "TIME" },
-                    $min,
-                    $max,
-                    $unit
-                ));
+                if debug_level >= crate::types::TIER_ERRORS || out_err {
+                    output(format!(
+                        "ERROR: {} REQUIRES A {} VALUE ({}-{} {})",
+                        $error_prefix,
+                        if $unit.is_empty() { "VALUE" } else { "TIME" },
+                        $min,
+                        $max,
+                        $unit
+                    ));
+                }
                 return Ok(());
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(
@@ -49,10 +52,12 @@ macro_rules! define_int_param {
                     .context(format!("Failed to parse {}", $output_desc.to_lowercase()))?
             };
             if !($min..=$max).contains(&value) {
-                output(format!(
-                    "ERROR: {} MUST BE BETWEEN {} AND {} {}",
-                    $output_desc, $min, $max, $unit
-                ));
+                if debug_level >= crate::types::TIER_ERRORS || out_err {
+                    output(format!(
+                        "ERROR: {} MUST BE BETWEEN {} AND {} {}",
+                        $output_desc, $min, $max, $unit
+                    ));
+                }
                 return Ok(());
             }
             metro_tx
@@ -85,6 +90,7 @@ macro_rules! define_float_param {
             script_index: usize,
             metro_tx: &Sender<MetroCommand>,
             debug_level: u8,
+            out_err: bool,
             scale: &ScaleState,
             mut output: F,
         ) -> Result<()>
@@ -92,10 +98,12 @@ macro_rules! define_float_param {
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                output(format!(
-                    "ERROR: {} REQUIRES A VALUE ({} TO {})",
-                    $error_prefix, $min, $max
-                ));
+                if debug_level >= crate::types::TIER_ERRORS || out_err {
+                    output(format!(
+                        "ERROR: {} REQUIRES A VALUE ({} TO {})",
+                        $error_prefix, $min, $max
+                    ));
+                }
                 return Ok(());
             }
             let value: f32 = if let Some((expr_val, _)) = eval_expression(
@@ -115,10 +123,12 @@ macro_rules! define_float_param {
                     .context(format!("Failed to parse {}", $output_desc.to_lowercase()))?
             };
             if !($min..=$max).contains(&value) {
-                output(format!(
-                    "ERROR: {} MUST BE BETWEEN {} AND {}",
-                    $output_desc, $min, $max
-                ));
+                if debug_level >= crate::types::TIER_ERRORS || out_err {
+                    output(format!(
+                        "ERROR: {} MUST BE BETWEEN {} AND {}",
+                        $output_desc, $min, $max
+                    ));
+                }
                 return Ok(());
             }
             metro_tx

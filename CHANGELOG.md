@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.4.21 (December 2025) - MiClouds Gain Boost
+
+### Improvements
+
+**MiClouds Output Level**
+- Increased MiClouds output gain from 1x to 2.69x
+- Makes the granular effect much more present in the mix
+- Equivalent to running CLG (input gain) at 11000 on the output
+- Users can still control level via CL.WET (dry/wet mix) and CL.GAIN (input level)
+
+---
+
 ## v0.4.3 (December 2025) - MiClouds Granular Effect
 
 ### New Features

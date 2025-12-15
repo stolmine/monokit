@@ -72,6 +72,25 @@
 
 ### New Features
 
+**MiClouds Granular Effect (14 Commands)**
+- All 14 Clouds commands added and validated
+- CL.TRIG / CLTR - Trigger grain playback from buffer
+- CL.PITCH / CLP - Pitch control (0-16383, 8192=center)
+- CL.POS / CLO - Buffer read position
+- CL.SIZE / CLS - Grain size
+- CL.DENS / CLD - Grain density
+- CL.TEX / CLT - Texture/character
+- CL.WET / CLW - Wet/dry mix (activates effect)
+- CL.GAIN / CLG - Input gain (8192=unity)
+- CL.SPREAD / CLSP - Stereo spread
+- CL.RVB / CLRV - Internal reverb (alias fixed)
+- CL.FB / CLF - Feedback amount
+- CL.FREEZE / CLFZ - Freeze buffer recording
+- CL.MODE / CLM - Processing mode (0-3)
+- CL.LOFI / CLLO - Lo-fi sample rate reduction
+- Integrated with RND.FX and RST commands
+- Placed after pan, before beat repeat in signal chain
+
 **Script Mutes**
 - Individual mute toggles for scripts 1-8, M (metro), and I (init)
 - Muted scripts skip execution but preserve content
@@ -100,6 +119,16 @@
 
 ### Bug Fixes
 
+**DC (Discontinuity) Command Fix**
+- Fixed DC command modulator routing issue
+- DC parameter now correctly modulates discontinuity amount
+- Discontinuity effect now works as expected
+
+**CLR Alias Conflict Resolution**
+- CLR alias reserved for CLEAR command only
+- Clouds reverb uses CLRV alias (CL.RVB canonical form)
+- Eliminates command name collision
+
 **Title Timer Persistence**
 - Fixed TITLE.TIMER setting not persisting correctly on startup
 - Timer now initializes properly when enabled from config
@@ -112,6 +141,7 @@
 - Updated fx_randomization test to account for CR.MIX parameter
 - Script mutes tested with hotkeys, commands, and scene persistence
 - Page navigation tested across all page types
+- All 14 Clouds commands validated and tested
 
 ## v0.4.12 (December 2025) - Bug Fixes
 

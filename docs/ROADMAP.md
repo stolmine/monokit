@@ -73,6 +73,11 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | Page Navigation Commands | Low | **DONE** |
 | Title Timer Persistence Fix | Low | **DONE** |
 | Compressor Dry/Wet Mix | Low | **DONE** |
+| DC (Discontinuity) Fix | Low | **DONE** |
+| MiClouds Commands (14 total) | Low-Medium | **DONE** |
+| CLR Alias Conflict Resolution | Low | **DONE** |
+
+**MiClouds Granular Effect** - All 14 Clouds commands (CL.*) added and validated. Fixed DC command modulator routing. Resolved CLR alias conflict (CLR=CLEAR, clouds reverb uses CLRV). Full integration with RND.FX and RST.
 
 ---
 

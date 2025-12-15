@@ -43,8 +43,13 @@ Quick reference and links to all project documentation.
 
 ---
 
-## Current Status (v0.4.2.1 - Complete)
+## Current Status (v0.4.3 - Complete)
 
+| Feature | Status |
+|---------|--------|
+| MiClouds Granular Effect (14 commands) | **DONE** |
+
+### v0.4.2.1 (Complete)
 | Feature | Status |
 |---------|--------|
 | Script Mutes (Ctrl+Shift+1-8/M/I) | **DONE** |
@@ -52,6 +57,13 @@ Quick reference and links to all project documentation.
 | Compressor Dry/Wet Mix (CR.MIX) | **DONE** |
 | Hotkey Improvements (Ctrl+Q quit) | **DONE** |
 | Error Message Formatting (≤46 chars) | **DONE** |
+
+### v0.4.2 (Complete)
+| Feature | Status |
+|---------|--------|
+| MiClouds Commands (CL.*) | **DONE** |
+| DC Command Fix | **DONE** |
+| CLR vs CLRV Alias Fix | **DONE** |
 
 ### v0.4.11 (Complete)
 | Feature | Status |

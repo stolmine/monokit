@@ -321,7 +321,7 @@ MiClouds continuously records incoming audio into its buffer. Use `CL.TRIG` to t
 **Processing:**
 - `CL.GAIN` / `CLG <0-16383>` - Input gain (8192=unity)
 - `CL.SPREAD` / `CLSP <0-16383>` - Stereo spread
-- `CL.RVB` / `CLR <0-16383>` - Internal reverb
+- `CL.RVB` / `CLRV <0-16383>` - Internal reverb
 - `CL.FB` / `CLF <0-16383>` - Feedback (>10000 risky!)
 - `CL.FREEZE` / `CLFZ <0|1>` - Freeze buffer recording
 - `CL.MODE` / `CLM <0-3>` - Mode (0=Granular, 1=Pitch, 2=Looping, 3=Spectral)
@@ -1437,7 +1437,7 @@ Notes are saved with scenes. 8 lines maximum.
 | `CL.WET <0-16383>` | `CLW` | Wet mix (activates) |
 | `CL.GAIN <0-16383>` | `CLG` | Input gain (8192=1x) |
 | `CL.SPREAD <0-16383>` | `CLSP` | Stereo spread |
-| `CL.RVB <0-16383>` | `CLR` | Internal reverb |
+| `CL.RVB <0-16383>` | `CLRV` | Internal reverb |
 | `CL.FB <0-16383>` | `CLF` | Feedback |
 | `CL.FREEZE <0\|1>` | `CLFZ` | Freeze buffer |
 | `CL.MODE <0-3>` | `CLM` | Mode (Gran/Pitch/Loop/Spec) |

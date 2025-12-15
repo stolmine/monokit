@@ -723,7 +723,9 @@ SynthDef(\monokit_mod, {
         SinOscFB.ar(modulatorFreq, fbAmount * 2)
     ]);
 
-    Out.ar(modBus, modOsc * mvSmooth);
+    // Output unscaled modOsc for routing/modulation
+    // MV controls audible level only, not modulation strength
+    Out.ar(modBus, modOsc);
 }).writeDefFile(synthdefs_dir);
 
 "  monokit_mod.scsyndef".postln;
@@ -861,6 +863,7 @@ SynthDef(\monokit_main, {
     // Defaults match RST command values
     arg pf = 131,     // Primary freq (C3) - needed for tracking
         mf = 262,     // Mod freq (C4) - needed for tracking
+        mv = 0,       // Modulator volume (audible level only, not routing)
         dc = 0,
         dm = 0,
         mb = 0,
@@ -925,6 +928,21 @@ SynthDef(\monokit_main, {
         ps_grain = 20, // Pitch shift grain size ms (5-100)
         ps_mix = 0,   // Pitch shift mix (0-16383)
         ps_targ = 0,  // Pitch shift target (0=main, 1=repeat)
+        // MiClouds granular effect parameters
+        t_cl_trig = 0,    // Trigger grain playback
+        cl_pitch = 8192,  // Pitch (0-16383, 8192=center/no transpose)
+        cl_pos = 8192,    // Buffer position (0-16383)
+        cl_size = 8192,   // Grain size (0-16383)
+        cl_dens = 8192,   // Density (0-16383)
+        cl_tex = 8192,    // Texture (0-16383)
+        cl_wet = 0,       // Wet mix (0-16383)
+        cl_gain = 8192,   // Input gain (0-16383, 8192=1.0)
+        cl_spread = 8192, // Stereo spread (0-16383)
+        cl_rvb = 0,       // Internal reverb (0-16383)
+        cl_fb = 0,        // Feedback (0-16383)
+        cl_freeze = 0,    // Freeze (0/1)
+        cl_mode = 0,      // Mode (0-3)
+        cl_lofi = 0,      // Lo-fi (0-16383)
         limit = 1,    // Limiter enabled (0-1)
         vca_mode = 1, // VCA mode (0=drone, 1=gate)
         volume = 1,
@@ -948,7 +966,7 @@ SynthDef(\monokit_main, {
 
     // All var declarations at top
     var trig, ampEnv, dcEnv, filterEnv, modBusEnv;
-    var modBusValue, dcAmount;
+    var modBusValue, dcAmount, mvSmooth;
     var primaryFreq, modOsc;
     var sig, amp, discontinuity;
     var primaryIn, modIn, noiseIn, plaitsMainIn, plaitsAuxIn;
@@ -968,6 +986,7 @@ SynthDef(\monokit_main, {
     var brActive;
     var psRatio, psGrainSize, psShifted, psMix;
     var psInputL, psInputR;
+    var cloudsProcessedL, cloudsProcessedR, cloudsActive, cloudsWet;
     var fcSmooth, dcSmooth, fqSmooth, fkSmooth, feSmooth;
     var rfSmooth, rmSmooth, dtSmooth, dfSmooth, dwSmooth, rvSmooth, rwSmooth, volumeSmooth, panSmooth;
     var lbSmooth, lsSmooth, lmSmooth, rgfSmooth, rgmSmooth, ctSmooth, cmSmooth;
@@ -1042,16 +1061,19 @@ SynthDef(\monokit_main, {
     // Scaled parameters
     modBusValue = (mb / 16383) + (modBusEnv * mba / 16383);
     dcAmount = dcSmooth / 16383;
+    mvSmooth = mv / 16383;  // Modulator audible volume
 
     // Primary frequency tracking for filter key tracking
     primaryFreq = pf;
 
     // Mix oscillator sources (pre-filter)
     // NOTE: Plaits mixed in post-VCA to preserve its own envelope
-    sig = primaryIn + modIn + noiseIn;
+    // modIn scaled by MV for audible mix, but modOsc (used for routing) is unscaled
+    sig = primaryIn + (modIn * mvSmooth) + noiseIn;
 
     // Discontinuity: base + (envelope * amount)
     discontinuity = dcAmount + (dcEnv * daCtl / 16383);
+    SendReply.kr(Changed.kr(dc), '/dc_changed', [dc, dm, daCtl, discontinuity]);
     sig = sig + (modOsc * discontinuity);
     sig = Select.ar(dm.clip(0, 6).round, [
         sig.fold2(1),           // 0: fold
@@ -1180,6 +1202,33 @@ SynthDef(\monokit_main, {
     // Pan control
     panPos = (panSmooth / 16383).clip(-1, 1);
     #sigL, sigR = Pan2.ar(sig, panPos);
+
+    // MiClouds Granular Processing
+    cloudsWet = Lag.kr(cl_wet / 16383, 0.01);
+    cloudsActive = cloudsWet > 0;
+
+    // Process through MiClouds when active
+    #cloudsProcessedL, cloudsProcessedR = MiClouds.ar(
+        [sigL, sigR],  // inputArray - audio input as array
+        pit: (cl_pitch / 16383).clip(0, 1),
+        pos: (cl_pos / 16383).clip(0, 1),
+        size: (cl_size / 16383).clip(0, 1),
+        dens: (cl_dens / 16383).clip(0, 1),
+        tex: (cl_tex / 16383).clip(0, 1),
+        drywet: cloudsWet,
+        in_gain: (cl_gain / 16383).clip(0, 2),
+        spread: (cl_spread / 16383).clip(0, 1),
+        rvb: (cl_rvb / 16383).clip(0, 1),
+        fb: (cl_fb / 16383).clip(0, 1),
+        freeze: cl_freeze.clip(0, 1),
+        mode: cl_mode.clip(0, 3).round,
+        lofi: (cl_lofi / 16383).clip(0, 1),
+        trig: t_cl_trig  // Trigger input for grain playback
+    );
+
+    // Select between dry and processed signals per channel
+    sigL = Select.ar(cloudsActive, [sigL, cloudsProcessedL]);
+    sigR = Select.ar(cloudsActive, [sigR, cloudsProcessedR]);
 
     // Beat Repeat Buffer Processing
     brActive = Lag.kr(br_mix > 0, 0.01);
@@ -1445,5 +1494,5 @@ SynthDef(\monokit_recorder, { |bufnum|
 "  - monokit_scope.scsyndef (oscilloscope)".postln;
 "  - monokit_recorder.scsyndef (audio recorder)".postln;
 "NOTE: Runtime uses 5-synth architecture (noise, mod, primary, plaits, main)".postln;
-0.exit;
+{ 0.exit }.defer(0.1);  // Deferred exit to allow postln to complete
 )

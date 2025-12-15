@@ -15,17 +15,15 @@ macro_rules! define_int_param {
             script_index: usize,
             metro_tx: &Sender<MetroCommand>,
             debug_level: u8,
-            out_err: bool,
             scale: &ScaleState,
+            out_cfm: bool,
             mut output: F,
         ) -> Result<()>
         where
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                if debug_level >= crate::types::TIER_ERRORS || out_err {
-                    output(format!("{}: REQUIRES VALUE", $error_prefix));
-                }
+                output(format!("{}: REQUIRES VALUE", $error_prefix));
                 return Ok(());
             }
             let value: i32 = if let Some((expr_val, _)) = eval_expression(
@@ -45,12 +43,10 @@ macro_rules! define_int_param {
                     .context(format!("Failed to parse {}", $output_desc.to_lowercase()))?
             };
             if !($min..=$max).contains(&value) {
-                if debug_level >= crate::types::TIER_ERRORS || out_err {
-                    output(format!(
-                        "{}: RANGE {}-{} {}",
-                        $error_prefix, $min, $max, $unit
-                    ));
-                }
+                output(format!(
+                    "{}: RANGE {}-{} {}",
+                    $error_prefix, $min, $max, $unit
+                ));
                 return Ok(());
             }
             metro_tx
@@ -59,7 +55,7 @@ macro_rules! define_int_param {
                     OscType::Int(value),
                 ))
                 .context("Failed to send param to metro thread")?;
-            if debug_level >= 2 {
+            if debug_level >= TIER_CONFIRMS || out_cfm {
                 output(format!(
                     "SET {} TO {} {}",
                     $output_desc,
@@ -83,17 +79,15 @@ macro_rules! define_float_param {
             script_index: usize,
             metro_tx: &Sender<MetroCommand>,
             debug_level: u8,
-            out_err: bool,
             scale: &ScaleState,
+            out_cfm: bool,
             mut output: F,
         ) -> Result<()>
         where
             F: FnMut(String),
         {
             if parts.len() < 2 {
-                if debug_level >= crate::types::TIER_ERRORS || out_err {
-                    output(format!("{}: REQUIRES VALUE", $error_prefix));
-                }
+                output(format!("{}: REQUIRES VALUE", $error_prefix));
                 return Ok(());
             }
             let value: f32 = if let Some((expr_val, _)) = eval_expression(
@@ -113,12 +107,10 @@ macro_rules! define_float_param {
                     .context(format!("Failed to parse {}", $output_desc.to_lowercase()))?
             };
             if !($min..=$max).contains(&value) {
-                if debug_level >= crate::types::TIER_ERRORS || out_err {
-                    output(format!(
-                        "{}: RANGE {}-{}",
-                        $error_prefix, $min, $max
-                    ));
-                }
+                output(format!(
+                    "{}: RANGE {}-{}",
+                    $error_prefix, $min, $max
+                ));
                 return Ok(());
             }
             metro_tx
@@ -127,7 +119,7 @@ macro_rules! define_float_param {
                     OscType::Float(value),
                 ))
                 .context("Failed to send param to metro thread")?;
-            if debug_level >= 2 {
+            if debug_level >= TIER_CONFIRMS || out_cfm {
                 if $unit.is_empty() {
                     output(format!("SET {} TO {}", $output_desc, value));
                 } else {

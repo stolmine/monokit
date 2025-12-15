@@ -408,6 +408,34 @@ where
     let rw = rng.gen_range(0..=8000);
     metro_tx.send(MetroCommand::SendParam("rw".to_string(), OscType::Int(rw)))?;
 
+    // MiClouds Granular Effect
+    let cl_pitch = rng.gen_range(0..=16383);
+    metro_tx.send(MetroCommand::SendParam("cl_pitch".to_string(), OscType::Int(cl_pitch)))?;
+    let cl_pos = rng.gen_range(0..=16383);
+    metro_tx.send(MetroCommand::SendParam("cl_pos".to_string(), OscType::Int(cl_pos)))?;
+    let cl_size = rng.gen_range(4096..=12288);  // Bias toward medium grain sizes
+    metro_tx.send(MetroCommand::SendParam("cl_size".to_string(), OscType::Int(cl_size)))?;
+    let cl_dens = rng.gen_range(4096..=12288);  // Bias toward medium density
+    metro_tx.send(MetroCommand::SendParam("cl_dens".to_string(), OscType::Int(cl_dens)))?;
+    let cl_tex = rng.gen_range(0..=16383);
+    metro_tx.send(MetroCommand::SendParam("cl_tex".to_string(), OscType::Int(cl_tex)))?;
+    let cl_wet = rng.gen_range(0..=8192);  // Max 50% wet to avoid overwhelming mix
+    metro_tx.send(MetroCommand::SendParam("cl_wet".to_string(), OscType::Int(cl_wet)))?;
+    // Keep gain at unity for safety
+    metro_tx.send(MetroCommand::SendParam("cl_gain".to_string(), OscType::Int(8192)))?;
+    let cl_spread = rng.gen_range(0..=16383);
+    metro_tx.send(MetroCommand::SendParam("cl_spread".to_string(), OscType::Int(cl_spread)))?;
+    let cl_rvb = rng.gen_range(0..=8192);  // Max 50% internal reverb
+    metro_tx.send(MetroCommand::SendParam("cl_rvb".to_string(), OscType::Int(cl_rvb)))?;
+    let cl_fb = rng.gen_range(0..=6553);  // Max ~40% feedback to be safe
+    metro_tx.send(MetroCommand::SendParam("cl_fb".to_string(), OscType::Int(cl_fb)))?;
+    // Don't randomize freeze - leave at 0
+    metro_tx.send(MetroCommand::SendParam("cl_freeze".to_string(), OscType::Int(0)))?;
+    let cl_mode = rng.gen_range(0..=3);
+    metro_tx.send(MetroCommand::SendParam("cl_mode".to_string(), OscType::Int(cl_mode)))?;
+    let cl_lofi = rng.gen_range(0..=4096);  // Light lo-fi effect
+    metro_tx.send(MetroCommand::SendParam("cl_lofi".to_string(), OscType::Int(cl_lofi)))?;
+
     use crate::types::TIER_CONFIRMS;
     if debug_level >= TIER_CONFIRMS {
         output("RANDOMIZED FX".to_string());

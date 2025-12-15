@@ -146,6 +146,24 @@ fi
 
 echo -e "  ${GREEN}✓ Checksums match - SynthDefs are identical${NC}"
 
+# Step 7.5: Verify mi-UGens plugins
+echo -e "${YELLOW}STEP 7.5: Verifying mi-UGens plugins${NC}"
+echo "  Checking for MiPlaits.scx..."
+if [ -f "dist/bundle/monokit-dev-aarch64-apple-darwin/Resources/plugins/MiPlaits.scx" ]; then
+    MIPLAITS_SIZE=$(wc -c < "dist/bundle/monokit-dev-aarch64-apple-darwin/Resources/plugins/MiPlaits.scx")
+    echo -e "  ${GREEN}✓ MiPlaits.scx found ($MIPLAITS_SIZE bytes)${NC}"
+else
+    echo -e "  ${YELLOW}⚠ MiPlaits.scx not found (Plaits voice will not work)${NC}"
+fi
+
+echo "  Checking for MiClouds.scx..."
+if [ -f "dist/bundle/monokit-dev-aarch64-apple-darwin/Resources/plugins/MiClouds.scx" ]; then
+    MICLOUDS_SIZE=$(wc -c < "dist/bundle/monokit-dev-aarch64-apple-darwin/Resources/plugins/MiClouds.scx")
+    echo -e "  ${GREEN}✓ MiClouds.scx found ($MICLOUDS_SIZE bytes)${NC}"
+else
+    echo -e "  ${YELLOW}⚠ MiClouds.scx not found (Granular effect will not work)${NC}"
+fi
+
 # Step 8: Verify timestamps
 echo -e "${YELLOW}STEP 8: Verifying timestamps${NC}"
 echo "  Checking file modification times..."

@@ -309,6 +309,20 @@ where
     ctx.metro_tx.send(MetroCommand::SendParam("plv".to_string(), OscType::Int(8192)))?;
     ctx.metro_tx.send(MetroCommand::SendParam("pav".to_string(), OscType::Int(0)))?;
 
+    ctx.metro_tx.send(MetroCommand::SendParam("cl_pitch".to_string(), OscType::Int(8192)))?;
+    ctx.metro_tx.send(MetroCommand::SendParam("cl_pos".to_string(), OscType::Int(8192)))?;
+    ctx.metro_tx.send(MetroCommand::SendParam("cl_size".to_string(), OscType::Int(8192)))?;
+    ctx.metro_tx.send(MetroCommand::SendParam("cl_dens".to_string(), OscType::Int(8192)))?;
+    ctx.metro_tx.send(MetroCommand::SendParam("cl_tex".to_string(), OscType::Int(8192)))?;
+    ctx.metro_tx.send(MetroCommand::SendParam("cl_wet".to_string(), OscType::Int(0)))?;
+    ctx.metro_tx.send(MetroCommand::SendParam("cl_gain".to_string(), OscType::Int(8192)))?;
+    ctx.metro_tx.send(MetroCommand::SendParam("cl_spread".to_string(), OscType::Int(8192)))?;
+    ctx.metro_tx.send(MetroCommand::SendParam("cl_rvb".to_string(), OscType::Int(0)))?;
+    ctx.metro_tx.send(MetroCommand::SendParam("cl_fb".to_string(), OscType::Int(0)))?;
+    ctx.metro_tx.send(MetroCommand::SendParam("cl_freeze".to_string(), OscType::Int(0)))?;
+    ctx.metro_tx.send(MetroCommand::SendParam("cl_mode".to_string(), OscType::Int(0)))?;
+    ctx.metro_tx.send(MetroCommand::SendParam("cl_lofi".to_string(), OscType::Int(0)))?;
+
     ctx.metro_tx.send(MetroCommand::SendVolume(1.0))?;
 
     ctx.metro_tx.send(MetroCommand::SendParam("slew_time".to_string(), OscType::Int(0)))?;

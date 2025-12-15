@@ -816,7 +816,7 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
             }
             Ok(())
         }
-        "TR" | "PLTR" | "RST" | "HELP" | "REC" | "REC.STOP" | "CLEAR" | "CLR" | "BRK" | "RND.VOICE" | "RND.OSC" | "RND.FM" | "RND.MOD" | "RND.ENV" | "RND.PL" | "RND.FX" | "RND.FILT" | "RND.DLY" | "RND.VERB" => {
+        "TR" | "PLTR" | "RST" | "HELP" | "REC" | "REC.STOP" | "CLEAR" | "CLR" | "BRK" | "CL.TRIG" | "CLTR" | "RND.VOICE" | "RND.OSC" | "RND.FM" | "RND.MOD" | "RND.ENV" | "RND.PL" | "RND.FX" | "RND.FILT" | "RND.DLY" | "RND.VERB" => {
             if argc > 0 {
                 return Err(anyhow::anyhow!("{} TAKES NO ARGUMENTS", command));
             }
@@ -921,7 +921,12 @@ pub fn validate_script_command(cmd: &str) -> Result<()> {
         // Beat Repeat
         "BR.LEN" | "BRL" | "BR.REV" | "BRR" | "BR.WIN" | "BRW" | "BR.MIX" | "BRX" |
         // Pitch Shift
-        "PS.MODE" | "PSM" | "PS.SEMI" | "PSS" | "PS.GRAIN" | "PSG" | "PS.MIX" | "PSX" | "PS.TARG" | "PST" => {
+        "PS.MODE" | "PSM" | "PS.SEMI" | "PSS" | "PS.GRAIN" | "PSG" | "PS.MIX" | "PSX" | "PS.TARG" | "PST" |
+        // Clouds
+        "CL.PITCH" | "CLP" | "CLPT" | "CL.POS" | "CLO" | "CLPS" | "CL.SIZE" | "CLS" | "CLSZ" |
+        "CL.DENS" | "CLD" | "CLDS" | "CL.TEX" | "CLT" | "CLTX" | "CL.WET" | "CLW" |
+        "CL.GAIN" | "CLG" | "CL.SPREAD" | "CLSP" | "CL.RVB" | "CLRV" |
+        "CL.FB" | "CLF" | "CL.FREEZE" | "CLFZ" | "CL.MODE" | "CLM" | "CL.LOFI" | "CLLO" => {
             if argc < 1 {
                 return Err(anyhow::anyhow!("{} REQUIRES AT LEAST 1 ARGUMENT", command));
             }

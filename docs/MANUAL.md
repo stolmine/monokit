@@ -239,7 +239,7 @@ Signal flow (left to right):
 ```
 Oscillators → FM → Mix → Discontinuity → Lo-Fi → SVF Filter →
 Ring Mod → Comb Resonator → Amp → Compressor → Pan →
-Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ → Plate Reverb
+MiClouds Granular → Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ → Plate Reverb
 ```
 
 ### Multi-Mode Filter (14 Types)
@@ -304,6 +304,35 @@ Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ → Plate Reverb
 ### Pan
 
 - `OUT.PAN` / `PAN <-16383 to 16383>` - Stereo position
+
+### MiClouds Granular Effect
+
+MiClouds continuously records incoming audio into its buffer. Use `CL.TRIG` to trigger grain playback from the buffer. Activates when `CL.WET` > 0.
+
+**Core Parameters:**
+- `CL.TRIG` / `CLTR` - Trigger grain playback
+- `CL.PITCH` / `CLP <0-16383>` - Pitch (8192=center/no transpose)
+- `CL.POS` / `CLO <0-16383>` - Buffer read position
+- `CL.SIZE` / `CLS <0-16383>` - Grain size
+- `CL.DENS` / `CLD <0-16383>` - Grain density
+- `CL.TEX` / `CLT <0-16383>` - Texture/character
+- `CL.WET` / `CLW <0-16383>` - Wet/dry mix (activates effect)
+
+**Processing:**
+- `CL.GAIN` / `CLG <0-16383>` - Input gain (8192=unity)
+- `CL.SPREAD` / `CLSP <0-16383>` - Stereo spread
+- `CL.RVB` / `CLR <0-16383>` - Internal reverb
+- `CL.FB` / `CLF <0-16383>` - Feedback (>10000 risky!)
+- `CL.FREEZE` / `CLFZ <0|1>` - Freeze buffer recording
+- `CL.MODE` / `CLM <0-3>` - Mode (0=Granular, 1=Pitch, 2=Looping, 3=Spectral)
+- `CL.LOFI` / `CLLO <0-16383>` - Lo-fi sample rate reduction
+
+**Usage Tips:**
+- Buffer continuously records unless frozen
+- `CL.TRIG` triggers grain playback from buffer
+- High feedback values (>10000) can self-oscillate
+- Freeze buffer to process static material
+- Combine with pattern triggers for rhythmic granulation
 
 ### Beat Repeat
 
@@ -1394,6 +1423,25 @@ Notes are saved with scenes. 8 lines maximum.
 | `COMP.MKP <amt>` | `CM` | Compressor makeup |
 | `CR.MIX <0-16383>` | `CRMIX` | Compressor dry/wet mix |
 | `OUT.PAN <amt>` | `PAN` | Stereo pan |
+
+### MiClouds Granular
+
+| Command | Alias | Description |
+|---------|-------|-------------|
+| `CL.TRIG` | `CLTR` | Trigger grain playback |
+| `CL.PITCH <0-16383>` | `CLP` | Pitch (8192=center) |
+| `CL.POS <0-16383>` | `CLO` | Buffer position |
+| `CL.SIZE <0-16383>` | `CLS` | Grain size |
+| `CL.DENS <0-16383>` | `CLD` | Density |
+| `CL.TEX <0-16383>` | `CLT` | Texture |
+| `CL.WET <0-16383>` | `CLW` | Wet mix (activates) |
+| `CL.GAIN <0-16383>` | `CLG` | Input gain (8192=1x) |
+| `CL.SPREAD <0-16383>` | `CLSP` | Stereo spread |
+| `CL.RVB <0-16383>` | `CLR` | Internal reverb |
+| `CL.FB <0-16383>` | `CLF` | Feedback |
+| `CL.FREEZE <0\|1>` | `CLFZ` | Freeze buffer |
+| `CL.MODE <0-3>` | `CLM` | Mode (Gran/Pitch/Loop/Spec) |
+| `CL.LOFI <0-16383>` | `CLLO` | Lo-fi effect |
 
 ### Beat Repeat & Pitch Shift
 

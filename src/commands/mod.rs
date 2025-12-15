@@ -128,12 +128,29 @@ where
     let parts: Vec<&str> = parts_owned.iter().map(|s| s.as_str()).collect();
     let cmd = parts[0].to_uppercase();
     let original_cmd = cmd.clone();
+
+    // DEBUG: Log before alias resolution
+    if cmd.starts_with("CL") {
+        log_command(&format!("[DEBUG] [1] Command parsing: original_cmd='{}' (from input '{}')", cmd, trimmed));
+    }
+
     let cmd = resolve_alias(&cmd);
+
+    // DEBUG: Log after alias resolution
+    if original_cmd.starts_with("CL") {
+        log_command(&format!("[DEBUG] [2] After alias resolution: original='{}' resolved='{}' match={}",
+                  original_cmd, cmd, original_cmd != cmd));
+    }
 
     if cmd != original_cmd {
         log_command(&format!("CMD: {} (alias for {})", trimmed, cmd));
     } else {
         log_command(&format!("CMD: {}", trimmed));
+    }
+
+    // DEBUG: Log entering match for CL commands
+    if cmd.starts_with("CL") {
+        log_command(&format!("[DEBUG] [3] Entering match statement: cmd.as_str()='{}'", cmd.as_str()));
     }
 
     match cmd.as_str() {
@@ -417,7 +434,7 @@ where
             synth_params::handle_mv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "DC" => {
-            synth_params::handle_dc(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
+            synth_params::handle_dc(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "DM" => {
             synth_params::handle_dm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
@@ -450,16 +467,16 @@ where
             synth_params::handle_fm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "AD" => {
-            synth_params::handle_ad(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, *out_err, scale, output)?;
+            synth_params::handle_ad(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "PD" => {
-            synth_params::handle_pd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, *out_err, scale, output)?;
+            synth_params::handle_pd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "FD" => {
-            synth_params::handle_fd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, *out_err, scale, output)?;
+            synth_params::handle_fd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "PA" => {
-            synth_params::handle_pa(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, *out_err, scale, output)?;
+            synth_params::handle_pa(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "PAV" => {
             synth_params::handle_pav(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
@@ -477,10 +494,10 @@ where
             synth_params::handle_me(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "FA" => {
-            synth_params::handle_fa(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, *out_err, scale, output)?;
+            synth_params::handle_fa(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "DA" => {
-            synth_params::handle_da(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, *out_err, scale, output)?;
+            synth_params::handle_da(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "FB" => {
             synth_params::handle_fb(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
@@ -656,6 +673,57 @@ where
         "PS.TARG" | "PST" => {
             synth_params::handle_ps_targ(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
+        "CL.TRIG" | "CLTR" => {
+            log_command(&format!("[DEBUG] [4] MATCHED CL.TRIG/CLTR pattern! cmd='{}'", cmd));
+            let mut output_vec = vec![];
+            log_command("[DEBUG] [5] Calling handle_cl_trig...");
+            synth_params::handle_cl_trig(ctx, &mut output_vec)?;
+            log_command(&format!("[DEBUG] [6] handle_cl_trig returned, output_vec.len()={}", output_vec.len()));
+            for msg in output_vec {
+                log_command(&format!("[DEBUG] [7] Outputting message: '{}'", msg));
+                output(msg);
+            }
+            log_command("[DEBUG] [8] CL.TRIG dispatch complete");
+        }
+        "CL.PITCH" | "CLP" | "CLPT" => {
+            synth_params::handle_cl_pitch(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "CL.POS" | "CLO" | "CLPS" => {
+            synth_params::handle_cl_pos(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "CL.SIZE" | "CLS" | "CLSZ" => {
+            synth_params::handle_cl_size(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "CL.DENS" | "CLD" | "CLDS" => {
+            synth_params::handle_cl_dens(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "CL.TEX" | "CLT" | "CLTX" => {
+            synth_params::handle_cl_tex(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "CL.WET" | "CLW" => {
+            synth_params::handle_cl_wet(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "CL.GAIN" | "CLG" => {
+            synth_params::handle_cl_gain(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "CL.SPREAD" | "CLSP" => {
+            synth_params::handle_cl_spread(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "CL.RVB" | "CLRV" => {
+            synth_params::handle_cl_rvb(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "CL.FB" | "CLF" => {
+            synth_params::handle_cl_fb(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "CL.FREEZE" | "CLFZ" => {
+            synth_params::handle_cl_freeze(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "CL.MODE" | "CLM" => {
+            synth_params::handle_cl_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "CL.LOFI" | "CLLO" => {
+            synth_params::handle_cl_lofi(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
         "SLEW" => {
             slew::handle_slew(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, *out_cfm, output)?;
         }
@@ -663,43 +731,43 @@ where
             slew::handle_slew_all(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, *out_cfm, output)?;
         }
         "AENV.ATK" | "AA" => {
-            synth_params::handle_aenv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, *out_err, scale, output)?;
+            synth_params::handle_aenv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "AENV.CRV" | "AC" => {
-            synth_params::handle_aenv_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, *out_err, scale, output)?;
+            synth_params::handle_aenv_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "PENV.ATK" | "PAA" => {
-            synth_params::handle_penv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, *out_err, scale, output)?;
+            synth_params::handle_penv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "PENV.CRV" | "PC" => {
-            synth_params::handle_penv_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, *out_err, scale, output)?;
+            synth_params::handle_penv_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "FMEV.ATK" | "FAA" => {
-            synth_params::handle_fmev_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, *out_err, scale, output)?;
+            synth_params::handle_fmev_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "FMEV.CRV" => {
-            synth_params::handle_fmev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, *out_err, scale, output)?;
+            synth_params::handle_fmev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "DENV.ATK" | "DAA" => {
-            synth_params::handle_denv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, *out_err, scale, output)?;
+            synth_params::handle_denv_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "DENV.CRV" => {
-            synth_params::handle_denv_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, *out_err, scale, output)?;
+            synth_params::handle_denv_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "FBEV.ATK" | "FBAA" => {
-            synth_params::handle_fbev_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, *out_err, scale, output)?;
+            synth_params::handle_fbev_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "FBEV.CRV" | "FBC" => {
-            synth_params::handle_fbev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, *out_err, scale, output)?;
+            synth_params::handle_fbev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "FBEV.AMT" => {
             synth_params::handle_fba(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "FLEV.ATK" | "FLAA" => {
-            synth_params::handle_flev_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, *out_err, scale, output)?;
+            synth_params::handle_flev_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "FLEV.CRV" | "FLC" => {
-            synth_params::handle_flev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, *out_err, scale, output)?;
+            synth_params::handle_flev_crv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "GATE" => {
             gate::handle_gate(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
@@ -1085,6 +1153,12 @@ where
             scale::handle_q_bit(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, output);
         }
         _ => {
+            // DEBUG: Log unknown commands, especially CL commands
+            if cmd.starts_with("CL") {
+                log_command(&format!("[DEBUG] [X] UNKNOWN COMMAND HIT! cmd='{}' original_cmd='{}' input='{}'",
+                          cmd, original_cmd, trimmed));
+                log_command(&format!("[DEBUG] [X] cmd bytes: {:?}", cmd.as_bytes()));
+            }
             log_command(&format!("CMD: {} → UNKNOWN", trimmed));
             output(format!("UNKNOWN COMMAND: {}", cmd));
         }

@@ -183,7 +183,7 @@ else
     echo "    FT 7-8 (DFM1) will not work."
 fi
 
-# mi-UGens (MiPlaits for Plaits voice)
+# mi-UGens (MiPlaits for Plaits voice, MiClouds for granular effect)
 MI_UGENS_BASE="${HOME}/Library/Application Support/SuperCollider/Extensions/mi-UGens"
 if [ -f "${MI_UGENS_BASE}/MiPlaits.scx" ]; then
     cp "${MI_UGENS_BASE}/MiPlaits.scx" "${BUNDLE_DIR}/Resources/plugins/"
@@ -191,6 +191,15 @@ if [ -f "${MI_UGENS_BASE}/MiPlaits.scx" ]; then
 else
     echo "    WARNING: MiPlaits.scx not found!"
     echo "    Plaits voice (PL.* commands) will not work."
+    echo "    Install from: https://github.com/v7b1/mi-UGens"
+fi
+
+if [ -f "${MI_UGENS_BASE}/MiClouds.scx" ]; then
+    cp "${MI_UGENS_BASE}/MiClouds.scx" "${BUNDLE_DIR}/Resources/plugins/"
+    echo "    - MiClouds.scx (Granular effect)"
+else
+    echo "    WARNING: MiClouds.scx not found!"
+    echo "    MiClouds granular effect (CL.* commands) will not work."
     echo "    Install from: https://github.com/v7b1/mi-UGens"
 fi
 

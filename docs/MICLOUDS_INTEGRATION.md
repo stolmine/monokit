@@ -12,7 +12,7 @@ Design document for adding MiClouds (Mutable Instruments Clouds) as a global eff
 
 Add MiClouds granular processor as a global effect in the monokit signal chain. MiClouds creates textures and soundscapes by combining multiple overlapping, delayed, transposed and enveloped segments of audio (grains) captured from a recording buffer.
 
-**Key difference from other effects:** MiClouds needs explicit triggering to capture audio and generate grains, similar to how voices need TR commands.
+**Key difference from other effects:** MiClouds continuously records incoming audio into a buffer. Triggers (CL.TRIG) play back grains from this continuously-updating buffer.
 
 ---
 
@@ -35,7 +35,7 @@ Based on mi-UGens documentation:
 | `freeze` | 0/1 | Halts buffer recording, grains from frozen audio |
 | `mode` | 0-3 | Processing mode (grain/pitch/loop/spectral) |
 | `lofi` | 0.0-1.0 | Sample rate/bit depth reduction |
-| **`trig`** | **gate** | **Trigger to capture audio & seed grains** |
+| **`trig`** | **gate** | **Trigger to play back grains from buffer** |
 
 ---
 
@@ -68,7 +68,7 @@ SynthDef(\monokit_main, {
     arg // ... existing params ...
 
         // MiClouds parameters
-        t_cl_trig = 0,    // Trigger to capture/seed grains
+        t_cl_trig = 0,    // Trigger to play back grains
         cl_pitch = 8192,  // Pitch (0-16383, 8192=center/no transpose)
         cl_pos = 8192,    // Buffer position (0-16383)
         cl_size = 8192,   // Grain size (0-16383)
@@ -99,7 +99,7 @@ SynthDef(\monokit_main, {
     #cloudsL, cloudsR = Select.ar(cloudsActive, [
         [sigL, sigR],  // Bypass when wet=0
         MiClouds.ar(
-            sigL, sigR,
+            [sigL, sigR],  // inputArray - audio input as array
             pit: (cl_pitch / 16383).clip(0, 1),
             pos: (cl_pos / 16383).clip(0, 1),
             size: (cl_size / 16383).clip(0, 1),
@@ -113,7 +113,7 @@ SynthDef(\monokit_main, {
             freeze: cl_freeze.clip(0, 1),
             mode: cl_mode.clip(0, 3).round,
             lofi: (cl_lofi / 16383).clip(0, 1),
-            trig: t_cl_trig  // Trigger input for grain seeding
+            trig: t_cl_trig  // Trigger input for grain playback
         )
     ]);
 
@@ -148,7 +148,7 @@ pub fn handle_clouds_trigger(
         OscType::Int(1),
     ]))?;
 
-    ctx.output(OutputCategory::Confirm, "CLOUDS TRIGGERED".to_string(), output);
+    ctx.output(OutputCategory::Confirm, "GRAINS TRIGGERED".to_string(), output);
     Ok(())
 }
 
@@ -160,7 +160,7 @@ pub fn handle_clouds_trigger(
 
 | Command | Alias | Range | Description |
 |---------|-------|-------|-------------|
-| CL.TRIG | CLTR | - | Trigger grain capture/generation |
+| CL.TRIG | CLTR | - | Trigger grain playback from buffer |
 | CL.PITCH | CLP, CLPT | 0-16383 | Grain pitch (8192=no transpose) |
 | CL.POS | CLO, CLPS | 0-16383 | Buffer position for grain source |
 | CL.SIZE | CLS, CLSZ | 0-16383 | Grain duration |
@@ -178,16 +178,17 @@ pub fn handle_clouds_trigger(
 ### Trigger Behavior
 
 **CL.TRIG (t_gate parameter):**
-- Captures current audio into internal recording buffer (~1 second)
-- Seeds new grain generation
+- Triggers grain playback from the continuously-recording buffer
+- Buffer is always recording input audio (~1 second loop)
+- Each trigger generates new grains based on current parameters
 - Essential for Clouds to produce output
 - Can be triggered rhythmically via Metro scripts
 - Works with pattern system (IF ER 3 8 I: CL.TRIG)
 
 **Freeze mode interaction:**
-- When CL.FREEZE 0: CL.TRIG captures new audio
-- When CL.FREEZE 1: Buffer frozen, CL.TRIG still generates grains but from frozen audio
-- Freeze + varying CL.POS = scan through frozen buffer
+- When CL.FREEZE 0: Buffer continuously records, grains play from live audio
+- When CL.FREEZE 1: Buffer stops recording (frozen), grains play from frozen audio
+- Freeze + varying CL.POS = scan through different positions in frozen buffer
 
 ---
 
@@ -377,10 +378,10 @@ set_param("cl_lofi", 0);       // No lo-fi
 - Document this interaction in manual
 
 **4. Grain Trigger Timing**
-- Unlike TR (which triggers voices), CL.TRIG triggers grain capture
-- If CL.TRIG not called regularly, buffer may become stale
-- In freeze mode, this is intentional (frozen buffer scanning)
-- In normal mode, trigger regularly for fresh grains
+- Unlike TR (which triggers voices), CL.TRIG triggers grain playback
+- Buffer is always recording (unless frozen), so timing of triggers controls grain density
+- In freeze mode, buffer is static (frozen buffer scanning)
+- In normal mode, buffer continuously updates with live audio
 
 ---
 
@@ -488,7 +489,7 @@ CL.WET 8192      # 50/50 mix
 
 # Trigger to create evolving texture
 TR               # Trigger voice
-CL.TRIG          # Capture and generate grains
+CL.TRIG          # Play back grains from buffer
 ```
 
 ### Example 2: Pitch Shimmer
@@ -566,7 +567,7 @@ Add to `src/help/effects.rs`:
 
 ```
 --- CLOUDS (Granular Effect) ---
-CL.TRIG   Trigger grain capture/generation
+CL.TRIG   Trigger grain playback
 CL.PITCH  Grain pitch (0-16383, 8192=center)
 CL.POS    Buffer position (0-16383)
 CL.SIZE   Grain size (0-16383)
@@ -585,8 +586,9 @@ Aliases: CLTR, CLP/CLPT, CLO/CLPS, CLS/CLSZ,
          CLD/CLDS, CLT/CLTX, CLW, CLG, CLSP,
          CLR/CLRV, CLF, CLFZ, CLM, CLLO
 
-Note: CL.TRIG required for grain generation!
-      Use in Metro for continuous triggering.
+Note: Buffer continuously records input audio.
+      CL.TRIG plays back grains from buffer.
+      Use in Metro for continuous grain playback.
 ```
 
 ---
@@ -659,7 +661,7 @@ Note: CL.TRIG required for grain generation!
 
 ## Conclusion
 
-MiClouds adds professional granular processing capability to monokit with relatively low implementation effort. The key insight is that **MiClouds requires explicit triggering** (CL.TRIG) to capture audio and generate grains - without this, the effect would sit idle.
+MiClouds adds professional granular processing capability to monokit with relatively low implementation effort. The key insight is that **MiClouds continuously records audio into a buffer** and requires explicit triggering (CL.TRIG) to play back grains - without triggers, the effect records but produces no output.
 
 **Advantages:**
 - ✓ Powerful granular synthesis in effects chain
@@ -677,4 +679,4 @@ MiClouds adds professional granular processing capability to monokit with relati
 
 **Total effort: 5-6 days**
 
-The trigger-based workflow fits naturally into monokit's command philosophy and enables creative rhythmic/pattern-based grain generation that goes beyond typical "always-on" granular effects.
+The trigger-based grain playback workflow fits naturally into monokit's command philosophy and enables creative rhythmic/pattern-based grain triggering that goes beyond typical "always-on" granular effects.

@@ -143,15 +143,61 @@ static CANONICAL_TO_ALIAS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new
     m.insert("BR.WIN", "BRW");
     m.insert("BR.MIX", "BRX");
 
+    // MiClouds Granular Effect
+    m.insert("CL.TRIG", "CLTR");
+    m.insert("CL.PITCH", "CLP");
+    m.insert("CL.POS", "CLO");
+    m.insert("CL.SIZE", "CLS");
+    m.insert("CL.DENS", "CLD");
+    m.insert("CL.TEX", "CLT");
+    m.insert("CL.WET", "CLW");
+    m.insert("CL.GAIN", "CLG");
+    m.insert("CL.SPREAD", "CLSP");
+    m.insert("CL.RVB", "CLRV");
+    m.insert("CL.FB", "CLF");
+    m.insert("CL.FREEZE", "CLFZ");
+    m.insert("CL.MODE", "CLM");
+    m.insert("CL.LOFI", "CLLO");
+
     // Page navigation
     m.insert("PG", "PAGE");
 
     m
 });
 
+use std::fs::OpenOptions;
+use std::io::Write;
+
+fn log_alias_debug(msg: &str) {
+    if let Ok(mut file) = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open("/tmp/monokit_commands.log")
+    {
+        let _ = writeln!(file, "{}", msg);
+    }
+}
+
 pub fn resolve_alias(cmd: &str) -> String {
-    CANONICAL_TO_ALIAS
-        .get(cmd)
-        .map(|&alias| alias.to_string())
-        .unwrap_or_else(|| cmd.to_string())
+    // DEBUG: Log CL command alias resolution
+    if cmd.starts_with("CL") {
+        log_alias_debug(&format!("[DEBUG] [ALIAS-1] resolve_alias called with cmd='{}'", cmd));
+        let result = CANONICAL_TO_ALIAS
+            .get(cmd)
+            .map(|&alias| {
+                log_alias_debug(&format!("[DEBUG] [ALIAS-2] Found in map: '{}' -> '{}'", cmd, alias));
+                alias.to_string()
+            })
+            .unwrap_or_else(|| {
+                log_alias_debug(&format!("[DEBUG] [ALIAS-3] NOT found in map, returning unchanged: '{}'", cmd));
+                cmd.to_string()
+            });
+        log_alias_debug(&format!("[DEBUG] [ALIAS-4] resolve_alias returning: '{}'", result));
+        result
+    } else {
+        CANONICAL_TO_ALIAS
+            .get(cmd)
+            .map(|&alias| alias.to_string())
+            .unwrap_or_else(|| cmd.to_string())
+    }
 }

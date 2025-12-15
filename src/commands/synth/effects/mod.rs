@@ -6,6 +6,7 @@ pub mod pitch_shift;
 pub mod lofi;
 pub mod ring_mod;
 pub mod compressor;
+pub mod clouds;
 
 pub use delay::*;
 pub use reverb::*;
@@ -15,3 +16,4 @@ pub use pitch_shift::*;
 pub use lofi::*;
 pub use ring_mod::*;
 pub use compressor::*;
+pub use clouds::*;

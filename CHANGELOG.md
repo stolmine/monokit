@@ -1,5 +1,43 @@
 # Changelog
 
+## v0.4.3 (December 2025) - MiClouds Granular Effect
+
+### New Features
+
+**MiClouds Granular Effect**
+- Integrated MiClouds granular synthesis/processing UGen from mi-UGens
+- 14 parameters for complete granular control: pitch, position, size, density, texture, feedback, freeze, mode
+- Continuously records incoming audio into buffer; CL.TRIG triggers grain playback
+- 4 processing modes: Granular, Pitch Shifter, Looping Delay, Spectral
+- Internal reverb, stereo spread, lo-fi processing, and feedback (with self-oscillation capability)
+- Placed in signal chain after pan, before beat repeat
+- Full command set with CL.* prefix and short aliases (CLP, CLO, CLS, etc.)
+- Integrated with RND.FX and RST commands
+- Complete documentation in MANUAL.md and in-app help system
+
+**Commands Added:**
+- `CL.TRIG` / `CLTR` - Trigger grain playback
+- `CL.PITCH` / `CLP` - Pitch control (0-16383, 8192=center)
+- `CL.POS` / `CLO` - Buffer read position
+- `CL.SIZE` / `CLS` - Grain size
+- `CL.DENS` / `CLD` - Grain density
+- `CL.TEX` / `CLT` - Texture/character
+- `CL.WET` / `CLW` - Wet/dry mix (activates effect)
+- `CL.GAIN` / `CLG` - Input gain (8192=unity)
+- `CL.SPREAD` / `CLSP` - Stereo spread
+- `CL.RVB` / `CLR` - Internal reverb
+- `CL.FB` / `CLF` - Feedback amount
+- `CL.FREEZE` / `CLFZ` - Freeze buffer recording
+- `CL.MODE` / `CLM` - Processing mode (0-3)
+- `CL.LOFI` / `CLLO` - Lo-fi sample rate reduction
+
+**Signal Flow Update:**
+```
+...Compressor → Pan → MiClouds Granular → Beat Repeat → Pitch Shift...
+```
+
+---
+
 ## v0.4.2.1 (December 2025) - UX Fixes
 
 ### Bug Fixes

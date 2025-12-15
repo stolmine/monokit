@@ -753,7 +753,8 @@ pub fn route_param_to_node(param: &str) -> i32 {
         "mf" | "mw" | "mv" | "fb" | "fba" | "fbd" | "mb" | "mba" | "mbd" | "md" => MOD_NODE_ID,
 
         // Primary synth parameters
-        "pf" | "pw" | "pv" | "fm" | "fa" | "fd" | "pa" | "pd" | "dc" | "dm" | "dd" | "tk" => PRIMARY_NODE_ID,
+        "pf" | "pw" | "pv" | "fm" | "fa" | "fd" | "pa" | "pd" | "tk" => PRIMARY_NODE_ID,
+        "dc" | "dm" | "dd" | "da" => MAIN_NODE_ID,  // Discontinuity is in MAIN synth
 
         // Plaits synth parameters
         "pitch" | "detune" | "engine" | "harmonics" | "timbre" | "morph" | "decay" | "lpg" | "plv" | "pav" | "pl_gate" | "t_gate_plaits" => PLAITS_NODE_ID,

@@ -574,10 +574,10 @@ SynthDef(\monokit, {
 
     sigL = BLowShelf.ar(sigL, 200, 1, elSmooth.clip(-24, 24));
     sigL = BPeakEQ.ar(sigL, efSmooth.clip(200, 8000), (1/eq.clip(0.1, 10)), emSmooth.clip(-24, 24));
-    sigL = BHiShelf.ar(sigL, 4000, 1, ehSmooth.clip(-24, 24));
+    sigL = BHiShelf.ar(sigL, 2500, 1, ehSmooth.clip(-24, 24));
     sigR = BLowShelf.ar(sigR, 200, 1, elSmooth.clip(-24, 24));
     sigR = BPeakEQ.ar(sigR, efSmooth.clip(200, 8000), (1/eq.clip(0.1, 10)), emSmooth.clip(-24, 24));
-    sigR = BHiShelf.ar(sigR, 4000, 1, ehSmooth.clip(-24, 24));
+    sigR = BHiShelf.ar(sigR, 2500, 1, ehSmooth.clip(-24, 24));
 
     rmodeSmooth = Lag.kr(rmode, 0.02);
     reverbWetSmooth = Lag.kr(rwSmooth / 16383, 0.01);

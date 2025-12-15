@@ -1227,8 +1227,9 @@ SynthDef(\monokit_main, {
     );
 
     // Select between dry and processed signals per channel
-    sigL = Select.ar(cloudsActive, [sigL, cloudsProcessedL]);
-    sigR = Select.ar(cloudsActive, [sigR, cloudsProcessedR]);
+    // Apply 2x output gain to boost clouds signal
+    sigL = Select.ar(cloudsActive, [sigL, cloudsProcessedL * 2.0]);
+    sigR = Select.ar(cloudsActive, [sigR, cloudsProcessedR * 2.0]);
 
     // Beat Repeat Buffer Processing
     brActive = Lag.kr(br_mix > 0, 0.01);

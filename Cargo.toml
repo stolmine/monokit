@@ -1,6 +1,6 @@
 [package]
 name = "monokit"
-version = "0.4.12"
+version = "0.4.2"
 edition = "2021"
 license = "GPL-2.0"
 description = "Teletype-style scripting for a complex oscillator drum voice"

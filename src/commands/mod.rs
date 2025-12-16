@@ -791,7 +791,7 @@ where
             gate::handle_flev_gate(&parts, variables, patterns, counters, scripts, script_index, scale, metro_tx, *debug_level, output)?;
         }
         "RST" => {
-            misc::handle_rst(ctx, output)?;
+            misc::handle_rst(ctx, output, 0)?;
         }
         "RND" => {
             random_ops::handle_rnd(&parts, output)?;
@@ -874,7 +874,10 @@ where
         }
         "LOAD" => {
             if *load_rst {
-                misc::handle_rst(ctx, &mut |_| {})?;
+                misc::handle_rst(ctx, &mut |_| {}, 1)?;
+                // Wait for RST parameter sends to complete before executing Init script
+                // RST sends 157 params with 5ms delays (785ms) + buffer for safety
+                std::thread::sleep(std::time::Duration::from_millis(160));
             }
             if scene_cmds::handle_load(&parts, &mut *ctx.variables, &mut *ctx.scripts, &mut *ctx.patterns, &mut *ctx.notes, &mut *ctx.current_scene_name, *ctx.scramble_enabled, *ctx.scramble_mode, *ctx.scramble_speed, *ctx.scramble_curve, &mut *ctx.header_scramble, *ctx.debug_level, *ctx.out_ess, &mut *ctx.script_mutes, output) {
                 log_command(&format!("CMD: {} → DISPATCHED", trimmed));

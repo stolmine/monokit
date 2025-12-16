@@ -1,5 +1,39 @@
 # Changelog
 
+## v0.4.3 (December 2025) - Stability & Polish (In Progress)
+
+### Critical Bug Fixes
+
+**Scene Loading Audio Crash Prevention**
+- Fixed audio system crashes during scene loading caused by OSC parameter flooding
+- Added configurable delays between RST parameter sends
+- Manual RST: 0ms delays (instant, minimal disruption)
+- LOAD.RST: 1ms delays with 160ms synchronization wait
+- Prevents UDP packet loss and SuperCollider buffer overflow
+- Eliminates race condition between RST and Init script execution
+- Root cause: RST sent 157 parameters with zero delays, overwhelming SuperCollider
+
+**Plaits Artifact Elimination**
+- Set Plaits volume (PLV) to 0 in RST defaults
+- Eliminates high-pitched squeal from Plaits during RST command
+- Issue was introduced in v0.4.11 when Plaits parameters were added to RST
+- Users must manually set PLV after RST to use Plaits
+- Scenes with LOAD.RST work normally (scene sets PLV value)
+
+### Implementation Details
+
+**Modified `handle_rst()` function:**
+- Accepts configurable `delay_ms` parameter for flexible timing
+- Manual RST optimized for speed (0ms = instant execution)
+- LOAD.RST optimized for stability (1ms delays between parameters)
+- Conditional sleep only when delay_ms > 0 to avoid unnecessary overhead
+
+**Files modified:**
+- `src/commands/system/misc.rs` - RST delay logic and PLV default
+- `src/commands/mod.rs` - RST and LOAD.RST call sites
+
+---
+
 ## v0.4.21 (December 2025) - MiClouds Gain Boost
 
 ### Improvements

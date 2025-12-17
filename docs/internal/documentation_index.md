@@ -47,6 +47,9 @@ Quick reference and links to all project documentation.
 
 | Feature | Status |
 |---------|--------|
+| Scene Loading Crash Fixes | **DONE** |
+| Plaits Artifact Elimination (PLV=0) | **DONE** |
+| Configurable RST Delays | **DONE** |
 | MiClouds Granular Effect (14 commands) | **DONE** |
 
 ### v0.4.2.1 (Complete)

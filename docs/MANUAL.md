@@ -1012,7 +1012,8 @@ LOAD.RST <0|1>    # 0=Keep synth (default), 1=Reset all
 ```
 
 - Mode 0: Scripts/patterns replace current, synth params persist
-- Mode 1: Full reset before loading (like `RST` then load)
+- Mode 1: Full reset before loading (uses safe 1ms delays)
+- LOAD.RST prevents scene loading crashes via parameter throttling
 
 **Examples:**
 ```
@@ -1184,6 +1185,12 @@ FLASH <ms>        # Set activity hold time (default 200ms)
 - D.MODE: 2 (Send)
 - R.MODE: 2 (Send)
 - CR: 1 (Compressor off)
+- PLV: 0 (Plaits silent, prevents artifacts)
+
+**RST Behavior:**
+- Manual RST: Instant (0ms delays)
+- LOAD.RST: Safe delays (1ms per param)
+- Plaits requires PLV after RST to produce sound
 
 ### Audio Output
 

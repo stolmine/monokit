@@ -43,17 +43,18 @@ Project structure, key files, and technical documentation.
 
 ---
 
-## Recent Updates (v0.4.2 - December 2025)
+## Recent Updates (v0.4.3 - December 2025)
 
-**Workflow Enhancements:**
+**Critical Fixes:**
+- Scene loading crash prevention via RST parameter throttling
+- Plaits artifact elimination (PLV=0 default)
+- Configurable RST delays (0ms manual, 1ms LOAD.RST)
+- MiClouds granular effect integration (14 commands)
+
+**Workflow Enhancements (v0.4.2):**
 - Script Mutes: Individual mute toggles for scripts 1-8, M, I with hotkeys (Ctrl+Shift)
 - Page Navigation: Programmatic page switching via PAGE/PG commands
 - Compressor Dry/Wet Mix: CR.MIX parameter for parallel compression
-
-**UX Improvements (v0.4.2.1):**
-- Fixed hotkey compatibility (Alt+Shift → Ctrl+Shift)
-- Added Ctrl+Q quit hotkey
-- Error messages reformatted to ≤46 characters (terminal-friendly)
 
 See CHANGELOG.md for complete details.
 

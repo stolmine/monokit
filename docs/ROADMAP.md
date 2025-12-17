@@ -9,88 +9,58 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ---
 
-## v0.4.3 Progress (December 2025) - COMPLETE
+## Version History (Latest First)
+
+### v0.4.22 (December 2025) - COMPLETE
 
 | Feature | Effort | Status |
 |---------|--------|--------|
 | MiClouds Granular Effect | Low-Medium | **DONE** |
+| EQ High Shelf Frequency Adjustment | Low | **DONE** |
 
-**MiClouds Granular Effect** - Integrated MiClouds UGen with 14 parameters (CL.*) for granular synthesis/processing. Full command set with aliases, pattern triggering via CL.TRIG, 4 processing modes (grain/pitch/loop/spectral), freeze mode for sound design. Placed in signal chain after pan, before beat repeat. Integrated with RND.FX and RST. Complete documentation in MANUAL.md and help system.
+**MiClouds Granular Effect** - Integrated MiClouds UGen with 14 parameters (CL.*) for granular synthesis/processing. Full command set with aliases, pattern triggering via CL.TRIG, 4 processing modes (grain/pitch/loop/spectral), freeze mode for sound design. Placed in signal chain after pan, before beat repeat. Integrated with RND.FX and RST. Complete documentation in MANUAL.md and help system. Output gain boosted to 2.69x for proper mixing presence.
 
----
-
-## v0.4.4 / v0.5.0 - Documentation & Organization
-
-| Task | Effort | Status |
-|------|--------|--------|
-| Documentation Audit & Updates | Medium | PLANNED |
-| Reorganize Internal Docs | Low | PLANNED |
-
-**Documentation Audit & Updates:**
-- Update README.md with current features and examples
-- Update/verify VOICE_ARCHITECTURE.md accuracy
-- Audit MANUAL.md for completeness and consistency
-- Create/update COMMAND_REFERENCE.md for quick lookup
-
-**Reorganize Internal Docs:**
-- Move development-only docs to `docs/internal/`:
-  - BUILD_VERIFICATION.md
-  - CL_COMMAND_DEBUG_TEST.md
-  - Any debugging/testing documentation
-- Keep public-facing docs in `docs/`:
-  - README.md, MANUAL.md, COMMAND_REFERENCE.md
-  - MICLOUDS_INTEGRATION.md, VOICE_ARCHITECTURE.md
-  - Quick start guides, tutorials
+**EQ Adjustments** - High shelf frequency moved from 4000Hz to 2500Hz for better tonal balance.
 
 ---
 
-## v0.3.4 Progress (December 2025) - COMPLETE
+### v0.4.21 (December 2025) - COMPLETE
 
 | Feature | Effort | Status |
 |---------|--------|--------|
-| Config Flag Standardization | Low | **DONE** |
-| SCRIPT Expression Support | Low | **DONE** |
-| MC/MQ Filter Routing | Low | **DONE** |
-| ModBus Envelope (MBA/MBD) | Low | **DONE** |
-| Script Undo/Redo | Low | **DONE** |
-| ER/NR Rhythm Operators | Low | **DONE** |
-| Frappe Theme | Low | **DONE** |
-| Additional Filter Types | Medium | **DONE** |
-| Noise Source | Medium | **DONE** |
+| MiClouds Output Gain Boost | Low | **DONE** |
+
+**MiClouds Output Level** - Increased MiClouds output gain from 1x to 2.69x for proper mixing presence.
 
 ---
 
-## v0.3.5 Progress (December 2025) - COMPLETE
+### v0.4.12 (December 2025) - COMPLETE
 
 | Feature | Effort | Status |
 |---------|--------|--------|
-| Multi-Synth Architecture | High | **DONE** |
-| Parameter Routing System | Medium | **DONE** |
-| Build System Reliability | Low | **DONE** |
-| Scene Path Consistency | Low | **DONE** |
+| Beat Repeat/Pitch Shift Short Aliases | Low | **DONE** |
+| Envelope Parameter Tier Fixes | Low | **DONE** |
+| ExecutionContext Test Updates | Low | **DONE** |
+| Dynamic Bundle Size in Release | Low | **DONE** |
+| CPU Readout Fixed Width | Low | **DONE** |
+| Title Timer Persistence Fix | Low | **DONE** |
 
 ---
 
-## v0.3.6 Progress (December 2025) - COMPLETE
+### v0.4.11 (December 2025) - COMPLETE
 
 | Feature | Effort | Status |
 |---------|--------|--------|
-| CPU Monitoring Fix | Low | **DONE** |
-| Plaits Integration | High | **DONE** |
+| MFF/MFQ Filter Modulation Amounts | Low | **DONE** |
+| Ctrl+Shift+Z Redo Fix | Low | **DONE** |
+| Deprecated Noise Params Removal | Low | **DONE** |
+| Plaits RST Coverage | Low | **DONE** |
+| Debug Tier Refactor | Low | **DONE** |
+| ExecutionContext Refactor | Medium | **DONE** |
 
 ---
 
-## v0.4.0 Progress (December 2025) - COMPLETE
-
-| Feature | Effort | Status |
-|---------|--------|--------|
-| Plaits Pitch Control (PL.FREQ/PLF) | Low | **DONE** |
-| Plaits Parameter Aliases (3-letter) | Low | **DONE** |
-| PLTR Trigger Readout | Low | **DONE** |
-| Multi-Voice Trigger Indicators (P/C) | Low | **DONE** |
-| RND.PL Fixes (validation & scaling) | Low | **DONE** |
-
-## v0.4.2 Progress (December 2025) - COMPLETE
+### v0.4.2 (December 2025) - COMPLETE
 
 | Feature | Effort | Status |
 |---------|--------|--------|
@@ -106,117 +76,160 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ---
 
-## v0.4.12 Progress (December 2025) - COMPLETE
+### v0.4.1 (December 2025) - COMPLETE
 
 | Feature | Effort | Status |
 |---------|--------|--------|
-| Beat Repeat/Pitch Shift Short Aliases | Low | **DONE** |
-| Envelope Parameter Tier Fixes | Low | **DONE** |
-| ExecutionContext Test Updates | Low | **DONE** |
-| Dynamic Bundle Size in Release | Low | **DONE** |
-| CPU Readout Fixed Width | Low | **DONE** |
+| Filter Modulation Amount Controls | Low | **DONE** |
+| SynthDef/RST Default Alignment | Low | **DONE** |
+| Envelope Parameter Scaling Fix | Low | **DONE** |
+
+**MFF/MFQ Commands** - Added MODF.CUT/MFF and MODF.RES/MFQ for granular control over filter modulation routing.
 
 ---
 
-## v0.4.11 Progress (December 2025) - COMPLETE
+### v0.4.0 (December 2025) - COMPLETE
 
 | Feature | Effort | Status |
 |---------|--------|--------|
-| MFF/MFQ Filter Modulation Amounts | Low | **DONE** |
-| Ctrl+Shift+Z Redo Fix | Low | **DONE** |
-| Deprecated Noise Params Removal | Low | **DONE** |
-| Plaits RST Coverage | Low | **DONE** |
-| Debug Tier Refactor | Low | **DONE** |
-| ExecutionContext Refactor | Medium | **DONE** |
-| Noise Envelope & Gating | Medium | Deferred |
-| Noise FM Routing | Low | Deferred |
-| Oscillator Sync | Medium | Not started |
+| Plaits Pitch Control (PL.FREQ/PLF) | Low | **DONE** |
+| Plaits Parameter Aliases (3-letter) | Low | **DONE** |
+| PLTR Trigger Readout | Low | **DONE** |
+| Multi-Voice Trigger Indicators (H/P) | Low | **DONE** |
+| RND.PL Fixes (validation & scaling) | Low | **DONE** |
 
 ---
 
-## Recent Updates (v0.4.1)
+### v0.3.61 (December 2025) - COMPLETE
 
-### MFF/MFQ Filter Modulation Amounts [COMPLETE]
-Added granular control over filter modulation routing.
+| Feature | Effort | Status |
+|---------|--------|--------|
+| Validation-Aware Highlighting | Medium | **DONE** |
+| State Highlight Mitigation | Medium | **DONE** |
+| Stateful Operator Bug Fixes | Medium | **DONE** |
 
-**Changes:**
-- [x] Added MODF.CUT / MFF command (0-16383) - ModBus → Filter cutoff amount
-- [x] Added MODF.RES / MFQ command (0-16383) - ModBus → Filter resonance amount
-- [x] MC/MQ toggles now work in conjunction with MFF/MFQ amounts
-- [x] Provides fine-grained control over modulation depth per filter parameter
-- [x] Files: src/commands/synth/filter.rs, src/commands/aliases.rs
+**Highlighting System Overhaul** - Fixed critical bugs in stateful operator (TOG/SEQ/EITH) highlighting. Implemented validation-aware highlighting, state snapshots, and proper rollback coverage.
 
-### Ctrl+Shift+Z Redo Fix [COMPLETE]
-Fixed redo keybinding to properly handle uppercase Z.
+---
 
-**Changes:**
-- [x] Redo now works correctly with Ctrl+Shift+Z
-- [x] Fixed uppercase Z handling in keybinding system
-- [x] Files: src/ui/input.rs
+### v0.3.6 (December 2025) - COMPLETE
 
-### Deprecated Noise Params Removal [COMPLETE]
-Removed noise envelope parameters that were deprecated in multi-synth architecture split.
+| Feature | Effort | Status |
+|---------|--------|--------|
+| CPU Monitoring Fix | Low | **DONE** |
+| Plaits Integration | High | **DONE** |
 
-**Changes:**
-- [x] Removed NA, ND, NC, NE, NG parameters from command system
-- [x] Noise now uses simple volume control (NV) only
-- [x] Envelope control removed as part of multi-synth architecture
-- [x] Deferred: Full envelope/gating restoration (see "Noise Envelope & Gating" below)
-- [x] Files: src/commands/validate.rs, docs/MANUAL.md
+**Plaits Integration** - Added Mutable Instruments Plaits as 5th sound source with 16 synthesis engines and 9 control commands.
 
-### Plaits RST Coverage [COMPLETE]
-Added core Plaits oscillator parameters to RST command for complete reset coverage.
+---
 
-**Changes:**
-- [x] Added pitch (131 Hz C3 default)
-- [x] Added detune (0 cents default)
-- [x] Added engine (0 default)
-- [x] Added harmonics (8192/0.5 default)
-- [x] Added timbre (8192/0.5 default)
-- [x] Added morph (8192/0.5 default)
-- [x] Added decay (8192/0.5 default)
-- [x] Added lpg (8192/0.5 default)
-- [x] Added plv main volume (8192/0.5 default)
-- [x] Added pav aux volume (0 default)
-- [x] RST now fully resets Plaits oscillator to defaults
-- [x] Files: src/commands/system/misc.rs
+### v0.3.5 (December 2025) - COMPLETE
 
-### Debug Tier Refactor [COMPLETE]
-Centralized command execution through ExecutionContext and fixed tier violations.
+| Feature | Effort | Status |
+|---------|--------|--------|
+| Multi-Synth Architecture | High | **DONE** |
+| Parameter Routing System | Medium | **DONE** |
+| Build System Reliability | Low | **DONE** |
+| Scene Path Consistency | Low | **DONE** |
 
-**Architecture Changes:**
-- [x] Created ExecutionContext struct grouping 47+ parameters
-- [x] Reduced process_command signature from 109 → 3 parameters
-- [x] Eliminated 165 duplicate tier checks across codebase
-- [x] Centralized output control via ExecutionContext.output()
-- [x] Files: src/commands/context.rs, src/commands/mod.rs
+**Multi-Synth Architecture** - Restructured from monolithic SynthDef into 4 modular synths to fix SuperCollider optimizer bug causing parameter cross-talk.
 
-**Tier Violation Fixes:**
-- [x] Fixed SLEW/SLEW.ALL tier violation (tier 1 → tier 4)
-- [x] Fixed PRINT tier violation (tier 1 → tier 2)
-- [x] Added missing tier gates to SAVE, LOAD, SCENES, DELETE
-- [x] Added missing tier gates to PSET, PSET.SAVE, PSET.DEL, PSETS
-- [x] Added missing tier gates to REC, REC.STOP, REC.PATH
-- [x] All commands now respect tier 0 (TIER_SILENT) properly
-- [x] Files: src/commands/slew.rs, src/commands/system/misc.rs
-- [x] Files: src/commands/system/scene.rs, src/commands/system/preset.rs
+---
+
+### v0.3.4 (December 2025) - COMPLETE
+
+| Feature | Effort | Status |
+|---------|--------|--------|
+| Additional Filter Types (14 total) | Medium | **DONE** |
+| Noise Source Integration | Medium | **DONE** |
+| ModBus Envelope (MBA/MBD) | Low | **DONE** |
+| Script Undo/Redo | Low | **DONE** |
+| Frappe Theme | Low | **DONE** |
+| MC/MQ Filter Routing | Low | **DONE** |
+
+---
+
+### v0.3.2 (December 2025) - COMPLETE
+
+| Feature | Effort | Status |
+|---------|--------|--------|
+| Beat Repeat Fix | Low | **DONE** |
+| Config Command Output Fix | Low | **DONE** |
+
+---
+
+### v0.3.0 (December 2025) - COMPLETE
+
+| Feature | Effort | Status |
+|---------|--------|--------|
+| SYNC Command | Low | **DONE** |
+| AUTOLOAD Setting | Low | **DONE** |
+| Script Validation Overhaul | Medium | **DONE** |
+| Pattern Operations as Expressions | Medium | **DONE** |
+
+---
+
+### Older Versions
+
+**v0.2.0** - scsynth-direct integration, bundled binary distribution
+**v0.1.1** - Initial Homebrew tap release
+**v0.1.0** - Initial release with core voice and pattern system
+
+---
+
+## Future Versions
+
+### v0.4.3 - Stability & Polish (IN PROGRESS)
+
+**See `docs/V0.4.3_PLAN.md` for detailed progress tracking**
+
+| Category | Status |
+|----------|--------|
+| Critical Bug Fixes (2 items) | PLANNED |
+| Quick Polish Wins (5 items) | PLANNED |
+| Documentation Cleanup (3 items) | PLANNED |
+| Stretch Goals (2 items) | PLANNED |
+
+**Critical Fixes:**
+- Scene loading audio crashes
+- Stateful highlighting issues
+
+**Quick Polish:**
+- Scope gain parameter + reset command
+- Programmable EQ shelving frequencies (ELF/EHF)
+- Compressor auto-makeup toggle (CR.AUTO)
+- Confirm on quit (unsaved scripts)
+- N1-N4 help section relocation
 
 **Documentation:**
-- [x] Created DEBUG_TIERS.md - Complete tier classification
-- [x] Created TIER_0_COMMANDS.md - Tier 0 analysis
-- [x] Created TIER_FIXES_SUMMARY.md - Fix summary
-- [x] Updated ARCHITECTURE.md - Added ExecutionContext section
-- [x] Updated CHANGELOG.md - Added tier fixes to v0.4.1
+- CHANGELOG cleanup
+- Documentation audit (README, MANUAL, VOICE_ARCHITECTURE)
+- Reorganize internal docs to `docs/internal/`
 
----
+**Stretch:**
+- Error message refactor (restore "ERROR:" prefix, red color)
+- PRE command same-line usage clarification
+
 
 ## Prioritized Incomplete Items
 
 ### P1 - High Value Features
 - **MIDI CC and Note Input** [Medium] - External control, performance capability
+- **Compressor Visualization** [Medium] - Real-time visual feedback for compressor (gain reduction, threshold, ratio); possibly integrated with scope page or standalone view
+- **EQ Visualization** [Medium] - Real-time frequency response curve for 3-band EQ; show shelving points and mid peak; possibly integrated with scope page
+- **Layered Scope Visualizations** [Medium] - Architecture for overlaying multiple visualizations (scope, spectrum, EQ, compressor) on single page; toggle layers independently
+- **Customizable Grid Array** [Medium] - User-configurable grid parameters via settings file; allow users to choose which parameters appear on grid and their layout
+- **Trackpad/Mousewheel Scrolling** [Low-Medium] - Implement scrolling support for help pages, REPL history, and other scrollable views; improve navigation UX
 
-### P2 - Polish & Documentation
+### P2 - Polish & Features
 - **Error Message Refactor** [Low-Medium] - Standardize error output system-wide: restore "ERROR:" prefix for all error messages (currently missing on OOB errors after v0.4.2.1 refactor); implement red color for error messages (currently white); investigate where ERROR: prefix is applied in codebase and create consistent pattern across all error types; ensure 46-char compliance with prefix; likely involves output tier system and color coding in ui/mod.rs
+- **Programmable EQ Shelving Frequencies** [Low] - Allow user configuration of low/high shelf frequencies (currently fixed at 200Hz/4000Hz); add commands for setting shelf points
+- **Compressor Auto-Makeup Toggle** [Low] - Expose auto-makeup gain as user-controllable feature; when enabled, CM parameter becomes inactive/automatic
+- **Scope Gain Parameter** [Low] - Add gain control for scope output to accurately monitor quiet signals; separate from main volume
+- **Scope Reset Command** [Low] - Command to reset scope state/buffer
+- **Multiple Reverb Types** [Medium] - Add alternative reverb algorithms (JVerb, FDN, etc.); allow switching between reverb types; maintain current FreeVerb as default
+- **Confirm on Quit** [Low] - Optional confirmation dialog when quitting application
+- **Confirm on Quit (Unsaved Scripts)** [Low] - Warn user when quitting with modified script contents that haven't been saved to scene
 - **Script Mute Hotkeys (Terminal Research)** [Medium] - Fix Ctrl+Shift+1-8/M/I hotkeys not working (v0.4.2.1); terminal emulators handle Ctrl+Shift differently; research alternatives: two-key sequences (Vim-style), function keys (F13-F24), or Alt+Ctrl combinations; test across iTerm2, Terminal.app, kitty, alacritty; document terminal-specific limitations
 - **N1-N4 Help Section Location** [Low] - Move N1-N4 counter documentation from PATTERNS section to MATH & VARIABLES section in help system; counters are variables not patterns; improves help organization and discoverability
 - **Global Distortion/Saturation** [Low-Medium] - Natural-sounding saturation/distortion effect with antialiasing; options include smooth clipping (SmoothClipS), wavefolding (LockhartWavefolder), analog tape emulation, or waveshaping with proper oversampling to avoid aliasing artifacts; multiple modes for different saturation characters (tube, tape, soft clip, fold)
@@ -226,6 +239,17 @@ Centralized command execution through ExecutionContext and fixed tier violations
 - **Manual Update + Voice Architecture Diagram** [Low] - Fill documentation gaps, add ASCII voice architecture diagram
 - **Gain Staging Audit** [Medium] - Review clipping behavior with modbus/noise routing; consider automatic output level detection via existing meter OSC for testing; balance preventing unwanted distortion vs preserving intentional clipping
 - **Slew Coverage Expansion** [Low] - Extend SLEW to all continuous voice parameters (currently 30/88)
+- **CHANGELOG Cleanup** [Low] - Fix version ordering and numbering in CHANGELOG; versions are out of order and show versions beyond current (v0.4.3 listed when actual version is v0.4.22); consolidate and organize chronologically
+
+### P2 - Bug Fixes & Stability
+- **Stateful Highlighting Issues** [Medium] - Address unintended consequences in current stateful highlighting system; ensure reliable and predictable behavior across all script contexts
+- **Scene Loading Audio Crashes** [Medium] - Debug and fix audio system crashes that sometimes occur when loading scenes; ensure robust scene transition handling
+- **PRE Command Same-Line Usage** [Low-Medium] - Clarify and validate same-line PRE usage and execution order; may need to adopt Teletype-style restriction (one PRE per line) to ensure consistent functionality; implement proper validation logic and execution hierarchy
+
+### P2 - Deferred Features
+- **Noise Envelope & Gating** [Medium] - Re-implement envelope and gate control in noise synth after multi-synth architecture split; add NA, ND, NC, NE parameters back to monokit_noise SynthDef; separate noise audio output from FM routing
+- **Noise FM Routing Fix** [Low] - Ensure noise FM (NP/NM) works independently of NV volume; users should be able to use noise as FM source without hearing it
+- **Oscillator Sync** [Medium] - Hard/soft sync between oscillators for classic analog tones
 
 ### P3 - Future / Large Effort
 - **Cross-Platform Compatibility** [High] - Linux/Windows/Intel Mac
@@ -236,170 +260,32 @@ Centralized command execution through ExecutionContext and fixed tier violations
 
 ---
 
-## Recent Updates (December 2025)
+## Current Feature Set
 
-### Noise Envelope & Gating [PLANNED]
-Re-implement envelope and gate control in the noise synth after multi-synth architecture split.
-
-**Requirements:**
-- Add envelope (NA, ND, NC, NE) back to monokit_noise SynthDef
-- Add gate control (NG) for triggerable vs drone noise
-- Output multiple buses from noise synth:
-  - Bus 18: Envelope-shaped noise for main output (controlled by NV)
-  - Bus 19: Raw noise for FM modulation (controlled by NP/NM)
-- This allows independent control of noise as audio source vs modulation source
-- Envelope affects main output but not FM routing
-- NP/NM act as VCA amounts controlling noise→prim and noise→mod FM
-
-**Architecture:**
-```
-monokit_noise:
-  noise → [envelope + NV] → Bus 18 (to main synth audio mix)
-  noise → [NP scaling] → Bus 19 (to monokit_primary FM input)
-  noise → [NM scaling] → Bus 20 (to monokit_mod FM input)
-```
-
-**Files to modify:**
-- build_scripts/compile_synthdefs.scd (monokit_noise SynthDef)
-- build_scripts/compile_synthdefs.scd (monokit_primary - read Bus 19 for FM)
-- build_scripts/compile_synthdefs.scd (monokit_mod - read Bus 20 for FM)
-- sc/monokit_server.scd (same changes for runtime server)
-
-### Noise FM Routing Fix [PLANNED]
-Ensure noise FM modulation works even when NV is at zero.
-
-**Problem:**
-- Currently noise FM (NP/NM) may be tied to NV volume control
-- NP and NM should work independently as FM amounts
-- Users should be able to use noise as FM source without hearing it
-
-**Solution:**
-- Separate noise FM routing from noise audio volume
-- NP controls noise→primary FM amount (independent of NV)
-- NM controls noise→mod FM amount (independent of NV)
-- This is achieved by the bus architecture above
-
-**Testing:**
-- Set NV=0, NP=16383 - should hear FM modulation on primary, no noise audio
-- Set NV=0, NM=16383 - should hear FM modulation on mod, no noise audio
-- Set NV=16383, NP=0, NM=0 - should hear noise audio, no FM
-
-### Multi-Synth Architecture [COMPLETE]
-Fixed SuperCollider optimizer bug causing volume parameter cross-talk (NV/PV/MV).
-
-**Problem:**
-- SC optimizer incorrectly conflated volume parameters when in same SynthDef
-- NV (noise volume), PV (primary volume), MV (mod volume) shared parameter graph
-- Changing one parameter affected others due to optimizer collapse
-
-**Solution:**
-- Split monolithic SynthDef into 4 separate SynthDefs with audio bus routing
-- monokit_noise: Noise source → Bus 16
-- monokit_mod: Modulator → Bus 17
-- monokit_primary: Primary oscillator → Bus 18
-- monokit_main: Reads buses 16/17/18, processes effects, outputs final audio
-- Each source has isolated volume parameter graph preventing cross-talk
-
-**Implementation:**
-- [x] Created 4-synth architecture with bus routing
-- [x] Updated build process to compile 7 synthdefs (4 sources + 3 utilities)
-- [x] Verified volume parameters now operate independently
-- [x] Maintained single-trigger interface (Rust sends to all 4 synths)
-- [x] Files: build_scripts/compile_synthdefs.scd, sc/monokit_server.scd
-
-### Envelope Parameter Scaling Fix [COMPLETE]
-Fixed FM and Disc envelope amount parameter ranges.
-
-**Changes:**
-- [x] FA (FM envelope): 0-16 float → 0-16383 int (14-bit)
-- [x] DA (Disc envelope): 0-16 float → 0-16383 int (14-bit)
-- [x] Root cause: SynthDef divided by 16383 but Rust limited to 0-16
-- [x] Restored full resolution for envelope modulation
-- [x] Files: src/commands/synth/envelopes/fm.rs, disc.rs
-
-### SynthDef Default Parameter Alignment [COMPLETE]
-RST command now matches SynthDef default values.
-
-**Changes:**
-- [x] pf: 200 → 131 (C3, ~131 Hz)
-- [x] mf: 50 → 262 (C4, ~262 Hz)
-- [x] pa: 4 → 0 (no pitch envelope by default)
-- [x] fc: 1000 → 10000 (filter wide open)
-- [x] cr: 4 → 1 (compressor off by default)
-- [x] Files: sc/monokit_server.scd, build_scripts/compile_synthdefs.scd
-
-### Release Pipeline Documentation [COMPLETE]
-Automated release infrastructure documented for future reference.
-
-**Documentation Added:**
-- [x] docs/RELEASE_PIPELINE.md - Complete release workflow
-- [x] docs/MANUAL.md - User manual with comprehensive command reference
-- [x] README.md - Updated with feature rundown and installation instructions
-- [x] Automated GitHub Actions release workflow
-- [x] Homebrew tap auto-updates via release pipeline
-
-**Release Process:**
-1. Local: `./scripts/release.sh X.Y.Z` creates signed bundle and git tag
-2. GitHub Actions: Builds release bundle on macOS-14 (Apple Silicon)
-3. Homebrew: Formula auto-updates with new SHA256 from artifacts
-
-### Recent Feature Completions [COMPLETE]
-**List Output Formatting:**
-- [x] THEMES command now displays vertically (one per line)
-- [x] Improved readability and terminal compatibility
-- [x] Consistent with other list commands
-
-**VCA Reset Coverage:**
-- [x] RST and LOAD.RST now reset VCA to gated mode (default)
-- [x] Ensures predictable behavior after reset operations
-- [x] VCA state properly restored on scene load
-
-**EITH Selection Highlighting:**
-- [x] Random choice now highlights selected option in script display
-- [x] State persists correctly across evaluations like TOG
-- [x] Nested random choice `{a b}` in SEQ shows last selection
-
----
-
-## Completed Features Summary
-
-For detailed completion records, see:
-- `docs/history/CHANGELOG.md` - Version history and completed features
-- `docs/history/PHASES.md` - Development phases 1-6 completion details
+For detailed completion records, see `CHANGELOG.md` and `docs/history/`
 
 ### Core Voice & DSP
-- HD2-style dual oscillator with FM, discontinuity, and complex modulation
-- Noise source with dedicated envelope and oscillator FM routing
+- Complex dual oscillator with FM, discontinuity, and modulation routing
+- Plaits macro oscillator (16 synthesis engines)
+- Noise source with waveform selection
 - Full DSP signal chain with 10+ effect blocks
-- 88 real-time parameters
+- MiClouds granular synthesis/processing
+- 88+ real-time parameters
 
 ### Language & Scripting
 - Page-based interface with 8 scripts + Metro + Init
 - Pattern system: 6 patterns × 64 steps
 - Full control flow: IF/ELIF/ELSE, loops, probability, scheduling
 - SEQ inline sequencing with mini notation
+- Expression evaluation and stateful operators (TOG, EITH)
+- Euclidean and prime rhythm generators (ER, NR)
 
 ### Infrastructure
 - Direct scsynth integration (bundled binary)
 - Automated release pipeline with Homebrew
 - Theme system with 30+ themes
-
----
-
-## Future Phases
-
-### Phase 7: Advanced DSP
-- Noise source integration
-- Oscillator sync
-- Additional filter types
-- Additional voice types
-- Sample playback system
-
-### Phase 8: Distribution
-- Cross-platform compatibility (Linux, Windows, Intel Mac)
-- Unified installer packages
-
-See `docs/history/FUTURE.md` for detailed plans.
+- Scene and preset management
+- Audio recording via DiskOut
 
 ---
 
@@ -423,40 +309,4 @@ See `docs/history/FUTURE.md` for detailed plans.
 ## Contributing
 
 Feature requests and suggestions welcome. All contributions should maintain the project's terse command syntax and CLI-native philosophy.
-
-### Plaits Enhancements [v0.3.7]
-
-**PL.FREQ - Pitch/Frequency Control**
-- Native-style command taking raw +/- 14-bit values
-- Note name (N) support with scale-aware transposition
-- Routes to monokit_plaits pitch parameter
-- Independent from complex oscillator pitch (PF)
-
-**3-Letter Parameter Aliases**
-- PLH → PL.HARM (harmonics)
-- PLT → PL.TIMB (timbre)
-- PLE → PL.ENG (engine)
-- PLM → PL.MORPH (morph)
-- PLD → PL.DEC (decay)
-- PLL → PL.LPG (lowpass gate)
-- Improves legibility and distinguishes from complex oscillator commands
-
-**PLTR Trigger Readout**
-- Add REPL confirmation when PLTR is triggered
-- Similar to TR readout for complex oscillators
-- Shows engine number and current parameter state
-
-**Multi-Voice Trigger Indicators** ✓
-- [x] Header indicators for trigger state:
-  - P = Plaits trigger active
-  - C = Complex oscillators trigger active (renamed from HD2)
-- [x] Single-character display for space efficiency
-- [x] Replaces current "TR" indicator with multi-voice awareness
-
-**Terminology Update: HD2 → Complex** (In Progress)
-- [x] Rename "TR" to "C/P" in UI header indicators
-- [ ] Update remaining HD2 references in docs to "Complex"
-- C = Complex (dual FM oscillator architecture)
-- P = Plaits (Mutable Instruments macro oscillator)
-- Note: Core docs already use appropriate terminology
 

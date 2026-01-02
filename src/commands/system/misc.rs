@@ -1217,17 +1217,49 @@ define_bool_toggle!(handle_cpu, "CPU", "CPU DISPLAY: {}", "CPU DISPLAY: OFF", "C
 
 define_bool_toggle!(handle_bpm, "BPM", "BPM: {}", "BPM: OFF", "BPM: ON", config::save_show_bpm);
 
-define_enum_select!(
-    handle_header,
-    "HEADER LEVEL",
-    config::save_header_level,
-    "ERROR: HEADER TAKES 0-4",
-    (0, "NAV ONLY"),
-    (1, "NAV + METERS"),
-    (2, "NAV + H|P + METERS"),
-    (3, "FULL NAV + H|P + METERS"),
-    (4, "FULL NAV + H|P + METERS + CPU"),
-);
+pub fn handle_header<F>(
+    parts: &[&str],
+    header_level: &mut u8,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("HEADER LEVEL: {}", header_level));
+    } else {
+        let value = parts[1];
+        match value {
+            "0" => {
+                *header_level = 0;
+                let _ = config::save_header_level(*header_level);
+                output("HEADER LEVEL: 0 (NAV ONLY)".to_string());
+            }
+            "1" => {
+                *header_level = 1;
+                let _ = config::save_header_level(*header_level);
+                output("HEADER LEVEL: 1 (NAV + METERS)".to_string());
+            }
+            "2" => {
+                *header_level = 2;
+                let _ = config::save_header_level(*header_level);
+                output("HEADER LEVEL: 2 (NAV + H|P + METERS)".to_string());
+            }
+            "3" => {
+                *header_level = 3;
+                let _ = config::save_header_level(*header_level);
+                output("HEADER LEVEL: 3 (FULL NAV + H|P + METERS)".to_string());
+            }
+            "4" => {
+                *header_level = 4;
+                let _ = config::save_header_level(*header_level);
+                output("HEADER LEVEL: 4 (FULL NAV + H|P + METERS + CPU)".to_string());
+            }
+            _ => {
+                output("ERROR: HEADER TAKES 0-4".to_string());
+            }
+        }
+    }
+}
 
 pub fn handle_limit<F>(
     parts: &[&str],

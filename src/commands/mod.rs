@@ -5,6 +5,7 @@ mod core;
 mod gate;
 mod patterns;
 pub mod randomization;
+pub mod registry;
 pub mod slew;
 mod synth;
 mod system;
@@ -37,6 +38,8 @@ use std::io::Write;
 use std::sync::{mpsc::Sender, Arc};
 
 pub use aliases::resolve_alias;
+
+#[cfg(test)]
 pub use validate::validate_script_command;
 
 fn log_command(msg: &str) {
@@ -945,7 +948,7 @@ where
             misc::handle_bpm(&parts, show_bpm, *debug_level, output);
         }
         "HEADER" => {
-            misc::handle_header(&parts, header_level, *debug_level, output);
+            misc::handle_header(&parts, header_level, output);
         }
         "LIMIT" => {
             misc::handle_limit(&parts, limiter_enabled, metro_tx, output)?;

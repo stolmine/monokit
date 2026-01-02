@@ -1,4 +1,5 @@
 use super::{App, EditAction};
+use crate::commands::registry::validate::validate_from_registry;
 
 impl App {
     pub fn insert_char(&mut self, c: char) {
@@ -123,7 +124,7 @@ impl App {
             };
 
             if !self.input.trim().is_empty() {
-                if let Err(e) = crate::commands::validate_script_command(&self.input) {
+                if let Err(e) = validate_from_registry(&self.input) {
                     self.script_error = Some(format!("{}", e));
                     self.script_error_time = Some(std::time::Instant::now());
                     return;
@@ -272,7 +273,7 @@ impl App {
         if let Some(script_idx) = self.current_script_index() {
             if let Some(selected) = self.selected_line {
                 if !self.clipboard.trim().is_empty() {
-                    if let Err(e) = crate::commands::validate_script_command(&self.clipboard) {
+                    if let Err(e) = validate_from_registry(&self.clipboard) {
                         self.script_error = Some(format!("{}", e));
                         self.script_error_time = Some(std::time::Instant::now());
                         return;

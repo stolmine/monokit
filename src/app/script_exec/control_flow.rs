@@ -1,5 +1,7 @@
 use super::super::App;
+use crate::commands::registry::validate::validate_from_registry;
 use crate::eval::{eval_condition, eval_expression};
+use crate::output::OutputDecider;
 use crate::types::ConditionalSegment;
 use std::time::Instant;
 
@@ -238,7 +240,7 @@ impl App {
         line_num: usize,
         sub_cmd_offset: usize,
     ) {
-        if let Err(e) = crate::commands::validate_script_command(sub_cmd) {
+        if let Err(e) = validate_from_registry(sub_cmd) {
             if self.should_output(crate::types::OutputCategory::Error) {
                 self.add_output(e.to_string().to_uppercase());
             }

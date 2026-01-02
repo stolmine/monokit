@@ -91,8 +91,13 @@ src/
 ├── commands/ (~8,167 lines) - Command processing
 │   ├── mod.rs - Main dispatcher
 │   ├── context.rs - ExecutionContext struct
-│   ├── validate.rs - Command validation
-│   ├── aliases.rs - 93 aliases
+│   ├── validate.rs - Command validation (legacy)
+│   ├── aliases.rs - Registry-derived aliases
+│   ├── registry/ - Centralized command registry (v0.4.3)
+│   │   ├── mod.rs - Registry module coordinator
+│   │   ├── commands.rs - 408 command definitions
+│   │   ├── validate.rs - Registry-based validation
+│   │   └── {variables,counters,patterns,synth,effects,system,control,ui}.rs
 │   ├── core/ - Language primitives
 │   ├── patterns/ - Pattern operations
 │   ├── system/ - System commands
@@ -308,6 +313,63 @@ See DEBUG_TIERS.md for complete tier classification.
 
 ---
 
+## Command Registry System (v0.4.3)
+
+**Status: COMPLETE (January 2026)**
+
+**Location:** `src/commands/registry/`
+
+Centralized command registry serves as single source of truth for validation and dispatch.
+
+### Architecture
+
+**CommandDef Struct:**
+- name: Primary command name (e.g., "PF", "M.BPM")
+- canonical: Long-form name if alias (e.g., "POSC.FREQ" for "PF")
+- args: Argument requirements (ArgCount enum)
+- help: Help text (max 46 chars for terminal compliance)
+- special_validation: Flag for commands requiring custom logic
+
+**ArgCount Enum:**
+- None: Exactly 0 arguments
+- Exactly(n): Exactly n arguments
+- AtLeast(n): Minimum n arguments
+- Range(min, max): Between min and max arguments
+- Custom: Requires specialized validation function
+
+**Registry Stats:**
+- 408 total command definitions
+- 8 category modules (variables, counters, patterns, synth, effects, system, control, ui)
+- Removed phantom commands: NA, NC, ND, NE, NG, ENV.*
+- Added missing commands: FBEV.AMT, M.SYNC
+
+### Benefits
+
+1. **Single Source of Truth** - No duplicate command lists
+2. **Automatic Alias Derivation** - Aliases derived from canonical mappings
+3. **Consistent Validation** - ArgCount enforces validation uniformly
+4. **Reduced Code** - 63% reduction in validate.rs, 95% reduction in aliases.rs
+5. **Maintainability** - Add new commands in one place
+
+### Files
+
+```
+src/commands/registry/
+├── mod.rs              - Module coordinator
+├── commands.rs         - Registry aggregation (COMMAND_REGISTRY static)
+├── validate.rs         - Registry-based validation logic
+├── variables.rs        - Variable commands (A-Z, J, K)
+├── counters.rs         - Counter commands (N1-N4)
+├── patterns.rs         - Pattern commands (P.*, PN.*)
+├── synth.rs            - Synth parameters (PF, MF, etc.)
+├── effects.rs          - Effect parameters (FC, CL.*, etc.)
+├── system.rs           - System commands (BPM, RST, etc.)
+├── control.rs          - Control flow (IF, L, RND, etc.)
+└── ui.rs               - UI commands (THEME, HEADER, etc.)
+```
+
+---
+
 ## Script Validation System
 
 **Status: COMPLETE (December 2025)**
@@ -320,6 +382,7 @@ Comprehensive validation prevents invalid scripts from being saved:
 4. **Control Flow** - Loop, conditional, DEL command validation
 5. **SEQ Pattern Content** - Bracket balancing, token verification
 6. **Reference Ranges** - Pattern 0-5, Script 1-8/M/I validation
+7. **Registry-Based** - Uses centralized registry for command lookup (v0.4.3)
 
 ### Test Coverage
 - 9 comprehensive test scenes

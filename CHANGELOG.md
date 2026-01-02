@@ -20,6 +20,16 @@
 - Users must manually set PLV after RST to use Plaits
 - Scenes with LOAD.RST work normally (scene sets PLV value)
 
+**Script Validation Refactor**
+- Centralized command registry with 408 command definitions
+- Single source of truth for validation and dispatch
+- Removed phantom commands (NA, NC, ND, NE, NG, ENV.*)
+- Added missing validation for FBEV.AMT, M.SYNC
+- Aliases now derived from registry (no duplicate maintenance)
+- Reduced validate.rs by ~63% (707 lines to 10 lines)
+- Reduced aliases.rs by ~95% (193 lines to 10 lines)
+- Total reduction: ~890 lines of validation code
+
 ### Implementation Details
 
 **Modified `handle_rst()` function:**
@@ -28,9 +38,25 @@
 - LOAD.RST optimized for stability (1ms delays between parameters)
 - Conditional sleep only when delay_ms > 0 to avoid unnecessary overhead
 
+**Command Registry Module:**
+- New module structure: `src/commands/registry/`
+- Category modules: variables, counters, patterns, synth, effects, system, control, ui
+- CommandDef struct with name, canonical, args, help text
+- ArgCount enum for flexible validation (None, Exactly, AtLeast, Range, Custom)
+- COMMAND_REGISTRY static HashMap as single source of truth
+- Aliases automatically derived from registry canonical mappings
+
 **Files modified:**
 - `src/commands/system/misc.rs` - RST delay logic and PLV default
 - `src/commands/mod.rs` - RST and LOAD.RST call sites
+- `src/commands/validate.rs` - Registry-based validation (63% reduction)
+- `src/commands/aliases.rs` - Registry-derived aliases (95% reduction)
+
+**Files created:**
+- `src/commands/registry/mod.rs` - Registry module coordinator
+- `src/commands/registry/commands.rs` - Central registry aggregation
+- `src/commands/registry/validate.rs` - Registry-based validation logic
+- `src/commands/registry/{variables,counters,patterns,synth,effects,system,control,ui}.rs` - Category modules
 
 ---
 

@@ -1,5 +1,7 @@
 use super::super::App;
+use crate::commands::registry::validate::validate_from_registry;
 use crate::eval::eval_expression;
+use crate::output::OutputDecider;
 
 impl App {
     pub fn execute_command(&mut self) {
@@ -124,7 +126,7 @@ impl App {
                 continue;
             }
 
-            if let Err(e) = crate::commands::validate_script_command(sub_cmd) {
+            if let Err(e) = validate_from_registry(sub_cmd) {
                 if self.should_output(crate::types::OutputCategory::Error) {
                     self.add_output(format!("ERROR: {}", e.to_string().to_uppercase()));
                 }

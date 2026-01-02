@@ -203,7 +203,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - Scope gain parameter + reset command
 - Programmable EQ shelving frequencies (ELF/EHF)
 - Compressor auto-makeup toggle (CR.AUTO)
-- Confirm on quit (unsaved scripts)
+- **Confirmation dialogs (persistent settings)** - Confirm before quit if scene unsaved/modified; confirm before overwriting existing scene on save
 - N1-N4 help section relocation
 
 **Documentation:**
@@ -233,8 +233,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **Scope Gain Parameter** [Low] - Add gain control for scope output to accurately monitor quiet signals; separate from main volume
 - **Scope Reset Command** [Low] - Command to reset scope state/buffer
 - **Multiple Reverb Types** [Medium] - Add alternative reverb algorithms (JVerb, FDN, etc.); allow switching between reverb types; maintain current FreeVerb as default
-- **Confirm on Quit** [Low] - Optional confirmation dialog when quitting application
-- **Confirm on Quit (Unsaved Scripts)** [Low] - Warn user when quitting with modified script contents that haven't been saved to scene
+- **Confirmation Dialogs (Persistent Settings)** [Low] - User-configurable confirmation prompts: (1) confirm before quit if scene is unsaved or has modifications from saved state; (2) confirm before overwriting existing scene on save; settings persisted in config.toml
 - **Script Mute Hotkeys (Terminal Research)** [Medium] - Fix Ctrl+Shift+1-8/M/I hotkeys not working (v0.4.2.1); terminal emulators handle Ctrl+Shift differently; research alternatives: two-key sequences (Vim-style), function keys (F13-F24), or Alt+Ctrl combinations; test across iTerm2, Terminal.app, kitty, alacritty; document terminal-specific limitations
 - **N1-N4 Help Section Location** [Low] - Move N1-N4 counter documentation from PATTERNS section to MATH & VARIABLES section in help system; counters are variables not patterns; improves help organization and discoverability
 - **Global Distortion/Saturation** [Low-Medium] - Natural-sounding saturation/distortion effect with antialiasing; options include smooth clipping (SmoothClipS), wavefolding (LockhartWavefolder), analog tape emulation, or waveshaping with proper oversampling to avoid aliasing artifacts; multiple modes for different saturation characters (tube, tape, soft clip, fold)

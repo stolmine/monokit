@@ -11,6 +11,9 @@ mod system;
 pub mod validate;
 mod validate_expr;
 
+// Re-export OutputDecider so callers can use the trait methods
+pub use crate::output::OutputDecider;
+
 // Re-export from core module
 use core::{counters, math_ops, random_ops, variables};
 pub use core::scale;
@@ -885,13 +888,13 @@ where
             }
         }
         "LOAD.RST" => {
-            misc::handle_load_rst(&parts, load_rst, output);
+            misc::handle_load_rst(&parts, load_rst, *debug_level, output);
         }
         "LOAD.CLR" => {
-            misc::handle_load_clr(&parts, load_clr, output);
+            misc::handle_load_clr(&parts, load_clr, *debug_level, output);
         }
         "AUTOLOAD" => {
-            misc::handle_autoload(&parts, autoload, output);
+            misc::handle_autoload(&parts, autoload, *debug_level, output);
         }
         "SCENES" => {
             scene_cmds::handle_scenes(*debug_level, *out_qry, output);
@@ -933,16 +936,16 @@ where
             misc::handle_print(&parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_qry, output);
         }
         "DEBUG" => {
-            misc::handle_debug(&parts, debug_level, output);
+            misc::handle_debug(&parts, debug_level, out_err, out_ess, out_qry, out_cfm, *debug_level, output);
         }
         "CPU" => {
-            misc::handle_cpu(&parts, show_cpu, output);
+            misc::handle_cpu(&parts, show_cpu, *debug_level, output);
         }
         "BPM" => {
-            misc::handle_bpm(&parts, show_bpm, output);
+            misc::handle_bpm(&parts, show_bpm, *debug_level, output);
         }
         "HEADER" => {
-            misc::handle_header(&parts, header_level, output);
+            misc::handle_header(&parts, header_level, *debug_level, output);
         }
         "LIMIT" => {
             misc::handle_limit(&parts, limiter_enabled, metro_tx, output)?;
@@ -998,31 +1001,31 @@ where
             }
         }
         "HL.SEQ" => {
-            misc::handle_hl_seq(&parts, show_seq_highlight, output);
+            misc::handle_hl_seq(&parts, show_seq_highlight, *debug_level, output);
         }
         "METER.HDR" => {
-            misc::handle_meter_hdr(&parts, show_meters_header, output);
+            misc::handle_meter_hdr(&parts, show_meters_header, *debug_level, output);
         }
         "METER.GRID" => {
-            misc::handle_meter_grid(&parts, show_meters_grid, output);
+            misc::handle_meter_grid(&parts, show_meters_grid, *debug_level, output);
         }
         "METER.ASCII" => {
-            misc::handle_meter_ascii(&parts, ascii_meters, output);
+            misc::handle_meter_ascii(&parts, ascii_meters, *debug_level, output);
         }
         "SPECTRUM" => {
-            misc::handle_spectrum(&parts, show_spectrum, output);
+            misc::handle_spectrum(&parts, show_spectrum, *debug_level, output);
         }
         "ACTIVITY" => {
-            misc::handle_activity(&parts, show_activity, output);
+            misc::handle_activity(&parts, show_activity, *debug_level, output);
         }
         "GRID" => {
-            misc::handle_grid(&parts, show_grid, output);
+            misc::handle_grid(&parts, show_grid, *debug_level, output);
         }
         "GRID.DEF" => {
-            misc::handle_grid_def(&parts, show_grid_view, output);
+            misc::handle_grid_def(&parts, show_grid_view, *debug_level, output);
         }
         "GRID.MODE" => {
-            misc::handle_grid_mode(&parts, grid_mode, output);
+            misc::handle_grid_mode(&parts, grid_mode, *debug_level, output);
         }
         "TITLE" => {
             misc::handle_title(&parts, title_mode, current_scene_name, *scramble_enabled, *scramble_mode, *scramble_speed, *scramble_curve, header_scramble, output);
@@ -1031,28 +1034,28 @@ where
             misc::handle_title_timer(&parts, title_timer_enabled, title_timer_interval_secs, title_timer_last_toggle, title_mode, current_scene_name, *scramble_enabled, *scramble_mode, *scramble_speed, *scramble_curve, header_scramble, variables, patterns, counters, scripts, script_index, scale, output);
         }
         "SCRMBL" => {
-            misc::handle_scrmbl(&parts, scramble_enabled, output);
+            misc::handle_scrmbl(&parts, scramble_enabled, *debug_level, output);
         }
         "SCRMBL.MODE" => {
-            misc::handle_scrmbl_mode(&parts, scramble_mode, output);
+            misc::handle_scrmbl_mode(&parts, scramble_mode, *debug_level, output);
         }
         "SCRMBL.SPD" => {
-            misc::handle_scrmbl_spd(&parts, scramble_speed, output);
+            misc::handle_scrmbl_spd(&parts, scramble_speed, *debug_level, output);
         }
         "SCRMBL.CRV" => {
-            misc::handle_scrmbl_crv(&parts, scramble_curve, output);
+            misc::handle_scrmbl_crv(&parts, scramble_curve, *debug_level, output);
         }
         "OUT.ERR" => {
-            misc::handle_out_err(&parts, out_err, output);
+            misc::handle_out_err(&parts, out_err, *debug_level, output);
         }
         "OUT.ESS" => {
-            misc::handle_out_ess(&parts, out_ess, output);
+            misc::handle_out_ess(&parts, out_ess, *debug_level, output);
         }
         "OUT.QRY" => {
-            misc::handle_out_qry(&parts, out_qry, output);
+            misc::handle_out_qry(&parts, out_qry, *debug_level, output);
         }
         "OUT.CFM" => {
-            misc::handle_out_cfm(&parts, out_cfm, output);
+            misc::handle_out_cfm(&parts, out_cfm, *debug_level, output);
         }
         "COMPAT" => {
             misc::handle_compat(terminal_caps, color_mode, output);

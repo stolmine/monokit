@@ -294,12 +294,26 @@ DEBUG 1  # Errors only
 DEBUG 2  # Errors + essential info
 DEBUG 3  # Errors + essential + queries
 DEBUG 4  # All output including confirmations
+DEBUG 5  # Verbose (reserved for future diagnostics)
 ```
 
-Override specific categories:
+**Important:** Setting DEBUG automatically synchronizes the OUT.* flags:
+- DEBUG 0 → out_err=false, out_ess=false, out_qry=false, out_cfm=false
+- DEBUG 1 → out_err=true, out_ess=false, out_qry=false, out_cfm=false
+- DEBUG 2 → out_err=true, out_ess=true, out_qry=false, out_cfm=false
+- DEBUG 3 → out_err=true, out_ess=true, out_qry=true, out_cfm=false
+- DEBUG 4+ → out_err=true, out_ess=true, out_qry=true, out_cfm=true
+
+Override specific categories after setting DEBUG:
 ```
-OUT.ERR 1  # Always show errors
-OUT.ESS 1  # Always show essential info
-OUT.QRY 1  # Always show query results
-OUT.CFM 1  # Always show confirmations
+OUT.ERR 1  # Show errors (even if DEBUG 0)
+OUT.ESS 1  # Show essential info
+OUT.QRY 1  # Show query results
+OUT.CFM 1  # Show confirmations
+```
+
+Example: For errors-only mode with confirmations:
+```
+DEBUG 1    # Start with errors only
+OUT.CFM 1  # Also show confirmations
 ```

@@ -1137,23 +1137,41 @@ HEADER <0-4>      # Set verbosity
 
 ```
 DEBUG <0-5>       # Set verbosity tier
+DEBUG             # Query current level
 ```
 
 **Tiers:**
-- 0: SILENT (use category overrides only)
-- 1: ERRORS (error messages)
-- 2: ESSENTIAL (state changes)
-- 3: QUERIES (value reads)
-- 4: CONFIRMS (set confirmations)
-- 5: VERBOSE (all output)
+
+| Level | Name | Shows |
+|-------|------|-------|
+| 0 | SILENT | Nothing (completely quiet) |
+| 1 | ERRORS | Validation/parse errors only |
+| 2 | ESSENTIAL | + Metro, scene, recording status |
+| 3 | QUERIES | + Variable/pattern reads, M? |
+| 4 | CONFIRMS | + "SET X TO Y", "SENT TRIGGER" |
+| 5 | VERBOSE | Reserved for future diagnostics |
+
+**Examples by tier:**
+- **Tier 1** (ERRORS): `FT 99` → "FT: RANGE 0-13"
+- **Tier 2** (ESSENTIAL): `M 250` → "METRO: 250 MS"
+- **Tier 3** (QUERIES): `A` → "A: 42"
+- **Tier 4** (CONFIRMS): `VOL 0.5` → "SET VOLUME TO 0.5"
+
+**Behavior:** Setting DEBUG automatically synchronizes
+the OUT.* flags to match. DEBUG 0 disables all output
+categories; DEBUG 4 enables all. Use OUT.* commands
+for fine-grained control after setting DEBUG level.
 
 **Category Overrides:**
 ```
-OUT.ERR <0|1>     # Override: show errors
-OUT.ESS <0|1>     # Override: show essential
-OUT.QRY <0|1>     # Override: show queries
-OUT.CFM <0|1>     # Override: show confirms
+OUT.ERR <0|1>     # Toggle: show errors
+OUT.ESS <0|1>     # Toggle: show essential
+OUT.QRY <0|1>     # Toggle: show queries
+OUT.CFM <0|1>     # Toggle: show confirms
 ```
+
+These allow selective enabling after DEBUG is set.
+Example: `DEBUG 0` then `OUT.ERR 1` shows only errors.
 
 ### Terminal Compatibility
 
@@ -1175,6 +1193,8 @@ CLEAR             # Clear REPL output
 PRINT "text"      # Print literal string
 PRINT <expr>      # Evaluate and print
 FLASH <ms>        # Set activity hold time (default 200ms)
+REPL.DUMP         # Save REPL output to repl_dump.txt
+REPL.DUMP <file>  # Save to custom filename
 ```
 
 **Default Values (RST):**

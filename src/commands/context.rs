@@ -1,10 +1,10 @@
 use crate::midi::{MidiConnection, MidiTimingStats};
+use crate::output::OutputDecider;
 use crate::terminal::TerminalCapabilities;
 use crate::theme::Theme;
 use crate::types::{
-    ColorMode, Counters, MetroCommand, NotesStorage, OutputCategory, Page, PatternStorage, ScaleState,
-    ScriptMutes, ScriptStorage, ScopeSettings, SyncMode, Variables, TIER_CONFIRMS, TIER_ERRORS,
-    TIER_ESSENTIAL, TIER_QUERIES,
+    ColorMode, Counters, MetroCommand, NotesStorage, Page, PatternStorage, ScaleState,
+    ScriptMutes, ScriptStorage, ScopeSettings, SyncMode, Variables,
 };
 use std::sync::{mpsc::Sender, Arc};
 use std::time::Instant;
@@ -77,36 +77,26 @@ pub struct ExecutionContext<'a> {
     pub script_mutes: &'a mut ScriptMutes,
 }
 
-impl<'a> ExecutionContext<'a> {
-    /// Check if output should be shown for a given category
-    /// Combines tier check with category override: tier OR override
-    pub fn should_output(&self, category: OutputCategory) -> bool {
-        let tier = match category {
-            OutputCategory::Error => TIER_ERRORS,
-            OutputCategory::Essential => TIER_ESSENTIAL,
-            OutputCategory::Query => TIER_QUERIES,
-            OutputCategory::Confirm => TIER_CONFIRMS,
-            OutputCategory::Verbose => return false, // No tier for verbose
-        };
+impl<'a> ExecutionContext<'a> {}
 
-        // Tier check OR category override
-        *self.debug_level >= tier
-            || match category {
-                OutputCategory::Error => *self.out_err,
-                OutputCategory::Essential => *self.out_ess,
-                OutputCategory::Query => *self.out_qry,
-                OutputCategory::Confirm => *self.out_cfm,
-                OutputCategory::Verbose => false,
-            }
+impl<'a> OutputDecider for ExecutionContext<'a> {
+    fn debug_level(&self) -> u8 {
+        *self.debug_level
     }
 
-    /// Conditionally output a message based on category
-    pub fn output<F>(&self, category: OutputCategory, message: String, mut output: F)
-    where
-        F: FnMut(String),
-    {
-        if self.should_output(category) {
-            output(message);
-        }
+    fn out_err(&self) -> bool {
+        *self.out_err
+    }
+
+    fn out_ess(&self) -> bool {
+        *self.out_ess
+    }
+
+    fn out_qry(&self) -> bool {
+        *self.out_qry
+    }
+
+    fn out_cfm(&self) -> bool {
+        *self.out_cfm
     }
 }

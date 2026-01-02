@@ -1,8 +1,9 @@
 use crate::commands::context::ExecutionContext;
 use crate::config;
 use crate::eval::eval_expression;
+use crate::output::OutputDecider;
 use crate::theme::Theme;
-use crate::types::{Counters, MetroCommand, OutputCategory, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_ERRORS, TIER_ESSENTIAL, TIER_CONFIRMS};
+use crate::types::{Counters, MetroCommand, OutputCategory, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_ERRORS, TIER_ESSENTIAL, TIER_CONFIRMS, TIER_QUERIES};
 use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
@@ -13,23 +14,30 @@ macro_rules! define_bool_toggle {
         pub fn $fn_name<F>(
             parts: &[&str],
             state: &mut bool,
+            debug_level: u8,
             mut output: F,
         ) where
             F: FnMut(String),
         {
             if parts.len() == 1 {
-                output(format!("{}: {}", $cmd_name, if *state { "ON" } else { "OFF" }));
+                if debug_level >= TIER_QUERIES {
+                    output(format!("{}: {}", $cmd_name, if *state { "ON" } else { "OFF" }));
+                }
             } else {
                 match parts[1] {
                     "0" => {
                         *state = false;
                         let _ = $save_fn(*state);
-                        output(format!("{}: OFF", $cmd_name));
+                        if debug_level >= TIER_CONFIRMS {
+                            output(format!("{}: OFF", $cmd_name));
+                        }
                     }
                     "1" => {
                         *state = true;
                         let _ = $save_fn(*state);
-                        output(format!("{}: ON", $cmd_name));
+                        if debug_level >= TIER_CONFIRMS {
+                            output(format!("{}: ON", $cmd_name));
+                        }
                     }
                     _ => output(format!("ERROR: {} TAKES 0 (OFF) OR 1 (ON)", $cmd_name)),
                 }
@@ -40,23 +48,30 @@ macro_rules! define_bool_toggle {
         pub fn $fn_name<F>(
             parts: &[&str],
             state: &mut bool,
+            debug_level: u8,
             mut output: F,
         ) where
             F: FnMut(String),
         {
             if parts.len() == 1 {
-                output(if *state { $on_fmt.to_string() } else { $off_fmt.to_string() });
+                if debug_level >= TIER_QUERIES {
+                    output(if *state { $on_fmt.to_string() } else { $off_fmt.to_string() });
+                }
             } else {
                 match parts[1] {
                     "0" => {
                         *state = false;
                         let _ = $save_fn(*state);
-                        output($off_fmt.to_string());
+                        if debug_level >= TIER_CONFIRMS {
+                            output($off_fmt.to_string());
+                        }
                     }
                     "1" => {
                         *state = true;
                         let _ = $save_fn(*state);
-                        output($on_fmt.to_string());
+                        if debug_level >= TIER_CONFIRMS {
+                            output($on_fmt.to_string());
+                        }
                     }
                     _ => output(format!("ERROR: {} TAKES 0 (OFF) OR 1 (ON)", $cmd_name)),
                 }
@@ -71,12 +86,15 @@ macro_rules! define_enum_select {
         pub fn $fn_name<F>(
             parts: &[&str],
             state: &mut u8,
+            debug_level: u8,
             mut output: F,
         ) where
             F: FnMut(String),
         {
             if parts.len() == 1 {
-                output(format!("{}: {}", $cmd_name, *state));
+                if debug_level >= TIER_QUERIES {
+                    output(format!("{}: {}", $cmd_name, *state));
+                }
             } else {
                 let value = parts[1];
                 match value {
@@ -84,7 +102,9 @@ macro_rules! define_enum_select {
                         stringify!($value) => {
                             *state = $value;
                             let _ = $save_fn(*state);
-                            output(format!("{}: {} ({})", $cmd_name, $value, $label));
+                            if debug_level >= TIER_CONFIRMS {
+                                output(format!("{}: {} ({})", $cmd_name, $value, $label));
+                            }
                         }
                     )+
                     _ => output($err_msg.to_string()),
@@ -97,19 +117,24 @@ macro_rules! define_enum_select {
         pub fn $fn_name<F>(
             parts: &[&str],
             state: &mut u8,
+            debug_level: u8,
             mut output: F,
         ) where
             F: FnMut(String),
         {
             if parts.len() == 1 {
-                output(format!("{}: {}", $cmd_name, *state));
+                if debug_level >= TIER_QUERIES {
+                    output(format!("{}: {}", $cmd_name, *state));
+                }
             } else if let Ok(val) = parts[1].parse::<u8>() {
                 match val {
                     $(
                         $value => {
                             *state = $value;
                             let _ = $save_fn(*state);
-                            output(format!("{}: {}", $cmd_name, $value));
+                            if debug_level >= TIER_CONFIRMS {
+                                output(format!("{}: {}", $cmd_name, $value));
+                            }
                         }
                     )+
                     _ => output($err_msg.to_string()),
@@ -1132,18 +1157,61 @@ pub fn handle_print<F>(
     }
 }
 
-define_enum_select!(
-    handle_debug,
-    "DEBUG",
-    config::save_debug_level,
-    "ERROR: DEBUG TAKES 0-5",
-    (0, "SILENT"),
-    (1, "ERRORS"),
-    (2, "ESSENTIAL"),
-    (3, "QUERIES"),
-    (4, "CONFIRMS"),
-    (5, "VERBOSE"),
-);
+/// Custom DEBUG handler that sets debug_level AND synchronizes out_* flags
+pub fn handle_debug<F>(
+    parts: &[&str],
+    debug_level: &mut u8,
+    out_err: &mut bool,
+    out_ess: &mut bool,
+    out_qry: &mut bool,
+    out_cfm: &mut bool,
+    current_level: u8,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    const LABELS: &[(u8, &str)] = &[
+        (0, "SILENT"),
+        (1, "ERRORS"),
+        (2, "ESSENTIAL"),
+        (3, "QUERIES"),
+        (4, "CONFIRMS"),
+        (5, "VERBOSE"),
+    ];
+
+    if parts.len() == 1 {
+        // Query mode
+        if current_level >= TIER_QUERIES {
+            output(format!("DEBUG: {}", *debug_level));
+        }
+    } else {
+        match parts[1].parse::<u8>() {
+            Ok(val) if val <= 5 => {
+                *debug_level = val;
+                let _ = config::save_debug_level(val);
+
+                // Synchronize out_* flags based on tier
+                // TIER_ERRORS=1, TIER_ESSENTIAL=2, TIER_QUERIES=3, TIER_CONFIRMS=4
+                *out_err = val >= 1;
+                *out_ess = val >= 2;
+                *out_qry = val >= 3;
+                *out_cfm = val >= 4;
+
+                // Save out_* flags
+                let _ = config::save_out_err(*out_err);
+                let _ = config::save_out_ess(*out_ess);
+                let _ = config::save_out_qry(*out_qry);
+                let _ = config::save_out_cfm(*out_cfm);
+
+                if current_level >= TIER_CONFIRMS {
+                    let label = LABELS.iter().find(|(v, _)| *v == val).map(|(_, l)| *l).unwrap_or("UNKNOWN");
+                    output(format!("DEBUG: {} ({})", val, label));
+                }
+            }
+            _ => output("ERROR: DEBUG TAKES 0-5".to_string()),
+        }
+    }
+}
 
 define_bool_toggle!(handle_cpu, "CPU", "CPU DISPLAY: {}", "CPU DISPLAY: OFF", "CPU DISPLAY: ON", config::save_show_cpu);
 

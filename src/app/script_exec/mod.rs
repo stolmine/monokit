@@ -5,6 +5,7 @@ mod loops;
 use super::App;
 use crate::commands::process_command;
 use crate::eval::eval_expression;
+use crate::output::OutputDecider;
 use crate::utils::{split_respecting_quotes, split_whitespace_respecting_quotes};
 use std::io::Write;
 

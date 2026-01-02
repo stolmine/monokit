@@ -1,4 +1,5 @@
 use crate::eval::eval_expression;
+use crate::output::OutputDecider;
 use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_QUERIES, TIER_CONFIRMS, TIER_ERRORS};
 use anyhow::{Context, Result};
 

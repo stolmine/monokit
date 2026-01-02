@@ -1,4 +1,4 @@
-use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables};
+use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_ESSENTIAL};
 
 pub const SCALE_CHROMATIC: u16 = 0b111111111111;
 pub const SCALE_MAJOR: u16 = 0b101010110101;
@@ -89,7 +89,7 @@ pub fn handle_q_root<F>(
     }
 
     scale.root = value as u8;
-    if debug_level >= 2 {
+    if debug_level >= TIER_ESSENTIAL {
         output(format!("SET SCALE ROOT TO {}", value));
     }
 }
@@ -136,7 +136,7 @@ pub fn handle_q_scale<F>(
     scale.mask = get_preset_mask(preset);
     scale.divisions = 12;
 
-    if debug_level >= 2 {
+    if debug_level >= TIER_ESSENTIAL {
         output(format!("SET SCALE PRESET TO {}", preset));
     }
 }
@@ -167,7 +167,7 @@ pub fn handle_q_bit<F>(
             scale.divisions = divisions;
             scale.scale_preset = None;
 
-            if debug_level >= 2 {
+            if debug_level >= TIER_ESSENTIAL {
                 output(format!("SET CUSTOM SCALE MASK ({} DIVISIONS)", divisions));
             }
         }

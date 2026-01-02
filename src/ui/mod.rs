@@ -12,6 +12,7 @@ use ratatui::{prelude::*, widgets::Block};
 use std::sync::mpsc;
 use std::time::Duration;
 
+use crate::output::OutputDecider;
 use crate::types::{MetroEvent, Page};
 
 use footer::render_footer;

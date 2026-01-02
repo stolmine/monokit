@@ -2,6 +2,7 @@ use anyhow::Context;
 use crate::commands::patterns::common::{
     define_pattern_op_1val, define_pattern_op_2val,
 };
+use crate::output::OutputDecider;
 
 define_pattern_op_1val!(handle_pattern_add, handle_pn_add, pattern_add_impl, "ADD", direct);
 define_pattern_op_1val!(handle_pattern_sub, handle_pn_sub, pattern_sub_impl, "SUB", direct);

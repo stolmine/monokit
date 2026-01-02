@@ -6,6 +6,7 @@ mod meter;
 mod metro;
 mod midi;
 mod osc_utils;
+mod output;
 mod preset;
 mod sc_process;
 

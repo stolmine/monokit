@@ -1,9 +1,9 @@
 use crate::midi::{MidiConnection, MidiTimingStats};
+use crate::output::OutputDecider;
 use crate::terminal::TerminalCapabilities;
 use crate::theme::Theme;
 use crate::types::{
-    ColorMode, Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, NotesStorage, OutputCategory, Page, ParamActivity, PatternStorage, ScaleState, ScopeData, ScriptMutes, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
-    TIER_CONFIRMS, TIER_ERRORS, TIER_ESSENTIAL, TIER_QUERIES,
+    ColorMode, Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, NotesStorage, Page, ParamActivity, PatternStorage, ScaleState, ScopeData, ScriptMutes, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
 };
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -362,26 +362,6 @@ impl App {
         }
         // Reset scroll to bottom when new output is added
         self.output_scroll = 0;
-    }
-
-    /// Check if output should be shown based on tier and category overrides
-    pub fn should_output(&self, category: OutputCategory) -> bool {
-        let tier = match category {
-            OutputCategory::Error => TIER_ERRORS,
-            OutputCategory::Essential => TIER_ESSENTIAL,
-            OutputCategory::Query => TIER_QUERIES,
-            OutputCategory::Confirm => TIER_CONFIRMS,
-            OutputCategory::Verbose => return false, // Verbose tier removed, always suppress
-        };
-
-        // Tier check OR category override
-        self.debug_level >= tier || match category {
-            OutputCategory::Error => self.out_err,
-            OutputCategory::Essential => self.out_ess,
-            OutputCategory::Query => self.out_qry,
-            OutputCategory::Confirm => self.out_cfm,
-            OutputCategory::Verbose => false,
-        }
     }
 
     pub fn execute_script(&mut self, script_index: usize) {
@@ -813,5 +793,27 @@ impl App {
             stack.clear();
         }
         self.notes_undo_stack.clear();
+    }
+}
+
+impl OutputDecider for App {
+    fn debug_level(&self) -> u8 {
+        self.debug_level
+    }
+
+    fn out_err(&self) -> bool {
+        self.out_err
+    }
+
+    fn out_ess(&self) -> bool {
+        self.out_ess
+    }
+
+    fn out_qry(&self) -> bool {
+        self.out_qry
+    }
+
+    fn out_cfm(&self) -> bool {
+        self.out_cfm
     }
 }

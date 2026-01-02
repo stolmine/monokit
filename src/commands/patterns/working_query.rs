@@ -1,6 +1,7 @@
 use super::common::{
     define_pattern_query, define_pattern_query_1val,
 };
+use crate::output::OutputDecider;
 
 define_pattern_query!(handle_pattern_min, handle_pn_min, pattern_min_impl, "MIN", result);
 define_pattern_query!(handle_pattern_max, handle_pn_max, pattern_max_impl, "MAX", result);

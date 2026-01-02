@@ -1,5 +1,6 @@
 use crate::commands::context::ExecutionContext;
 use crate::eval::eval_expression;
+use crate::output::OutputDecider;
 use crate::types::{Counters, MetroCommand, OutputCategory, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_CONFIRMS};
 use anyhow::{Context, Result};
 use rosc::OscType;

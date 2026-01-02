@@ -1,5 +1,6 @@
 use crate::commands::common::parse_i16_expr;
 use crate::commands::context::ExecutionContext;
+use crate::output::OutputDecider;
 use crate::types::OutputCategory;
 use anyhow::Result;
 

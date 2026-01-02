@@ -3,6 +3,7 @@ use crate::commands::patterns::common::{
     define_pattern_op_idx_val, define_pattern_op_idx,
     define_pattern_pop, define_pattern_rnd,
 };
+use crate::output::OutputDecider;
 
 define_pattern_op_1val!(handle_pattern_push, handle_pn_push, pattern_push_impl, "PUSH", result);
 define_pattern_pop!(handle_pattern_pop, handle_pn_pop, pattern_pop_impl, "POP");

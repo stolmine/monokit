@@ -1,6 +1,6 @@
 use crate::config;
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_CONFIRMS, TIER_QUERIES};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_CONFIRMS, TIER_ESSENTIAL, TIER_QUERIES};
 use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
@@ -28,7 +28,7 @@ where
     metro_tx
         .send(MetroCommand::SendVolume(value))
         .context("Failed to send volume to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_ESSENTIAL {
         output(format!("SET VOLUME TO {}", value));
     }
     Ok(())
@@ -67,7 +67,7 @@ where
     metro_tx
         .send(MetroCommand::SendParam("pn".to_string(), OscType::Int(value)))
         .context("Failed to send param to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_ESSENTIAL {
         output(format!("SET PAN POSITION TO {}", value));
     }
     Ok(())

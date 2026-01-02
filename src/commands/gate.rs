@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_ESSENTIAL};
 use anyhow::{Context, Result};
 use std::sync::mpsc::Sender;
 
@@ -37,7 +37,7 @@ where
     metro_tx
         .send(MetroCommand::SetGate(time_sec))
         .context("Failed to send gate to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_ESSENTIAL {
         output(format!("SET GLOBAL GATE TO {} MS", value_ms));
     }
     Ok(())
@@ -77,7 +77,7 @@ where
     metro_tx
         .send(MetroCommand::SetEnvGate("aenv".to_string(), time_sec))
         .context("Failed to send gate to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_ESSENTIAL {
         output(format!("SET AMP ENV GATE TO {} MS", value_ms));
     }
     Ok(())
@@ -117,7 +117,7 @@ where
     metro_tx
         .send(MetroCommand::SetEnvGate("penv".to_string(), time_sec))
         .context("Failed to send gate to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_ESSENTIAL {
         output(format!("SET PITCH ENV GATE TO {} MS", value_ms));
     }
     Ok(())
@@ -157,7 +157,7 @@ where
     metro_tx
         .send(MetroCommand::SetEnvGate("fmev".to_string(), time_sec))
         .context("Failed to send gate to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_ESSENTIAL {
         output(format!("SET FM ENV GATE TO {} MS", value_ms));
     }
     Ok(())
@@ -197,7 +197,7 @@ where
     metro_tx
         .send(MetroCommand::SetEnvGate("denv".to_string(), time_sec))
         .context("Failed to send gate to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_ESSENTIAL {
         output(format!("SET DC ENV GATE TO {} MS", value_ms));
     }
     Ok(())
@@ -237,7 +237,7 @@ where
     metro_tx
         .send(MetroCommand::SetEnvGate("fbev".to_string(), time_sec))
         .context("Failed to send gate to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_ESSENTIAL {
         output(format!("SET FEEDBACK ENV GATE TO {} MS", value_ms));
     }
     Ok(())
@@ -277,7 +277,7 @@ where
     metro_tx
         .send(MetroCommand::SetEnvGate("flev".to_string(), time_sec))
         .context("Failed to send gate to metro thread")?;
-    if debug_level >= 2 {
+    if debug_level >= TIER_ESSENTIAL {
         output(format!("SET FILTER ENV GATE TO {} MS", value_ms));
     }
     Ok(())

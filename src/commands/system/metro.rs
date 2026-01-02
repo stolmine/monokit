@@ -1,4 +1,5 @@
 use crate::commands::context::ExecutionContext;
+use crate::output::OutputDecider;
 use crate::types::{MetroCommand, OutputCategory, SyncMode};
 use anyhow::{Context, Result};
 

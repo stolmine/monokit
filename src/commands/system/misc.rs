@@ -278,7 +278,7 @@ where
     if delay_ms > 0 {
         std::thread::sleep(Duration::from_millis(delay_ms));
     }
-    ctx.metro_tx.send(MetroCommand::SendParam("fbd".to_string(), OscType::Int(10)))?;
+    ctx.metro_tx.send(MetroCommand::SendParam("fbd".to_string(), OscType::Int(100)))?;
     if delay_ms > 0 {
         std::thread::sleep(Duration::from_millis(delay_ms));
     }
@@ -345,11 +345,11 @@ where
         std::thread::sleep(Duration::from_millis(delay_ms));
     }
 
-    ctx.metro_tx.send(MetroCommand::SendParam("rf".to_string(), OscType::Float(440.0)))?;
+    ctx.metro_tx.send(MetroCommand::SendParam("rf".to_string(), OscType::Float(131.0)))?;
     if delay_ms > 0 {
         std::thread::sleep(Duration::from_millis(delay_ms));
     }
-    ctx.metro_tx.send(MetroCommand::SendParam("rd".to_string(), OscType::Int(500)))?;
+    ctx.metro_tx.send(MetroCommand::SendParam("rd".to_string(), OscType::Int(100)))?;
     if delay_ms > 0 {
         std::thread::sleep(Duration::from_millis(delay_ms));
     }
@@ -429,7 +429,7 @@ where
         std::thread::sleep(Duration::from_millis(delay_ms));
     }
 
-    ctx.metro_tx.send(MetroCommand::SendParam("rgf".to_string(), OscType::Float(440.0)))?;
+    ctx.metro_tx.send(MetroCommand::SendParam("rgf".to_string(), OscType::Float(131.0)))?;
     if delay_ms > 0 {
         std::thread::sleep(Duration::from_millis(delay_ms));
     }

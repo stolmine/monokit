@@ -185,12 +185,16 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 | Category | Status |
 |----------|--------|
-| Critical Bug Fixes (2 items) | PLANNED |
+| Critical Bug Fixes (6 items) | PLANNED |
 | Quick Polish Wins (5 items) | PLANNED |
 | Documentation Cleanup (3 items) | PLANNED |
 | Stretch Goals (2 items) | PLANNED |
 
 **Critical Fixes:**
+- **Audio engine loss on scene load** - Sequencing continues and UI remains responsive, but meters show no activity and audio output is silent; no specific scene combination isolated as cause
+- **RST Plaits squeals** - Harsh high-pitched squeals on RST command, frequently occurring; suspected source is Plaits synth
+- **RST should run Init script** - RST command should execute Init script (I) after reset; watch for race conditions with parameter sends
+- **Debug levels broken** - Debug 0 still shows SET prints and TR messages; levels either poorly segmented or not filtering correctly
 - Scene loading audio crashes
 - Stateful highlighting issues
 

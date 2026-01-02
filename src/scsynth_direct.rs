@@ -59,8 +59,42 @@ impl ScsynthDirect {
         cmd.arg("-R").arg("0");       // Don't load default synthdefs
         cmd.arg("-l").arg("1");       // Max logins
 
+        // Build plugin path with both app plugins and user extensions
+        let mut plugin_paths: Vec<String> = Vec::new();
+
         if plugins_dir.exists() {
-            cmd.arg("-U").arg(&plugins_dir);
+            plugin_paths.push(plugins_dir.to_string_lossy().to_string());
+        }
+
+        // Add user SC extensions (contains mi-UGens, SC3plugins, etc.)
+        if let Some(home) = dirs::home_dir() {
+            let user_extensions = home.join("Library/Application Support/SuperCollider/Extensions");
+            if user_extensions.exists() {
+                // Add mi-UGens directly
+                let mi_ugens = user_extensions.join("mi-UGens");
+                if mi_ugens.exists() {
+                    plugin_paths.push(mi_ugens.to_string_lossy().to_string());
+                }
+                // Add SC3plugins subdirectories
+                let sc3plugins = user_extensions.join("SC3plugins");
+                if sc3plugins.exists() {
+                    if let Ok(entries) = std::fs::read_dir(&sc3plugins) {
+                        for entry in entries.flatten() {
+                            if entry.path().is_dir() {
+                                plugin_paths.push(entry.path().to_string_lossy().to_string());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if !plugin_paths.is_empty() {
+            let combined = plugin_paths.join(":");
+            if !silent {
+                eprintln!("[monokit] plugin paths: {} locations", plugin_paths.len());
+            }
+            cmd.arg("-U").arg(&combined);
         }
 
         #[cfg(target_os = "macos")]

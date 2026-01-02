@@ -170,7 +170,7 @@ Same operations as P.* but with explicit pattern number:
 - `NW <0-2>` - Noise type (0=white, 1=pink, 2=brown)
 - `NV <0-16383>` - Noise volume
 
-### Plaits (Mutable Instruments)
+### Plaits
 - `PL.ENG <0-15>` / `PLE <0-15>` - Engine selection (16 engines)
 - `PL.FREQ <hz>` / `PLF <hz>` - Pitch frequency (20-20000 Hz, supports N syntax)
 - `PL.HARM <0-16383>` / `PLH <0-16383>` - Harmonics (0-16383 int)

@@ -450,12 +450,14 @@ SynthDef(\monokit, {
         relaxTime: cl / 1000
     );
 
-    // Auto-makeup gain: when cr_auto=1, calculate makeup based on threshold and ratio
+    // Makeup gain: auto uses reference-based estimate, manual uses CM parameter
+    // Auto completely overrides manual (Select chooses one, not both)
+    // Reference formula: makeup_dB = threshold_dB × (1 - ratio) × 0.5
     autoMakeup = Select.kr(cr_auto, [
-        1,  // Manual mode: no auto compensation
-        (1 / compThresh.max(0.001)).pow(1 - compRatio)  // Auto: compensate for gain reduction
+        1 + (cmSmooth / 16383 * 2),  // Manual: CM 0-16383 → 1x-3x (0 to +9.5dB)
+        (compThresh.ampdb * (1 - compRatio) * 0.5).neg.dbamp.clip(1, 4)  // Auto: reference-based, max +12dB
     ]);
-    wetSig = wetSig * autoMakeup * (1 + (cmSmooth / 16383 * 2));  // Combined auto + manual makeup
+    wetSig = wetSig * autoMakeup;
 
     // Dry/wet mix (0=100% dry, 16383=100% wet)
     compMixAmt = Lag.kr(cr_mix / 16383, 0.01);
@@ -995,7 +997,7 @@ SynthDef(\monokit_main, {
     var psRatio, psGrainSize, psShifted, psMix;
     var psInputL, psInputR;
     var cloudsProcessedL, cloudsProcessedR, cloudsActive, cloudsWet;
-    var compInputLevel, compOutputLevel, gainReductionDb;
+    var compInputLevel, compOutputLevel, compFinalLevel, gainReductionDb;
     var fcSmooth, dcSmooth, fqSmooth, fkSmooth, feSmooth;
     var rfSmooth, rmSmooth, dtSmooth, dfSmooth, dwSmooth, rvSmooth, rwSmooth, volumeSmooth, panSmooth;
     var lbSmooth, lsSmooth, lmSmooth, rgfSmooth, rgmSmooth, ctSmooth, cmSmooth;
@@ -1203,24 +1205,28 @@ SynthDef(\monokit_main, {
         relaxTime: cl / 1000
     );
 
-    // Auto-makeup gain: when cr_auto=1, calculate makeup based on threshold and ratio
+    // Measure GR BEFORE makeup is applied
+    compInputLevel = Amplitude.kr(drySig, 0.01, 0.1);
+    compOutputLevel = Amplitude.kr(wetSig, 0.01, 0.1);
+    gainReductionDb = (compOutputLevel / compInputLevel.max(0.0001)).ampdb.clip(-40, 0);
+
+    // Makeup gain: auto uses actual GR (proportional), manual uses CM parameter
+    // Auto completely overrides manual (Select chooses one, not both)
     autoMakeup = Select.kr(cr_auto, [
-        1,  // Manual mode: no auto compensation
-        (1 / compThresh.max(0.001)).pow(1 - compRatio)  // Auto: compensate for gain reduction
+        1 + (cmSmooth / 16383 * 2),  // Manual: CM 0-16383 → 1x-3x (0 to +9.5dB)
+        Lag.kr(gainReductionDb, 0.3).neg.dbamp.clip(1, 4)  // Auto: inverse of GR, 300ms smooth, max +12dB
     ]);
-    wetSig = wetSig * autoMakeup * (1 + (cmSmooth / 16383 * 2));  // Combined auto + manual makeup
+    wetSig = wetSig * autoMakeup;
+
+    // Measure final output level after makeup
+    compFinalLevel = Amplitude.kr(wetSig, 0.01, 0.1);
 
     // Dry/wet mix (0=100% dry, 16383=100% wet)
     compMixAmt = Lag.kr(cr_mix / 16383, 0.01);
     sig = XFade2.ar(drySig, wetSig, compMixAmt * 2 - 1);
 
-    // Compressor metering - capture levels for UI visualization
-    compInputLevel = Amplitude.kr(drySig, 0.01, 0.1);
-    compOutputLevel = Amplitude.kr(wetSig, 0.01, 0.1);
-    gainReductionDb = (compOutputLevel / compInputLevel.max(0.0001)).ampdb.clip(-40, 0);
-
-    // Send compressor data at 20Hz to match other meters
-    SendReply.kr(Impulse.kr(20), '/monokit/comp', [compInputLevel, compOutputLevel, gainReductionDb]);
+    // Send compressor data: input, final output (post-makeup), GR
+    SendReply.kr(Impulse.kr(20), '/monokit/comp', [compInputLevel, compFinalLevel, gainReductionDb]);
 
     // Pan control
     panPos = (panSmooth / 16383).clip(-1, 1);

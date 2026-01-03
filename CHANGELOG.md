@@ -9,6 +9,9 @@
 - Compressor: matched IN/OUT meters with gain reduction (GR) and makeup (MU) display
 - Fixed compressor OSC connection for scsynth-direct mode
 - Fixed COMP.AUTO/CAU command (was missing from synthdef)
+- Auto-makeup now proportional to actual GR (not just threshold)
+- Auto mode completely overrides manual CM (no longer multiplied together)
+- **KNOWN ISSUE:** NaN readings on comp meters and audio cuts after extended play - needs investigation
 
 ### Quick Polish Features
 

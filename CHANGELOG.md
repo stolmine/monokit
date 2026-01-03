@@ -5,9 +5,10 @@
 ### New Features
 
 **GRID.MODE 2 FX Visualization**
-- Real-time EQ frequency response curve using braille rendering
-- Compressor input/output meters with gain reduction display
+- EQ: 3-band numeric display with frequencies, gain bars, and dB values
+- Compressor: matched IN/OUT meters with gain reduction (GR) and makeup (MU) display
 - Fixed compressor OSC connection for scsynth-direct mode
+- Fixed COMP.AUTO/CAU command (was missing from synthdef)
 
 ### Quick Polish Features
 

@@ -185,10 +185,11 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 | Category | Status |
 |----------|--------|
-| Critical Bug Fixes (7 items) | 4/7 DONE |
-| Quick Polish Wins (5 items) | PLANNED |
-| Documentation Cleanup (3 items) | PLANNED |
-| Stretch Goals (2 items) | PLANNED |
+| Critical Bug Fixes | 4/7 DONE |
+| Quick Polish Wins | 5/5 DONE |
+| FX Visualization | 2/2 DONE |
+| Documentation Cleanup | Deferred |
+| Stretch Goals | Deferred |
 
 **Critical Fixes:**
 - **Audio engine loss on scene load** - Sequencing continues and UI remains responsive, but meters show no activity and audio output is silent; no specific scene combination isolated as cause
@@ -227,29 +228,22 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **Trackpad/Mousewheel Scrolling** [Low-Medium] - Implement scrolling support for help pages, REPL history, and other scrollable views; improve navigation UX
 
 ### P2 - Polish & Features
-- **Error Message Refactor** [Low-Medium] - Standardize error output system-wide: restore "ERROR:" prefix for all error messages (currently missing on OOB errors after v0.4.2.1 refactor); implement red color for error messages (currently white); investigate where ERROR: prefix is applied in codebase and create consistent pattern across all error types; ensure 46-char compliance with prefix; likely involves output tier system and color coding in ui/mod.rs
-- **Programmable EQ Shelving Frequencies** [Low] - Allow user configuration of low/high shelf frequencies (currently fixed at 200Hz/4000Hz); add commands for setting shelf points
-- **Compressor Auto-Makeup Toggle** [Low] - Expose auto-makeup gain as user-controllable feature; when enabled, CM parameter becomes inactive/automatic
-- **Scope Gain Parameter** [Low] - Add gain control for scope output to accurately monitor quiet signals; separate from main volume
-- **Scope Reset Command** [Low] - Command to reset scope state/buffer
+- **Error Message Refactor** [Low-Medium] - Standardize error output system-wide: restore "ERROR:" prefix for all error messages; implement red color for error messages; ensure 46-char compliance with prefix
 - **Multiple Reverb Types** [Medium] - Add alternative reverb algorithms (JVerb, FDN, etc.); allow switching between reverb types; maintain current FreeVerb as default
-- **Confirmation Dialogs (Persistent Settings)** [Low] - User-configurable confirmation prompts: (1) confirm before quit if scene is unsaved or has modifications from saved state; (2) confirm before overwriting existing scene on save; settings persisted in config.toml
-- **Script Mute Hotkeys (Terminal Research)** [Medium] - Fix Ctrl+Shift+1-8/M/I hotkeys not working (v0.4.2.1); terminal emulators handle Ctrl+Shift differently; research alternatives: two-key sequences (Vim-style), function keys (F13-F24), or Alt+Ctrl combinations; test across iTerm2, Terminal.app, kitty, alacritty; document terminal-specific limitations
-- **N1-N4 Help Section Location** [Low] - Move N1-N4 counter documentation from PATTERNS section to MATH & VARIABLES section in help system; counters are variables not patterns; improves help organization and discoverability
-- **Global Distortion/Saturation** [Low-Medium] - Natural-sounding saturation/distortion effect with antialiasing; options include smooth clipping (SmoothClipS), wavefolding (LockhartWavefolder), analog tape emulation, or waveshaping with proper oversampling to avoid aliasing artifacts; multiple modes for different saturation characters (tube, tape, soft clip, fold)
-- **Alias & Command Name Standardization** [Low] - Audit all commands for consistent naming patterns; ensure all parameters have appropriate short-form aliases; standardize canonical form patterns (e.g., CATEGORY.PARAM format); document naming conventions for future development
+- **Script Mute Hotkeys (Terminal Research)** [Medium] - Fix Ctrl+Shift+1-8/M/I hotkeys not working; terminal emulators handle Ctrl+Shift differently; research alternatives
+- **Global Distortion/Saturation** [Low-Medium] - Natural-sounding saturation/distortion with antialiasing; multiple modes (tube, tape, soft clip, fold)
+- **Alias & Command Name Standardization** [Low] - Audit all commands for consistent naming patterns; standardize canonical form patterns
 - **Dynamic Grid Layout** [Medium] - Responsive UI spacing
 - **Tempo-Synced Delay** [Low] - DS parameter for musical delay times
 - **Manual Update + Voice Architecture Diagram** [Low] - Fill documentation gaps, add ASCII voice architecture diagram
-- **Gain Staging Audit** [Medium] - Review clipping behavior with modbus/noise routing; consider automatic output level detection via existing meter OSC for testing; balance preventing unwanted distortion vs preserving intentional clipping
+- **Gain Staging Audit** [Medium] - Review clipping behavior with modbus/noise routing
 - **Slew Coverage Expansion** [Low] - Extend SLEW to all continuous voice parameters (currently 30/88)
-- **CHANGELOG Cleanup** [Low] - Fix version ordering and numbering in CHANGELOG; versions are out of order and show versions beyond current (v0.4.3 listed when actual version is v0.4.22); consolidate and organize chronologically
 
 ### P2 - Bug Fixes & Stability
-- ~~**Confirmation Dialog Styling Bug**~~ ✅ FIXED - Added Clear widget before dialog render to prevent underlying content bleed-through
-- **Stateful Highlighting Issues** [Medium] - Address unintended consequences in current stateful highlighting system; ensure reliable and predictable behavior across all script contexts
-- **Scene Loading Audio Crashes** [Medium] - Debug and fix audio system crashes that sometimes occur when loading scenes; ensure robust scene transition handling
-- **PRE Command Same-Line Usage** [Low-Medium] - Clarify and validate same-line PRE usage and execution order; may need to adopt Teletype-style restriction (one PRE per line) to ensure consistent functionality; implement proper validation logic and execution hierarchy
+- ~~**Confirmation Dialog Styling Bug**~~ ✅ FIXED - Added Clear widget before dialog render
+- ~~**Scene Loading Audio Crashes**~~ ✅ FIXED - Configurable RST delays prevent OSC flooding
+- **Stateful Highlighting Issues** [Medium] - Address unintended consequences in current stateful highlighting system
+- **PRE Command Same-Line Usage** [Low-Medium] - Clarify and validate same-line PRE usage and execution order
 
 ### P2 - Deferred Features
 - **Noise Envelope & Gating** [Medium] - Re-implement envelope and gate control in noise synth after multi-synth architecture split; add NA, ND, NC, NE parameters back to monokit_noise SynthDef; separate noise audio output from FM routing

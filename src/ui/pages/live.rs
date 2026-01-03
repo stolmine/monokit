@@ -87,24 +87,56 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
 
     // Pre-compute FX viz content for mode 2
     let fx_viz_lines: Vec<String> = if app.grid_mode == 2 {
-        let eq_samples = crate::ui::eq_curve::calculate_eq_response(&app.eq_state, 60);
-        let braille_grid = crate::ui::braille::samples_to_braille(&eq_samples, 30, 3);
         let mut fx_lines = Vec::new();
-        // 3 rows of EQ curve
-        for braille_row in braille_grid {
-            fx_lines.push(braille_row.into_iter().collect());
-        }
-        // Row 4: frequency labels (pad to 30 chars)
-        fx_lines.push(format!("{:^30}", "20   200   2k   20k"));
+
+        // Helper to format frequency nicely
+        let fmt_freq = |f: f32| -> String {
+            if f >= 1000.0 { format!("{:.1}k", f / 1000.0) }
+            else { format!("{:.0}", f) }
+        };
+
+        // Helper to create a gain bar (6 chars): center-balanced, fills left for cut, right for boost
+        let gain_bar = |db: f32| -> String {
+            let normalized = (db / 24.0).clamp(-1.0, 1.0); // -24 to +24 dB range
+            let bars = (normalized.abs() * 3.0).round() as usize; // 0-3 bars each side
+            if db >= 0.0 {
+                format!("░░░{}", "█".repeat(bars) + &"░".repeat(3 - bars))
+            } else {
+                format!("{}{}", "░".repeat(3 - bars) + &"█".repeat(bars), "░░░")
+            }
+        };
+
+        // Row 1: Low shelf (left-justified, pad to 30 chars)
+        fx_lines.push(format!("{:<30}",
+            format!("LO  {:>5} {} {:+5.1}dB",
+                fmt_freq(app.eq_state.low_freq), gain_bar(app.eq_state.low_db), app.eq_state.low_db)));
+        // Row 2: Mid peak with Q
+        fx_lines.push(format!("{:<30}",
+            format!("MID {:>5} {} {:+5.1}dB Q{:.1}",
+                fmt_freq(app.eq_state.mid_freq), gain_bar(app.eq_state.mid_db), app.eq_state.mid_db, app.eq_state.mid_q)));
+        // Row 3: High shelf
+        fx_lines.push(format!("{:<30}",
+            format!("HI  {:>5} {} {:+5.1}dB",
+                fmt_freq(app.eq_state.high_freq), gain_bar(app.eq_state.high_db), app.eq_state.high_db)));
+        // Row 4: separator showing navigation hints (full 30 char width)
+        fx_lines.push("COMP ↓ ────────────────── EQ ↑".to_string());
         // Row 5: Input meter + GR value
-        // Layout: "IN  " (4) + meter (18) + " → " (3) + GR (5) = 30 chars
+        // Layout: "IN  " (4) + meter (18) + " GR" (3) + value (5) = 30 chars
         let in_bar = level_to_bar(app.compressor_data.input_level, 18);
         let gr_db = app.compressor_data.gain_reduction_db;
-        fx_lines.push(format!("IN  {} → {:+5.1}", in_bar, gr_db));
-        // Row 6: Output meter
-        // Layout: "OUT " (4) + meter (26) = 30 chars
-        let out_bar = level_to_bar(app.compressor_data.output_level, 26);
-        fx_lines.push(format!("OUT {}", out_bar));
+        fx_lines.push(format!("IN  {} GR{:+5.1}", in_bar, gr_db));
+        // Row 6: Output meter + Makeup value
+        // Layout: "OUT " (4) + meter (18) + " MU" (3) + value (5) = 30 chars
+        // Makeup = how much output exceeds compressed input (output_db - input_db - gr_db)
+        let out_bar = level_to_bar(app.compressor_data.output_level, 18);
+        let in_db = if app.compressor_data.input_level > 0.0001 {
+            20.0 * app.compressor_data.input_level.log10()
+        } else { -60.0 };
+        let out_db = if app.compressor_data.output_level > 0.0001 {
+            20.0 * app.compressor_data.output_level.log10()
+        } else { -60.0 };
+        let makeup_db = (out_db - in_db - gr_db).clamp(-20.0, 20.0);
+        fx_lines.push(format!("OUT {} MU{:+5.1}", out_bar, makeup_db));
         fx_lines
     } else {
         Vec::new()

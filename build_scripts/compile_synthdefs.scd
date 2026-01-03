@@ -102,6 +102,7 @@ SynthDef(\monokit, {
         cl = 100,
         cm = 0,
         cr_mix = 16383, // Compressor dry/wet mix (0-16383, default 16383=100% wet)
+        cr_auto = 1,  // Compressor auto-makeup (0=manual, 1=auto)
         el = 0,
         em = 0,
         ef = 1000,
@@ -158,7 +159,7 @@ SynthDef(\monokit, {
     var rmodeSmooth, reverbWetSmooth, rinputGate, rroomSize, reverbInput;
     var lofi, lofiBits, lofiRate, lofiMix;
     var ringMod, ringModOsc, ringModMix;
-    var drySig, wetSig, compressed, compThresh, compRatio, compMixAmt;
+    var drySig, wetSig, compressed, compThresh, compRatio, compMixAmt, autoMakeup;
     var eqSig;
     var panPos;
     var beatRepeatBufL, beatRepeatBufR, brBufSize, brWritePos, brReadPos, brLoopLen;
@@ -448,7 +449,13 @@ SynthDef(\monokit, {
         clampTime: ca / 1000,
         relaxTime: cl / 1000
     );
-    wetSig = wetSig * (1 + (cmSmooth / 16383 * 2));  // Makeup gain (up to 3x)
+
+    // Auto-makeup gain: when cr_auto=1, calculate makeup based on threshold and ratio
+    autoMakeup = Select.kr(cr_auto, [
+        1,  // Manual mode: no auto compensation
+        (1 / compThresh.max(0.001)).pow(1 - compRatio)  // Auto: compensate for gain reduction
+    ]);
+    wetSig = wetSig * autoMakeup * (1 + (cmSmooth / 16383 * 2));  // Combined auto + manual makeup
 
     // Dry/wet mix (0=100% dry, 16383=100% wet)
     compMixAmt = Lag.kr(cr_mix / 16383, 0.01);
@@ -912,6 +919,7 @@ SynthDef(\monokit_main, {
         cl = 100,     // Compressor release ms (10-2000)
         cm = 0,       // Compressor makeup gain (0-16383)
         cr_mix = 16383, // Compressor dry/wet mix (0-16383, default 16383=100% wet)
+        cr_auto = 1,  // Compressor auto-makeup (0=manual, 1=auto)
         el = 0,       // EQ low shelf dB (-24 to +24)
         em = 0,       // EQ mid peak dB (-24 to +24)
         ef = 1000,    // EQ mid frequency Hz (200-8000)
@@ -978,7 +986,7 @@ SynthDef(\monokit_main, {
     var rmodeSmooth, reverbWetSmooth, rinputGate, rroomSize, reverbInput;
     var lofi, lofiBits, lofiRate, lofiMix;
     var ringMod, ringModOsc, ringModMix;
-    var drySig, wetSig, compressed, compThresh, compRatio, compMixAmt;
+    var drySig, wetSig, compressed, compThresh, compRatio, compMixAmt, autoMakeup;
     var eqSig;
     var panPos;
     var beatRepeatBufL, beatRepeatBufR, brBufSize, brWritePos, brReadPos, brLoopLen;
@@ -1194,7 +1202,13 @@ SynthDef(\monokit_main, {
         clampTime: ca / 1000,
         relaxTime: cl / 1000
     );
-    wetSig = wetSig * (1 + (cmSmooth / 16383 * 2));  // Makeup gain (up to 3x)
+
+    // Auto-makeup gain: when cr_auto=1, calculate makeup based on threshold and ratio
+    autoMakeup = Select.kr(cr_auto, [
+        1,  // Manual mode: no auto compensation
+        (1 / compThresh.max(0.001)).pow(1 - compRatio)  // Auto: compensate for gain reduction
+    ]);
+    wetSig = wetSig * autoMakeup * (1 + (cmSmooth / 16383 * 2));  // Combined auto + manual makeup
 
     // Dry/wet mix (0=100% dry, 16383=100% wet)
     compMixAmt = Lag.kr(cr_mix / 16383, 0.01);

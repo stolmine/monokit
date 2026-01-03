@@ -89,7 +89,7 @@ pub fn ui(f: &mut Frame, app: &crate::App) {
 }
 
 fn render_confirmation_dialog(f: &mut Frame, app: &crate::App, action: &crate::types::ConfirmAction) {
-    use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
+    use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
     use ratatui::layout::{Alignment, Constraint, Direction, Layout};
 
     let message = match action {
@@ -123,6 +123,9 @@ fn render_confirmation_dialog(f: &mut Frame, app: &crate::App, action: &crate::t
 
     let dialog_area = horizontal[1];
 
+    // Clear the area first to prevent underlying content from bleeding through
+    f.render_widget(Clear, dialog_area);
+
     let block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::default().fg(app.theme.error))
@@ -137,7 +140,7 @@ fn render_confirmation_dialog(f: &mut Frame, app: &crate::App, action: &crate::t
 }
 
 fn render_save_overwrite_dialog(f: &mut Frame, app: &crate::App, name: &str) {
-    use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
+    use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
     use ratatui::layout::{Alignment, Constraint, Direction, Layout};
 
     let message = format!("OVERWRITE SCENE '{}'? (Y/N)", name);
@@ -164,6 +167,9 @@ fn render_save_overwrite_dialog(f: &mut Frame, app: &crate::App, name: &str) {
         .split(vertical[1]);
 
     let dialog_area = horizontal[1];
+
+    // Clear the area first to prevent underlying content from bleeding through
+    f.render_widget(Clear, dialog_area);
 
     let block = Block::default()
         .borders(Borders::ALL)

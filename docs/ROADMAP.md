@@ -246,7 +246,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **CHANGELOG Cleanup** [Low] - Fix version ordering and numbering in CHANGELOG; versions are out of order and show versions beyond current (v0.4.3 listed when actual version is v0.4.22); consolidate and organize chronologically
 
 ### P2 - Bug Fixes & Stability
-- **Confirmation Dialog Styling Bug** [Low] - Confirmation dialog styling sometimes picks up adjacent characters (e.g., 'EOVERWRITE' instead of 'OVERWRITE'); investigate styling/rendering logic
+- ~~**Confirmation Dialog Styling Bug**~~ ✅ FIXED - Added Clear widget before dialog render to prevent underlying content bleed-through
 - **Stateful Highlighting Issues** [Medium] - Address unintended consequences in current stateful highlighting system; ensure reliable and predictable behavior across all script contexts
 - **Scene Loading Audio Crashes** [Medium] - Debug and fix audio system crashes that sometimes occur when loading scenes; ensure robust scene transition handling
 - **PRE Command Same-Line Usage** [Low-Medium] - Clarify and validate same-line PRE usage and execution order; may need to adopt Teletype-style restriction (one PRE per line) to ensure consistent functionality; implement proper validation logic and execution hierarchy

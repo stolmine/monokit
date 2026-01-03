@@ -38,8 +38,8 @@ pub fn register_effects(m: &mut std::collections::HashMap<&'static str, CommandD
     m.insert("CM", CommandDef::new("CM", Some("COMP.MKP"), ArgCount::AtLeast(1), "Compressor makeup"));
     m.insert("CR.MIX", CommandDef::new("CR.MIX", Some("COMP.MIX"), ArgCount::AtLeast(1), "Compressor mix"));
     m.insert("CRMIX", CommandDef::new("CRMIX", Some("COMP.MIX"), ArgCount::AtLeast(1), "Compressor mix"));
-    m.insert("CR.AUTO", CommandDef::new("CR.AUTO", Some("CRA"), ArgCount::Range(0, 1), "Compressor auto-makeup"));
-    m.insert("CRA", CommandDef::new("CRA", Some("CR.AUTO"), ArgCount::Range(0, 1), "Compressor auto-makeup"));
+    m.insert("COMP.AUTO", CommandDef::new("COMP.AUTO", Some("CAU"), ArgCount::Range(0, 1), "Compressor auto-makeup"));
+    m.insert("CAU", CommandDef::new("CAU", Some("COMP.AUTO"), ArgCount::Range(0, 1), "Compressor auto-makeup"));
 
     // EQ
     m.insert("EL", CommandDef::new("EL", Some("EQ.LOW"), ArgCount::AtLeast(1), "EQ low band"));

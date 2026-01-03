@@ -202,7 +202,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 **Quick Polish:**
 - ~~Scope gain parameter + reset command~~ ✅ DONE - SCOPE.GAIN, SCOPE.RST
 - ~~Programmable EQ shelving frequencies (ELF/EHF)~~ ✅ DONE - ELF, EHF commands
-- ~~Compressor auto-makeup toggle (CR.AUTO)~~ ✅ DONE - CR.AUTO implemented
+- ~~Compressor auto-makeup toggle (COMP.AUTO)~~ ✅ DONE - COMP.AUTO/CAU implemented
 - ~~**Confirmation dialogs (persistent settings)**~~ ✅ DONE - CFM.QUIT, CFM.SAVE commands; quit protection when metro active + named scene loaded
 - ~~N1-N4 help section relocation~~ ✅ DONE - Moved to VARIABLES & MATH section
 

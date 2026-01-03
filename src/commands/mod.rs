@@ -631,8 +631,8 @@ where
         "CR.MIX" => {
             synth_params::handle_cr_mix(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "CR.AUTO" | "CRA" => {
-            synth_params::handle_cr_auto(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        "COMP.AUTO" | "CAU" => {
+            synth_params::handle_comp_auto(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "EL" => {
             synth_params::handle_el(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;

@@ -295,7 +295,7 @@ MiClouds Granular → Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ
 - `COMP.ATK` / `CA <1-500>` - Attack (ms)
 - `COMP.REL` / `CL <10-2000>` - Release (ms)
 - `COMP.MKP` / `CM <0-16383>` - Makeup gain
-- `CR.AUTO` / `CRA <0|1>` - Auto makeup gain (0=manual, 1=auto)
+- `COMP.AUTO` / `CAU <0|1>` - Auto makeup gain (0=manual, 1=auto)
 - `CR.MIX` / `CRMIX <0-16383>` - Dry/wet mix
 
 **Dry/Wet Mix:**
@@ -1455,7 +1455,7 @@ Notes are saved with scenes. 8 lines maximum.
 | `COMP.ATK <ms>` | `CA` | Compressor attack |
 | `COMP.REL <ms>` | `CL` | Compressor release |
 | `COMP.MKP <amt>` | `CM` | Compressor makeup |
-| `CR.AUTO <0\|1>` | `CRA` | Auto makeup (0=manual, 1=auto) |
+| `COMP.AUTO <0\|1>` | `CAU` | Auto makeup (0=manual, 1=auto) |
 | `CR.MIX <0-16383>` | `CRMIX` | Compressor dry/wet mix |
 | `OUT.PAN <amt>` | `PAN` | Stereo pan |
 

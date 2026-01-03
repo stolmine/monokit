@@ -538,7 +538,7 @@ pub const HELP_CATEGORIES: &[HelpCategory] = &[
             "  COMP.ATK / CA <1-500>   ATK MS",
             "  COMP.REL / CL <10-2000> REL MS",
             "  COMP.MKP / CM <0-16383> MAKEUP",
-            "  CR.AUTO / CRA <0|1>     AUTO MAKEUP",
+            "  COMP.AUTO / CAU <0|1>   AUTO MAKEUP",
             "  COMP.MIX / CRMIX <0-16383> DRY/WET",
             "    0=DRY 16383=WET (PARALLEL)",
             "",

@@ -13,7 +13,7 @@ define_int_param_ms!(handle_cl, "cl", 10, 2000, "CL", "COMPRESSOR RELEASE", "Fai
 define_int_param!(handle_cm, "cm", 0, 16383, "CM", "COMPRESSOR MAKEUP GAIN", "Failed to parse compressor makeup gain");
 define_int_param!(handle_cr_mix, "cr_mix", 0, 16383, "CR.MIX", "COMPRESSOR DRY/WET MIX", "Failed to parse compressor dry/wet mix");
 
-pub fn handle_cr_auto<F>(
+pub fn handle_comp_auto<F>(
     parts: &[&str],
     variables: &Variables,
     patterns: &mut PatternStorage,
@@ -30,7 +30,7 @@ where
     F: FnMut(String),
 {
     if parts.len() == 1 {
-        output("CR.AUTO: QUERY NOT SUPPORTED".to_string());
+        output("COMP.AUTO: QUERY NOT SUPPORTED".to_string());
         return Ok(());
     }
 
@@ -63,7 +63,7 @@ where
                 patterns.direct_validation.insert(key, false);
             }
         }
-        output("CR.AUTO: RANGE 0-1".to_string());
+        output("COMP.AUTO: RANGE 0-1".to_string());
         return Ok(());
     }
     metro_tx

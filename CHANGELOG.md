@@ -15,7 +15,7 @@
 - Allows user customization of EQ shelf points for better tonal shaping
 
 **Compressor Auto-Makeup Toggle**
-- Added CR.AUTO command to enable/disable automatic makeup gain
+- Added COMP.AUTO/CAU command to enable/disable automatic makeup gain
 - When enabled (1), compressor automatically compensates for gain reduction
 - When disabled (0), CM parameter provides manual makeup control
 - Default: enabled for convenience

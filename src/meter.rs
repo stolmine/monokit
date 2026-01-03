@@ -431,12 +431,16 @@ fn parse_scope_message(args: &[OscType]) -> Option<ScopeData> {
 }
 
 fn parse_compressor_message(args: &[OscType]) -> Option<CompressorData> {
-    // Format: [nodeID, input, output, gr_db] (scsynth-direct)
-    // or [input, output, gr_db] (sclang forwarded)
+    // Format varies by source:
+    // - sclang forwarded: [input, output, gr_db] (3 args)
+    // - scsynth-direct SendReply: [nodeID, replyID, input, output, gr_db] (5 args)
     let (in_idx, out_idx, gr_idx) = match args.len() {
-        3 => (0, 1, 2),
-        4 => (1, 2, 3),
-        _ => return None,
+        3 => (0, 1, 2),           // sclang mode
+        5 => (2, 3, 4),           // scsynth-direct mode (skip nodeID, replyID)
+        len => {
+            eprintln!("[meter] Unexpected compressor msg len={}, args={:?}", len, args);
+            return None;
+        }
     };
 
     let input = match &args[in_idx] {

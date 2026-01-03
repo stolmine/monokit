@@ -987,6 +987,7 @@ SynthDef(\monokit_main, {
     var psRatio, psGrainSize, psShifted, psMix;
     var psInputL, psInputR;
     var cloudsProcessedL, cloudsProcessedR, cloudsActive, cloudsWet;
+    var compInputLevel, compOutputLevel, gainReductionDb;
     var fcSmooth, dcSmooth, fqSmooth, fkSmooth, feSmooth;
     var rfSmooth, rmSmooth, dtSmooth, dfSmooth, dwSmooth, rvSmooth, rwSmooth, volumeSmooth, panSmooth;
     var lbSmooth, lsSmooth, lmSmooth, rgfSmooth, rgmSmooth, ctSmooth, cmSmooth;
@@ -1198,6 +1199,14 @@ SynthDef(\monokit_main, {
     // Dry/wet mix (0=100% dry, 16383=100% wet)
     compMixAmt = Lag.kr(cr_mix / 16383, 0.01);
     sig = XFade2.ar(drySig, wetSig, compMixAmt * 2 - 1);
+
+    // Compressor metering - capture levels for UI visualization
+    compInputLevel = Amplitude.kr(drySig, 0.01, 0.1);
+    compOutputLevel = Amplitude.kr(wetSig, 0.01, 0.1);
+    gainReductionDb = (compOutputLevel / compInputLevel.max(0.0001)).ampdb.clip(-40, 0);
+
+    // Send compressor data at 20Hz to match other meters
+    SendReply.kr(Impulse.kr(20), '/monokit/comp', [compInputLevel, compOutputLevel, gainReductionDb]);
 
     // Pan control
     panPos = (panSmooth / 16383).clip(-1, 1);

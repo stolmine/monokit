@@ -259,7 +259,20 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     app.cpu_data = cpu_data;
                 }
                 MetroEvent::CompressorUpdate(comp_data) => {
-                    app.compressor_data = comp_data;
+                    // Guard against NaN/inf from SC - skip update if invalid
+                    if comp_data.input_level.is_finite() && comp_data.output_level.is_finite() && comp_data.gain_reduction_db.is_finite() {
+                        // Smooth compressor meters: fast attack (0.5), slow release (0.15)
+                        let attack = 0.5;
+                        let release = 0.15;
+
+                        let in_coef = if comp_data.input_level > app.compressor_data.input_level { attack } else { release };
+                        let out_coef = if comp_data.output_level > app.compressor_data.output_level { attack } else { release };
+                        let gr_coef = if comp_data.gain_reduction_db < app.compressor_data.gain_reduction_db { attack } else { release };
+
+                        app.compressor_data.input_level += in_coef * (comp_data.input_level - app.compressor_data.input_level);
+                        app.compressor_data.output_level += out_coef * (comp_data.output_level - app.compressor_data.output_level);
+                        app.compressor_data.gain_reduction_db += gr_coef * (comp_data.gain_reduction_db - app.compressor_data.gain_reduction_db);
+                    }
                 }
                 MetroEvent::ScReady => {
                     if app.awaiting_audio_restart {

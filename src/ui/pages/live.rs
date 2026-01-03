@@ -108,15 +108,15 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
 
         // Row 1: Low shelf (left-justified, pad to 30 chars)
         fx_lines.push(format!("{:<30}",
-            format!("LO  {:>5} {} {:+5.1}dB",
+            format!("LO  {:>5}  {} {:+5.1}dB",
                 fmt_freq(app.eq_state.low_freq), gain_bar(app.eq_state.low_db), app.eq_state.low_db)));
         // Row 2: Mid peak with Q
         fx_lines.push(format!("{:<30}",
-            format!("MID {:>5} {} {:+5.1}dB Q{:.1}",
+            format!("MID {:>5}  {} {:+5.1}dB Q{:.1}",
                 fmt_freq(app.eq_state.mid_freq), gain_bar(app.eq_state.mid_db), app.eq_state.mid_db, app.eq_state.mid_q)));
         // Row 3: High shelf
         fx_lines.push(format!("{:<30}",
-            format!("HI  {:>5} {} {:+5.1}dB",
+            format!("HI  {:>5}  {} {:+5.1}dB",
                 fmt_freq(app.eq_state.high_freq), gain_bar(app.eq_state.high_db), app.eq_state.high_db)));
         // Row 4: separator showing navigation hints (full 30 char width)
         fx_lines.push("COMP ↓ ────────────────── EQ ↑".to_string());

@@ -11,7 +11,9 @@
 - Fixed COMP.AUTO/CAU command (was missing from synthdef)
 - Auto-makeup now proportional to actual GR (not just threshold)
 - Auto mode completely overrides manual CM (no longer multiplied together)
-- **KNOWN ISSUE:** NaN readings on comp meters and audio cuts after extended play - needs investigation
+- Fixed NaN issue in compressor metering (guarded against -inf from 0.ampdb)
+- Added hysteresis to compressor meters (fast attack, slow release)
+- Improved EQ meter layout alignment
 
 ### Quick Polish Features
 

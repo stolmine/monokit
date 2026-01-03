@@ -1206,15 +1206,17 @@ SynthDef(\monokit_main, {
     );
 
     // Measure GR BEFORE makeup is applied
+    // Note: .max(0.0001) on ratio prevents 0.ampdb → -inf; .max(-40) is extra guard
     compInputLevel = Amplitude.kr(drySig, 0.01, 0.1);
     compOutputLevel = Amplitude.kr(wetSig, 0.01, 0.1);
-    gainReductionDb = (compOutputLevel / compInputLevel.max(0.0001)).ampdb.clip(-40, 0);
+    gainReductionDb = (compOutputLevel / compInputLevel.max(0.0001)).max(0.0001).ampdb.max(-40).min(0);
 
     // Makeup gain: auto uses actual GR (proportional), manual uses CM parameter
     // Auto completely overrides manual (Select chooses one, not both)
+    // Note: .max(-40) guards against -inf from 0.ampdb when no audio present
     autoMakeup = Select.kr(cr_auto, [
         1 + (cmSmooth / 16383 * 2),  // Manual: CM 0-16383 → 1x-3x (0 to +9.5dB)
-        Lag.kr(gainReductionDb, 0.3).neg.dbamp.clip(1, 4)  // Auto: inverse of GR, 300ms smooth, max +12dB
+        Lag.kr(gainReductionDb.max(-40), 0.3).neg.dbamp.clip(1, 4)  // Auto: inverse of GR, max +12dB
     ]);
     wetSig = wetSig * autoMakeup;
 

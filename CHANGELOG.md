@@ -1,6 +1,13 @@
 # Changelog
 
-## v0.4.3 (December 2025) - Stability & Polish (In Progress)
+## v0.4.3 (January 2026) - Stability & Polish
+
+### New Features
+
+**GRID.MODE 2 FX Visualization**
+- Real-time EQ frequency response curve using braille rendering
+- Compressor input/output meters with gain reduction display
+- Fixed compressor OSC connection for scsynth-direct mode
 
 ### Quick Polish Features
 

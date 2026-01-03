@@ -179,7 +179,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ## Future Versions
 
-### v0.4.3 - Stability & Polish (IN PROGRESS)
+### v0.4.3 - Stability & Polish (COMPLETE)
 
 **See `docs/V0.4.3_PLAN.md` for detailed progress tracking**
 
@@ -220,7 +220,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ### P1 - High Value Features
 - **MIDI CC and Note Input** [Medium] - External control, performance capability
-- **Compressor Visualization** [Medium] - IN/OUT meters + GR display implemented in GRID.MODE 2; OSC connection from SC still broken (needs debugging)
+- ~~**Compressor Visualization**~~ ✅ DONE - IN/OUT meters + GR display in GRID.MODE 2; fixed OSC connection for scsynth-direct mode
 - ~~**EQ Visualization**~~ ✅ DONE - Real-time frequency response curve in GRID.MODE 2; braille rendering of 3-band EQ response
 - **Layered Scope Visualizations** [Medium] - Architecture for overlaying multiple visualizations (scope, spectrum, EQ, compressor) on single page; toggle layers independently
 - **Customizable Grid Array** [Medium] - User-configurable grid parameters via settings file; allow users to choose which parameters appear on grid and their layout

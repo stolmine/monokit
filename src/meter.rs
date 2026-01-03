@@ -1,4 +1,4 @@
-use crate::types::{CpuData, MeterData, MetroEvent, ScopeData, SpectrumData, SCOPE_SAMPLES, SPECTRUM_BANDS};
+use crate::types::{CompressorData, CpuData, MeterData, MetroEvent, ScopeData, SpectrumData, SCOPE_SAMPLES, SPECTRUM_BANDS};
 use rosc::{decoder, encoder, OscMessage, OscPacket, OscType};
 use socket2::{Domain, Protocol, Socket, Type};
 use std::net::{SocketAddr, UdpSocket};
@@ -39,6 +39,7 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
 
     let mut meter_data = MeterData::default();
     let mut spectrum_data = SpectrumData::default();
+    let mut compressor_data = CompressorData::default();
     let mut buf = [0u8; 1024];
 
     // Track if we've completed initial boot - used to detect restart vs initial boot
@@ -111,6 +112,13 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
                             if let Some(scope_data) = parse_scope_message(&msg.args) {
                                 if event_tx.send(MetroEvent::ScopeUpdate(scope_data)).is_err() {
                                     return;
+                                }
+                            }
+                        } else if msg.addr == "/monokit/comp" {
+                            if let Some(update) = parse_compressor_message(&msg.args) {
+                                compressor_data = update;
+                                if let Err(e) = event_tx.send(MetroEvent::CompressorUpdate(compressor_data.clone())) {
+                                    eprintln!("Failed to send compressor update: {}", e);
                                 }
                             }
                         } else if msg.addr == "/monokit/ready" {
@@ -420,4 +428,33 @@ fn parse_scope_message(args: &[OscType]) -> Option<ScopeData> {
     }
 
     Some(ScopeData { samples })
+}
+
+fn parse_compressor_message(args: &[OscType]) -> Option<CompressorData> {
+    // Format: [nodeID, input, output, gr_db] (scsynth-direct)
+    // or [input, output, gr_db] (sclang forwarded)
+    let (in_idx, out_idx, gr_idx) = match args.len() {
+        3 => (0, 1, 2),
+        4 => (1, 2, 3),
+        _ => return None,
+    };
+
+    let input = match &args[in_idx] {
+        OscType::Float(v) => v.clamp(0.0, 1.0),
+        _ => return None,
+    };
+    let output = match &args[out_idx] {
+        OscType::Float(v) => v.clamp(0.0, 1.0),
+        _ => return None,
+    };
+    let gr_db = match &args[gr_idx] {
+        OscType::Float(v) => v.clamp(-40.0, 0.0),
+        _ => return None,
+    };
+
+    Some(CompressorData {
+        input_level: input,
+        output_level: output,
+        gain_reduction_db: gr_db,
+    })
 }

@@ -220,8 +220,8 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ### P1 - High Value Features
 - **MIDI CC and Note Input** [Medium] - External control, performance capability
-- **Compressor Visualization** [Medium] - Real-time visual feedback for compressor (gain reduction, threshold, ratio); possibly integrated with scope page or standalone view
-- **EQ Visualization** [Medium] - Real-time frequency response curve for 3-band EQ; show shelving points and mid peak; possibly integrated with scope page
+- **Compressor Visualization** [Medium] - IN/OUT meters + GR display implemented in GRID.MODE 2; OSC connection from SC still broken (needs debugging)
+- ~~**EQ Visualization**~~ ✅ DONE - Real-time frequency response curve in GRID.MODE 2; braille rendering of 3-band EQ response
 - **Layered Scope Visualizations** [Medium] - Architecture for overlaying multiple visualizations (scope, spectrum, EQ, compressor) on single page; toggle layers independently
 - **Customizable Grid Array** [Medium] - User-configurable grid parameters via settings file; allow users to choose which parameters appear on grid and their layout
 - **Trackpad/Mousewheel Scrolling** [Low-Medium] - Implement scrolling support for help pages, REPL history, and other scrollable views; improve navigation UX

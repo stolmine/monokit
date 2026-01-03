@@ -147,6 +147,7 @@ s.waitForBoot {
         var lofi, lofiBits, lofiRate, lofiMix;
         var ringMod, ringModOsc, ringModMix;
         var drySig, wetSig, compressed, compThresh, compRatio, compMixAmt;
+        var compInputLevel, compOutputLevel, gainReductionDb;
         var eqSig;
         var panPos;
         var beatRepeatBufL, beatRepeatBufR, brBufSize, brWritePos, brReadPos, brLoopLen;
@@ -470,6 +471,14 @@ s.waitForBoot {
             (1 / compThresh.max(0.001)).pow(1 - compRatio)  // Auto: compensate for gain reduction
         ]);
         wetSig = wetSig * autoMakeup * (1 + (cmSmooth / 16383 * 2));  // Combined auto + manual makeup
+
+        // Compressor metering - capture levels for UI visualization
+        compInputLevel = Amplitude.kr(drySig, 0.01, 0.1);
+        compOutputLevel = Amplitude.kr(wetSig, 0.01, 0.1);
+        gainReductionDb = (compOutputLevel / compInputLevel.max(0.0001)).ampdb.clip(-40, 0);
+
+        // Send compressor data at 20Hz to match other meters
+        SendReply.kr(Impulse.kr(20), '/monokit/comp', [compInputLevel, compOutputLevel, gainReductionDb]);
 
         // Dry/wet mix (0=100% dry, 16383=100% wet)
         compMixAmt = Lag.kr(cr_mix / 16383, 0.01);
@@ -803,6 +812,15 @@ s.waitForBoot {
         var samples = msg.copyRange(3, 130);
         ~meterAddr.sendMsg('/monokit/scope', *samples);
     }, '/monokit/scope');
+
+    // Forward compressor data to Rust app on port 57121
+    // SendReply msg format: [cmdName, nodeID, replyID, value1, value2, value3]
+    OSCdef(\monokit_comp_fwd, { |msg|
+        var input = msg[3];
+        var output = msg[4];
+        var gr_db = msg[5];
+        ~meterAddr.sendMsg('/monokit/comp', input, output, gr_db);
+    }, '/monokit/comp');
 
     // CPU status sender (2Hz)
     ~cpuRoutine = Routine({

@@ -57,7 +57,7 @@ fn render_repl_view(app: &crate::App, height: usize) -> Paragraph<'static> {
         )
 }
 
-fn render_grid_view(app: &crate::App, _width: usize, height: usize) -> Paragraph<'static> {
+fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<'static> {
     use crate::types::{GRID_ICONS, GRID_LABELS};
 
     let mut lines = vec![];
@@ -85,6 +85,31 @@ fn render_grid_view(app: &crate::App, _width: usize, height: usize) -> Paragraph
     // Labels (mode 0) need tighter spacing (2-char label + 2 spaces), icons (mode 1) get 3 spaces
     let icon_spacing = if app.grid_mode == 0 { "  " } else { "   " };
 
+    // Pre-compute FX viz content for mode 2
+    let fx_viz_lines: Vec<String> = if app.grid_mode == 2 {
+        let eq_samples = crate::ui::eq_curve::calculate_eq_response(&app.eq_state, 60);
+        let braille_grid = crate::ui::braille::samples_to_braille(&eq_samples, 30, 3);
+        let mut fx_lines = Vec::new();
+        // 3 rows of EQ curve
+        for braille_row in braille_grid {
+            fx_lines.push(braille_row.into_iter().collect());
+        }
+        // Row 4: frequency labels (pad to 30 chars)
+        fx_lines.push(format!("{:^30}", "20   200   2k   20k"));
+        // Row 5: Input meter + GR value
+        // Layout: "IN  " (4) + meter (18) + " → " (3) + GR (5) = 30 chars
+        let in_bar = level_to_bar(app.compressor_data.input_level, 18);
+        let gr_db = app.compressor_data.gain_reduction_db;
+        fx_lines.push(format!("IN  {} → {:+5.1}", in_bar, gr_db));
+        // Row 6: Output meter
+        // Layout: "OUT " (4) + meter (26) = 30 chars
+        let out_bar = level_to_bar(app.compressor_data.output_level, 26);
+        fx_lines.push(format!("OUT {}", out_bar));
+        fx_lines
+    } else {
+        Vec::new()
+    };
+
     // Add top padding for vertical centering
     for _ in 0..top_pad_count {
         lines.push(Line::from(""));
@@ -97,32 +122,46 @@ fn render_grid_view(app: &crate::App, _width: usize, height: usize) -> Paragraph
         let mut spans = vec![];
 
         if app.show_grid {
-            // Render grid icons or labels based on grid_mode
-            for col in 0..8 {
-                let idx = row * 8 + col;
-                let activity = app.param_activity.timestamps[idx];
-                let color = app.theme.activity_color(activity, false, app.activity_hold_ms);
-
-                if app.grid_mode == 1 {
-                    // Icon mode - use scrambled icon if available
-                    let icon = if idx < app.grid_scrambles.len() {
-                        app.grid_scrambles[idx].current_display.as_str()
-                    } else {
-                        &GRID_ICONS[idx].to_string()
-                    };
-                    spans.push(Span::styled(icon.to_string(), Style::default().fg(color)));
+            if app.grid_mode == 2 {
+                // FX Viz mode - render pre-computed line
+                let color = if row < 3 {
+                    app.theme.success  // EQ curve
+                } else if row == 3 {
+                    app.theme.label    // Frequency labels
+                } else if row == 4 {
+                    app.theme.success  // IN meter
                 } else {
-                    // Label mode - use scrambled label if available
-                    let label = if idx < app.grid_scrambles.len() {
-                        app.grid_scrambles[idx].current_display.as_str()
-                    } else {
-                        GRID_LABELS[idx]
-                    };
-                    spans.push(Span::styled(label.to_string(), Style::default().fg(color)));
-                }
+                    app.theme.success  // OUT meter
+                };
+                spans.push(Span::styled(fx_viz_lines[row].clone(), Style::default().fg(color)));
+            } else {
+                // Render grid icons or labels based on grid_mode
+                for col in 0..8 {
+                    let idx = row * 8 + col;
+                    let activity = app.param_activity.timestamps[idx];
+                    let color = app.theme.activity_color(activity, false, app.activity_hold_ms);
 
-                if col < 7 {
-                    spans.push(Span::raw(icon_spacing));
+                    if app.grid_mode == 1 {
+                        // Icon mode - use scrambled icon if available
+                        let icon = if idx < app.grid_scrambles.len() {
+                            app.grid_scrambles[idx].current_display.as_str()
+                        } else {
+                            &GRID_ICONS[idx].to_string()
+                        };
+                        spans.push(Span::styled(icon.to_string(), Style::default().fg(color)));
+                    } else {
+                        // Label mode - use scrambled label if available
+                        let label = if idx < app.grid_scrambles.len() {
+                            app.grid_scrambles[idx].current_display.as_str()
+                        } else {
+                            GRID_LABELS[idx]
+                        };
+                        spans.push(Span::styled(label.to_string(), Style::default().fg(color)));
+                    }
+
+                    if col < 7 {
+                        spans.push(Span::raw(icon_spacing));
+                    }
                 }
             }
         }
@@ -135,6 +174,7 @@ fn render_grid_view(app: &crate::App, _width: usize, height: usize) -> Paragraph
                 // Mode 1 (icons) is 29 chars, mode 0 (labels) is 30 chars - add 1 space to equalize
                 spans.push(Span::raw(" "));
             }
+            // Mode 2 (FX viz) is exactly 30 chars, no adjustment needed
             // Space before meters
             spans.push(Span::raw("  "));
 
@@ -238,7 +278,6 @@ fn render_grid_view(app: &crate::App, _width: usize, height: usize) -> Paragraph
         )
 }
 
-
 fn get_spectrum_char_for_row(
     level: f32,
     row: usize,
@@ -326,5 +365,11 @@ fn get_meter_char_and_color(peak: f32, meter_row: usize, is_clipping: bool, them
         // Empty - level is below this row
         (' ', theme.secondary)
     }
+}
+
+fn level_to_bar(level: f32, width: usize) -> String {
+    let filled = (level * width as f32).round() as usize;
+    let empty = width.saturating_sub(filled);
+    format!("{}{}", "█".repeat(filled), "░".repeat(empty))
 }
 

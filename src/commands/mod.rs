@@ -98,6 +98,7 @@ where
     let show_grid_view = &mut *ctx.show_grid_view;
     let show_seq_highlight = &mut *ctx.show_seq_highlight;
     let grid_mode = &mut *ctx.grid_mode;
+    let eq_state = &mut *ctx.eq_state;
     let current_scene_name = &mut *ctx.current_scene_name;
     let title_mode = &mut *ctx.title_mode;
     let title_timer_enabled = &mut *ctx.title_timer_enabled;
@@ -635,25 +636,25 @@ where
             synth_params::handle_comp_auto(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "EL" => {
-            synth_params::handle_el(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_el(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, eq_state, output)?;
         }
         "ELF" => {
-            synth_params::handle_elf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_elf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, eq_state, output)?;
         }
         "EM" => {
-            synth_params::handle_em(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_em(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, eq_state, output)?;
         }
         "EF" => {
-            synth_params::handle_ef(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_ef(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, eq_state, output)?;
         }
         "EQ" => {
-            synth_params::handle_eq_param(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_eq_param(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, eq_state, output)?;
         }
         "EH" => {
-            synth_params::handle_eh(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_eh(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, eq_state, output)?;
         }
         "EHF" => {
-            synth_params::handle_ehf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_ehf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, eq_state, output)?;
         }
         "PAN" => {
             synth_params::handle_pan(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;

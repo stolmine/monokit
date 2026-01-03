@@ -438,6 +438,40 @@ pub struct CpuData {
     pub peak_cpu: f32,
 }
 
+/// EQ parameter state for visualization
+#[derive(Debug, Clone)]
+pub struct EqState {
+    pub low_db: f32,      // EL: -24 to 24
+    pub low_freq: f32,    // ELF: 20 to 2000
+    pub mid_db: f32,      // EM: -24 to 24
+    pub mid_freq: f32,    // EF: 200 to 8000
+    pub mid_q: f32,       // EQ: 0.1 to 10
+    pub high_db: f32,     // EH: -24 to 24
+    pub high_freq: f32,   // EHF: 1000 to 20000
+}
+
+impl Default for EqState {
+    fn default() -> Self {
+        Self {
+            low_db: 0.0,
+            low_freq: 200.0,
+            mid_db: 0.0,
+            mid_freq: 1000.0,
+            mid_q: 1.0,
+            high_db: 0.0,
+            high_freq: 2500.0,
+        }
+    }
+}
+
+/// Compressor metering data for visualization
+#[derive(Debug, Clone, Default)]
+pub struct CompressorData {
+    pub input_level: f32,       // 0.0 to 1.0
+    pub output_level: f32,      // 0.0 to 1.0
+    pub gain_reduction_db: f32, // 0 to -40 (negative = reduction)
+}
+
 #[derive(Debug, Clone)]
 pub enum MetroEvent {
     ExecuteScript(usize),
@@ -446,6 +480,7 @@ pub enum MetroEvent {
     SpectrumUpdate(SpectrumData),
     ScopeUpdate(ScopeData),
     CpuUpdate(CpuData),
+    CompressorUpdate(CompressorData),
     ScReady,
     AudioDeviceList { current: String, devices: Vec<String> },
     RestartScWithDevice(String),

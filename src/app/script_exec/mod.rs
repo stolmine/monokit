@@ -70,6 +70,7 @@ impl App {
             show_grid_view: &mut self.show_grid_view,
             show_seq_highlight: &mut self.show_seq_highlight,
             grid_mode: &mut self.grid_mode,
+            eq_state: &mut self.eq_state,
             scope_settings: &mut self.scope_settings,
             current_page: &mut self.current_page,
             br_len: &mut self.br_len,

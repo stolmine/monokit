@@ -3,7 +3,7 @@ use crate::output::OutputDecider;
 use crate::terminal::TerminalCapabilities;
 use crate::theme::Theme;
 use crate::types::{
-    ColorMode, ConfirmAction, Counters, MetroCommand, NotesStorage, Page, PatternStorage, ScaleState,
+    ColorMode, ConfirmAction, Counters, EqState, MetroCommand, NotesStorage, Page, PatternStorage, ScaleState,
     ScriptMutes, ScriptStorage, ScopeSettings, SyncMode, Variables,
 };
 use std::sync::{mpsc::Sender, Arc};
@@ -44,6 +44,7 @@ pub struct ExecutionContext<'a> {
     pub show_grid_view: &'a mut bool,
     pub show_seq_highlight: &'a mut bool,
     pub grid_mode: &'a mut u8,
+    pub eq_state: &'a mut EqState,
     pub scope_settings: &'a mut ScopeSettings,
     pub current_page: &'a mut Page,
 

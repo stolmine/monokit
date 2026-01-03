@@ -1656,9 +1656,10 @@ define_enum_select!(
     handle_grid_mode,
     "GRID.MODE",
     config::save_grid_mode,
-    "ERROR: GRID.MODE TAKES 0-1",
+    "ERROR: GRID.MODE TAKES 0-2",
     (0, "LABELS"),
     (1, "ICONS"),
+    (2, "FX VIZ"),
 );
 
 pub fn handle_title<F>(

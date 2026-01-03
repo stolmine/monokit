@@ -100,9 +100,9 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
             let normalized = (db / 24.0).clamp(-1.0, 1.0); // -24 to +24 dB range
             let bars = (normalized.abs() * 3.0).round() as usize; // 0-3 bars each side
             if db >= 0.0 {
-                format!("░░░{}", "█".repeat(bars) + &"░".repeat(3 - bars))
+                format!("···{}", "█".repeat(bars) + &"·".repeat(3 - bars))
             } else {
-                format!("{}{}", "░".repeat(3 - bars) + &"█".repeat(bars), "░░░")
+                format!("{}{}", "·".repeat(3 - bars) + &"█".repeat(bars), "···")
             }
         };
 
@@ -402,6 +402,6 @@ fn get_meter_char_and_color(peak: f32, meter_row: usize, is_clipping: bool, them
 fn level_to_bar(level: f32, width: usize) -> String {
     let filled = (level * width as f32).round() as usize;
     let empty = width.saturating_sub(filled);
-    format!("{}{}", "█".repeat(filled), "░".repeat(empty))
+    format!("{}{}", "█".repeat(filled), "·".repeat(empty))
 }
 

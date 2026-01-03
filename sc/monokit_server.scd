@@ -86,11 +86,14 @@ s.waitForBoot {
             cl = 100,     // Compressor release ms (10-2000)
             cm = 0,       // Compressor makeup gain (0-16383)
             cr_mix = 16383, // Compressor dry/wet mix (0-16383, default 16383=100% wet)
+            cr_auto = 0,  // Auto-makeup gain toggle (0=manual, 1=auto)
             el = 0,       // EQ low shelf dB (-24 to +24)
+            elf = 200,    // EQ low shelf frequency Hz (20-2000)
             em = 0,       // EQ mid peak dB (-24 to +24)
             ef = 1000,    // EQ mid frequency Hz (200-8000)
             eq = 1,       // EQ mid Q (0.1-10)
             eh = 0,       // EQ high shelf dB (-24 to +24)
+            ehf = 4000,   // EQ high shelf frequency Hz (1000-20000)
             pn = 0,       // Pan position (-16383 to +16383)
             br_len = 2,   // Beat repeat loop division (0-7)
             br_len_ms = 250, // Beat repeat loop length in ms
@@ -113,8 +116,8 @@ s.waitForBoot {
             slew_dt = -1, slew_df = -1, slew_dw = -1, slew_rv = -1,
             slew_rw = -1, slew_volume = -1, slew_pn = -1, slew_lb = -1,
             slew_ls = -1, slew_lm = -1, slew_rgf = -1, slew_rgm = -1,
-            slew_ct = -1, slew_cm = -1, slew_el = -1, slew_em = -1,
-            slew_eh = -1, slew_ef = -1,
+            slew_ct = -1, slew_cm = -1, slew_el = -1, slew_elf = -1, slew_em = -1,
+            slew_eh = -1, slew_ehf = -1, slew_ef = -1,
             env_atk = 1, env_crv = -4,
             aenv_atk = -1, penv_atk = -1, fmev_atk = -1, denv_atk = -1, fbev_atk = -1, flev_atk = -1,
             aenv_crv = -100, penv_crv = -100, fmev_crv = -100, denv_crv = -100, fbev_crv = -100, flev_crv = -100,
@@ -154,7 +157,7 @@ s.waitForBoot {
         var pfSmooth, mfSmooth, fcSmooth, fmSmooth, mxSmooth, dcSmooth, fbSmooth, fqSmooth, fkSmooth, feSmooth;
         var rfSmooth, rmSmooth, dtSmooth, dfSmooth, dwSmooth, rvSmooth, rwSmooth, volumeSmooth, panSmooth;
         var lbSmooth, lsSmooth, lmSmooth, rgfSmooth, rgmSmooth, ctSmooth, cmSmooth;
-        var elSmooth, emSmooth, ehSmooth, efSmooth;
+        var elSmooth, elfSmooth, emSmooth, ehSmooth, ehfSmooth, efSmooth;
         // Envelope amount controls - captured early to ensure consistent reading
         var paCtl, faCtl, daCtl, fbaCtl;
         var aAtk, aCrv, pAtk, pCrv, fmAtk, fmCrv, dAtk, dCrv, fbAtk, fbCrv, flAtk, flCrv;
@@ -198,8 +201,10 @@ s.waitForBoot {
         ctSmooth = Lag.kr(ct, Select.kr(slew_ct >= 0, [slew_time, slew_ct]));
         cmSmooth = Lag.kr(cm, Select.kr(slew_cm >= 0, [slew_time, slew_cm]));
         elSmooth = Lag.kr(el, Select.kr(slew_el >= 0, [slew_time, slew_el]));
+        elfSmooth = Lag.kr(elf, Select.kr(slew_elf >= 0, [slew_time, slew_elf]));
         emSmooth = Lag.kr(em, Select.kr(slew_em >= 0, [slew_time, slew_em]));
         ehSmooth = Lag.kr(eh, Select.kr(slew_eh >= 0, [slew_time, slew_eh]));
+        ehfSmooth = Lag.kr(ehf, Select.kr(slew_ehf >= 0, [slew_time, slew_ehf]));
         efSmooth = Lag.kr(ef, Select.kr(slew_ef >= 0, [slew_time, slew_ef]));
 
         // Noise parameters smoothing
@@ -458,7 +463,13 @@ s.waitForBoot {
             clampTime: ca / 1000,
             relaxTime: cl / 1000
         );
-        wetSig = wetSig * (1 + (cmSmooth / 16383 * 2));  // Makeup gain (up to 3x)
+
+        // Auto-makeup gain: when cr_auto=1, calculate makeup based on threshold and ratio
+        autoMakeup = Select.kr(cr_auto, [
+            1,  // Manual mode: no auto compensation
+            (1 / compThresh.max(0.001)).pow(1 - compRatio)  // Auto: compensate for gain reduction
+        ]);
+        wetSig = wetSig * autoMakeup * (1 + (cmSmooth / 16383 * 2));  // Combined auto + manual makeup
 
         // Dry/wet mix (0=100% dry, 16383=100% wet)
         compMixAmt = Lag.kr(cr_mix / 16383, 0.01);
@@ -599,12 +610,12 @@ s.waitForBoot {
         ]);
 
         // 3-Band EQ (post-delay, pre-reverb)
-        sigL = BLowShelf.ar(sigL, 200, 1, elSmooth.clip(-24, 24));
+        sigL = BLowShelf.ar(sigL, elfSmooth.clip(20, 2000), 1, elSmooth.clip(-24, 24));
         sigL = BPeakEQ.ar(sigL, efSmooth.clip(200, 8000), (1/eq.clip(0.1, 10)), emSmooth.clip(-24, 24));
-        sigL = BHiShelf.ar(sigL, 4000, 1, ehSmooth.clip(-24, 24));
-        sigR = BLowShelf.ar(sigR, 200, 1, elSmooth.clip(-24, 24));
+        sigL = BHiShelf.ar(sigL, ehfSmooth.clip(1000, 20000), 1, ehSmooth.clip(-24, 24));
+        sigR = BLowShelf.ar(sigR, elfSmooth.clip(20, 2000), 1, elSmooth.clip(-24, 24));
         sigR = BPeakEQ.ar(sigR, efSmooth.clip(200, 8000), (1/eq.clip(0.1, 10)), emSmooth.clip(-24, 24));
-        sigR = BHiShelf.ar(sigR, 4000, 1, ehSmooth.clip(-24, 24));
+        sigR = BHiShelf.ar(sigR, ehfSmooth.clip(1000, 20000), 1, ehSmooth.clip(-24, 24));
 
         // Plate Reverb with Routing Modes
         rmodeSmooth = Lag.kr(rmode, 0.02);
@@ -729,14 +740,15 @@ s.waitForBoot {
     }).add;
 
     SynthDef(\monokit_scope, {
-        arg scopeRate = 0.1;  // Controls timespan: rate = 128 / (ms * 44.1)
+        arg scopeRate = 0.1,  // Controls timespan: rate = 128 / (ms * 44.1)
+            scopeGain = 1;    // Input gain multiplier (0x-4x)
         var sigL, sigR, mono;
         var phase, trig;
         var buf = LocalBuf(128);
 
         sigL = InFeedback.ar(0);
         sigR = InFeedback.ar(1);
-        mono = (sigL + sigR) * 0.5;
+        mono = (sigL + sigR) * 0.5 * scopeGain;
 
         // Write continuously to circular buffer at reduced rate
         // scopeRate 0.1 ≈ 30ms window, 0.05 ≈ 60ms, 0.2 ≈ 15ms
@@ -826,6 +838,8 @@ s.waitForBoot {
         var paramValue = msg[2].asFloat;
         var routeParam = { |pName, pValue|
             case
+                // Scope synth
+                { pName == \scopeGain } { ~scope.set(pName, pValue) }
                 // Noise synth
                 { #[nw, nv].includes(pName) } { ~noise.set(pName, pValue) }
                 // Mod synth

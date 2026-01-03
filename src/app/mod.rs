@@ -3,7 +3,7 @@ use crate::output::OutputDecider;
 use crate::terminal::TerminalCapabilities;
 use crate::theme::Theme;
 use crate::types::{
-    ColorMode, Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, NotesStorage, Page, ParamActivity, PatternStorage, ScaleState, ScopeData, ScriptMutes, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
+    ColorMode, ConfirmAction, Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, NotesStorage, Page, ParamActivity, PatternStorage, ScaleState, ScopeData, ScriptMutes, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
 };
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -111,6 +111,10 @@ pub struct App {
     pub script_undo_stacks: [UndoStack; 10],
     pub notes_undo_stack: UndoStack,
     pub script_mutes: ScriptMutes,
+    pub confirm_quit_unsaved: bool,
+    pub confirm_overwrite_scene: bool,
+    pub scene_modified: bool,
+    pub pending_confirmation: Option<ConfirmAction>,
 }
 
 impl App {
@@ -167,6 +171,7 @@ impl App {
                 color_mode: crate::types::ScopeColorMode::from_u8(config.display.scope_color_mode),
                 display_mode: config.display.scope_display_mode,
                 unipolar: config.display.scope_unipolar,
+                gain: config.display.scope_gain,
             },
             cpu_data: CpuData::default(),
             show_cpu: config.display.show_cpu,
@@ -246,6 +251,10 @@ impl App {
             script_undo_stacks: Default::default(),
             notes_undo_stack: UndoStack::new(),
             script_mutes: ScriptMutes::default(),
+            confirm_quit_unsaved: config.display.confirm_quit_unsaved,
+            confirm_overwrite_scene: config.display.confirm_overwrite_scene,
+            scene_modified: false,
+            pending_confirmation: None,
         }
     }
 
@@ -436,6 +445,10 @@ impl App {
             script_break: &mut self.script_break,
             ev_counters: &mut self.ev_counters,
             script_mutes: &mut self.script_mutes,
+            confirm_quit_unsaved: &mut self.confirm_quit_unsaved,
+            confirm_overwrite_scene: &mut self.confirm_overwrite_scene,
+            scene_modified: &mut self.scene_modified,
+            pending_confirmation: &mut self.pending_confirmation,
         };
 
         let result = crate::commands::process_command(

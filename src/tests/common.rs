@@ -1,7 +1,7 @@
 use crate::commands::process_command;
 use crate::midi::{MidiConnection, MidiTimingStats};
 use crate::theme::Theme;
-use crate::types::{Counters, MetroCommand, NotesStorage, Page, PatternStorage, ScaleState, ScriptStorage, SyncMode, Variables};
+use crate::types::{ConfirmAction, Counters, MetroCommand, NotesStorage, Page, PatternStorage, ScaleState, ScriptStorage, SyncMode, Variables};
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::Arc;
 
@@ -118,6 +118,10 @@ pub struct TestContext {
     pub script_mutes: crate::types::ScriptMutes,
     pub current_page: Page,
     pub outputs: Vec<String>,
+    pub confirm_quit_unsaved: bool,
+    pub confirm_overwrite_scene: bool,
+    pub scene_modified: bool,
+    pub pending_confirmation: Option<ConfirmAction>,
 }
 
 impl Default for TestContext {
@@ -154,6 +158,7 @@ impl Default for TestContext {
                 color_mode: crate::types::ScopeColorMode::Success,
                 display_mode: 0,
                 unipolar: false,
+                gain: 8192,
             },
             show_meters_header: true,
             show_meters_grid: true,
@@ -190,6 +195,10 @@ impl Default for TestContext {
             script_mutes: crate::types::ScriptMutes::default(),
             current_page: Page::Live,
             outputs: Vec::new(),
+            confirm_quit_unsaved: true,
+            confirm_overwrite_scene: true,
+            scene_modified: false,
+            pending_confirmation: None,
         }
     }
 }
@@ -259,6 +268,10 @@ impl TestContext {
             script_break: &mut self.script_break,
             ev_counters: &mut self.ev_counters,
             script_mutes: &mut self.script_mutes,
+            confirm_quit_unsaved: &mut self.confirm_quit_unsaved,
+            confirm_overwrite_scene: &mut self.confirm_overwrite_scene,
+            scene_modified: &mut self.scene_modified,
+            pending_confirmation: &mut self.pending_confirmation,
         };
 
         process_command(

@@ -631,8 +631,14 @@ where
         "CR.MIX" => {
             synth_params::handle_cr_mix(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
+        "CR.AUTO" | "CRA" => {
+            synth_params::handle_cr_auto(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
         "EL" => {
             synth_params::handle_el(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "ELF" => {
+            synth_params::handle_elf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "EM" => {
             synth_params::handle_em(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
@@ -645,6 +651,9 @@ where
         }
         "EH" => {
             synth_params::handle_eh(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "EHF" => {
+            synth_params::handle_ehf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "PAN" => {
             synth_params::handle_pan(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
@@ -876,7 +885,7 @@ where
             return misc::handle_script(&parts, variables, patterns, counters, scripts, script_index, scale);
         }
         "SAVE" => {
-            scene_cmds::handle_save(&parts, scripts, patterns, notes, current_scene_name, *scramble_enabled, *scramble_mode, *scramble_speed, *scramble_curve, header_scramble, *debug_level, *out_ess, &*ctx.script_mutes, output);
+            scene_cmds::handle_save(&parts, scripts, patterns, notes, current_scene_name, *scramble_enabled, *scramble_mode, *scramble_speed, *scramble_curve, header_scramble, *debug_level, *out_ess, &*ctx.script_mutes, *ctx.confirm_overwrite_scene, &mut *ctx.pending_confirmation, &mut *ctx.scene_modified, output);
         }
         "LOAD" => {
             if *load_rst {
@@ -885,7 +894,7 @@ where
                 // RST sends 157 params with 5ms delays (785ms) + buffer for safety
                 std::thread::sleep(std::time::Duration::from_millis(160));
             }
-            if scene_cmds::handle_load(&parts, &mut *ctx.variables, &mut *ctx.scripts, &mut *ctx.patterns, &mut *ctx.notes, &mut *ctx.current_scene_name, *ctx.scramble_enabled, *ctx.scramble_mode, *ctx.scramble_speed, *ctx.scramble_curve, &mut *ctx.header_scramble, *ctx.debug_level, *ctx.out_ess, &mut *ctx.script_mutes, output) {
+            if scene_cmds::handle_load(&parts, &mut *ctx.variables, &mut *ctx.scripts, &mut *ctx.patterns, &mut *ctx.notes, &mut *ctx.current_scene_name, *ctx.scramble_enabled, *ctx.scramble_mode, *ctx.scramble_speed, *ctx.scramble_curve, &mut *ctx.header_scramble, *ctx.debug_level, *ctx.out_ess, &mut *ctx.script_mutes, &mut *ctx.scene_modified, output) {
                 log_command(&format!("CMD: {} → DISPATCHED", trimmed));
                 return Ok(vec![9]);
             }
@@ -964,6 +973,12 @@ where
         }
         "SCOPE.UNI" => {
             misc::handle_scope_uni(&parts, scope_settings, variables, patterns, counters, scripts, script_index, scale, output);
+        }
+        "SCOPE.GAIN" | "SCG" => {
+            misc::handle_scope_gain(&parts, scope_settings, metro_tx, variables, patterns, counters, scripts, script_index, scale, output)?;
+        }
+        "SCOPE.RST" | "SCR" => {
+            misc::handle_scope_rst(scope_settings, metro_tx, output)?;
         }
         "NOTE" => {
             misc::handle_note(&parts, notes, *debug_level, *out_cfm, output);
@@ -1047,6 +1062,12 @@ where
         }
         "SCRMBL.CRV" => {
             misc::handle_scrmbl_crv(&parts, scramble_curve, *debug_level, output);
+        }
+        "CFM.QUIT" => {
+            misc::handle_cfm_quit(&parts, &mut *ctx.confirm_quit_unsaved, *debug_level, output);
+        }
+        "CFM.SAVE" => {
+            misc::handle_cfm_save(&parts, &mut *ctx.confirm_overwrite_scene, *debug_level, output);
         }
         "OUT.ERR" => {
             misc::handle_out_err(&parts, out_err, *debug_level, output);

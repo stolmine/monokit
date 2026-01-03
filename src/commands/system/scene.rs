@@ -1,4 +1,4 @@
-use crate::types::{NotesStorage, PatternStorage, ScriptMutes, ScriptStorage, Variables, TIER_ERRORS, TIER_ESSENTIAL, TIER_QUERIES, TIER_CONFIRMS};
+use crate::types::{ConfirmAction, NotesStorage, PatternStorage, ScriptMutes, ScriptStorage, Variables, TIER_ERRORS, TIER_ESSENTIAL, TIER_QUERIES, TIER_CONFIRMS};
 
 pub fn handle_save<F>(
     parts: &[&str],
@@ -14,6 +14,9 @@ pub fn handle_save<F>(
     debug_level: u8,
     out_ess: bool,
     script_mutes: &ScriptMutes,
+    confirm_overwrite_scene: bool,
+    pending_confirmation: &mut Option<ConfirmAction>,
+    scene_modified: &mut bool,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -23,10 +26,19 @@ pub fn handle_save<F>(
         return;
     }
     let name = parts[1..].join(" ");
+
+    // Check if scene exists and confirmation is needed
+    let scene_file = crate::scene::scene_path(&name);
+    if confirm_overwrite_scene && scene_file.exists() && pending_confirmation.is_none() {
+        *pending_confirmation = Some(ConfirmAction::SaveOverwrite(name));
+        return;
+    }
+
     let scene = crate::scene::Scene::from_app_state(scripts, patterns, notes, script_mutes);
     match crate::scene::save_scene(&name, &scene) {
         Ok(()) => {
             *current_scene_name = Some(name.clone());
+            *scene_modified = false;
             *header_scramble = if scramble_enabled {
                 let mode = crate::scramble::ScrambleMode::from_u8(scramble_mode);
                 let curve = crate::scramble::ScrambleCurve::from_u8(scramble_curve);
@@ -57,6 +69,7 @@ pub fn handle_load<F>(
     debug_level: u8,
     out_ess: bool,
     script_mutes: &mut ScriptMutes,
+    scene_modified: &mut bool,
     mut output: F,
 ) -> bool
 where
@@ -72,6 +85,7 @@ where
             scene.apply_to_app_state(scripts, patterns, notes, script_mutes);
             *variables = crate::types::Variables::default();
             *current_scene_name = Some(name.clone());
+            *scene_modified = false;
             let _ = crate::config::save_last_scene(&name);
             *header_scramble = if scramble_enabled {
                 let mode = crate::scramble::ScrambleMode::from_u8(scramble_mode);

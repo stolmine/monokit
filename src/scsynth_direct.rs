@@ -801,8 +801,9 @@ fn find_synthdefs_dir() -> Result<PathBuf, String> {
         return Ok(cwd);
     }
 
-    if let Some(config_dir) = dirs::config_dir() {
-        let synthdefs = config_dir.join("monokit/sc/synthdefs");
+    // Check ~/.config/monokit for synthdefs
+    if let Ok(config_dir) = crate::config::monokit_config_dir() {
+        let synthdefs = config_dir.join("sc/synthdefs");
         if synthdefs.exists() {
             return Ok(synthdefs);
         }

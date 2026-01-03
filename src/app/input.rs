@@ -142,6 +142,7 @@ impl App {
 
             let script = self.scripts.get_script_mut(script_idx);
             script.lines[line_idx] = self.input.clone();
+            self.scene_modified = true;
             let next_line = if line_idx < 7 { line_idx + 1 } else { 0 };
             self.selected_line = Some(next_line);
             self.input.clear();
@@ -173,6 +174,7 @@ impl App {
                         script.lines[i] = script.lines[i - 1].clone();
                     }
                     script.lines[selected + 1] = line_content;
+                    self.scene_modified = true;
                     self.selected_line = Some(selected + 1);
                 }
             }
@@ -193,6 +195,7 @@ impl App {
 
                 let script = self.scripts.get_script_mut(script_idx);
                 script.lines[selected].clear();
+                self.scene_modified = true;
                 self.input.clear();
                 self.cursor_position = 0;
             }
@@ -263,6 +266,7 @@ impl App {
 
                 let script = self.scripts.get_script_mut(script_idx);
                 script.lines[selected].clear();
+                self.scene_modified = true;
                 self.input.clear();
                 self.cursor_position = 0;
             }
@@ -291,6 +295,7 @@ impl App {
 
                 let script = self.scripts.get_script_mut(script_idx);
                 script.lines[selected] = self.clipboard.clone();
+                self.scene_modified = true;
                 self.input = self.clipboard.clone();
                 self.cursor_position = self.input.len();
                 self.script_error = None;

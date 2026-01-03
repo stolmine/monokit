@@ -2,6 +2,38 @@
 
 ## v0.4.3 (December 2025) - Stability & Polish (In Progress)
 
+### Quick Polish Features
+
+**Scope Gain & Reset**
+- Added SCOPE.GAIN parameter for independent scope output volume control
+- Added SCOPE.RST command to reset scope state/buffer
+- Enables accurate monitoring of quiet signals without affecting main output
+
+**Programmable EQ Shelving Frequencies**
+- Added ELF command for low shelf frequency control (default 200Hz)
+- Added EHF command for high shelf frequency control (default 2500Hz)
+- Allows user customization of EQ shelf points for better tonal shaping
+
+**Compressor Auto-Makeup Toggle**
+- Added CR.AUTO command to enable/disable automatic makeup gain
+- When enabled (1), compressor automatically compensates for gain reduction
+- When disabled (0), CM parameter provides manual makeup control
+- Default: enabled for convenience
+
+**Confirmation Dialogs**
+- Added CFM.QUIT setting (0/1) for quit confirmation when unsaved changes exist
+- Added CFM.SAVE setting (0/1) for save overwrite confirmation
+- Quit protection: prevents accidental quit when metro active + named scene loaded
+- Settings persist in config.toml
+- Config path standardized to ~/.config/monokit
+
+**Help System Reorganization**
+- Moved N1-N4 counter documentation from PATTERNS to VARIABLES & MATH section
+- Improves discoverability and logical grouping (counters are variables, not patterns)
+
+**Build Configuration**
+- scsynth-direct now default build feature for bundled binary distribution
+
 ### Critical Bug Fixes
 
 **Scene Loading Audio Crash Prevention**

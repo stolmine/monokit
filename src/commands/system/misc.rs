@@ -496,6 +496,10 @@ where
     if delay_ms > 0 {
         std::thread::sleep(Duration::from_millis(delay_ms));
     }
+    ctx.metro_tx.send(MetroCommand::SendParam("elf".to_string(), OscType::Float(200.0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
     ctx.metro_tx.send(MetroCommand::SendParam("em".to_string(), OscType::Int(0)))?;
     if delay_ms > 0 {
         std::thread::sleep(Duration::from_millis(delay_ms));
@@ -509,6 +513,10 @@ where
         std::thread::sleep(Duration::from_millis(delay_ms));
     }
     ctx.metro_tx.send(MetroCommand::SendParam("eh".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("ehf".to_string(), OscType::Float(4000.0)))?;
     if delay_ms > 0 {
         std::thread::sleep(Duration::from_millis(delay_ms));
     }
@@ -1496,6 +1504,77 @@ pub fn handle_scope_uni<F>(
     }
 }
 
+pub fn handle_scope_gain<F>(
+    parts: &[&str],
+    scope_settings: &mut crate::types::ScopeSettings,
+    metro_tx: &Sender<MetroCommand>,
+    variables: &Variables,
+    patterns: &mut PatternStorage,
+    counters: &mut Counters,
+    scripts: &ScriptStorage,
+    script_index: usize,
+    scale: &ScaleState,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    if parts.len() == 1 {
+        output(format!("SCOPE.GAIN: {}", scope_settings.gain));
+    } else {
+        let value = if let Some((val, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+            val
+        } else {
+            parts[1].parse().context("Failed to parse gain value")?
+        };
+
+        if value < 0 || value > 16383 {
+            output("SCOPE.GAIN MUST BE 0-16383".to_string());
+            return Ok(());
+        }
+
+        scope_settings.gain = value as u16;
+
+        let gain_f32 = value as f32 / 8192.0;
+        metro_tx
+            .send(MetroCommand::SendParam("scopeGain".to_string(), OscType::Float(gain_f32)))
+            .context("Failed to send scope gain")?;
+
+        let _ = config::save_scope_settings(scope_settings);
+
+        output(format!("SCOPE.GAIN: {}", value));
+    }
+    Ok(())
+}
+
+pub fn handle_scope_rst<F>(
+    scope_settings: &mut crate::types::ScopeSettings,
+    metro_tx: &Sender<MetroCommand>,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    scope_settings.timespan_ms = 100;
+    scope_settings.color_mode = crate::types::ScopeColorMode::Success;
+    scope_settings.display_mode = 0;
+    scope_settings.unipolar = false;
+    scope_settings.gain = 8192;
+
+    metro_tx
+        .send(MetroCommand::SendScopeRate(100.0))
+        .context("Failed to send scope rate")?;
+
+    metro_tx
+        .send(MetroCommand::SendParam("scopeGain".to_string(), OscType::Float(1.0)))
+        .context("Failed to send scope gain")?;
+
+    let _ = config::save_scope_settings(scope_settings);
+
+    output("SCOPE RESET TO DEFAULTS".to_string());
+    Ok(())
+}
+
 pub fn handle_note<F>(
     parts: &[&str],
     notes: &mut crate::types::NotesStorage,
@@ -1942,3 +2021,7 @@ pub fn handle_page<F>(
         output(format!("PAGE: {}", current_page.name()));
     }
 }
+
+define_bool_toggle!(handle_cfm_quit, "CFM.QUIT", "CFM.QUIT: {}", "CFM.QUIT: OFF", "CFM.QUIT: ON (CONFIRM QUIT)", config::save_confirm_quit_unsaved);
+
+define_bool_toggle!(handle_cfm_save, "CFM.SAVE", "CFM.SAVE: {}", "CFM.SAVE: OFF", "CFM.SAVE: ON (CONFIRM OVERWRITE)", config::save_confirm_overwrite_scene);

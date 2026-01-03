@@ -40,11 +40,12 @@ pub enum SceneError {
 }
 
 pub fn get_scenes_dir() -> PathBuf {
-    // Use platform-native location (~/Library/Application Support/monokit/scenes on macOS)
-    let home = env::var("HOME").unwrap_or_else(|_| ".".to_string());
-    dirs::config_dir()
-        .unwrap_or_else(|| PathBuf::from(home).join(".config"))
-        .join("monokit")
+    // Use consistent cross-platform path: ~/.config/monokit/scenes
+    crate::config::monokit_config_dir()
+        .unwrap_or_else(|_| {
+            let home = env::var("HOME").unwrap_or_else(|_| ".".to_string());
+            PathBuf::from(home).join(".config").join("monokit")
+        })
         .join("scenes")
 }
 

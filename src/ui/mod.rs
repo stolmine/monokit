@@ -81,6 +81,101 @@ pub fn ui(f: &mut Frame, app: &crate::App) {
         let footer = render_footer(app);
         f.render_widget(footer, chunks[2]);
     }
+
+    // Render confirmation dialog overlay if pending
+    if let Some(ref action) = app.pending_confirmation {
+        render_confirmation_dialog(f, app, action);
+    }
+}
+
+fn render_confirmation_dialog(f: &mut Frame, app: &crate::App, action: &crate::types::ConfirmAction) {
+    use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
+    use ratatui::layout::{Alignment, Constraint, Direction, Layout};
+
+    let message = match action {
+        crate::types::ConfirmAction::Quit => "CONFIRM QUIT? (Y/N)",
+        crate::types::ConfirmAction::SaveOverwrite(name) => {
+            return render_save_overwrite_dialog(f, app, name);
+        }
+    };
+
+    let area = f.area();
+    let dialog_width = message.len() as u16 + 4;
+    let dialog_height = 3;
+
+    let vertical = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length((area.height.saturating_sub(dialog_height)) / 2),
+            Constraint::Length(dialog_height),
+            Constraint::Min(0),
+        ])
+        .split(area);
+
+    let horizontal = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Length((area.width.saturating_sub(dialog_width)) / 2),
+            Constraint::Length(dialog_width),
+            Constraint::Min(0),
+        ])
+        .split(vertical[1]);
+
+    let dialog_area = horizontal[1];
+
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(app.theme.error))
+        .style(Style::default().bg(app.theme.background));
+
+    let paragraph = Paragraph::new(message)
+        .block(block)
+        .alignment(Alignment::Center)
+        .style(Style::default().fg(app.theme.error).bg(app.theme.background));
+
+    f.render_widget(paragraph, dialog_area);
+}
+
+fn render_save_overwrite_dialog(f: &mut Frame, app: &crate::App, name: &str) {
+    use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
+    use ratatui::layout::{Alignment, Constraint, Direction, Layout};
+
+    let message = format!("OVERWRITE SCENE '{}'? (Y/N)", name);
+    let area = f.area();
+    let dialog_width = message.len().min(area.width as usize - 4) as u16 + 4;
+    let dialog_height = 3;
+
+    let vertical = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length((area.height.saturating_sub(dialog_height)) / 2),
+            Constraint::Length(dialog_height),
+            Constraint::Min(0),
+        ])
+        .split(area);
+
+    let horizontal = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Length((area.width.saturating_sub(dialog_width)) / 2),
+            Constraint::Length(dialog_width),
+            Constraint::Min(0),
+        ])
+        .split(vertical[1]);
+
+    let dialog_area = horizontal[1];
+
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(app.theme.error))
+        .style(Style::default().bg(app.theme.background));
+
+    let paragraph = Paragraph::new(message)
+        .block(block)
+        .alignment(Alignment::Center)
+        .style(Style::default().fg(app.theme.error).bg(app.theme.background));
+
+    f.render_widget(paragraph, dialog_area);
 }
 
 pub fn run_app<B: ratatui::backend::Backend>(
@@ -299,12 +394,64 @@ pub fn run_app<B: ratatui::backend::Backend>(
 
                 match key.code {
                     KeyCode::Char('q') | KeyCode::Char('Q') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                        app.should_quit = true;
-                        // Stop SuperCollider before quitting
-                        if let Ok(mut sc) = sc_process.lock() {
-                            sc.stop();
+                        let metro_active = {
+                            let state = app.metro_state.lock().unwrap();
+                            state.active
+                        };
+                        let has_named_scene = app.current_scene_name.is_some()
+                            && app.current_scene_name.as_ref().map(|s| s.as_str()) != Some("[unsaved]");
+                        let needs_confirmation = (app.confirm_quit_unsaved && app.scene_modified)
+                            || (has_named_scene && metro_active);
+
+                        if needs_confirmation && app.pending_confirmation.is_none() {
+                            app.pending_confirmation = Some(crate::types::ConfirmAction::Quit);
+                        } else {
+                            app.should_quit = true;
+                            // Stop SuperCollider before quitting
+                            if let Ok(mut sc) = sc_process.lock() {
+                                sc.stop();
+                            }
+                            return Ok(());
                         }
-                        return Ok(());
+                    }
+                    KeyCode::Char('y') | KeyCode::Char('Y') if app.pending_confirmation.is_some() => {
+                        match app.pending_confirmation.take() {
+                            Some(crate::types::ConfirmAction::Quit) => {
+                                app.should_quit = true;
+                                if let Ok(mut sc) = sc_process.lock() {
+                                    sc.stop();
+                                }
+                                return Ok(());
+                            }
+                            Some(crate::types::ConfirmAction::SaveOverwrite(name)) => {
+                                // Directly save the scene (bypass confirmation check)
+                                let scene = crate::scene::Scene::from_app_state(
+                                    &app.scripts,
+                                    &app.patterns,
+                                    &app.notes,
+                                    &app.script_mutes,
+                                );
+                                match crate::scene::save_scene(&name, &scene) {
+                                    Ok(()) => {
+                                        app.current_scene_name = Some(name.clone());
+                                        app.scene_modified = false;
+                                        if app.scramble_enabled {
+                                            let mode = crate::scramble::ScrambleMode::from_u8(app.scramble_mode);
+                                            let curve = crate::scramble::ScrambleCurve::from_u8(app.scramble_curve);
+                                            app.header_scramble = Some(crate::scramble::ScrambleAnimation::new_with_options(
+                                                &name, mode, app.scramble_speed, curve
+                                            ));
+                                        }
+                                        app.add_output(format!("SAVED SCENE: {}", name));
+                                    }
+                                    Err(e) => app.add_output(format!("ERROR: {:?}", e)),
+                                }
+                            }
+                            None => {}
+                        }
+                    }
+                    KeyCode::Char('n') | KeyCode::Char('N') if app.pending_confirmation.is_some() => {
+                        app.pending_confirmation = None;
                     }
                     KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) && app.is_script_page() => {
                         app.copy_line();

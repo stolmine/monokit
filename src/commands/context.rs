@@ -3,7 +3,7 @@ use crate::output::OutputDecider;
 use crate::terminal::TerminalCapabilities;
 use crate::theme::Theme;
 use crate::types::{
-    ColorMode, Counters, MetroCommand, NotesStorage, Page, PatternStorage, ScaleState,
+    ColorMode, ConfirmAction, Counters, MetroCommand, NotesStorage, Page, PatternStorage, ScaleState,
     ScriptMutes, ScriptStorage, ScopeSettings, SyncMode, Variables,
 };
 use std::sync::{mpsc::Sender, Arc};
@@ -75,6 +75,10 @@ pub struct ExecutionContext<'a> {
     pub script_break: &'a mut bool,
     pub ev_counters: &'a mut [[u32; 8]; 10],
     pub script_mutes: &'a mut ScriptMutes,
+    pub confirm_quit_unsaved: &'a mut bool,
+    pub confirm_overwrite_scene: &'a mut bool,
+    pub scene_modified: &'a mut bool,
+    pub pending_confirmation: &'a mut Option<ConfirmAction>,
 }
 
 impl<'a> ExecutionContext<'a> {}

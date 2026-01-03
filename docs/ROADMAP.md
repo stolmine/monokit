@@ -200,11 +200,11 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - ~~**Script entry validation refactor**~~ ✅ FIXED - Centralized command registry with 408 commands
 
 **Quick Polish:**
-- Scope gain parameter + reset command
-- Programmable EQ shelving frequencies (ELF/EHF)
-- Compressor auto-makeup toggle (CR.AUTO)
-- **Confirmation dialogs (persistent settings)** - Confirm before quit if scene unsaved/modified; confirm before overwriting existing scene on save
-- N1-N4 help section relocation
+- ~~Scope gain parameter + reset command~~ ✅ DONE - SCOPE.GAIN, SCOPE.RST
+- ~~Programmable EQ shelving frequencies (ELF/EHF)~~ ✅ DONE - ELF, EHF commands
+- ~~Compressor auto-makeup toggle (CR.AUTO)~~ ✅ DONE - CR.AUTO implemented
+- ~~**Confirmation dialogs (persistent settings)**~~ ✅ DONE - CFM.QUIT, CFM.SAVE commands; quit protection when metro active + named scene loaded
+- ~~N1-N4 help section relocation~~ ✅ DONE - Moved to VARIABLES & MATH section
 
 **Documentation:**
 - CHANGELOG cleanup
@@ -246,6 +246,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **CHANGELOG Cleanup** [Low] - Fix version ordering and numbering in CHANGELOG; versions are out of order and show versions beyond current (v0.4.3 listed when actual version is v0.4.22); consolidate and organize chronologically
 
 ### P2 - Bug Fixes & Stability
+- **Confirmation Dialog Styling Bug** [Low] - Confirmation dialog styling sometimes picks up adjacent characters (e.g., 'EOVERWRITE' instead of 'OVERWRITE'); investigate styling/rendering logic
 - **Stateful Highlighting Issues** [Medium] - Address unintended consequences in current stateful highlighting system; ensure reliable and predictable behavior across all script contexts
 - **Scene Loading Audio Crashes** [Medium] - Debug and fix audio system crashes that sometimes occur when loading scenes; ensure robust scene transition handling
 - **PRE Command Same-Line Usage** [Low-Medium] - Clarify and validate same-line PRE usage and execution order; may need to adopt Teletype-style restriction (one PRE per line) to ensure consistent functionality; implement proper validation logic and execution hierarchy

@@ -89,4 +89,8 @@ pub fn register_system(m: &mut std::collections::HashMap<&'static str, CommandDe
 
     // Output control
     m.insert("LIMIT", CommandDef::new("LIMIT", None, ArgCount::Range(0, 1), "Output limiter"));
+
+    // Confirmation dialogs
+    m.insert("CFM.QUIT", CommandDef::new("CFM.QUIT", None, ArgCount::Range(0, 1), "Confirm quit w/ unsaved"));
+    m.insert("CFM.SAVE", CommandDef::new("CFM.SAVE", None, ArgCount::Range(0, 1), "Confirm scene overwrite"));
 }

@@ -6,7 +6,7 @@ license = "GPL-2.0"
 description = "Teletype-style scripting for a complex oscillator drum voice"
 
 [features]
-default = []
+default = ["scsynth-direct"]
 scsynth-direct = []
 
 [dependencies]

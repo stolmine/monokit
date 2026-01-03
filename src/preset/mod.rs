@@ -31,12 +31,12 @@ pub enum PresetError {
 }
 
 pub fn get_presets_dir() -> PathBuf {
-    dirs::config_dir()
-        .unwrap_or_else(|| {
+    // Use consistent cross-platform path: ~/.config/monokit/presets
+    crate::config::monokit_config_dir()
+        .unwrap_or_else(|_| {
             let home = env::var("HOME").unwrap_or_else(|_| ".".to_string());
-            PathBuf::from(home).join(".config")
+            PathBuf::from(home).join(".config").join("monokit")
         })
-        .join("monokit")
         .join("presets")
 }
 

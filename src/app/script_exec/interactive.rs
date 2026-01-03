@@ -17,6 +17,21 @@ impl App {
 
         let cmd_upper = cmd.to_uppercase();
         if cmd_upper == "Q" || cmd_upper == "QUIT" || cmd_upper == "EXIT" {
+            // Check if quit confirmation is needed
+            let metro_active = {
+                let state = self.metro_state.lock().unwrap();
+                state.active
+            };
+            let has_named_scene = self.current_scene_name.is_some()
+                && self.current_scene_name.as_ref().map(|s| s.as_str()) != Some("[unsaved]");
+            let needs_confirmation = (self.confirm_quit_unsaved && self.scene_modified)
+                || (has_named_scene && metro_active);
+
+            if needs_confirmation && self.pending_confirmation.is_none() {
+                self.pending_confirmation = Some(crate::types::ConfirmAction::Quit);
+                return;
+            }
+
             if self.recording {
                 let _ = self.metro_tx.send(crate::types::MetroCommand::StopRecording);
                 self.recording = false;

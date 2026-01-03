@@ -133,6 +133,7 @@ pub struct ScopeSettings {
     pub color_mode: ScopeColorMode,
     pub display_mode: u8,
     pub unipolar: bool,
+    pub gain: u16,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -662,6 +663,12 @@ pub struct ScrambleSettings {
     pub scramble_mode: u8,
     pub scramble_speed: u8,
     pub scramble_curve: u8,
+}
+
+#[derive(Debug, Clone)]
+pub enum ConfirmAction {
+    Quit,
+    SaveOverwrite(String),
 }
 
 impl Default for ScrambleSettings {

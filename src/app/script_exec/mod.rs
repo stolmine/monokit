@@ -99,6 +99,10 @@ impl App {
             script_break: &mut self.script_break,
             ev_counters: &mut self.ev_counters,
             script_mutes: &mut self.script_mutes,
+            confirm_quit_unsaved: &mut self.confirm_quit_unsaved,
+            confirm_overwrite_scene: &mut self.confirm_overwrite_scene,
+            scene_modified: &mut self.scene_modified,
+            pending_confirmation: &mut self.pending_confirmation,
         };
 
         let result = process_command(

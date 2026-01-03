@@ -68,6 +68,8 @@ pub struct DisplayConfig {
     pub scope_display_mode: u8,
     #[serde(default)]
     pub scope_unipolar: bool,
+    #[serde(default = "default_scope_gain")]
+    pub scope_gain: u16,
     #[serde(default)]
     pub out_err: bool,
     #[serde(default)]
@@ -94,6 +96,10 @@ pub struct DisplayConfig {
     pub autoload: bool,
     #[serde(default)]
     pub last_scene: Option<String>,
+    #[serde(default = "default_true")]
+    pub confirm_quit_unsaved: bool,
+    #[serde(default = "default_true")]
+    pub confirm_overwrite_scene: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -187,6 +193,10 @@ fn default_scope_timespan_ms() -> u32 {
     30
 }
 
+fn default_scope_gain() -> u16 {
+    8192
+}
+
 fn default_scramble_mode() -> u8 {
     2
 }
@@ -227,6 +237,7 @@ impl Default for DisplayConfig {
             scope_color_mode: 0,
             scope_display_mode: 0,
             scope_unipolar: false,
+            scope_gain: default_scope_gain(),
             out_err: false,
             out_ess: false,
             out_qry: false,
@@ -240,6 +251,8 @@ impl Default for DisplayConfig {
             ascii_meters: false,
             autoload: false,
             last_scene: None,
+            confirm_quit_unsaved: default_true(),
+            confirm_overwrite_scene: default_true(),
         }
     }
 }
@@ -253,10 +266,15 @@ impl Default for Config {
     }
 }
 
+/// Returns the monokit config directory: ~/.config/monokit
+/// Uses consistent cross-platform path instead of platform-native dirs
+pub fn monokit_config_dir() -> Result<PathBuf> {
+    let home = std::env::var("HOME").context("HOME environment variable not set")?;
+    Ok(PathBuf::from(home).join(".config").join("monokit"))
+}
+
 fn config_path() -> Result<PathBuf> {
-    let config_dir = dirs::config_dir()
-        .context("Failed to find config directory")?
-        .join("monokit");
+    let config_dir = monokit_config_dir()?;
 
     if !config_dir.exists() {
         fs::create_dir_all(&config_dir).context("Failed to create config directory")?;
@@ -552,6 +570,14 @@ pub fn save_scope_settings(settings: &crate::types::ScopeSettings) -> Result<()>
     config.display.scope_color_mode = settings.color_mode.to_u8();
     config.display.scope_display_mode = settings.display_mode;
     config.display.scope_unipolar = settings.unipolar;
+    config.display.scope_gain = settings.gain;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_scope_gain(gain: u16) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.scope_gain = gain;
     save_config(&config)?;
     Ok(())
 }
@@ -657,6 +683,20 @@ pub fn save_autoload(enabled: bool) -> Result<()> {
 pub fn save_last_scene(scene_name: &str) -> Result<()> {
     let mut config = load_config()?;
     config.display.last_scene = Some(scene_name.to_string());
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_confirm_quit_unsaved(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.confirm_quit_unsaved = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_confirm_overwrite_scene(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.confirm_overwrite_scene = enabled;
     save_config(&config)?;
     Ok(())
 }

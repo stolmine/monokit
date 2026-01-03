@@ -119,6 +119,8 @@ Real-time waveform visualization at 20Hz update rate.
 - `SCOPE.MODE <0-4>` - 0=Braille, 1=Block, 2=Line, 3=Dot, 4=Quad
 - `SCOPE.CLR <name|0-8>` - Color (see color names below)
 - `SCOPE.UNI <0|1>` - 0=Bipolar, 1=Unipolar display
+- `SCOPE.GAIN` / `SCG <0-16383>` - Input gain (8192=1x)
+- `SCOPE.RST` / `SCR` - Reset all scope settings to defaults
 
 **Color Names:**
 - FOREGROUND, SECONDARY, HIGHLIGHT_BG, HIGHLIGHT_FG
@@ -293,6 +295,7 @@ MiClouds Granular → Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ
 - `COMP.ATK` / `CA <1-500>` - Attack (ms)
 - `COMP.REL` / `CL <10-2000>` - Release (ms)
 - `COMP.MKP` / `CM <0-16383>` - Makeup gain
+- `CR.AUTO` / `CRA <0|1>` - Auto makeup gain (0=manual, 1=auto)
 - `CR.MIX` / `CRMIX <0-16383>` - Dry/wet mix
 
 **Dry/Wet Mix:**
@@ -366,10 +369,12 @@ Beat repeat activates automatically when `BR.MIX` is greater than 0.
 ### 3-Band EQ
 
 - `EQ.LOW` / `EL <-24 to 24>` - Low shelf (dB)
+- `ELF <20-2000>` - Low shelf frequency (Hz, default 200)
 - `EQ.MID` / `EM <-24 to 24>` - Mid peak (dB)
 - `EQ.FRQ` / `EF <200-8000>` - Mid frequency (Hz)
 - `EQ.Q <0.1-10>` - Mid Q factor
 - `EQ.HI` / `EH <-24 to 24>` - High shelf (dB)
+- `EHF <1000-20000>` - High shelf frequency (Hz, default 4000)
 
 ### Plate Reverb
 
@@ -1195,6 +1200,8 @@ PRINT <expr>      # Evaluate and print
 FLASH <ms>        # Set activity hold time (default 200ms)
 REPL.DUMP         # Save REPL output to repl_dump.txt
 REPL.DUMP <file>  # Save to custom filename
+CFM.QUIT <0|1>    # Toggle confirm-on-quit for unsaved scenes
+CFM.SAVE <0|1>    # Toggle confirm-on-overwrite for existing scenes
 ```
 
 **Default Values (RST):**
@@ -1448,6 +1455,7 @@ Notes are saved with scenes. 8 lines maximum.
 | `COMP.ATK <ms>` | `CA` | Compressor attack |
 | `COMP.REL <ms>` | `CL` | Compressor release |
 | `COMP.MKP <amt>` | `CM` | Compressor makeup |
+| `CR.AUTO <0\|1>` | `CRA` | Auto makeup (0=manual, 1=auto) |
 | `CR.MIX <0-16383>` | `CRMIX` | Compressor dry/wet mix |
 | `OUT.PAN <amt>` | `PAN` | Stereo pan |
 
@@ -1507,10 +1515,12 @@ Notes are saved with scenes. 8 lines maximum.
 | Command | Alias | Description |
 |---------|-------|-------------|
 | `EQ.LOW <db>` | `EL` | Low shelf (-24 to 24) |
+| `ELF <20-2000>` | - | Low shelf freq (Hz, default 200) |
 | `EQ.MID <db>` | `EM` | Mid peak (-24 to 24) |
 | `EQ.FRQ <hz>` | `EF` | Mid frequency |
 | `EQ.Q <q>` | - | Mid Q (0.1-10) |
 | `EQ.HI <db>` | `EH` | High shelf (-24 to 24) |
+| `EHF <1000-20000>` | - | High shelf freq (Hz, default 4000) |
 
 ### Metro & Timing
 
@@ -1606,6 +1616,8 @@ Notes are saved with scenes. 8 lines maximum.
 | `SCOPE.CLR <name\|0-8>` | Scope color |
 | `SCOPE.MODE <0-4>` | Scope render mode |
 | `SCOPE.UNI <0\|1>` | Scope unipolar |
+| `SCOPE.GAIN / SCG <0-16383>` | Scope input gain (8192=1x) |
+| `SCOPE.RST / SCR` | Reset scope settings |
 
 ### System
 
@@ -1629,6 +1641,8 @@ Notes are saved with scenes. 8 lines maximum.
 | `COMPAT.MODE <0\|1>` | Force compat mode |
 | `THEMES` | List themes |
 | `THEME <name>` | Switch theme |
+| `CFM.QUIT <0\|1>` | Confirm on quit |
+| `CFM.SAVE <0\|1>` | Confirm on overwrite |
 
 ---
 

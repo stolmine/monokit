@@ -238,8 +238,9 @@ fn find_script() -> Result<PathBuf, String> {
         return Ok(cwd);
     }
 
-    if let Some(config_dir) = dirs::config_dir() {
-        let script = config_dir.join("monokit/monokit_server.scd");
+    // Check ~/.config/monokit for SC server script
+    if let Ok(config_dir) = crate::config::monokit_config_dir() {
+        let script = config_dir.join("monokit_server.scd");
         if script.exists() {
             return Ok(script);
         }

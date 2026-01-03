@@ -41,6 +41,10 @@ pub fn register_ui(m: &mut std::collections::HashMap<&'static str, CommandDef>) 
     m.insert("SCOPE.CLR", CommandDef::new("SCOPE.CLR", None, ArgCount::Custom, "Scope color"));
     m.insert("SCOPE.MODE", CommandDef::new("SCOPE.MODE", None, ArgCount::Custom, "Scope mode"));
     m.insert("SCOPE.UNI", CommandDef::new("SCOPE.UNI", None, ArgCount::Custom, "Scope unipolar"));
+    m.insert("SCOPE.GAIN", CommandDef::new("SCOPE.GAIN", Some("SCG"), ArgCount::Range(0, 1), "Scope input gain"));
+    m.insert("SCG", CommandDef::new("SCG", None, ArgCount::Range(0, 1), "Scope input gain"));
+    m.insert("SCOPE.RST", CommandDef::new("SCOPE.RST", Some("SCR"), ArgCount::None, "Reset scope settings"));
+    m.insert("SCR", CommandDef::new("SCR", None, ArgCount::None, "Reset scope settings"));
 
     // Notes
     m.insert("NOTE", CommandDef::new("NOTE", None, ArgCount::AtLeast(1), "Add note"));
@@ -55,4 +59,8 @@ pub fn register_ui(m: &mut std::collections::HashMap<&'static str, CommandDef>) 
     m.insert("SCRMBL.MODE", CommandDef::new("SCRMBL.MODE", None, ArgCount::Range(0, 1), "Scramble mode"));
     m.insert("SCRMBL.SPD", CommandDef::new("SCRMBL.SPD", None, ArgCount::Range(0, 1), "Scramble speed"));
     m.insert("SCRMBL.CRV", CommandDef::new("SCRMBL.CRV", None, ArgCount::Range(0, 1), "Scramble curve"));
+
+    // Confirmation
+    m.insert("CFM.QUIT", CommandDef::new("CFM.QUIT", None, ArgCount::Range(0, 1), "Confirm quit if unsaved"));
+    m.insert("CFM.SAVE", CommandDef::new("CFM.SAVE", None, ArgCount::Range(0, 1), "Confirm overwrite scene"));
 }

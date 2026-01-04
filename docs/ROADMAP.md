@@ -284,6 +284,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **Script Mute Hotkeys (Terminal Research)** [Medium] - Fix Ctrl+Shift+1-8/M/I hotkeys not working; terminal emulators handle Ctrl+Shift differently; research alternatives
 - **Global Distortion/Saturation** [Low-Medium] - Natural-sounding saturation/distortion with antialiasing; multiple modes (tube, tape, soft clip, fold)
 - **Alias & Command Name Standardization** [Low] - Audit all commands for consistent naming patterns; standardize canonical form patterns
+- **Help System Cleanup** [Low] - Comb through help to find and remove deprecated commands
 - **Dynamic Grid Layout** [Medium] - Responsive UI spacing
 - **Tempo-Synced Delay** [Low] - DS parameter for musical delay times
 - **Manual Update + Voice Architecture Diagram** [Low] - Fill documentation gaps, add ASCII voice architecture diagram

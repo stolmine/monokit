@@ -1213,7 +1213,7 @@ SPECTRUM <0|1>    # Spectrum analyzer
 ACTIVITY <0|1>    # Script activity indicators
 GRID <0|1>        # Parameter activity grid
 GRID.DEF <0|1>    # Default view (0=REPL, 1=Grid)
-GRID.MODE <0-2>   # Grid display (0=Text, 1=Icons, 2=FX Viz)
+GRID.MODE <0-3>   # Grid display (0=Text, 1=Icons, 2=FX Viz, 3=Mixer)
 CPU <0|1>         # CPU meter in header
 BPM <0|1>         # BPM display in header
 ```
@@ -1711,7 +1711,7 @@ Notes are saved with scenes. 8 lines maximum.
 | `ACTIVITY <0\|1>` | Activity indicators |
 | `GRID <0\|1>` | Param grid |
 | `GRID.DEF <0\|1>` | Default view |
-| `GRID.MODE <0-2>` | Labels/Icons/FX Viz |
+| `GRID.MODE <0-3>` | Labels/Icons/FX Viz/Mixer |
 | `HL.SEQ <0\|1>` | SEQ highlighting |
 | `HL.COND <0\|1>` | Conditional highlighting |
 | `CPU <0\|1>` | CPU meter |

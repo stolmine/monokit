@@ -764,7 +764,7 @@ pub const HELP_CATEGORIES: &[HelpCategory] = &[
             "  ACTIVITY <0|1>    ACTIVITY IND",
             "  GRID <0|1>        PARAM GRID VIS",
             "  GRID.DEF <0|1>    DEF VIEW (REPL/GRID)",
-            "  GRID.MODE <0-2>   LABEL/ICON/FX VIZ",
+            "  GRID.MODE <0-3>   LBL/ICO/FX/MIX",
             "  HL.SEQ <0|1>      SEQ/TOG HIGHL",
             "  HL.COND <0|1>     COND HIGHL",
             "  CPU <0|1>         CPU METER",

@@ -151,4 +151,35 @@ pub fn register_synth(m: &mut std::collections::HashMap<&'static str, CommandDef
     // Slew
     m.insert("SLEW", CommandDef::new("SLEW", None, ArgCount::AtLeast(2), "Slew single parameter"));
     m.insert("SLEW.ALL", CommandDef::new("SLEW.ALL", None, ArgCount::AtLeast(1), "Slew all parameters"));
+
+    // Mixer - Volume (0-16383)
+    m.insert("VOL.OSC", CommandDef::new("VOL.OSC", None, ArgCount::AtLeast(1), "Complex osc volume"));
+    m.insert("VO", CommandDef::new("VO", Some("VOL.OSC"), ArgCount::AtLeast(1), "Complex osc volume"));
+    m.insert("VOL.PLA", CommandDef::new("VOL.PLA", None, ArgCount::AtLeast(1), "Plaits volume"));
+    m.insert("VP", CommandDef::new("VP", Some("VOL.PLA"), ArgCount::AtLeast(1), "Plaits volume"));
+    m.insert("VOL.NOS", CommandDef::new("VOL.NOS", None, ArgCount::AtLeast(1), "Noise volume"));
+    m.insert("VN", CommandDef::new("VN", Some("VOL.NOS"), ArgCount::AtLeast(1), "Noise volume"));
+    m.insert("VOL.SMP", CommandDef::new("VOL.SMP", None, ArgCount::AtLeast(1), "Sampler volume"));
+    m.insert("VS", CommandDef::new("VS", Some("VOL.SMP"), ArgCount::AtLeast(1), "Sampler volume"));
+
+    // Mixer - Pan (-8192 to 8191, center=0)
+    m.insert("PAN.OSC", CommandDef::new("PAN.OSC", None, ArgCount::AtLeast(1), "Complex osc pan"));
+    m.insert("PO", CommandDef::new("PO", Some("PAN.OSC"), ArgCount::AtLeast(1), "Complex osc pan"));
+    m.insert("PAN.PLA", CommandDef::new("PAN.PLA", None, ArgCount::AtLeast(1), "Plaits pan"));
+    m.insert("PP", CommandDef::new("PP", Some("PAN.PLA"), ArgCount::AtLeast(1), "Plaits pan"));
+    m.insert("PAN.NOS", CommandDef::new("PAN.NOS", None, ArgCount::AtLeast(1), "Noise pan"));
+    m.insert("PNN", CommandDef::new("PNN", Some("PAN.NOS"), ArgCount::AtLeast(1), "Noise pan"));
+    m.insert("PAN.SMP", CommandDef::new("PAN.SMP", None, ArgCount::AtLeast(1), "Sampler pan"));
+    m.insert("PS", CommandDef::new("PS", Some("PAN.SMP"), ArgCount::AtLeast(1), "Sampler pan"));
+
+    // Mixer - Mute (0/1)
+    // Note: Using MPL for MUTE.PLA instead of MP to avoid conflict with existing MP (Route to pitch)
+    m.insert("MUTE.OSC", CommandDef::new("MUTE.OSC", None, ArgCount::AtLeast(1), "Mute complex osc"));
+    m.insert("MO", CommandDef::new("MO", Some("MUTE.OSC"), ArgCount::AtLeast(1), "Mute complex osc"));
+    m.insert("MUTE.PLA", CommandDef::new("MUTE.PLA", None, ArgCount::AtLeast(1), "Mute Plaits"));
+    m.insert("MPL", CommandDef::new("MPL", Some("MUTE.PLA"), ArgCount::AtLeast(1), "Mute Plaits"));
+    m.insert("MUTE.NOS", CommandDef::new("MUTE.NOS", None, ArgCount::AtLeast(1), "Mute noise"));
+    m.insert("MN", CommandDef::new("MN", Some("MUTE.NOS"), ArgCount::AtLeast(1), "Mute noise"));
+    m.insert("MUTE.SMP", CommandDef::new("MUTE.SMP", None, ArgCount::AtLeast(1), "Mute sampler"));
+    m.insert("MS", CommandDef::new("MS", Some("MUTE.SMP"), ArgCount::AtLeast(1), "Mute sampler"));
 }

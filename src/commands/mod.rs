@@ -662,6 +662,42 @@ where
         "VCA" => {
             synth_params::handle_vca(&parts, vca_mode, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_qry, *out_cfm, output)?;
         }
+        "VOL.OSC" => {
+            synth_params::handle_vol_osc(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "VOL.PLA" => {
+            synth_params::handle_vol_pla(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "VOL.NOS" => {
+            synth_params::handle_vol_nos(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "VOL.SMP" => {
+            synth_params::handle_vol_smp(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "PAN.OSC" => {
+            synth_params::handle_pan_osc(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "PAN.PLA" => {
+            synth_params::handle_pan_pla(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "PAN.NOS" => {
+            synth_params::handle_pan_nos(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "PAN.SMP" => {
+            synth_params::handle_pan_smp(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "MUTE.OSC" => {
+            synth_params::handle_mute_osc(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "MUTE.PLA" => {
+            synth_params::handle_mute_pla(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "MUTE.NOS" => {
+            synth_params::handle_mute_nos(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
+        "MUTE.SMP" => {
+            synth_params::handle_mute_smp(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+        }
         "BR.LEN" | "BRL" => {
             synth_params::handle_br_len(&parts, *metro_interval, br_len, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }

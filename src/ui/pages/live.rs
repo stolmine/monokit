@@ -138,6 +138,36 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
         let makeup_db = (out_db - in_db - gr_db).clamp(-20.0, 20.0);
         fx_lines.push(format!("OUT {} MU{:+5.1}", out_bar, makeup_db));
         fx_lines
+    } else if app.grid_mode == 3 {
+        // Mode 3: Mixer (placeholder)
+        vec![
+            "OSC ··········  0dB ·‹· ··".to_string(),
+            "PLA ··········  0dB ·‹· ··".to_string(),
+            "NOS ··········  0dB ·‹· ··".to_string(),
+            "SMP ··········  0dB ·‹· ··".to_string(),
+            "MIX ··········  0dB ·‹·   ".to_string(),
+            "                              ".to_string(),
+        ]
+    } else if app.grid_mode == 4 {
+        // Mode 4: FX Viz (placeholder)
+        vec![
+            "DLY ··········  0%        ".to_string(),
+            "REV ··········  0%        ".to_string(),
+            "CHR ··········  0%        ".to_string(),
+            "DST ··········  0%        ".to_string(),
+            "FLT ··········  0%        ".to_string(),
+            "                              ".to_string(),
+        ]
+    } else if app.grid_mode == 5 {
+        // Mode 5: Sampler (placeholder)
+        vec![
+            "KIT  (none loaded)        ".to_string(),
+            "SLOT --/--                ".to_string(),
+            "RATE +0st  DIR► LOOP· GATE·".to_string(),
+            "                              ".to_string(),
+            "                              ".to_string(),
+            "                              ".to_string(),
+        ]
     } else {
         Vec::new()
     };
@@ -165,6 +195,10 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
                 } else {
                     app.theme.success  // OUT meter
                 };
+                spans.push(Span::styled(fx_viz_lines[row].clone(), Style::default().fg(color)));
+            } else if app.grid_mode == 3 || app.grid_mode == 4 || app.grid_mode == 5 {
+                // Modes 3, 4, 5: Mixer, FX Viz 2, Sampler (placeholder)
+                let color = app.theme.secondary;
                 spans.push(Span::styled(fx_viz_lines[row].clone(), Style::default().fg(color)));
             } else {
                 // Render grid icons or labels based on grid_mode
@@ -206,7 +240,7 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
                 // Mode 1 (icons) is 29 chars, mode 0 (labels) is 30 chars - add 1 space to equalize
                 spans.push(Span::raw(" "));
             }
-            // Mode 2 (FX viz) is exactly 30 chars, no adjustment needed
+            // Modes 2, 3, 4, 5 are exactly 30 chars, no adjustment needed
             // Space before meters
             spans.push(Span::raw("  "));
 

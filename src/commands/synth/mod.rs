@@ -10,6 +10,7 @@ pub mod effects;
 pub mod noise;
 pub mod source_levels;
 pub mod plaits;
+pub mod mixer;
 
 pub use oscillator::*;
 pub use modulation::*;
@@ -22,3 +23,4 @@ pub use effects::*;
 pub use noise::*;
 pub use source_levels::*;
 pub use plaits::*;
+pub use mixer::*;

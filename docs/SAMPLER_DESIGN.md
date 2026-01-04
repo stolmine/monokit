@@ -62,11 +62,13 @@ MIX ██████████  0  ·‹·
 | PAN.NOS | PNN | -8192 to 8191 | Noise pan |
 | PAN.SMP | PS | -8192 to 8191 | Sampler pan |
 | MUTE.OSC | MO | 0/1 | Mute complex oscillator |
-| MUTE.PLA | MP | 0/1 | Mute Plaits |
+| MUTE.PLA | MPL | 0/1 | Mute Plaits |
 | MUTE.NOS | MN | 0/1 | Mute noise |
 | MUTE.SMP | MS | 0/1 | Mute sampler |
 
-**Note:** PAN.NOS uses PNN alias to avoid conflict with PN.* pattern namespace.
+**Notes:**
+- PAN.NOS uses PNN alias to avoid conflict with PN.* pattern namespace
+- MUTE.PLA uses MPL alias to avoid conflict with existing MP (route to pitch)
 
 ### Mode 4: FX Visualization
 
@@ -276,18 +278,18 @@ The sampler has its own independent FX chain, separate from the main voice effec
 ```
 Sample Playback
     ↓
-[Sampler Filter] ──── independent LP/HP/BP
-    ↓
 [Decimator] ───────── bit crush + rate reduction
     ↓
 [Disintegrator] ───── probability-based glitch
     ↓
-[Greyhole] ─────────── modulated reverb/delay
+[Sampler Filter] ──── independent LP/HP/BP (post-crush filtering)
     ↓
 S.VOL / S.PAN
     ↓
-→ Main Mix (or direct out?)
+→ Main Mix (uses global DLY/REV/CL for spatial FX)
 ```
+
+**Rationale:** Filter after bit crush allows smoothing crushed artifacts or emphasizing harmonics created by decimation. Spatial effects (delay, reverb, clouds) use existing global FX chain.
 
 #### Naming Convention
 
@@ -317,19 +319,6 @@ All sampler FX use `SF.*` prefix (Sampler FX) to avoid conflicts:
 | SF.MULT | SFM | 0-16383 | Glitch multiplier |
 | SF.GLIT | SFG | 0-16383 | Disintegrator mix (0=bypass) |
 
-**Greyhole (SF.H*)**
-
-| Command | Alias | Range | Description |
-|---------|-------|-------|-------------|
-| SF.TIME | SHT | 0-16383 | Delay time (maps to 0.1-60s) |
-| SF.DAMP | SHD | 0-16383 | High frequency damping |
-| SF.SIZE | SHS | 0-16383 | Space size |
-| SF.DIFF | SHI | 0-16383 | Echo diffusion |
-| SF.FB | SHF | 0-16383 | Feedback amount |
-| SF.MODD | SHM | 0-16383 | Modulation depth |
-| SF.MODF | SHZ | 0-16383 | Modulation frequency (Hz) |
-| SF.HOLE | SH | 0-16383 | Greyhole mix (0=bypass) |
-
 #### FX Parameter Summary
 
 | Category | Params | Commands |
@@ -337,10 +326,11 @@ All sampler FX use `SF.*` prefix (Sampler FX) to avoid conflicts:
 | Filter | 3 | SF.CUT, SF.RES, SF.TYPE |
 | Decimator | 3 | SF.BITS, SF.RATE, SF.DECI |
 | Disintegrator | 3 | SF.PROB, SF.MULT, SF.GLIT |
-| Greyhole | 8 | SF.TIME, SF.DAMP, SF.SIZE, SF.DIFF, SF.FB, SF.MODD, SF.MODF (SHZ), SF.HOLE |
-| **Total** | **17** | |
+| **Total** | **9** | |
 
-#### FX Presets (Optional)
+**Note:** Spatial effects (delay, reverb, granular) use the global FX chain (DLY, REV, CL commands).
+
+#### FX Presets (Optional - Future)
 
 Quick preset commands for common settings:
 
@@ -349,33 +339,19 @@ Quick preset commands for common settings:
 | SF.RST | Reset all sampler FX to defaults |
 | SF.LOFI | Lo-fi preset (8-bit, rate reduced, gentle filter) |
 | SF.TAPE | Tape saturation preset (smooth decimator, filtered) |
-| SF.WASH | Ambient preset (Greyhole heavy, soft filter) |
 | SF.MANGLE | Destruction preset (all FX engaged) |
-
-#### Routing Options
-
-| Command | Range | Description |
-|---------|-------|-------------|
-| SF.MAIN | 0/1 | Route sampler FX output to main FX chain |
-| SF.OUT | 0/1 | Direct output (bypass main mix entirely) |
-
-When `SF.MAIN 1`, sampler goes through main reverb/delay too.
-When `SF.OUT 1`, sampler bypasses main mix for separate processing.
 
 #### Design Decisions
 
-1. **FX Architecture** - Option A: Sampler has own FX chain (SF.*), separate from main
+1. **FX Architecture** - Sampler has own destructive FX (SF.*), uses global spatial FX
 2. **Filter type** - Reuse DFM1 (same as main voice filter)
 3. **Mono/Stereo** - Samples converted to mono on load, stereo via S.PAN after FX chain
 4. **Panning** - Applied in monokit_main (not in sampler SynthDef) per convention
 5. **Modulation** - No envelope→FX modulation; FX params are sequenceable via commands
-6. **Dry/Wet** - Per-effect mix controls (SF.DECI, SF.GLIT, SF.HOLE); filter always on
+6. **Dry/Wet** - Per-effect mix controls (SF.DECI, SF.GLIT); filter always on
 7. **"Bypass" filter** - Open cutoff fully (SF.CUT 16383) rather than true bypass
 8. **Envelope** - ADSR with variable sustain; S.SUST=0 for percussive, S.SUST=1 for gate hold
-
-#### Open Questions - Sampler FX
-
-1. **Greyhole CPU** - Need to test CPU usage; may need lighter alternative
+9. **Spatial FX** - Use global DLY/REV/CL commands (no dedicated sampler reverb/delay)
 
 ### File System & Sample Logistics
 

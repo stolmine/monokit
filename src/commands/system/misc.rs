@@ -1013,6 +1013,9 @@ where
         std::thread::sleep(Duration::from_millis(delay_ms));
     }
 
+    *ctx.sampler_state = crate::types::SamplerState::default();
+    crate::eval::KIT_SLOTS.store(0, std::sync::atomic::Ordering::Relaxed);
+
     ctx.output(
         OutputCategory::Essential,
         "RESET TO DEFAULTS".to_string(),

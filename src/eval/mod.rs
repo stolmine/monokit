@@ -6,6 +6,9 @@ pub mod seq;
 
 use crate::types::{Counters, PatternStorage, ScaleState, ScriptStorage, Variables};
 use rand::Rng;
+use std::sync::atomic::{AtomicU16, Ordering};
+
+pub static KIT_SLOTS: AtomicU16 = AtomicU16::new(0);
 
 pub fn resolve_value(s: &str, variables: &Variables, scripts: &ScriptStorage, script_index: usize) -> i16 {
     match s.trim().to_uppercase().as_str() {
@@ -42,6 +45,10 @@ pub fn eval_expression(parts: &[&str], start_idx: usize, variables: &Variables, 
     }
 
     let expr = parts[start_idx].trim().to_uppercase();
+
+    if expr == "KL" || expr == "KIT.LEN" {
+        return Some((KIT_SLOTS.load(Ordering::Relaxed) as i16, 1));
+    }
 
     if let Some(result) = patterns::eval_pattern_expression(
         &expr, parts, start_idx, variables, patterns, counters, scripts, script_index, scale, &eval_expression

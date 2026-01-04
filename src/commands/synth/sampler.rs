@@ -408,6 +408,9 @@ where
     // Store loaded buffer slots
     sampler.slots = slots;
 
+    // Update global KIT_SLOTS atomic for eval_expression
+    crate::eval::KIT_SLOTS.store(num_slots as u16, std::sync::atomic::Ordering::Relaxed);
+
     if *ctx.debug_level >= TIER_CONFIRMS || *ctx.out_cfm {
         let mode_str = match mode {
             SamplerMode::Slice => "SLICE",

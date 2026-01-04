@@ -1015,6 +1015,7 @@ where
 
     *ctx.sampler_state = crate::types::SamplerState::default();
     crate::eval::KIT_SLOTS.store(0, std::sync::atomic::Ordering::Relaxed);
+    *ctx.mixer_data = crate::types::MixerData::default();
 
     ctx.output(
         OutputCategory::Essential,

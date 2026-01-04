@@ -492,10 +492,10 @@ pub struct MixerData {
 impl Default for MixerData {
     fn default() -> Self {
         Self {
-            vol_osc: 8192,
-            vol_pla: 8192,
-            vol_nos: 8192,
-            vol_smp: 8192,
+            vol_osc: 16383,
+            vol_pla: 16383,
+            vol_nos: 16383,
+            vol_smp: 16383,
             pan_osc: 0,
             pan_pla: 0,
             pan_nos: 0,

@@ -3,7 +3,7 @@ use crate::output::OutputDecider;
 use crate::terminal::TerminalCapabilities;
 use crate::theme::Theme;
 use crate::types::{
-    ColorMode, ConfirmAction, Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, MixerData, NotesStorage, Page, ParamActivity, PatternStorage, SamplerState, ScaleState, ScopeData, ScriptMutes, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
+    ColorMode, ConfirmAction, Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, MixerData, NotesStorage, Page, ParamActivity, PatternStorage, SamplerState, ScaleState, ScopeData, ScriptMutes, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables, VoiceMeterData,
 };
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -61,6 +61,7 @@ pub struct App {
     pub param_activity: ParamActivity,
     pub show_grid_view: bool,
     pub meter_data: MeterData,
+    pub voice_meter_data: VoiceMeterData,
     pub spectrum_data: SpectrumData,
     pub scope_data: ScopeData,
     pub scope_settings: crate::types::ScopeSettings,
@@ -170,6 +171,7 @@ impl App {
             param_activity: ParamActivity::default(),
             show_grid_view: config.display.show_grid_view,
             meter_data: MeterData::default(),
+            voice_meter_data: VoiceMeterData::default(),
             spectrum_data: SpectrumData::default(),
             scope_data: ScopeData::default(),
             scope_settings: crate::types::ScopeSettings {

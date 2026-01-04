@@ -249,6 +249,9 @@ pub fn run_app<B: ratatui::backend::Backend>(
                 MetroEvent::MeterUpdate(meter_data) => {
                     app.meter_data = meter_data;
                 }
+                MetroEvent::VoiceMeterUpdate(voice_meter_data) => {
+                    app.voice_meter_data = voice_meter_data;
+                }
                 MetroEvent::SpectrumUpdate(spectrum_data) => {
                     app.spectrum_data = spectrum_data;
                 }

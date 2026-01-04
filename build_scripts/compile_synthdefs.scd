@@ -1234,6 +1234,16 @@ SynthDef(\monokit_main, {
     // Sampler voice
     #samplerL, samplerR = Pan2.ar(samplerIn * smpVol, smpPan);
 
+    // Per-voice metering (post-fader: after vol/pan/mute)
+    SendPeakRMS.kr(primaryL, 20, 3, '/monokit/voice_osc', 1);
+    SendPeakRMS.kr(primaryR, 20, 3, '/monokit/voice_osc', 2);
+    SendPeakRMS.kr(plaitsMainL + plaitsAuxL, 20, 3, '/monokit/voice_pla', 1);
+    SendPeakRMS.kr(plaitsMainR + plaitsAuxR, 20, 3, '/monokit/voice_pla', 2);
+    SendPeakRMS.kr(noiseL, 20, 3, '/monokit/voice_nos', 1);
+    SendPeakRMS.kr(noiseR, 20, 3, '/monokit/voice_nos', 2);
+    SendPeakRMS.kr(samplerL, 20, 3, '/monokit/voice_smp', 1);
+    SendPeakRMS.kr(samplerR, 20, 3, '/monokit/voice_smp', 2);
+
     // Sum all voices in stereo (with 0.5 headroom compensation for 5 voices)
     sigL = (primaryL + noiseL + plaitsMainL + plaitsAuxL + samplerL) * 0.5;
     sigR = (primaryR + noiseR + plaitsMainR + plaitsAuxR + samplerR) * 0.5;

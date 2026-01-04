@@ -92,24 +92,6 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
         }
     };
 
-    // Helper to calculate meter level from activity (same decay as activity_color)
-    let activity_to_meter = |last_activity: Option<std::time::Instant>, hold_ms: f32| -> f32 {
-        const ACTIVITY_DECAY_MS: f32 = 300.0;
-        match last_activity {
-            Some(instant) => {
-                let elapsed_ms = instant.elapsed().as_millis() as f32;
-                if elapsed_ms < hold_ms {
-                    1.0
-                } else {
-                    let decay_elapsed = (elapsed_ms - hold_ms) / ACTIVITY_DECAY_MS;
-                    let progress = 1.0 - (1.0 - decay_elapsed.min(1.0)).powi(3);
-                    1.0 - progress
-                }
-            }
-            None => 0.0,
-        }
-    };
-
     // Helper to convert meter level (0.0-1.0) to character (respects ASCII mode)
     let level_to_meter_char = |level: f32| -> char {
         let clamped = level.clamp(0.0, 1.0);
@@ -141,11 +123,12 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
             spans.push(Span::styled(pan_numeric(app.mixer_data.pan_osc), Style::default().fg(app.theme.foreground)));
             spans.push(Span::raw(" "));
 
-            let meter_level = activity_to_meter(app.trigger_activity, app.activity_hold_ms);
-            let meter_char_l = level_to_meter_char(meter_level);
-            let meter_char_r = level_to_meter_char(meter_level);
-            let meter_color = if meter_level > 0.0 { app.theme.success } else { app.theme.secondary };
-            spans.push(Span::styled(format!("{}{}", meter_char_l, meter_char_r), Style::default().fg(meter_color)));
+            let meter_l = app.voice_meter_data.osc_l;
+            let meter_r = app.voice_meter_data.osc_r;
+            let l_char = level_to_meter_char(meter_l);
+            let r_char = level_to_meter_char(meter_r);
+            let meter_color = if meter_l > 0.0 || meter_r > 0.0 { app.theme.success } else { app.theme.secondary };
+            spans.push(Span::styled(format!("{}{}", l_char, r_char), Style::default().fg(meter_color)));
             spans.push(Span::raw(" "));
 
             let mute_char = if app.mixer_data.mute_osc == 1 { "M" } else { "·" };
@@ -169,11 +152,12 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
             spans.push(Span::styled(pan_numeric(app.mixer_data.pan_pla), Style::default().fg(app.theme.foreground)));
             spans.push(Span::raw(" "));
 
-            let meter_level = activity_to_meter(app.plaits_trigger_activity, app.activity_hold_ms);
-            let meter_char_l = level_to_meter_char(meter_level);
-            let meter_char_r = level_to_meter_char(meter_level);
-            let meter_color = if meter_level > 0.0 { app.theme.success } else { app.theme.secondary };
-            spans.push(Span::styled(format!("{}{}", meter_char_l, meter_char_r), Style::default().fg(meter_color)));
+            let meter_l = app.voice_meter_data.pla_l;
+            let meter_r = app.voice_meter_data.pla_r;
+            let l_char = level_to_meter_char(meter_l);
+            let r_char = level_to_meter_char(meter_r);
+            let meter_color = if meter_l > 0.0 || meter_r > 0.0 { app.theme.success } else { app.theme.secondary };
+            spans.push(Span::styled(format!("{}{}", l_char, r_char), Style::default().fg(meter_color)));
             spans.push(Span::raw(" "));
 
             let mute_char = if app.mixer_data.mute_pla == 1 { "M" } else { "·" };
@@ -196,7 +180,12 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
             spans.push(Span::styled(pan_numeric(app.mixer_data.pan_nos), Style::default().fg(app.theme.foreground)));
             spans.push(Span::raw(" "));
 
-            spans.push(Span::styled("··", Style::default().fg(app.theme.secondary)));
+            let meter_l = app.voice_meter_data.nos_l;
+            let meter_r = app.voice_meter_data.nos_r;
+            let l_char = level_to_meter_char(meter_l);
+            let r_char = level_to_meter_char(meter_r);
+            let meter_color = if meter_l > 0.0 || meter_r > 0.0 { app.theme.success } else { app.theme.secondary };
+            spans.push(Span::styled(format!("{}{}", l_char, r_char), Style::default().fg(meter_color)));
             spans.push(Span::raw(" "));
 
             let mute_char = if app.mixer_data.mute_nos == 1 { "M" } else { "·" };
@@ -220,11 +209,12 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
             spans.push(Span::styled(pan_numeric(app.mixer_data.pan_smp), Style::default().fg(app.theme.foreground)));
             spans.push(Span::raw(" "));
 
-            let meter_level = activity_to_meter(app.sampler_trigger_activity, app.activity_hold_ms);
-            let meter_char_l = level_to_meter_char(meter_level);
-            let meter_char_r = level_to_meter_char(meter_level);
-            let meter_color = if meter_level > 0.0 { app.theme.success } else { app.theme.secondary };
-            spans.push(Span::styled(format!("{}{}", meter_char_l, meter_char_r), Style::default().fg(meter_color)));
+            let meter_l = app.voice_meter_data.smp_l;
+            let meter_r = app.voice_meter_data.smp_r;
+            let l_char = level_to_meter_char(meter_l);
+            let r_char = level_to_meter_char(meter_r);
+            let meter_color = if meter_l > 0.0 || meter_r > 0.0 { app.theme.success } else { app.theme.secondary };
+            spans.push(Span::styled(format!("{}{}", l_char, r_char), Style::default().fg(meter_color)));
             spans.push(Span::raw(" "));
 
             let mute_char = if app.mixer_data.mute_smp == 1 { "M" } else { "·" };

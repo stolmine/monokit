@@ -402,6 +402,18 @@ pub struct MeterData {
     pub clip_r: bool,
 }
 
+#[derive(Debug, Clone, Default)]
+pub struct VoiceMeterData {
+    pub osc_l: f32,
+    pub osc_r: f32,
+    pub pla_l: f32,
+    pub pla_r: f32,
+    pub nos_l: f32,
+    pub nos_r: f32,
+    pub smp_l: f32,
+    pub smp_r: f32,
+}
+
 #[derive(Debug, Clone)]
 pub struct SpectrumData {
     pub bands: [f32; SPECTRUM_BANDS],
@@ -513,6 +525,7 @@ pub enum MetroEvent {
     ExecuteScript(usize),
     ExecuteDelayed(String, usize),
     MeterUpdate(MeterData),
+    VoiceMeterUpdate(VoiceMeterData),
     SpectrumUpdate(SpectrumData),
     ScopeUpdate(ScopeData),
     CpuUpdate(CpuData),

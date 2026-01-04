@@ -1,4 +1,4 @@
-use crate::types::{CompressorData, CpuData, MeterData, MetroEvent, ScopeData, SpectrumData, SCOPE_SAMPLES, SPECTRUM_BANDS};
+use crate::types::{CompressorData, CpuData, MeterData, MetroEvent, ScopeData, SpectrumData, VoiceMeterData, SCOPE_SAMPLES, SPECTRUM_BANDS};
 use rosc::{decoder, encoder, OscMessage, OscPacket, OscType};
 use socket2::{Domain, Protocol, Socket, Type};
 use std::net::{SocketAddr, UdpSocket};
@@ -38,6 +38,7 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
     }
 
     let mut meter_data = MeterData::default();
+    let mut voice_meter_data = VoiceMeterData::default();
     let mut spectrum_data = SpectrumData::default();
     let mut compressor_data = CompressorData::default();
     let mut buf = [0u8; 1024];
@@ -119,6 +120,34 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
                                 compressor_data = update;
                                 if let Err(e) = event_tx.send(MetroEvent::CompressorUpdate(compressor_data.clone())) {
                                     eprintln!("Failed to send compressor update: {}", e);
+                                }
+                            }
+                        } else if msg.addr == "/monokit/voice_osc" {
+                            if let Some(update) = parse_voice_meter_message(&msg.args) {
+                                apply_voice_meter_update(&mut voice_meter_data, "osc", update);
+                                if let Err(e) = event_tx.send(MetroEvent::VoiceMeterUpdate(voice_meter_data.clone())) {
+                                    eprintln!("Failed to send voice meter update: {}", e);
+                                }
+                            }
+                        } else if msg.addr == "/monokit/voice_pla" {
+                            if let Some(update) = parse_voice_meter_message(&msg.args) {
+                                apply_voice_meter_update(&mut voice_meter_data, "pla", update);
+                                if let Err(e) = event_tx.send(MetroEvent::VoiceMeterUpdate(voice_meter_data.clone())) {
+                                    eprintln!("Failed to send voice meter update: {}", e);
+                                }
+                            }
+                        } else if msg.addr == "/monokit/voice_nos" {
+                            if let Some(update) = parse_voice_meter_message(&msg.args) {
+                                apply_voice_meter_update(&mut voice_meter_data, "nos", update);
+                                if let Err(e) = event_tx.send(MetroEvent::VoiceMeterUpdate(voice_meter_data.clone())) {
+                                    eprintln!("Failed to send voice meter update: {}", e);
+                                }
+                            }
+                        } else if msg.addr == "/monokit/voice_smp" {
+                            if let Some(update) = parse_voice_meter_message(&msg.args) {
+                                apply_voice_meter_update(&mut voice_meter_data, "smp", update);
+                                if let Err(e) = event_tx.send(MetroEvent::VoiceMeterUpdate(voice_meter_data.clone())) {
+                                    eprintln!("Failed to send voice meter update: {}", e);
                                 }
                             }
                         } else if msg.addr == "/monokit/ready" {
@@ -461,4 +490,68 @@ fn parse_compressor_message(args: &[OscType]) -> Option<CompressorData> {
         output_level: output,
         gain_reduction_db: gr_db,
     })
+}
+
+#[derive(Debug)]
+struct VoiceMeterUpdate {
+    channel: i32,
+    peak: f32,
+}
+
+fn parse_voice_meter_message(args: &[OscType]) -> Option<VoiceMeterUpdate> {
+    // SendPeakRMS format: [node_id, reply_id, peak, rms]
+    // We want peak (index 2) and determine channel from reply_id (index 1)
+    if args.len() != 4 {
+        return None;
+    }
+
+    let channel = match &args[1] {
+        OscType::Int(i) => *i,
+        OscType::Float(f) => *f as i32,
+        _ => return None,
+    };
+
+    let peak = match &args[2] {
+        OscType::Float(f) => *f,
+        OscType::Double(d) => *d as f32,
+        _ => return None,
+    };
+
+    Some(VoiceMeterUpdate { channel, peak })
+}
+
+fn apply_voice_meter_update(voice_meter_data: &mut VoiceMeterData, voice_type: &str, update: VoiceMeterUpdate) {
+    let peak = update.peak.max(0.0).min(1.0);
+
+    match voice_type {
+        "osc" => {
+            match update.channel {
+                1 => voice_meter_data.osc_l = peak,
+                2 => voice_meter_data.osc_r = peak,
+                _ => {}
+            }
+        }
+        "pla" => {
+            match update.channel {
+                1 => voice_meter_data.pla_l = peak,
+                2 => voice_meter_data.pla_r = peak,
+                _ => {}
+            }
+        }
+        "nos" => {
+            match update.channel {
+                1 => voice_meter_data.nos_l = peak,
+                2 => voice_meter_data.nos_r = peak,
+                _ => {}
+            }
+        }
+        "smp" => {
+            match update.channel {
+                1 => voice_meter_data.smp_l = peak,
+                2 => voice_meter_data.smp_r = peak,
+                _ => {}
+            }
+        }
+        _ => {}
+    }
 }

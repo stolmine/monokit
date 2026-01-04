@@ -183,7 +183,73 @@ pub fn register_synth(m: &mut std::collections::HashMap<&'static str, CommandDef
     m.insert("MUTE.SMP", CommandDef::new("MUTE.SMP", None, ArgCount::AtLeast(1), "Mute sampler"));
     m.insert("MS", CommandDef::new("MS", Some("MUTE.SMP"), ArgCount::AtLeast(1), "Mute sampler"));
 
-    // Sampler
+    // Sampler - Loading & Triggering
     m.insert("KIT", CommandDef::new("KIT", None, ArgCount::AtLeast(1), "Load sample kit or file"));
     m.insert("STR", CommandDef::new("STR", None, ArgCount::Range(0, 1), "Trigger sample slot"));
+
+    // Sampler - Pitch Parameters
+    m.insert("S.RATE", CommandDef::new("S.RATE", None, ArgCount::AtLeast(1), "Sample playback rate"));
+    m.insert("SR", CommandDef::new("SR", Some("S.RATE"), ArgCount::AtLeast(1), "Sample playback rate"));
+    m.insert("S.PITCH", CommandDef::new("S.PITCH", None, ArgCount::AtLeast(1), "Sample pitch (semitones)"));
+    m.insert("SPT", CommandDef::new("SPT", Some("S.PITCH"), ArgCount::AtLeast(1), "Sample pitch (semitones)"));
+    m.insert("S.FINE", CommandDef::new("S.FINE", None, ArgCount::AtLeast(1), "Sample fine pitch (cents)"));
+    m.insert("SFN", CommandDef::new("SFN", Some("S.FINE"), ArgCount::AtLeast(1), "Sample fine pitch (cents)"));
+
+    // Sampler - Playback Parameters
+    m.insert("S.DIR", CommandDef::new("S.DIR", None, ArgCount::AtLeast(1), "Sample direction (0=fwd, 1=rev)"));
+    m.insert("SD", CommandDef::new("SD", Some("S.DIR"), ArgCount::AtLeast(1), "Sample direction (0=fwd, 1=rev)"));
+    m.insert("S.LOOP", CommandDef::new("S.LOOP", None, ArgCount::AtLeast(1), "Sample loop mode"));
+    m.insert("SL", CommandDef::new("SL", Some("S.LOOP"), ArgCount::AtLeast(1), "Sample loop mode"));
+    m.insert("S.START", CommandDef::new("S.START", None, ArgCount::AtLeast(1), "Sample start offset"));
+    m.insert("SST", CommandDef::new("SST", Some("S.START"), ArgCount::AtLeast(1), "Sample start offset"));
+    m.insert("S.LEN", CommandDef::new("S.LEN", None, ArgCount::AtLeast(1), "Sample loop length"));
+    m.insert("SLE", CommandDef::new("SLE", Some("S.LEN"), ArgCount::AtLeast(1), "Sample loop length"));
+
+    // Sampler - Envelope Parameters
+    m.insert("S.ATK", CommandDef::new("S.ATK", None, ArgCount::AtLeast(1), "Sample attack time"));
+    m.insert("SA", CommandDef::new("SA", Some("S.ATK"), ArgCount::AtLeast(1), "Sample attack time"));
+    m.insert("S.DEC", CommandDef::new("S.DEC", None, ArgCount::AtLeast(1), "Sample decay time"));
+    m.insert("SDC", CommandDef::new("SDC", Some("S.DEC"), ArgCount::AtLeast(1), "Sample decay time"));
+    m.insert("S.REL", CommandDef::new("S.REL", None, ArgCount::AtLeast(1), "Sample release time"));
+    m.insert("SRE", CommandDef::new("SRE", Some("S.REL"), ArgCount::AtLeast(1), "Sample release time"));
+    m.insert("S.SUST", CommandDef::new("S.SUST", None, ArgCount::AtLeast(1), "Sample sustain mode"));
+    m.insert("SSU", CommandDef::new("SSU", Some("S.SUST"), ArgCount::AtLeast(1), "Sample sustain mode"));
+
+    // Sampler - Output Parameters
+    m.insert("S.VOL", CommandDef::new("S.VOL", None, ArgCount::AtLeast(1), "Sample volume"));
+    m.insert("SV", CommandDef::new("SV", Some("S.VOL"), ArgCount::AtLeast(1), "Sample volume"));
+    m.insert("S.PAN", CommandDef::new("S.PAN", None, ArgCount::AtLeast(1), "Sample pan position"));
+    m.insert("SP", CommandDef::new("SP", Some("S.PAN"), ArgCount::AtLeast(1), "Sample pan position"));
+    m.insert("S.FX", CommandDef::new("S.FX", None, ArgCount::AtLeast(1), "Sample FX routing"));
+    m.insert("SFX", CommandDef::new("SFX", Some("S.FX"), ArgCount::AtLeast(1), "Sample FX routing"));
+
+    // Sampler - Modulation Parameters
+    m.insert("S.RATEMOD", CommandDef::new("S.RATEMOD", None, ArgCount::AtLeast(1), "Sample rate modulation"));
+    m.insert("SRM", CommandDef::new("SRM", Some("S.RATEMOD"), ArgCount::AtLeast(1), "Sample rate modulation"));
+    m.insert("S.PITCHMOD", CommandDef::new("S.PITCHMOD", None, ArgCount::AtLeast(1), "Sample pitch modulation"));
+    m.insert("SPM", CommandDef::new("SPM", Some("S.PITCHMOD"), ArgCount::AtLeast(1), "Sample pitch modulation"));
+
+    // Sampler FX - Filter (DFM1)
+    m.insert("SF.CUT", CommandDef::new("SF.CUT", None, ArgCount::AtLeast(1), "Sampler filter cutoff"));
+    m.insert("SFC", CommandDef::new("SFC", Some("SF.CUT"), ArgCount::AtLeast(1), "Sampler filter cutoff"));
+    m.insert("SF.RES", CommandDef::new("SF.RES", None, ArgCount::AtLeast(1), "Sampler filter resonance"));
+    m.insert("SFQ", CommandDef::new("SFQ", Some("SF.RES"), ArgCount::AtLeast(1), "Sampler filter resonance"));
+    m.insert("SF.TYPE", CommandDef::new("SF.TYPE", None, ArgCount::AtLeast(1), "Sampler filter type"));
+    m.insert("SFT", CommandDef::new("SFT", Some("SF.TYPE"), ArgCount::AtLeast(1), "Sampler filter type"));
+
+    // Sampler FX - Decimator
+    m.insert("SF.BITS", CommandDef::new("SF.BITS", None, ArgCount::AtLeast(1), "Sampler bit depth"));
+    m.insert("SFB", CommandDef::new("SFB", Some("SF.BITS"), ArgCount::AtLeast(1), "Sampler bit depth"));
+    m.insert("SF.RATE", CommandDef::new("SF.RATE", None, ArgCount::AtLeast(1), "Sampler rate reduction"));
+    m.insert("SFR", CommandDef::new("SFR", Some("SF.RATE"), ArgCount::AtLeast(1), "Sampler rate reduction"));
+    m.insert("SF.DECI", CommandDef::new("SF.DECI", None, ArgCount::AtLeast(1), "Sampler decimator mix"));
+    m.insert("SFD", CommandDef::new("SFD", Some("SF.DECI"), ArgCount::AtLeast(1), "Sampler decimator mix"));
+
+    // Sampler FX - Disintegrator
+    m.insert("SF.PROB", CommandDef::new("SF.PROB", None, ArgCount::AtLeast(1), "Sampler glitch probability"));
+    m.insert("SFP", CommandDef::new("SFP", Some("SF.PROB"), ArgCount::AtLeast(1), "Sampler glitch probability"));
+    m.insert("SF.MULT", CommandDef::new("SF.MULT", None, ArgCount::AtLeast(1), "Sampler glitch multiplier"));
+    m.insert("SFM", CommandDef::new("SFM", Some("SF.MULT"), ArgCount::AtLeast(1), "Sampler glitch multiplier"));
+    m.insert("SF.GLIT", CommandDef::new("SF.GLIT", None, ArgCount::AtLeast(1), "Sampler disintegrator mix"));
+    m.insert("SFG", CommandDef::new("SFG", Some("SF.GLIT"), ArgCount::AtLeast(1), "Sampler disintegrator mix"));
 }

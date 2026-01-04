@@ -6,6 +6,8 @@ use rosc::OscType;
 use std::path::Path;
 use std::sync::mpsc::Sender;
 
+use super::common::define_int_param;
+
 /// KIT <path> - Load samples (file → slice mode, directory → kit mode)
 pub fn handle_kit<F>(
     parts: &[&str],
@@ -153,3 +155,261 @@ where
 
     Ok(())
 }
+
+// Pitch Parameters
+define_int_param!(
+    handle_s_rate,
+    "rate",
+    0,
+    16383,
+    "S.RATE",
+    "SAMPLE RATE",
+    "Failed to parse sample rate"
+);
+
+define_int_param!(
+    handle_s_pitch,
+    "pitch",
+    -24,
+    24,
+    "S.PITCH",
+    "SAMPLE PITCH",
+    "Failed to parse sample pitch"
+);
+
+define_int_param!(
+    handle_s_fine,
+    "fine",
+    -100,
+    100,
+    "S.FINE",
+    "SAMPLE FINE PITCH",
+    "Failed to parse sample fine pitch"
+);
+
+// Playback Parameters
+define_int_param!(
+    handle_s_dir,
+    "direction",
+    0,
+    1,
+    "S.DIR",
+    "SAMPLE DIRECTION",
+    "Failed to parse sample direction"
+);
+
+define_int_param!(
+    handle_s_loop,
+    "loop",
+    0,
+    1,
+    "S.LOOP",
+    "SAMPLE LOOP",
+    "Failed to parse sample loop"
+);
+
+define_int_param!(
+    handle_s_start,
+    "start_offset",
+    0,
+    16383,
+    "S.START",
+    "SAMPLE START",
+    "Failed to parse sample start offset"
+);
+
+define_int_param!(
+    handle_s_len,
+    "loop_length",
+    0,
+    16383,
+    "S.LEN",
+    "SAMPLE LENGTH",
+    "Failed to parse sample loop length"
+);
+
+// Envelope Parameters
+define_int_param!(
+    handle_s_atk,
+    "attack",
+    0,
+    16383,
+    "S.ATK",
+    "SAMPLE ATTACK",
+    "Failed to parse sample attack"
+);
+
+define_int_param!(
+    handle_s_dec,
+    "decay",
+    0,
+    16383,
+    "S.DEC",
+    "SAMPLE DECAY",
+    "Failed to parse sample decay"
+);
+
+define_int_param!(
+    handle_s_rel,
+    "release",
+    0,
+    16383,
+    "S.REL",
+    "SAMPLE RELEASE",
+    "Failed to parse sample release"
+);
+
+define_int_param!(
+    handle_s_sust,
+    "sustain",
+    0,
+    1,
+    "S.SUST",
+    "SAMPLE SUSTAIN MODE",
+    "Failed to parse sample sustain mode"
+);
+
+// Output Parameters
+define_int_param!(
+    handle_s_vol,
+    "volume",
+    0,
+    16383,
+    "S.VOL",
+    "SAMPLE VOLUME",
+    "Failed to parse sample volume"
+);
+
+define_int_param!(
+    handle_s_pan,
+    "pan",
+    -8192,
+    8191,
+    "S.PAN",
+    "SAMPLE PAN",
+    "Failed to parse sample pan"
+);
+
+define_int_param!(
+    handle_s_fx,
+    "fx_routing",
+    0,
+    2,
+    "S.FX",
+    "SAMPLE FX ROUTING",
+    "Failed to parse sample fx routing"
+);
+
+// Modulation Parameters
+define_int_param!(
+    handle_s_ratemod,
+    "rate_mod",
+    0,
+    16383,
+    "S.RATEMOD",
+    "SAMPLE RATE MOD",
+    "Failed to parse sample rate modulation"
+);
+
+define_int_param!(
+    handle_s_pitchmod,
+    "pitch_mod",
+    0,
+    16383,
+    "S.PITCHMOD",
+    "SAMPLE PITCH MOD",
+    "Failed to parse sample pitch modulation"
+);
+
+// FX Parameters - Filter (DFM1)
+define_int_param!(
+    handle_sf_cut,
+    "filter_cut",
+    0,
+    16383,
+    "SF.CUT",
+    "FILTER CUTOFF",
+    "Failed to parse filter cutoff"
+);
+
+define_int_param!(
+    handle_sf_res,
+    "filter_res",
+    0,
+    16383,
+    "SF.RES",
+    "FILTER RESONANCE",
+    "Failed to parse filter resonance"
+);
+
+define_int_param!(
+    handle_sf_type,
+    "filter_type",
+    0,
+    1,
+    "SF.TYPE",
+    "FILTER TYPE",
+    "Failed to parse filter type"
+);
+
+// FX Parameters - Decimator
+define_int_param!(
+    handle_sf_bits,
+    "bits",
+    1,
+    24,
+    "SF.BITS",
+    "BIT DEPTH",
+    "Failed to parse bit depth"
+);
+
+define_int_param!(
+    handle_sf_rate,
+    "deci_rate",
+    0,
+    16383,
+    "SF.RATE",
+    "RATE REDUCTION",
+    "Failed to parse rate reduction"
+);
+
+define_int_param!(
+    handle_sf_deci,
+    "deci_mix",
+    0,
+    16383,
+    "SF.DECI",
+    "DECIMATOR MIX",
+    "Failed to parse decimator mix"
+);
+
+// FX Parameters - Disintegrator
+define_int_param!(
+    handle_sf_prob,
+    "glitch_prob",
+    0,
+    16383,
+    "SF.PROB",
+    "GLITCH PROBABILITY",
+    "Failed to parse glitch probability"
+);
+
+define_int_param!(
+    handle_sf_mult,
+    "glitch_mult",
+    0,
+    16383,
+    "SF.MULT",
+    "GLITCH MULTIPLIER",
+    "Failed to parse glitch multiplier"
+);
+
+define_int_param!(
+    handle_sf_glit,
+    "glitch_mix",
+    0,
+    16383,
+    "SF.GLIT",
+    "DISINTEGRATOR MIX",
+    "Failed to parse disintegrator mix"
+);

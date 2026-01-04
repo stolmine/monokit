@@ -339,6 +339,7 @@ impl ScsynthDirect {
             synthdefs_dir.join("monokit_mod.scsyndef"),
             synthdefs_dir.join("monokit_primary.scsyndef"),
             synthdefs_dir.join("monokit_plaits.scsyndef"),
+            synthdefs_dir.join("monokit_sampler.scsyndef"),
             synthdefs_dir.join("monokit_main.scsyndef"),
             synthdefs_dir.join("monokit_spectrum.scsyndef"),
             synthdefs_dir.join("monokit_scope.scsyndef"),
@@ -420,7 +421,7 @@ impl ScsynthDirect {
     }
 
     fn spawn_voice_synths(socket: &UdpSocket, silent: bool) -> Result<(), String> {
-        use crate::types::{VoiceSynths, PRIMARY_BUS, MOD_BUS, NOISE_BUS, PLAITS_MAIN_BUS, PLAITS_AUX_BUS};
+        use crate::types::{VoiceSynths, PRIMARY_BUS, MOD_BUS, NOISE_BUS, PLAITS_MAIN_BUS, PLAITS_AUX_BUS, SAMPLER_NODE_ID};
 
         let synths = VoiceSynths::new();
 
@@ -494,6 +495,50 @@ impl ScsynthDirect {
         )?;
         if !silent {
             eprintln!("[monokit]   Created monokit_plaits (node {})", synths.plaits_node);
+        }
+
+        Self::send_osc_message_static(
+            socket,
+            "/s_new",
+            vec![
+                OscType::String("monokit_sampler".to_string()),
+                OscType::Int(SAMPLER_NODE_ID),
+                OscType::Int(0),
+                OscType::Int(0),
+                OscType::String("out".to_string()),
+                OscType::Int(21),
+                OscType::String("bufnum".to_string()),
+                OscType::Int(0),
+                OscType::String("t_gate".to_string()),
+                OscType::Int(0),
+                OscType::String("rate".to_string()),
+                OscType::Int(8192),
+                OscType::String("pitch".to_string()),
+                OscType::Int(0),
+                OscType::String("fine".to_string()),
+                OscType::Int(0),
+                OscType::String("direction".to_string()),
+                OscType::Int(0),
+                OscType::String("loop".to_string()),
+                OscType::Int(0),
+                OscType::String("startFrame".to_string()),
+                OscType::Int(0),
+                OscType::String("endFrame".to_string()),
+                OscType::Int(-1),
+                OscType::String("atk".to_string()),
+                OscType::Int(0),
+                OscType::String("dec".to_string()),
+                OscType::Int(8192),
+                OscType::String("rel".to_string()),
+                OscType::Int(1000),
+                OscType::String("sust".to_string()),
+                OscType::Int(0),
+                OscType::String("volume".to_string()),
+                OscType::Int(8192),
+            ],
+        )?;
+        if !silent {
+            eprintln!("[monokit]   Created monokit_sampler (node {})", SAMPLER_NODE_ID);
         }
 
         thread::sleep(Duration::from_millis(50));

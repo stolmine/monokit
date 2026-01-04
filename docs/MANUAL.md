@@ -403,7 +403,7 @@ The sampler provides two loading modes: **KIT mode** (directory of one-shot samp
   - If path is a directory: KIT mode (one sample per slot, 0-127)
   - If path is a file: SLICE mode (auto-slices file across slots)
 - `KIT` - List available kits (REPL only)
-- `KIT.LEN` / `KL` - Returns number of slots in current kit
+- `KIT.LEN` / `KL` - Returns number of slots (usable in expressions: `PN.L 0 KL`)
 - `KIT.INFO` - Displays current kit information
 - `STR <n>` - Trigger slot (accepts expressions: `STR RND 0 15`, `STR + A 1`)
 - `STR` - Re-trigger current slot

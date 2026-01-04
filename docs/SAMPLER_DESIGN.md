@@ -696,6 +696,27 @@ Header layout: ... H|P|S ...
 - S = Sampler trigger (NEW)
 ```
 
+## Documentation
+
+### Help System Updates
+
+Update internal help (`src/help/`) for new commands:
+- Add SAMPLER category with KIT, STR commands
+- Add S.* playback parameters (16 commands)
+- Add SF.* FX parameters (9 commands)
+- Add MIXER category with VOL.*, PAN.*, MUTE.* commands
+- Update GRID.MODE help for modes 3-5
+
+### Manual Updates
+
+Update `docs/manual.md` with:
+- Sampler section explaining KIT/STR workflow
+- Sample loading (directory vs file)
+- Playback parameters reference
+- FX parameters reference
+- Mixer commands reference
+- GRID.MODE 3-5 descriptions
+
 ## Success Criteria
 
 - [ ] GRID.MODE 3 shows usable mixer with real-time levels
@@ -705,3 +726,5 @@ Header layout: ... H|P|S ...
 - [ ] Kit switching is fast enough for live use (<100ms)
 - [ ] Scene save/load preserves sampler state
 - [ ] Header shows S indicator on STR trigger
+- [ ] Internal help updated for all new commands
+- [ ] manual.md documents sampler and mixer features

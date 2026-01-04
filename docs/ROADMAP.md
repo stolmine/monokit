@@ -191,29 +191,38 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | monokit_main per-voice mixing | Medium | Pending |
 | **Phase 2: Basic Sampler** | | |
 | KIT/STR command parsing | Low | **DONE** |
+| Folder loading / kit mode | Low | **DONE** |
 | S.* playback params (16 cmds) | Low | **DONE** |
 | SF.* FX params (9 cmds) | Low | **DONE** |
-| Buffer loading (/b_allocRead) | Medium | Pending |
-| monokit_main bus 21 routing | Low | Pending |
-| OSC param routing fix | Low | Pending |
-| monokit_sampler SynthDef | Medium | Compiled |
+| OSC param routing | Low | **DONE** |
+| Buffer loading (/b_allocRead) | Medium | **DONE** |
+| monokit_main bus 21 routing | Low | **DONE** |
+| monokit_sampler SynthDef | Medium | **DONE** |
 | **Phase 3: Slicing** | | |
 | Auto-slice on file load | Medium | Pending |
 | S.SLICE manual re-slice | Low | Pending |
 | S.ONSET transient detection | Medium | Pending |
 | aubio-rs integration | Medium | Pending |
 | **Phase 4: Polish** | | |
+| Sample params coverage for RST | Low | Pending |
+| SFX command for FX routing | Low | Pending |
+| Filter options (more types) | Medium | Pending |
+| Replace glitch effect | Medium | Pending |
+| S.PITCH range & note LUT | Low | Pending |
+| Gate length control | Low | Pending |
+| STR indicator 'S' in header | Low | Pending |
 | KIT.INFO command | Low | Pending |
 | GRID.MODE 4 FX viz | Medium | Placeholder |
 | GRID.MODE 5 sampler viz | Medium | Placeholder |
 | Help system updates | Low | Pending |
 | Scene persistence | Medium | Pending |
 
-**Current Blockers (must fix for audio):**
-1. monokit_main doesn't read bus 21 (sampler output)
-2. OSC params use wrong names (sampler_slot vs s_bufnum)
-3. No buffer allocation on KIT load
-4. route_param_to_node() missing sampler params
+**Completed this session:**
+- Sampler audio output working (bus 21 routing, buffer allocation)
+- One-shot playback fixed (audio-rate SetResetFF detection)
+- First-trigger bug fixed
+- Case-insensitive kit path resolution
+- SF.* effects chain implemented
 
 ---
 

@@ -2,8 +2,29 @@
 
 Design document for GRID.MODE expansion and unified sample playback system.
 
-**Status:** Planning
+**Status:** Phase 2 In Progress (Basic Sampler)
 **Date:** January 2026
+
+---
+
+## Current Status (January 2026)
+
+**Phase 2 Complete:**
+- ✅ Audio output working (bus 21 routing, buffer allocation)
+- ✅ One-shot playback working (audio-rate SetResetFF detection)
+- ✅ Kit/folder loading working
+- ✅ Case-insensitive path resolution (library search)
+- ✅ SF.* effects chain (filter, decimator, glitch)
+- ✅ S.* playback parameters working
+
+**Remaining for Phase 4 (Polish):**
+- Sample params coverage for RST
+- S.FX routing command (through/around global FX)
+- More filter types (like HD2 voice)
+- Replace glitch effect with better alternative
+- S.PITCH 14-bit range with note name LUT
+- Gate length control for sustain stage
+- STR 'S' indicator in header
 
 ---
 
@@ -183,19 +204,19 @@ struct SampleSlot {
 
 #### Loading
 
-| Command | Description |
-|---------|-------------|
-| KIT \<path\> | Load file (slice) or directory (kit) |
-| KIT.LOAD \<path\> | Preload to RAM without switching |
-| KIT.INFO | Show current kit info |
-| KIT.LS | List available kits in library path |
+| Command | Description | Status |
+|---------|-------------|--------|
+| KIT \<path\> | Load file (slice) or directory (kit) | **WORKING** (absolute paths only) |
+| KIT.LOAD \<path\> | Preload to RAM without switching | Planned |
+| KIT.INFO | Show current kit info | Planned |
+| KIT.LS | List available kits in library path | Planned |
 
 #### Triggering
 
-| Command | Range | Description |
-|---------|-------|-------------|
-| STR \<n\> | 0-127 | Trigger slot n |
-| STR | - | Re-trigger current slot |
+| Command | Range | Description | Status |
+|---------|-------|-------------|--------|
+| STR \<n\> | 0-127 | Trigger slot n | **IMPLEMENTED** (no audio yet) |
+| STR | - | Re-trigger current slot | **IMPLEMENTED** (no audio yet) |
 
 `STR` supports full expression evaluation:
 ```
@@ -206,36 +227,38 @@ STR TOG 0 8
 STR A              # Variable
 ```
 
+**Status:** Expression evaluation and slot selection working, but audio output not functioning.
+
 #### Slicing (Slice Mode Only)
 
-| Command | Range | Description |
-|---------|-------|-------------|
-| S.SLICE \<n\> | 2-128 | Divide into n equal slices |
-| S.ONSET | - | Auto-detect transients |
-| S.ONSET.TH \<n\> | 0-16383 | Onset detection threshold |
+| Command | Range | Description | Status |
+|---------|-------|-------------|--------|
+| S.SLICE \<n\> | 2-128 | Divide into n equal slices | Planned |
+| S.ONSET | - | Auto-detect transients | Planned |
+| S.ONSET.TH \<n\> | 0-16383 | Onset detection threshold | Planned |
 
 #### Playback Parameters
 
-| Command | Alias | Range | Description |
-|---------|-------|-------|-------------|
-| S.RATE | SR | 0-16383 | Playback rate (8192=1x, 0=0.25x, 16383=4x) |
-| S.PITCH | SPT | -24 to +24 | Pitch offset in semitones |
-| S.FINE | SFN | -100 to +100 | Fine pitch in cents |
-| S.DIR | SD | 0/1 | Direction (0=fwd, 1=rev) |
-| S.LOOP | SL | 0/1 | Loop mode |
-| S.START | SST | 0-16383 | Start offset within slice (0=beginning) |
-| S.LEN | SLE | 0-16383 | Loop length (0=full slice, else portion) |
+| Command | Alias | Range | Description | Status |
+|---------|-------|-------|-------------|--------|
+| S.RATE | SR | 0-16383 | Playback rate (8192=1x, 0=0.25x, 16383=4x) | **WORKING** |
+| S.PITCH | SPT | -24 to +24 | Pitch offset in semitones | **WORKING** |
+| S.FINE | SFN | -100 to +100 | Fine pitch in cents | **WORKING** |
+| S.DIR | SD | 0/1 | Direction (0=fwd, 1=rev) | **WORKING** |
+| S.LOOP | SL | 0/1 | Loop mode | **WORKING** |
+| S.START | SST | 0-16383 | Start offset within slice (0=beginning) | **WORKING** |
+| S.LEN | SLE | 0-16383 | Loop length (0=full slice, else portion) | **WORKING** |
 
 #### Envelope Parameters
 
 Uses ADSR envelope with variable sustain level for gate mode support.
 
-| Command | Alias | Range | Description |
-|---------|-------|-------|-------------|
-| S.ATK | SA | 0-16383 | Attack time (0=0ms, 16383=2000ms) |
-| S.DEC | SDC | 0-16383 | Decay time (0=0ms, 16383=2000ms) |
-| S.REL | SRE | 0-16383 | Release time (0=0ms, 16383=2000ms) |
-| S.SUST | SSU | 0/1 | Sustain mode (0=one-shot/perc, 1=hold while gate) |
+| Command | Alias | Range | Description | Status |
+|---------|-------|-------|-------------|--------|
+| S.ATK | SA | 0-16383 | Attack time (0=0ms, 16383=2000ms) | **WORKING** |
+| S.DEC | SDC | 0-16383 | Decay time (0=0ms, 16383=2000ms) | **WORKING** |
+| S.REL | SRE | 0-16383 | Release time (0=0ms, 16383=2000ms) | **WORKING** |
+| S.SUST | SSU | 0/1 | Sustain mode (0=one-shot/perc, 1=hold while gate) | **WORKING** |
 
 **Note:** t_gate trigger signal is separate from S.SUST sustain mode parameter.
 - S.SUST=0: envelope decays immediately after attack (percussive)
@@ -243,18 +266,18 @@ Uses ADSR envelope with variable sustain level for gate mode support.
 
 #### Output Parameters
 
-| Command | Alias | Range | Description |
-|---------|-------|-------|-------------|
-| S.VOL | SV | 0-16383 | Sample volume |
-| S.PAN | SP | -8192 to 8191 | Pan position (0=center) |
-| S.FX | SFX | 0/1/2 | FX routing (0=dry, 1=post-filter, 2=post-all) |
+| Command | Alias | Range | Description | Status |
+|---------|-------|-------|-------------|--------|
+| S.VOL | SV | 0-16383 | Sample volume | **WORKING** |
+| S.PAN | SP | -8192 to 8191 | Pan position (0=center) | **WORKING** |
+| S.FX | SFX | 0/1/2 | FX routing (0=dry, 1=post-filter, 2=post-all) | **WORKING** |
 
 #### Modulation Parameters
 
-| Command | Alias | Range | Description |
-|---------|-------|-------|-------------|
-| S.RATEMOD | SRM | 0-16383 | Rate modulation amount from envelope |
-| S.PITCHMOD | SPM | 0-16383 | Pitch modulation amount from envelope |
+| Command | Alias | Range | Description | Status |
+|---------|-------|-------|-------------|--------|
+| S.RATEMOD | SRM | 0-16383 | Rate modulation amount from envelope | **WORKING** |
+| S.PITCHMOD | SPM | 0-16383 | Pitch modulation amount from envelope | **WORKING** |
 
 #### Parameter Summary
 
@@ -297,27 +320,27 @@ All sampler FX use `SF.*` prefix (Sampler FX) to avoid conflicts:
 
 **Sampler Filter - DFM1 (SF.F*)**
 
-| Command | Alias | Range | Description |
-|---------|-------|-------|-------------|
-| SF.CUT | SFC | 0-16383 | Filter cutoff frequency |
-| SF.RES | SFQ | 0-16383 | Filter resonance |
-| SF.TYPE | SFT | 0/1 | Filter type (0=LP, 1=HP) |
+| Command | Alias | Range | Description | Status |
+|---------|-------|-------|-------------|--------|
+| SF.CUT | SFC | 0-16383 | Filter cutoff frequency | **WORKING** |
+| SF.RES | SFQ | 0-16383 | Filter resonance | **WORKING** |
+| SF.TYPE | SFT | 0/1 | Filter type (0=LP, 1=HP) | **WORKING** |
 
 **Decimator (SF.D*)**
 
-| Command | Alias | Range | Description |
-|---------|-------|-------|-------------|
-| SF.BITS | SFB | 1-24 | Bit depth (24=clean, 1=destroyed) |
-| SF.RATE | SFR | 0-16383 | Sample rate reduction (0=off, 16383=extreme) |
-| SF.DECI | SFD | 0-16383 | Decimator mix (0=bypass) |
+| Command | Alias | Range | Description | Status |
+|---------|-------|-------|-------------|--------|
+| SF.BITS | SFB | 1-24 | Bit depth (24=clean, 1=destroyed) | **WORKING** |
+| SF.RATE | SFR | 0-16383 | Sample rate reduction (0=off, 16383=extreme) | **WORKING** |
+| SF.DECI | SFD | 0-16383 | Decimator mix (0=bypass) | **WORKING** |
 
 **Disintegrator (SF.G*)**
 
-| Command | Alias | Range | Description |
-|---------|-------|-------|-------------|
-| SF.PROB | SFP | 0-16383 | Glitch probability (0=off) |
-| SF.MULT | SFM | 0-16383 | Glitch multiplier |
-| SF.GLIT | SFG | 0-16383 | Disintegrator mix (0=bypass) |
+| Command | Alias | Range | Description | Status |
+|---------|-------|-------|-------------|--------|
+| SF.PROB | SFP | 0-16383 | Glitch probability (0=off) | **WORKING** (needs improvement) |
+| SF.MULT | SFM | 0-16383 | Glitch multiplier | **WORKING** (needs improvement) |
+| SF.GLIT | SFG | 0-16383 | Disintegrator mix (0=bypass) | **WORKING** (needs improvement) |
 
 #### FX Parameter Summary
 
@@ -330,16 +353,16 @@ All sampler FX use `SF.*` prefix (Sampler FX) to avoid conflicts:
 
 **Note:** Spatial effects (delay, reverb, granular) use the global FX chain (DLY, REV, CL commands).
 
-#### FX Presets (Optional - Future)
+#### FX Presets (Planned)
 
 Quick preset commands for common settings:
 
-| Command | Description |
-|---------|-------------|
-| SF.RST | Reset all sampler FX to defaults |
-| SF.LOFI | Lo-fi preset (8-bit, rate reduced, gentle filter) |
-| SF.TAPE | Tape saturation preset (smooth decimator, filtered) |
-| SF.MANGLE | Destruction preset (all FX engaged) |
+| Command | Description | Status |
+|---------|-------------|--------|
+| SF.RST | Reset all sampler FX to defaults | Planned |
+| SF.LOFI | Lo-fi preset (8-bit, rate reduced, gentle filter) | Planned |
+| SF.TAPE | Tape saturation preset (smooth decimator, filtered) | Planned |
+| SF.MANGLE | Destruction preset (all FX engaged) | Planned |
 
 #### Design Decisions
 
@@ -401,23 +424,25 @@ sample_auto_slice = 16
 
 #### Commands for Library Management
 
-| Command | Description |
-|---------|-------------|
-| S.PATH | Query current library path |
-| S.PATH \<path\> | Set library path (persists to config) |
-| S.LS | List directories in library root |
-| S.LS \<dir\> | List contents of directory |
-| S.INFO | Show current kit info (name, slots, memory) |
-| S.MEM | Show buffer memory usage |
+| Command | Description | Status |
+|---------|-------------|--------|
+| S.PATH | Query current library path | Planned |
+| S.PATH \<path\> | Set library path (persists to config) | Planned |
+| S.LS | List directories in library root | Planned |
+| S.LS \<dir\> | List contents of directory | Planned |
+| S.INFO | Show current kit info (name, slots, memory) | Planned |
+| S.MEM | Show buffer memory usage | Planned |
 
 #### Path Resolution Order
 
 When `KIT <path>` is called:
 
-1. **Absolute path** - `/Users/name/samples/kick.wav` → use directly
-2. **Relative to library** - `breaks/amen.wav` → prepend library path
-3. **Search library** - `amen.wav` → recursive search in library
-4. **Search current dir** - `./amen.wav` → relative to working directory
+1. **Absolute path** - `/Users/name/samples/kick.wav` → use directly (**WORKING**)
+2. **Relative to library** - `breaks/amen.wav` → prepend library path (**NOT WORKING**)
+3. **Search library** - `amen.wav` → recursive search in library (**NOT WORKING**)
+4. **Search current dir** - `./amen.wav` → relative to working directory (**NOT TESTED**)
+
+**Current Status:** Only absolute paths work reliably. Tilde expansion works (`~/samples/kick.wav`), but library-relative resolution fails. See `docs/internal/SAMPLER_DEBUG_NOTES.md` for details.
 
 #### Supported Formats
 
@@ -630,9 +655,9 @@ Need to add:
 
 ---
 
-## Implementation Phases
+## Implementation Status
 
-### Phase 1: Mixer Mode [~1 week]
+### Phase 1: Mixer Mode [NOT STARTED]
 
 - [ ] Add GRID.MODE 3 rendering
 - [ ] Implement VOL.* commands per voice
@@ -641,28 +666,81 @@ Need to add:
 - [ ] Update monokit_main SynthDef for per-voice control
 - [ ] Level metering via SendReply
 
-### Phase 2: Basic Sampler [~1 week]
+### Phase 2: Basic Sampler [MOSTLY COMPLETE]
 
-- [ ] Create monokit_sampler SynthDef
-- [ ] KIT command with path detection
-- [ ] STR command with expression support
-- [ ] Buffer allocation/management
-- [ ] Integration with monokit_main
+- [x] Create monokit_sampler SynthDef
+- [x] KIT command with path detection (directory and file loading)
+- [x] STR command with expression support
+- [x] Buffer allocation/management
+- [x] Integration with monokit_main (bus 21)
+- [x] One-shot playback working
+- [x] SF.* effects chain (filter, decimator, glitch)
+- [x] S.* playback parameters (rate, pitch, fine, direction, loop, envelope, etc.)
+- [ ] Audio output verification (currently debugging - see SAMPLER_DEBUG_NOTES.md)
+- [ ] Path resolution for library-relative paths (currently requires absolute paths)
 
-### Phase 3: Slicing [~1 week]
+### Phase 3: Slicing [NOT STARTED]
 
 - [ ] S.SLICE equal division
 - [ ] S.ONSET transient detection
 - [ ] Slice→slot mapping
-- [ ] Scene persistence
+- [ ] Scene persistence for sampler state
 
-### Phase 4: Polish [~1 week]
+### Phase 4: Polish [NOT STARTED]
 
 - [ ] KIT.LOAD preloading
 - [ ] GRID.MODE 4 FX viz
-- [ ] Sample library browsing (KIT.LS)
+- [ ] GRID.MODE 5 Sampler viz
+- [ ] Sample library browsing (S.LS)
 - [ ] Help system updates
-- [ ] Documentation
+- [ ] Documentation (MANUAL.md updates)
+
+---
+
+## Planned Improvements
+
+### RST Coverage for Sampler
+Add sampler parameters to the RST command for complete reset support:
+- S.* playback parameters (rate, pitch, fine, direction, loop, start, len, envelope)
+- SF.* effects parameters (filter, decimator, glitch)
+- Consistent defaults matching SynthDef initialization
+
+### SFX Routing Command
+Add S.FX command to route sampler signal through/around global FX chain:
+- `S.FX 0` = dry signal (bypass global FX)
+- `S.FX 1` = post-sampler FX, pre-global FX
+- `S.FX 2` = full FX chain (sampler + global)
+
+### Enhanced Filter Types
+Add more filter types matching HD2 voice capabilities:
+- Currently: LP/HP only (SF.TYPE 0/1)
+- Planned: BP, notch, peak, shelving filters
+- Consider multimode filter UGen or separate filter implementations
+
+### Improved Glitch Effect
+Current disintegrator effect needs refinement:
+- Review probability-based glitching behavior
+- Consider alternative glitch algorithms (buffer scrambling, stutter, reverse chunks)
+- Better musical control over glitch density and character
+
+### S.PITCH Extended Range
+Implement 14-bit pitch range with note name lookup table:
+- Currently: -24 to +24 semitones
+- Planned: Full MIDI note range (0-127) with note name support
+- LUT for note names (C3, D#4, etc.) to MIDI note conversion
+- Maintain backward compatibility with semitone offset mode
+
+### Gate Length Control
+Add parameter for sustain stage duration in gate mode:
+- Currently: S.SUST 0/1 (one-shot vs. gate hold)
+- Planned: S.GATE parameter for sustain duration in ms
+- Allows precise control over held samples without manual gate release
+
+### STR Trigger Indicator
+Add 'S' indicator to header when sampler triggers:
+- Placement: Header layout `... H|P|S ...`
+- Behavior: Brief flash on STR command (matches H/P timing)
+- Visual feedback for sampler activity in performance
 
 ---
 
@@ -682,7 +760,7 @@ Need to add:
 
 ## UI Integration
 
-### Header S Trigger Indicator
+### Header S Trigger Indicator (Planned)
 
 Add `S` indicator to header next to existing `H|P` section:
 - Shows `S` when sampler triggers (STR command)
@@ -693,8 +771,10 @@ Add `S` indicator to header next to existing `H|P` section:
 Header layout: ... H|P|S ...
 - H = Help page indicator
 - P = Pattern activity
-- S = Sampler trigger (NEW)
+- S = Sampler trigger (PLANNED - not yet implemented)
 ```
+
+**Status:** Not yet implemented. Currently no visual feedback for STR commands in header.
 
 ## Documentation
 
@@ -719,12 +799,32 @@ Update `docs/manual.md` with:
 
 ## Success Criteria
 
-- [ ] GRID.MODE 3 shows usable mixer with real-time levels
-- [ ] Can load directory as kit and trigger with `STR 0-N`
+### Core Functionality (Phase 2)
+- [x] Can load directory as kit via `KIT drums/808/`
+- [x] Can load file via `KIT breaks/amen.wav`
+- [x] Can trigger slots with `STR 0-N`
+- [x] Expression evaluation works in STR (RND, TOG, EITH, etc.)
+- [x] SF.* effects chain functional (filter, decimator, glitch)
+- [x] S.* playback parameters working (rate, pitch, envelope, etc.)
+- [ ] Audio output verified (currently debugging)
+- [ ] Path resolution works for library-relative paths
+- [ ] Kit switching is fast enough for live use (<100ms)
+
+### Advanced Features (Phase 3+)
 - [ ] Can load WAV file and slice with `S.SLICE`
 - [ ] Same patterns work regardless of kit vs slice mode
-- [ ] Kit switching is fast enough for live use (<100ms)
 - [ ] Scene save/load preserves sampler state
+- [ ] RST command resets all sampler parameters
+- [ ] S.FX routing command controls global FX send
+- [ ] More filter types available (BP, notch, etc.)
+- [ ] Improved glitch effect with better control
+- [ ] S.PITCH supports extended range with note names
+- [ ] Gate length control for sustain stage
+
+### UI & Documentation
+- [ ] GRID.MODE 3 shows usable mixer with real-time levels
+- [ ] GRID.MODE 4 shows FX visualization
+- [ ] GRID.MODE 5 shows sampler state
 - [ ] Header shows S indicator on STR trigger
-- [ ] Internal help updated for all new commands
-- [ ] manual.md documents sampler and mixer features
+- [ ] Internal help updated for all sampler commands
+- [ ] MANUAL.md documents sampler and mixer features

@@ -25,6 +25,7 @@ Design document for GRID.MODE expansion and unified sample playback system.
 - S.PITCH 14-bit range with note name LUT
 - Gate length control for sustain stage
 - STR 'S' indicator in header
+- KIT.LEN / KL getter (return slot count for dynamic mapping)
 
 ---
 

@@ -184,8 +184,11 @@ pub fn register_synth(m: &mut std::collections::HashMap<&'static str, CommandDef
     m.insert("MS", CommandDef::new("MS", Some("MUTE.SMP"), ArgCount::AtLeast(1), "Mute sampler"));
 
     // Sampler - Loading & Triggering
-    m.insert("KIT", CommandDef::new("KIT", None, ArgCount::AtLeast(1), "Load sample kit or file"));
+    m.insert("KIT", CommandDef::new("KIT", None, ArgCount::AtLeast(0), "Load sample kit or file"));
     m.insert("STR", CommandDef::new("STR", None, ArgCount::AtLeast(0), "Trigger sample slot"));
+    m.insert("KIT.LEN", CommandDef::new("KIT.LEN", None, ArgCount::None, "Get kit slot count"));
+    m.insert("KL", CommandDef::new("KL", Some("KIT.LEN"), ArgCount::None, "Get kit slot count"));
+    m.insert("KIT.INFO", CommandDef::new("KIT.INFO", None, ArgCount::None, "Display kit info"));
 
     // Sampler - Pitch Parameters
     m.insert("S.RATE", CommandDef::new("S.RATE", None, ArgCount::AtLeast(1), "Sample playback rate"));

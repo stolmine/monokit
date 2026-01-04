@@ -704,6 +704,12 @@ where
         "STR" => {
             synth_params::handle_str(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
+        "KIT.LEN" | "KL" => {
+            synth_params::handle_kit_len(&*ctx.sampler_state, *debug_level, *out_qry, output)?;
+        }
+        "KIT.INFO" => {
+            synth_params::handle_kit_info(&*ctx.sampler_state, *debug_level, *out_qry, output)?;
+        }
         "S.RATE" | "SR" => {
             synth_params::handle_s_rate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }

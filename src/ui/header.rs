@@ -156,8 +156,26 @@ pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
             "P",
             Style::default().fg(p_color),
         ));
+        right_width += 1;
+
+        // Separator
+        right_spans.push(Span::raw("|"));
+        right_width += 1;
+
+        // S = Sampler single file (STR command with single file loaded)
+        let sampler_loaded = app.sampler_state.mode == crate::types::SamplerMode::Slice
+            && !app.sampler_state.slots.is_empty();
+        let s_color = if sampler_loaded {
+            app.theme.success
+        } else {
+            app.theme.activity_color(None, false, app.activity_hold_ms)
+        };
+        right_spans.push(Span::styled(
+            "S",
+            Style::default().fg(s_color),
+        ));
         right_spans.push(Span::raw(" "));
-        right_width += 3; // "P" + space
+        right_width += 3; // "S" + space
     }
 
     // Meters: show at level 1 and above if header meters are enabled

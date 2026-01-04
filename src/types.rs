@@ -837,6 +837,7 @@ pub struct SampleSlot {
     pub buffer_id: u32,
     pub start_frame: usize,
     pub end_frame: usize,
+    pub file_path: Option<String>,
 }
 
 impl Default for SampleSlot {
@@ -845,6 +846,7 @@ impl Default for SampleSlot {
             buffer_id: 0,
             start_frame: 0,
             end_frame: 0,
+            file_path: None,
         }
     }
 }

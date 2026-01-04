@@ -201,20 +201,23 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | **Phase 3: Slicing** | | |
 | Auto-slice on file load | Medium | Pending |
 | S.SLICE manual re-slice | Low | Pending |
+| equal length slice mode | Medium | Pending |
 | S.ONSET transient detection | Medium | Pending |
 | aubio-rs integration | Medium | Pending |
 | **Phase 4: Polish** | | |
-| Sample params coverage for RST | Low | Pending |
+| Sample params coverage for RST | Low | **DONE** |
 | SFX command for FX routing | Low | Pending |
 | Filter options (more types) | Medium | Pending |
 | Replace glitch effect | Medium | Pending |
 | S.PITCH range & note LUT | Low | Pending |
 | Gate length control | Low | Pending |
-| STR indicator 'S' in header | Low | Pending |
-| KIT.INFO command | Low | Pending |
+| STR indicator 'S' in header | Low | **DONE** |
+| KIT.LEN / KL getter | Low | **DONE** |
+| KIT.INFO command | Low | **DONE** |
+| KIT getter (no arg lists kits, REPL only) | Low | **DONE** |
 | GRID.MODE 4 FX viz | Medium | Placeholder |
 | GRID.MODE 5 sampler viz | Medium | Placeholder |
-| Help system updates | Low | Pending |
+| Help system updates | Low | **DONE** |
 | Scene persistence | Medium | Pending |
 
 **Completed this session:**

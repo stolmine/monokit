@@ -878,6 +878,92 @@ where
         std::thread::sleep(Duration::from_millis(delay_ms));
     }
 
+    ctx.metro_tx.send(MetroCommand::SendParam("s_rate".to_string(), OscType::Int(8192)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("s_pitch".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("s_fine".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("s_direction".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("s_loop".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("s_startFrame".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("s_endFrame".to_string(), OscType::Int(-1)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("s_atk".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("s_dec".to_string(), OscType::Int(8192)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("s_rel".to_string(), OscType::Int(1000)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("s_sust".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("s_volume".to_string(), OscType::Int(8192)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+
+    ctx.metro_tx.send(MetroCommand::SendParam("sf_cut".to_string(), OscType::Int(16383)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("sf_res".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("sf_type".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("sf_bits".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("sf_rate".to_string(), OscType::Int(16383)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("sf_deci".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("sf_prob".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("sf_mult".to_string(), OscType::Int(8192)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("sf_glit".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+
     ctx.output(
         OutputCategory::Essential,
         "RESET TO DEFAULTS".to_string(),

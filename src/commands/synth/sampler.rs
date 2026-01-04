@@ -1,6 +1,6 @@
 use crate::commands::context::ExecutionContext;
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, SamplerMode, SampleSlot, Variables, TIER_CONFIRMS, TIER_ESSENTIAL, TIER_QUERIES, SAMPLER_BUFFER_BASE, OSC_ADDR};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, SamplerMode, SampleSlot, Variables, TIER_CONFIRMS, SAMPLER_BUFFER_BASE, OSC_ADDR};
 use anyhow::{Context, Result};
 use rosc::{encoder, OscMessage, OscPacket, OscType};
 use std::net::UdpSocket;
@@ -78,52 +78,33 @@ macro_rules! define_sampler_envelope_param {
     };
 }
 
-/// Resolve sample path according to library search order:
-/// 1. Absolute path - use directly
-/// 2. Relative to library - prepend ~/.config/monokit/samples/
-/// 3. Search library - recursive search for matching name
-/// 4. Relative to current dir - use as-is
 fn resolve_sample_path<F>(path_str: &str, debug_level: u8, mut output: F) -> Option<PathBuf>
 where
     F: FnMut(String),
 {
+    let home_dir = dirs::home_dir();
+
     let expanded = if path_str.starts_with('~') {
-        match dirs::home_dir() {
-            Some(home) => {
-                let expanded_path = if path_str == "~" {
-                    home.to_string_lossy().to_string()
-                } else {
-                    home.join(&path_str[2..]).to_string_lossy().to_string()
-                };
-                expanded_path
+        home_dir.as_ref().map(|home| {
+            if path_str == "~" {
+                home.clone()
+            } else {
+                home.join(&path_str[2..])
             }
-            None => {
-                path_str.to_string()
-            }
-        }
+        })?
     } else {
-        path_str.to_string()
+        PathBuf::from(path_str)
     };
 
-    let path = Path::new(&expanded);
-
-    if path.is_absolute() {
-        return if path.exists() {
-            Some(path.to_path_buf())
+    if expanded.is_absolute() {
+        return if expanded.exists() {
+            Some(expanded)
         } else {
             None
         };
     }
 
-    let library_path = match dirs::home_dir() {
-        Some(home) => {
-            let lib_path = home.join(".config/monokit/samples");
-            lib_path
-        }
-        None => {
-            return None;
-        }
-    };
+    let library_path = home_dir?.join(".config/monokit/samples");
 
     let library_relative = library_path.join(path_str);
     if library_relative.exists() {
@@ -132,47 +113,121 @@ where
 
     let search_name = Path::new(path_str)
         .file_name()
-        .map(|n| n.to_string_lossy().to_string())
-        .unwrap_or_else(|| path_str.to_string());
+        .and_then(|n| n.to_str())?;
 
-    if let Some(found) = search_library_recursive(&library_path, &search_name) {
+    if let Some(found) = search_library_recursive(&library_path, search_name) {
         return Some(found);
     }
 
-    if path.exists() {
-        return Some(path.to_path_buf());
+    if expanded.exists() {
+        Some(expanded)
+    } else {
+        None
     }
-
-    None
 }
 
-/// Recursively search library for a file or directory matching the given name
 fn search_library_recursive(dir: &Path, target: &str) -> Option<PathBuf> {
     if !dir.exists() || !dir.is_dir() {
         return None;
     }
 
-    if let Ok(entries) = std::fs::read_dir(dir) {
-        for entry in entries.flatten() {
-            let path = entry.path();
+    let entries = std::fs::read_dir(dir).ok()?;
 
-            // Check if this entry matches the target
-            if let Some(name) = path.file_name() {
-                if name.to_string_lossy().eq_ignore_ascii_case(target) {
-                    return Some(path);
-                }
+    for entry in entries.flatten() {
+        let path = entry.path();
+
+        if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+            if name.eq_ignore_ascii_case(target) {
+                return Some(path);
             }
+        }
 
-            // Recurse into subdirectories (skip symlinks to prevent loops)
-            if path.is_dir() && !path.is_symlink() {
-                if let Some(found) = search_library_recursive(&path, target) {
-                    return Some(found);
-                }
+        if path.is_dir() && !path.is_symlink() {
+            if let Some(found) = search_library_recursive(&path, target) {
+                return Some(found);
             }
         }
     }
 
     None
+}
+
+fn is_audio_file(path: &Path) -> bool {
+    if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
+        matches!(ext, "wav" | "WAV" | "aif" | "AIF" | "aiff" | "AIFF" | "flac" | "FLAC")
+    } else {
+        false
+    }
+}
+
+fn find_kits_and_samples(base_dir: &Path, root_dir: &Path) -> (Vec<String>, Vec<String>) {
+    const MAX_DEPTH: usize = 10;
+    find_kits_and_samples_impl(base_dir, root_dir, 0, MAX_DEPTH)
+}
+
+fn find_kits_and_samples_impl(base_dir: &Path, root_dir: &Path, depth: usize, max_depth: usize) -> (Vec<String>, Vec<String>) {
+    let mut kits = Vec::new();
+    let mut samples = Vec::new();
+
+    if depth >= max_depth || !base_dir.exists() || !base_dir.is_dir() {
+        return (kits, samples);
+    }
+
+    let Ok(entries) = std::fs::read_dir(base_dir) else {
+        return (kits, samples);
+    };
+
+    let mut audio_files = Vec::new();
+    let mut subdirs = Vec::new();
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+
+        if path.is_file() && is_audio_file(&path) {
+            audio_files.push(path);
+        } else if path.is_dir() && path.read_link().is_err() {
+            subdirs.push(path);
+        }
+    }
+
+    if !audio_files.is_empty() {
+        if let Ok(relative) = base_dir.strip_prefix(root_dir) {
+            if let Some(rel_str) = relative.to_str() {
+                if depth == 1 {
+                    for audio_file in &audio_files {
+                        if let Some(file_name) = audio_file.file_stem().and_then(|s| s.to_str()) {
+                            let mut path = String::with_capacity(rel_str.len() + file_name.len() + 1);
+                            path.push_str(rel_str);
+                            path.push('/');
+                            path.push_str(file_name);
+                            samples.push(path);
+                        }
+                    }
+                } else if depth > 1 {
+                    kits.push(rel_str.to_string());
+                }
+            }
+        }
+    }
+
+    for subdir in subdirs {
+        let (mut sub_kits, mut sub_samples) = find_kits_and_samples_impl(&subdir, root_dir, depth + 1, max_depth);
+        kits.append(&mut sub_kits);
+        samples.append(&mut sub_samples);
+    }
+
+    (kits, samples)
+}
+
+const MAX_DISPLAY_WIDTH: usize = 46;
+const INDENT_WIDTH: usize = 2;
+
+fn truncate_name(name: &str, max_len: usize) -> String {
+    if name.len() <= max_len {
+        name.to_string()
+    } else {
+        format!("{}...", &name[..max_len.saturating_sub(3)])
+    }
 }
 
 fn send_buffer_alloc_read<F>(buffer_id: u32, file_path: &str, debug_level: u8, mut output: F) -> Result<()>
@@ -201,6 +256,7 @@ where
 }
 
 /// KIT <path> - Load samples (file → slice mode, directory → kit mode)
+/// KIT - List available kits (REPL only)
 pub fn handle_kit<F>(
     parts: &[&str],
     ctx: &mut ExecutionContext,
@@ -209,8 +265,56 @@ pub fn handle_kit<F>(
 where
     F: FnMut(String),
 {
+    use crate::types::OutputCategory;
+    use crate::output::OutputDecider;
+
     if parts.len() < 2 {
-        output("KIT: REQUIRES PATH".to_string());
+        // No argument: list available kits (REPL only)
+        if ctx.script_index < 10 {
+            ctx.output(OutputCategory::Error, "KIT: REPL ONLY".to_string(), &mut output);
+            return Ok(());
+        }
+
+        // Get samples directory
+        let samples_dir = match dirs::home_dir() {
+            Some(home) => home.join(".config/monokit/samples"),
+            None => {
+                ctx.output(OutputCategory::Error, "KIT: HOME DIR NOT FOUND".to_string(), &mut output);
+                return Ok(());
+            }
+        };
+
+        if !samples_dir.exists() {
+            ctx.output(OutputCategory::Error, "KIT: NO SAMPLES DIR".to_string(), &mut output);
+            return Ok(());
+        }
+
+        // Recursively find kits and samples
+        let (mut kits, mut samples) = find_kits_and_samples(&samples_dir, &samples_dir);
+
+        if kits.is_empty() && samples.is_empty() {
+            ctx.output(OutputCategory::Query, "KIT: NO KITS OR SAMPLES FOUND".to_string(), &mut output);
+            return Ok(());
+        }
+
+        // Sort alphabetically
+        kits.sort();
+        samples.sort();
+
+        if !kits.is_empty() {
+            ctx.output(OutputCategory::Query, "KITS:".to_string(), &mut output);
+            for kit in kits {
+                ctx.output(OutputCategory::Query, format!("  {}", truncate_name(&kit, MAX_DISPLAY_WIDTH - INDENT_WIDTH)), &mut output);
+            }
+        }
+
+        if !samples.is_empty() {
+            ctx.output(OutputCategory::Query, "SAMPLES:".to_string(), &mut output);
+            for sample in samples {
+                ctx.output(OutputCategory::Query, format!("  {}", truncate_name(&sample, MAX_DISPLAY_WIDTH - INDENT_WIDTH)), &mut output);
+            }
+        }
+
         return Ok(());
     }
 
@@ -225,15 +329,10 @@ where
         }
     };
 
-    let path = resolved_path.as_path();
-    let resolved_path_str = resolved_path.to_string_lossy().to_string();
+    let resolved_path_str = resolved_path.to_string_lossy();
     let debug_level = *ctx.debug_level;
 
-    // Determine mode based on path type
-    let (mode, num_slots, slots) = if path.is_file() {
-        // File → slice mode
-        // For now, load the whole file into one buffer
-        // Later phases will implement S.SLICE command for actual slicing
+    let (mode, num_slots, slots) = if resolved_path.is_file() {
         let buffer_id = SAMPLER_BUFFER_BASE;
 
         if let Err(e) = send_buffer_alloc_read(buffer_id, &resolved_path_str, debug_level, &mut output) {
@@ -245,27 +344,21 @@ where
             buffer_id,
             start_frame: 0,
             end_frame: 0,
+            file_path: Some(resolved_path_str.to_string()),
         };
 
         (SamplerMode::Slice, 1, vec![slot])
-    } else if path.is_dir() {
-        // Directory → kit mode
-        // Load audio files from directory (up to 128)
+    } else if resolved_path.is_dir() {
         let mut file_slots = Vec::new();
 
-        if let Ok(entries) = std::fs::read_dir(path) {
+        if let Ok(entries) = std::fs::read_dir(&resolved_path) {
             let mut file_entries: Vec<_> = entries
                 .flatten()
                 .filter(|entry| {
-                    if let Ok(metadata) = entry.metadata() {
-                        if metadata.is_file() {
-                            if let Some(ext) = entry.path().extension() {
-                                let ext_str = ext.to_string_lossy().to_lowercase();
-                                return ext_str == "wav" || ext_str == "aif" || ext_str == "aiff";
-                            }
-                        }
-                    }
-                    false
+                    entry.metadata()
+                        .map(|m| m.is_file())
+                        .unwrap_or(false)
+                        && is_audio_file(&entry.path())
                 })
                 .collect();
 
@@ -274,7 +367,7 @@ where
             for (idx, entry) in file_entries.iter().enumerate().take(128) {
                 let buffer_id = SAMPLER_BUFFER_BASE + idx as u32;
                 let file_path = entry.path();
-                let file_path_str = file_path.to_string_lossy().to_string();
+                let file_path_str = file_path.to_string_lossy();
 
                 if let Err(e) = send_buffer_alloc_read(buffer_id, &file_path_str, debug_level, &mut output) {
                     output(format!("KIT: FAILED TO LOAD {}: {}", file_path.display(), e));
@@ -285,6 +378,7 @@ where
                     buffer_id,
                     start_frame: 0,
                     end_frame: 0,
+                    file_path: Some(file_path_str.to_string()),
                 });
             }
         }
@@ -657,3 +751,72 @@ define_int_param!(
     "SAMPLER GLIT MIX",
     "Failed to parse disintegrator mix"
 );
+
+/// KIT.LEN - Get the number of slots in the currently loaded kit
+pub fn handle_kit_len<F>(
+    sampler_state: &crate::types::SamplerState,
+    debug_level: u8,
+    out_qry: bool,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    use crate::types::{TIER_QUERIES};
+
+    let num_slots = sampler_state.num_slots as i16;
+    if debug_level >= TIER_QUERIES || out_qry {
+        output(format!("{}", num_slots));
+    }
+    Ok(())
+}
+
+pub fn handle_kit_info<F>(
+    sampler_state: &crate::types::SamplerState,
+    debug_level: u8,
+    out_qry: bool,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    use crate::types::TIER_QUERIES;
+    use std::path::Path;
+
+    if debug_level >= TIER_QUERIES || out_qry {
+        let kit_name = match &sampler_state.kit_path {
+            Some(name) => name,
+            None => {
+                output("NO KIT LOADED".to_string());
+                return Ok(());
+            }
+        };
+
+        let mode_str = match sampler_state.mode {
+            crate::types::SamplerMode::Slice => "SLICE",
+            crate::types::SamplerMode::Kit => "KIT",
+        };
+
+        let display_name = Path::new(kit_name)
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or(kit_name);
+
+        output(format!("{} ({})", truncate_name(display_name, MAX_DISPLAY_WIDTH - INDENT_WIDTH), mode_str));
+        output(format!("SLOTS: {}", sampler_state.num_slots));
+
+        for (idx, slot) in sampler_state.slots.iter().enumerate() {
+            if let Some(ref path) = slot.file_path {
+                let file_name = Path::new(path)
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .unwrap_or(path);
+
+                let prefix_len = idx.to_string().len() + 2;
+                let max_name_len = MAX_DISPLAY_WIDTH - prefix_len;
+                output(format!("{}: {}", idx, truncate_name(file_name, max_name_len)));
+            }
+        }
+    }
+    Ok(())
+}

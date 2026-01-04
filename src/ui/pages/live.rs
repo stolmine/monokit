@@ -57,6 +57,192 @@ fn render_repl_view(app: &crate::App, height: usize) -> Paragraph<'static> {
         )
 }
 
+fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>) {
+    const METER_CHARS: [char; 9] = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+
+    // Helper to format volume (0-16383) to dB display (3 chars)
+    let vol_to_db = |vol: i32| -> String {
+        let normalized = vol as f32 / 16383.0;
+        let db = if normalized > 0.0001 {
+            20.0 * normalized.log10()
+        } else {
+            -60.0
+        };
+        if db >= 0.0 {
+            format!("+{:<2.0}", db)
+        } else {
+            format!("{:>3.0}", db)
+        }
+    };
+
+    // Helper to create volume bar components (13 chars total)
+    let vol_bar_parts = |vol: i32| -> (String, String) {
+        let filled_count = ((vol as f32 / 16383.0) * 13.0).round() as usize;
+        let empty_count = 13usize.saturating_sub(filled_count);
+        ("█".repeat(filled_count), "·".repeat(empty_count))
+    };
+
+    // Helper to format pan (-8192 to 8191) as numeric display (3 chars)
+    let pan_numeric = |pan: i32| -> String {
+        let normalized = (pan as f32 / 8192.0).clamp(-1.0, 1.0);
+        let pan_value = (normalized * 50.0).round() as i32;
+        if pan_value.abs() <= 2 {
+            " C ".to_string()
+        } else if pan_value < 0 {
+            format!("L{:<2}", pan_value.abs())
+        } else {
+            format!("R{:<2}", pan_value)
+        }
+    };
+
+    // Helper to calculate meter level from activity (same decay as activity_color)
+    let activity_to_meter = |last_activity: Option<std::time::Instant>, hold_ms: f32| -> f32 {
+        const ACTIVITY_DECAY_MS: f32 = 300.0;
+        match last_activity {
+            Some(instant) => {
+                let elapsed_ms = instant.elapsed().as_millis() as f32;
+                if elapsed_ms < hold_ms {
+                    1.0
+                } else {
+                    let decay_elapsed = (elapsed_ms - hold_ms) / ACTIVITY_DECAY_MS;
+                    let progress = 1.0 - (1.0 - decay_elapsed.min(1.0)).powi(3);
+                    1.0 - progress
+                }
+            }
+            None => 0.0,
+        }
+    };
+
+    // Helper to convert meter level (0.0-1.0) to character
+    let level_to_meter_char = |level: f32| -> char {
+        let clamped = level.clamp(0.0, 1.0);
+        let idx = (clamped * 8.0).round() as usize;
+        METER_CHARS[idx.min(8)]
+    };
+
+    // Format: "OSC █████████████ +0  C  ·· ·"
+    //         NAME(3) SPC(1) VOLBAR(13) SPC(1) DB(3) SPC(1) PAN(3) SPC(1) METERS(2) SPC(1) MUTE(1)
+    match row {
+        0 => {
+            // OSC voice
+            let name_color = app.theme.activity_color(app.trigger_activity, false, app.activity_hold_ms);
+            spans.push(Span::styled("OSC", Style::default().fg(name_color)));
+            spans.push(Span::raw(" "));
+
+            let (filled, empty) = vol_bar_parts(app.mixer_data.vol_osc);
+            spans.push(Span::styled(filled, Style::default().fg(app.theme.success)));
+            spans.push(Span::styled(empty, Style::default().fg(app.theme.secondary)));
+            spans.push(Span::raw(" "));
+
+            spans.push(Span::styled(vol_to_db(app.mixer_data.vol_osc), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+
+            spans.push(Span::styled(pan_numeric(app.mixer_data.pan_osc), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+
+            let meter_level = activity_to_meter(app.trigger_activity, app.activity_hold_ms);
+            let meter_char_l = level_to_meter_char(meter_level);
+            let meter_char_r = level_to_meter_char(meter_level);
+            let meter_color = if meter_level > 0.0 { app.theme.success } else { app.theme.secondary };
+            spans.push(Span::styled(format!("{}{}", meter_char_l, meter_char_r), Style::default().fg(meter_color)));
+            spans.push(Span::raw(" "));
+
+            let mute_char = if app.mixer_data.mute_osc == 1 { "M" } else { "·" };
+            let mute_color = if app.mixer_data.mute_osc == 1 { app.theme.error } else { app.theme.secondary };
+            spans.push(Span::styled(mute_char, Style::default().fg(mute_color)));
+        }
+        1 => {
+            // PLA voice
+            let name_color = app.theme.activity_color(app.plaits_trigger_activity, false, app.activity_hold_ms);
+            spans.push(Span::styled("PLA", Style::default().fg(name_color)));
+            spans.push(Span::raw(" "));
+
+            let (filled, empty) = vol_bar_parts(app.mixer_data.vol_pla);
+            spans.push(Span::styled(filled, Style::default().fg(app.theme.success)));
+            spans.push(Span::styled(empty, Style::default().fg(app.theme.secondary)));
+            spans.push(Span::raw(" "));
+
+            spans.push(Span::styled(vol_to_db(app.mixer_data.vol_pla), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+
+            spans.push(Span::styled(pan_numeric(app.mixer_data.pan_pla), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+
+            let meter_level = activity_to_meter(app.plaits_trigger_activity, app.activity_hold_ms);
+            let meter_char_l = level_to_meter_char(meter_level);
+            let meter_char_r = level_to_meter_char(meter_level);
+            let meter_color = if meter_level > 0.0 { app.theme.success } else { app.theme.secondary };
+            spans.push(Span::styled(format!("{}{}", meter_char_l, meter_char_r), Style::default().fg(meter_color)));
+            spans.push(Span::raw(" "));
+
+            let mute_char = if app.mixer_data.mute_pla == 1 { "M" } else { "·" };
+            let mute_color = if app.mixer_data.mute_pla == 1 { app.theme.error } else { app.theme.secondary };
+            spans.push(Span::styled(mute_char, Style::default().fg(mute_color)));
+        }
+        2 => {
+            // NOS voice (no trigger tracking)
+            spans.push(Span::styled("NOS", Style::default().fg(app.theme.secondary)));
+            spans.push(Span::raw(" "));
+
+            let (filled, empty) = vol_bar_parts(app.mixer_data.vol_nos);
+            spans.push(Span::styled(filled, Style::default().fg(app.theme.success)));
+            spans.push(Span::styled(empty, Style::default().fg(app.theme.secondary)));
+            spans.push(Span::raw(" "));
+
+            spans.push(Span::styled(vol_to_db(app.mixer_data.vol_nos), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+
+            spans.push(Span::styled(pan_numeric(app.mixer_data.pan_nos), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+
+            spans.push(Span::styled("··", Style::default().fg(app.theme.secondary)));
+            spans.push(Span::raw(" "));
+
+            let mute_char = if app.mixer_data.mute_nos == 1 { "M" } else { "·" };
+            let mute_color = if app.mixer_data.mute_nos == 1 { app.theme.error } else { app.theme.secondary };
+            spans.push(Span::styled(mute_char, Style::default().fg(mute_color)));
+        }
+        3 => {
+            // SMP voice
+            let name_color = app.theme.activity_color(app.sampler_trigger_activity, false, app.activity_hold_ms);
+            spans.push(Span::styled("SMP", Style::default().fg(name_color)));
+            spans.push(Span::raw(" "));
+
+            let (filled, empty) = vol_bar_parts(app.mixer_data.vol_smp);
+            spans.push(Span::styled(filled, Style::default().fg(app.theme.success)));
+            spans.push(Span::styled(empty, Style::default().fg(app.theme.secondary)));
+            spans.push(Span::raw(" "));
+
+            spans.push(Span::styled(vol_to_db(app.mixer_data.vol_smp), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+
+            spans.push(Span::styled(pan_numeric(app.mixer_data.pan_smp), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+
+            let meter_level = activity_to_meter(app.sampler_trigger_activity, app.activity_hold_ms);
+            let meter_char_l = level_to_meter_char(meter_level);
+            let meter_char_r = level_to_meter_char(meter_level);
+            let meter_color = if meter_level > 0.0 { app.theme.success } else { app.theme.secondary };
+            spans.push(Span::styled(format!("{}{}", meter_char_l, meter_char_r), Style::default().fg(meter_color)));
+            spans.push(Span::raw(" "));
+
+            let mute_char = if app.mixer_data.mute_smp == 1 { "M" } else { "·" };
+            let mute_color = if app.mixer_data.mute_smp == 1 { app.theme.error } else { app.theme.secondary };
+            spans.push(Span::styled(mute_char, Style::default().fg(mute_color)));
+        }
+        4 => {
+            // Empty row
+            spans.push(Span::raw("                              "));
+        }
+        5 => {
+            // MIXER label
+            spans.push(Span::styled("MIXER", Style::default().fg(app.theme.label)));
+            spans.push(Span::raw("                         "));
+        }
+        _ => {}
+    }
+}
+
 fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<'static> {
     use crate::types::{GRID_ICONS, GRID_LABELS};
 
@@ -139,81 +325,7 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
         fx_lines.push(format!("OUT {} MU{:+5.1}", out_bar, makeup_db));
         fx_lines
     } else if app.grid_mode == 3 {
-        // Mode 3: Mixer - per-voice levels, pan, mute
-        let mut mixer_lines = Vec::new();
-
-        // Helper to format volume (0-16383) to dB display
-        let vol_to_db = |vol: i32| -> String {
-            let normalized = vol as f32 / 16383.0;
-            let db = if normalized > 0.0001 {
-                20.0 * normalized.log10()
-            } else {
-                -60.0
-            };
-            format!("{:+4.0}dB", db)
-        };
-
-        // Helper to create volume bar (10 chars)
-        let vol_bar = |vol: i32| -> String {
-            let filled = ((vol as f32 / 16383.0) * 10.0).round() as usize;
-            let empty = 10usize.saturating_sub(filled);
-            format!("{}{}", "█".repeat(filled), "·".repeat(empty))
-        };
-
-        let pan_indicator = |pan: i32| -> &'static str {
-            let normalized = pan as f32 / 8192.0;
-            if normalized.abs() < 0.1 {
-                "·‹·››"
-            } else if normalized > 0.0 {
-                let bars = ((normalized * 2.0).round() as usize).min(2);
-                match bars {
-                    2 => "·‹›››",
-                    1 => "·‹·››",
-                    _ => "·‹·››",
-                }
-            } else {
-                let bars = ((-normalized * 2.0).round() as usize).min(2);
-                match bars {
-                    2 => "‹‹·›·",
-                    1 => "·‹·››",
-                    _ => "·‹·››",
-                }
-            }
-        };
-
-        let mute_indicator = |muted: i32| -> &'static str {
-            if muted == 1 { "M·" } else { "··" }
-        };
-
-        // Format: "OSC ██████···· +0dB ·‹·›› ··"
-        //         NAME VOLBAR(10) DB(5)  PAN(5) MUT(2)
-        mixer_lines.push(format!("OSC {} {} {} {}",
-            vol_bar(app.mixer_data.vol_osc),
-            vol_to_db(app.mixer_data.vol_osc),
-            pan_indicator(app.mixer_data.pan_osc),
-            mute_indicator(app.mixer_data.mute_osc)));
-
-        mixer_lines.push(format!("PLA {} {} {} {}",
-            vol_bar(app.mixer_data.vol_pla),
-            vol_to_db(app.mixer_data.vol_pla),
-            pan_indicator(app.mixer_data.pan_pla),
-            mute_indicator(app.mixer_data.mute_pla)));
-
-        mixer_lines.push(format!("NOS {} {} {} {}",
-            vol_bar(app.mixer_data.vol_nos),
-            vol_to_db(app.mixer_data.vol_nos),
-            pan_indicator(app.mixer_data.pan_nos),
-            mute_indicator(app.mixer_data.mute_nos)));
-
-        mixer_lines.push(format!("SMP {} {} {} {}",
-            vol_bar(app.mixer_data.vol_smp),
-            vol_to_db(app.mixer_data.vol_smp),
-            pan_indicator(app.mixer_data.pan_smp),
-            mute_indicator(app.mixer_data.mute_smp)));
-
-        mixer_lines.push("                              ".to_string());
-        mixer_lines.push("                              ".to_string());
-        mixer_lines
+        vec![]
     } else if app.grid_mode == 4 {
         // Mode 4: FX Viz (placeholder)
         vec![
@@ -262,8 +374,11 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
                     app.theme.success  // OUT meter
                 };
                 spans.push(Span::styled(fx_viz_lines[row].clone(), Style::default().fg(color)));
-            } else if app.grid_mode == 3 || app.grid_mode == 4 || app.grid_mode == 5 {
-                // Modes 3, 4, 5: Mixer, FX Viz 2, Sampler (placeholder)
+            } else if app.grid_mode == 3 {
+                // Mode 3: Mixer - per-voice levels, pan, mute (styled spans)
+                render_mixer_row(row, app, &mut spans);
+            } else if app.grid_mode == 4 || app.grid_mode == 5 {
+                // Modes 4, 5: FX Viz 2, Sampler (placeholder)
                 let color = app.theme.secondary;
                 spans.push(Span::styled(fx_viz_lines[row].clone(), Style::default().fg(color)));
             } else {

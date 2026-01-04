@@ -940,7 +940,7 @@ impl Default for SamplerState {
             mode: SamplerMode::Slice,
             kit_path: None,
             slots: Vec::new(),
-            num_slots: 0,
+            num_slots: 128,
             current_slot: 0,
             slice_count: None,
             playback: SamplerPlaybackParams::default(),

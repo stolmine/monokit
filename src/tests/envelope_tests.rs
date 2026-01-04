@@ -1,28 +1,33 @@
 use crate::commands::validate_script_command;
 use crate::commands::resolve_alias;
 
+// Tests for resolve_alias: converts short alias to canonical long form
+// e.g., "PF" -> "POSC.FREQ", "SR" -> "S.RATE"
+
 #[test]
 fn test_alias_resolution_posc_freq() {
-    let result = resolve_alias("POSC.FREQ");
-    assert_eq!(result, "PF");
+    // Alias resolves to canonical form
+    assert_eq!(resolve_alias("PF"), "POSC.FREQ");
+    // Canonical stays unchanged
+    assert_eq!(resolve_alias("POSC.FREQ"), "POSC.FREQ");
 }
 
 #[test]
 fn test_alias_resolution_filt_cut() {
-    let result = resolve_alias("FILT.CUT");
-    assert_eq!(result, "FC");
+    assert_eq!(resolve_alias("FC"), "FILT.CUT");
+    assert_eq!(resolve_alias("FILT.CUT"), "FILT.CUT");
 }
 
 #[test]
 fn test_alias_resolution_mosc_freq() {
-    let result = resolve_alias("MOSC.FREQ");
-    assert_eq!(result, "MF");
+    assert_eq!(resolve_alias("MF"), "MOSC.FREQ");
+    assert_eq!(resolve_alias("MOSC.FREQ"), "MOSC.FREQ");
 }
 
 #[test]
 fn test_alias_resolution_disc_amt() {
-    let result = resolve_alias("DISC.AMT");
-    assert_eq!(result, "DC");
+    assert_eq!(resolve_alias("DC"), "DISC.AMT");
+    assert_eq!(resolve_alias("DISC.AMT"), "DISC.AMT");
 }
 
 #[test]
@@ -33,21 +38,34 @@ fn test_alias_resolution_unknown_command() {
 
 #[test]
 fn test_alias_resolution_short_commands_no_alias() {
-    assert_eq!(resolve_alias("VOL"), "VOL");
-    assert_eq!(resolve_alias("PAN"), "PAN");
+    // Some short commands ARE aliases
+    assert_eq!(resolve_alias("VOL"), "OUT.VOL");
+    assert_eq!(resolve_alias("PAN"), "OUT.PAN");
+    // TR has no canonical, stays unchanged
     assert_eq!(resolve_alias("TR"), "TR");
 }
 
 #[test]
 fn test_alias_resolution_reverb() {
-    assert_eq!(resolve_alias("REV.DEC"), "RV");
-    assert_eq!(resolve_alias("REV.WET"), "RW");
+    assert_eq!(resolve_alias("RV"), "REV.DEC");
+    assert_eq!(resolve_alias("RW"), "REV.WET");
 }
 
 #[test]
 fn test_alias_resolution_delay() {
-    assert_eq!(resolve_alias("DLY.TIME"), "DT");
-    assert_eq!(resolve_alias("DLY.FB"), "DF");
+    assert_eq!(resolve_alias("DT"), "DLY.TIME");
+    assert_eq!(resolve_alias("DF"), "DLY.FB");
+}
+
+#[test]
+fn test_alias_resolution_sampler() {
+    // Sampler aliases
+    assert_eq!(resolve_alias("SR"), "S.RATE");
+    assert_eq!(resolve_alias("SPT"), "S.PITCH");
+    assert_eq!(resolve_alias("SFN"), "S.FINE");
+    assert_eq!(resolve_alias("SD"), "S.DIR");
+    assert_eq!(resolve_alias("SL"), "S.LOOP");
+    assert_eq!(resolve_alias("SV"), "S.VOL");
 }
 
 #[test]

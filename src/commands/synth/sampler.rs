@@ -163,7 +163,7 @@ define_int_param!(
     0,
     16383,
     "S.RATE",
-    "SAMPLE RATE",
+    "SAMPLER RATE",
     "Failed to parse sample rate"
 );
 
@@ -173,7 +173,7 @@ define_int_param!(
     -24,
     24,
     "S.PITCH",
-    "SAMPLE PITCH",
+    "SAMPLER PITCH",
     "Failed to parse sample pitch"
 );
 
@@ -183,7 +183,7 @@ define_int_param!(
     -100,
     100,
     "S.FINE",
-    "SAMPLE FINE PITCH",
+    "SAMPLER FINE PITCH",
     "Failed to parse sample fine pitch"
 );
 
@@ -194,7 +194,7 @@ define_int_param!(
     0,
     1,
     "S.DIR",
-    "SAMPLE DIRECTION",
+    "SAMPLER DIRECTION",
     "Failed to parse sample direction"
 );
 
@@ -204,7 +204,7 @@ define_int_param!(
     0,
     1,
     "S.LOOP",
-    "SAMPLE LOOP",
+    "SAMPLER LOOP",
     "Failed to parse sample loop"
 );
 
@@ -214,7 +214,7 @@ define_int_param!(
     0,
     16383,
     "S.START",
-    "SAMPLE START",
+    "SAMPLER START",
     "Failed to parse sample start offset"
 );
 
@@ -224,7 +224,7 @@ define_int_param!(
     0,
     16383,
     "S.LEN",
-    "SAMPLE LENGTH",
+    "SAMPLER LENGTH",
     "Failed to parse sample loop length"
 );
 
@@ -235,7 +235,7 @@ define_int_param!(
     0,
     16383,
     "S.ATK",
-    "SAMPLE ATTACK",
+    "SAMPLER ATTACK",
     "Failed to parse sample attack"
 );
 
@@ -245,7 +245,7 @@ define_int_param!(
     0,
     16383,
     "S.DEC",
-    "SAMPLE DECAY",
+    "SAMPLER DECAY",
     "Failed to parse sample decay"
 );
 
@@ -255,7 +255,7 @@ define_int_param!(
     0,
     16383,
     "S.REL",
-    "SAMPLE RELEASE",
+    "SAMPLER RELEASE",
     "Failed to parse sample release"
 );
 
@@ -265,7 +265,7 @@ define_int_param!(
     0,
     1,
     "S.SUST",
-    "SAMPLE SUSTAIN MODE",
+    "SAMPLER SUSTAIN MODE",
     "Failed to parse sample sustain mode"
 );
 
@@ -276,7 +276,7 @@ define_int_param!(
     0,
     16383,
     "S.VOL",
-    "SAMPLE VOLUME",
+    "SAMPLER VOLUME",
     "Failed to parse sample volume"
 );
 
@@ -286,7 +286,7 @@ define_int_param!(
     -8192,
     8191,
     "S.PAN",
-    "SAMPLE PAN",
+    "SAMPLER PAN",
     "Failed to parse sample pan"
 );
 
@@ -296,7 +296,7 @@ define_int_param!(
     0,
     2,
     "S.FX",
-    "SAMPLE FX ROUTING",
+    "SAMPLER FX ROUTING",
     "Failed to parse sample fx routing"
 );
 
@@ -307,7 +307,7 @@ define_int_param!(
     0,
     16383,
     "S.RATEMOD",
-    "SAMPLE RATE MOD",
+    "SAMPLER RATE MOD",
     "Failed to parse sample rate modulation"
 );
 
@@ -317,7 +317,7 @@ define_int_param!(
     0,
     16383,
     "S.PITCHMOD",
-    "SAMPLE PITCH MOD",
+    "SAMPLER PITCH MOD",
     "Failed to parse sample pitch modulation"
 );
 
@@ -328,7 +328,7 @@ define_int_param!(
     0,
     16383,
     "SF.CUT",
-    "FILTER CUTOFF",
+    "SAMPLER FX CUTOFF",
     "Failed to parse filter cutoff"
 );
 
@@ -338,7 +338,7 @@ define_int_param!(
     0,
     16383,
     "SF.RES",
-    "FILTER RESONANCE",
+    "SAMPLER FX RESONANCE",
     "Failed to parse filter resonance"
 );
 
@@ -348,7 +348,7 @@ define_int_param!(
     0,
     1,
     "SF.TYPE",
-    "FILTER TYPE",
+    "SAMPLER FX TYPE",
     "Failed to parse filter type"
 );
 
@@ -359,7 +359,7 @@ define_int_param!(
     1,
     24,
     "SF.BITS",
-    "BIT DEPTH",
+    "SAMPLER BITS",
     "Failed to parse bit depth"
 );
 
@@ -369,7 +369,7 @@ define_int_param!(
     0,
     16383,
     "SF.RATE",
-    "RATE REDUCTION",
+    "SAMPLER SRR",
     "Failed to parse rate reduction"
 );
 
@@ -379,7 +379,7 @@ define_int_param!(
     0,
     16383,
     "SF.DECI",
-    "DECIMATOR MIX",
+    "SAMPLER DECI MIX",
     "Failed to parse decimator mix"
 );
 
@@ -390,7 +390,7 @@ define_int_param!(
     0,
     16383,
     "SF.PROB",
-    "GLITCH PROBABILITY",
+    "SAMPLER GLIT PROB",
     "Failed to parse glitch probability"
 );
 
@@ -400,7 +400,7 @@ define_int_param!(
     0,
     16383,
     "SF.MULT",
-    "GLITCH MULTIPLIER",
+    "SAMPLER GLIT MULT",
     "Failed to parse glitch multiplier"
 );
 
@@ -410,6 +410,6 @@ define_int_param!(
     0,
     16383,
     "SF.GLIT",
-    "DISINTEGRATOR MIX",
+    "SAMPLER GLIT MIX",
     "Failed to parse disintegrator mix"
 );

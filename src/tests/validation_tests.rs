@@ -53,6 +53,37 @@ fn test_validate_synth_params_with_expressions() {
 }
 
 #[test]
+fn test_validate_sampler_params_with_expressions() {
+    assert!(validate_script_command("SR ADD 100 200").is_ok());
+    assert!(validate_script_command("SF.CUT MUL 100 50").is_ok());
+    assert!(validate_script_command("S.PITCH RND -12 12").is_ok());
+    assert!(validate_script_command("SPT ADD 12 -6").is_ok());
+    assert!(validate_script_command("S.RATE SUB 16383 1000").is_ok());
+    assert!(validate_script_command("SFC DIV 8000 2").is_ok());
+}
+
+#[test]
+fn test_sampler_commands_in_registry() {
+    use crate::commands::registry::COMMAND_REGISTRY;
+    use crate::commands::resolve_alias;
+
+    let resolved = resolve_alias("SR");
+    assert_eq!(resolved, "S.RATE");
+
+    let cmd_def = COMMAND_REGISTRY.get("S.RATE");
+    assert!(cmd_def.is_some(), "S.RATE should be in registry");
+
+    let cmd_def_sr = COMMAND_REGISTRY.get("SR");
+    assert!(cmd_def_sr.is_some(), "SR should be in registry");
+
+    let resolved_sfc = resolve_alias("SFC");
+    assert_eq!(resolved_sfc, "SF.CUT");
+
+    let cmd_def_sfcut = COMMAND_REGISTRY.get("SF.CUT");
+    assert!(cmd_def_sfcut.is_some(), "SF.CUT should be in registry");
+}
+
+#[test]
 fn test_validate_pattern_ops_with_expressions() {
     assert!(validate_script_command("P ADD 5 10 100").is_ok());
     assert!(validate_script_command("PN.NEXT ADD 1 2").is_ok());

@@ -17,5 +17,24 @@ pub static COMMAND_REGISTRY: Lazy<HashMap<&'static str, CommandDef>> = Lazy::new
     super::control::register_control(&mut m);
     super::ui::register_ui(&mut m);
 
+    // Register canonical forms as aliases to themselves
+    // This allows commands to be looked up by either short (PF) or long (POSC.FREQ) form
+    let entries: Vec<(&'static str, CommandDef)> = m.iter().map(|(k, v)| (*k, v.clone())).collect();
+    for (_, def) in entries {
+        if let Some(canonical) = def.canonical {
+            // Create a new CommandDef for the canonical form with canonical=None
+            // to avoid creating a self-referencing entry in CANONICAL_TO_ALIAS
+            let canonical_def = CommandDef {
+                name: canonical,
+                canonical: None,
+                args: def.args.clone(),
+                help: def.help,
+                special_validation: def.special_validation,
+            };
+            // Only insert if not already present (avoid overwriting explicit entries)
+            m.entry(canonical).or_insert(canonical_def);
+        }
+    }
+
     m
 });

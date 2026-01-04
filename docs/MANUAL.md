@@ -394,6 +394,95 @@ Beat repeat activates automatically when `BR.MIX` is greater than 0.
 - `SLEW.ALL <0-10000>` - Global slew time (ms)
 - `SLEW <param> <ms>` - Per-parameter slew
 
+### Sampler
+
+The sampler provides two loading modes: **KIT mode** (directory of one-shot samples) and **SLICE mode** (single file auto-sliced). Sampler output mixes with the HD2/Plaits voices.
+
+**Loading:**
+- `KIT <path>` - Load kit or file
+  - If path is a directory: KIT mode (one sample per slot, 0-127)
+  - If path is a file: SLICE mode (auto-slices file across slots)
+- `STR <n>` - Trigger slot (accepts expressions: `STR RND 0 15`, `STR + A 1`)
+- `STR` - Re-trigger current slot
+
+**Playback Parameters:**
+
+| Command | Alias | Range | Description |
+|---------|-------|-------|-------------|
+| `S.RATE` | `SR` | 0-16383 | Playback rate (8192=1x) |
+| `S.PITCH` | `SPT` | -24 to 24 | Pitch shift (semitones) |
+| `S.FINE` | `SFN` | -100 to 100 | Fine tune (cents) |
+| `S.DIR` | `SD` | 0\|1 | Direction (0=forward, 1=reverse) |
+| `S.LOOP` | `SL` | 0\|1 | Loop mode on/off |
+| `S.START` | `SST` | 0-16383 | Start offset position |
+| `S.LEN` | `SLE` | 0-16383 | Loop length |
+
+**Envelope:**
+
+| Command | Alias | Range | Description |
+|---------|-------|-------|-------------|
+| `S.ATK` | `SA` | 0-16383 | Attack time (ms) |
+| `S.DEC` | `SDC` | 0-16383 | Decay time (ms) |
+| `S.REL` | `SRE` | 0-16383 | Release time (ms) |
+| `S.SUST` | `SSU` | 0\|1 | Sustain mode (0=one-shot, 1=gate) |
+
+**Output:**
+
+| Command | Alias | Range | Description |
+|---------|-------|-------|-------------|
+| `S.VOL` | `SV` | 0-16383 | Sample volume |
+| `S.PAN` | `SP` | -8192 to 8192 | Stereo pan (0=center) |
+| `S.FX` | `SFX` | 0-2 | FX routing (0=dry, 1=post-filter, 2=post-all) |
+
+**Modulation:**
+
+| Command | Alias | Range | Description |
+|---------|-------|-------|-------------|
+| `S.RATEMOD` | `SRM` | 0-16383 | Rate modulation amount |
+| `S.PITCHMOD` | `SPM` | 0-16383 | Pitch modulation amount |
+
+**Sampler Effects - Filter:**
+
+| Command | Alias | Range | Description |
+|---------|-------|-------|-------------|
+| `SF.CUT` | `SFC` | 0-16383 | Filter cutoff |
+| `SF.RES` | `SFQ` | 0-16383 | Filter resonance |
+| `SF.TYPE` | `SFT` | 0\|1 | Filter type (0=LP, 1=HP) |
+
+**Sampler Effects - Decimator:**
+
+| Command | Alias | Range | Description |
+|---------|-------|-------|-------------|
+| `SF.BITS` | `SFB` | 1-24 | Bit depth reduction |
+| `SF.RATE` | `SFR` | 0-16383 | Sample rate reduction amount |
+| `SF.DECI` | `SFD` | 0-16383 | Decimator mix |
+
+**Sampler Effects - Glitch:**
+
+| Command | Alias | Range | Description |
+|---------|-------|-------|-------------|
+| `SF.PROB` | `SFP` | 0-16383 | Glitch probability |
+| `SF.MULT` | `SFM` | 0-16383 | Glitch multiplier |
+| `SF.GLIT` | `SFG` | 0-16383 | Glitch mix |
+
+**Signal Flow:**
+```
+Sample Playback → Decimator → Glitch → Filter →
+S.VOL/PAN → Main Mix (with HD2/Plaits)
+```
+
+For spatial effects, use the global delay, reverb, and MiClouds.
+
+**Usage Example:**
+```
+KIT ~/samples/drums        # Load drum kit
+STR 0                      # Trigger kick (slot 0)
+S.PITCH -12                # Down one octave
+STR 1                      # Trigger snare (slot 1)
+SF.CUT 8000                # Filter cutoff
+SF.DECI 10000              # Add lo-fi decimation
+```
+
 ---
 
 ## Scripting

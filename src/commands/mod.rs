@@ -386,7 +386,7 @@ where
         "BRK" => {
             *script_break = true;
         }
-        "VOL" => {
+        "VOL" | "OUT.VOL" => {
             misc::handle_vol(&parts, ctx, output)?;
         }
         "M" => {
@@ -416,286 +416,286 @@ where
         "AUDIO.OUT" | "AUDIO" => {
             system::handle_audio_out(&parts, metro_tx, audio_devices, output)?;
         }
-        "PF" => {
+        "PF" | "POSC.FREQ" => {
             synth_params::handle_pf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "PW" => {
+        "PW" | "POSC.WAVE" => {
             synth_params::handle_pw(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MF" => {
+        "MF" | "MOSC.FREQ" => {
             synth_params::handle_mf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MW" => {
+        "MW" | "MOSC.WAVE" => {
             synth_params::handle_mw(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "NW" => {
+        "NW" | "NOISE.WAV" => {
             synth_params::handle_nw(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "NV" => {
+        "NV" | "NOISE.VOL" => {
             synth_params::handle_nv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "PV" => {
+        "PV" | "PRI.VOL" => {
             synth_params::handle_pv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MV" => {
+        "MV" | "MOD.VOL" => {
             synth_params::handle_mv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "DC" => {
+        "DC" | "DISC.AMT" => {
             synth_params::handle_dc(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "DM" => {
+        "DM" | "DISC.MODE" => {
             synth_params::handle_dm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "TK" => {
+        "TK" | "MBUS.TRK" => {
             synth_params::handle_tk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MB" => {
+        "MB" | "MBUS.AMT" => {
             synth_params::handle_mb(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MBA" => {
+        "MBA" | "MBEV.AMT" => {
             synth_params::handle_mba(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MBD" => {
+        "MBD" | "MBEV.DEC" => {
             synth_params::handle_mbd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MP" => {
+        "MP" | "ROUT.MP" => {
             synth_params::handle_mp(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MD" => {
+        "MD" | "ROUT.MD" => {
             synth_params::handle_md(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MT" => {
+        "MT" | "ROUT.MT" => {
             synth_params::handle_mt(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MA" => {
+        "MA" | "ROUT.MA" => {
             synth_params::handle_ma(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "FM" => {
+        "FM" | "MBUS.FM" => {
             synth_params::handle_fm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "AD" => {
+        "AD" | "AENV.DEC" => {
             synth_params::handle_ad(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "PD" => {
+        "PD" | "PENV.DEC" => {
             synth_params::handle_pd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "FD" => {
+        "FD" | "FMEV.DEC" => {
             synth_params::handle_fd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "PA" => {
+        "PA" | "PENV.AMT" => {
             synth_params::handle_pa(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "PAV" => {
             synth_params::handle_pav(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "DD" => {
+        "DD" | "DENV.DEC" => {
             synth_params::handle_dd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MX" => {
+        "MX" | "MBUS.MIX" => {
             synth_params::handle_mx(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MM" => {
+        "MM" | "MBUS.MMX" => {
             synth_params::handle_mm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "ME" => {
+        "ME" | "MBUS.EMX" => {
             synth_params::handle_me(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "FA" => {
+        "FA" | "FMEV.AMT" => {
             synth_params::handle_fa(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "DA" => {
+        "DA" | "DENV.AMT" => {
             synth_params::handle_da(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "FB" => {
+        "FB" | "MOSC.FB" => {
             synth_params::handle_fb(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "FBA" => {
+        "FBA" | "MOSC.FBA" => {
             synth_params::handle_fba(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "FBD" => {
+        "FBD" | "FBEV.DEC" => {
             synth_params::handle_fbd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "RF" => {
+        "RF" | "RESO.FRQ" => {
             synth_params::handle_rf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "RD" => {
+        "RD" | "RESO.DEC" => {
             synth_params::handle_rd(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "RM" => {
+        "RM" | "RESO.MIX" => {
             synth_params::handle_rm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "RK" => {
+        "RK" | "RESO.KEY" => {
             synth_params::handle_rk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "DT" => {
+        "DT" | "DLY.TIME" => {
             synth_params::handle_dt(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "DF" => {
+        "DF" | "DLY.FB" => {
             synth_params::handle_df(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "DLP" => {
+        "DLP" | "DLY.LP" => {
             synth_params::handle_dlp(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "DW" => {
+        "DW" | "DLY.WET" => {
             synth_params::handle_dw(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "DS" => {
+        "DS" | "DLY.SYN" => {
             synth_params::handle_ds(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "RV" => {
+        "RV" | "REV.DEC" => {
             synth_params::handle_rv(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "RP" => {
+        "RP" | "REV.PRE" => {
             synth_params::handle_rp(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "RH" => {
+        "RH" | "REV.DMP" => {
             synth_params::handle_rh(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "RW" => {
+        "RW" | "REV.WET" => {
             synth_params::handle_rw(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "D.MODE" => {
+        "D.MODE" | "DLY.MODE" => {
             synth_params::handle_d_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "D.TAIL" => {
+        "D.TAIL" | "DLY.TAIL" => {
             synth_params::handle_d_tail(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "R.MODE" => {
+        "R.MODE" | "REV.MODE" => {
             synth_params::handle_r_mode(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "R.TAIL" => {
+        "R.TAIL" | "REV.TAIL" => {
             synth_params::handle_r_tail(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "FC" => {
+        "FC" | "FILT.CUT" => {
             synth_params::handle_fc(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "FQ" => {
+        "FQ" | "FILT.RES" => {
             synth_params::handle_fq(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "FT" => {
+        "FT" | "FILT.TYP" => {
             synth_params::handle_ft(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "FE" => {
+        "FE" | "FLEV.AMT" => {
             synth_params::handle_fe(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "FED" => {
+        "FED" | "FLEV.DEC" => {
             synth_params::handle_fed(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "FK" => {
+        "FK" | "FILT.KEY" => {
             synth_params::handle_fk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MFF" => {
+        "MFF" | "MODF.CUT" => {
             synth_params::handle_mff(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MFQ" => {
+        "MFQ" | "MODF.RES" => {
             synth_params::handle_mfq(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MC" => {
+        "MC" | "ROUT.MC" => {
             synth_params::handle_mc(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MQ" => {
+        "MQ" | "ROUT.MQ" => {
             synth_params::handle_mq(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "LB" => {
+        "LB" | "LOFI.BIT" => {
             synth_params::handle_lb(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "LS" => {
+        "LS" | "LOFI.SMP" => {
             synth_params::handle_ls(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "LM" => {
+        "LM" | "LOFI.MIX" => {
             synth_params::handle_lm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "RGF" => {
+        "RGF" | "RING.FRQ" => {
             synth_params::handle_rgf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "RGW" => {
+        "RGW" | "RING.WAV" => {
             synth_params::handle_rgw(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "RGM" => {
+        "RGM" | "RING.MIX" => {
             synth_params::handle_rgm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "CT" => {
+        "CT" | "COMP.THR" => {
             synth_params::handle_ct(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "CR" => {
+        "CR" | "COMP.RAT" => {
             synth_params::handle_cr(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "CA" => {
+        "CA" | "COMP.ATK" => {
             synth_params::handle_ca(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "CL" => {
+        "CL" | "COMP.REL" => {
             synth_params::handle_cl(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "CM" => {
+        "CM" | "COMP.MKP" => {
             synth_params::handle_cm(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "CR.MIX" => {
+        "CR.MIX" | "COMP.MIX" => {
             synth_params::handle_cr_mix(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "COMP.AUTO" | "CAU" => {
             synth_params::handle_comp_auto(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "EL" => {
+        "EL" | "EQ.LOW" => {
             synth_params::handle_el(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, eq_state, output)?;
         }
-        "ELF" => {
+        "ELF" | "EQ.LF" => {
             synth_params::handle_elf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, eq_state, output)?;
         }
-        "EM" => {
+        "EM" | "EQ.MID" => {
             synth_params::handle_em(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, eq_state, output)?;
         }
-        "EF" => {
+        "EF" | "EQ.FRQ" => {
             synth_params::handle_ef(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, eq_state, output)?;
         }
         "EQ" => {
             synth_params::handle_eq_param(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, eq_state, output)?;
         }
-        "EH" => {
+        "EH" | "EQ.HI" => {
             synth_params::handle_eh(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, eq_state, output)?;
         }
-        "EHF" => {
+        "EHF" | "EQ.HF" => {
             synth_params::handle_ehf(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, eq_state, output)?;
         }
-        "PAN" => {
+        "PAN" | "OUT.PAN" => {
             synth_params::handle_pan(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, output)?;
         }
         "VCA" => {
             synth_params::handle_vca(&parts, vca_mode, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_qry, *out_cfm, output)?;
         }
-        "VOL.OSC" => {
+        "VOL.OSC" | "VO" => {
             synth_params::handle_vol_osc(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "VOL.PLA" => {
+        "VOL.PLA" | "VP" => {
             synth_params::handle_vol_pla(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "VOL.NOS" => {
+        "VOL.NOS" | "VN" => {
             synth_params::handle_vol_nos(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "VOL.SMP" => {
+        "VOL.SMP" | "VS" => {
             synth_params::handle_vol_smp(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "PAN.OSC" => {
+        "PAN.OSC" | "PO" => {
             synth_params::handle_pan_osc(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "PAN.PLA" => {
+        "PAN.PLA" | "PP" => {
             synth_params::handle_pan_pla(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "PAN.NOS" => {
+        "PAN.NOS" | "PNN" => {
             synth_params::handle_pan_nos(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "PAN.SMP" => {
+        "PAN.SMP" | "PS" => {
             synth_params::handle_pan_smp(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MUTE.OSC" => {
+        "MUTE.OSC" | "MO" => {
             synth_params::handle_mute_osc(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MUTE.PLA" => {
+        "MUTE.PLA" | "MPL" => {
             synth_params::handle_mute_pla(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MUTE.NOS" => {
+        "MUTE.NOS" | "MN" => {
             synth_params::handle_mute_nos(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "MUTE.SMP" => {
+        "MUTE.SMP" | "MS" => {
             synth_params::handle_mute_smp(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "KIT" => {
@@ -704,79 +704,79 @@ where
         "STR" => {
             synth_params::handle_str(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
-        "S.RATE" => {
+        "S.RATE" | "SR" => {
             synth_params::handle_s_rate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "S.PITCH" => {
+        "S.PITCH" | "SPT" => {
             synth_params::handle_s_pitch(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "S.FINE" => {
+        "S.FINE" | "SFN" => {
             synth_params::handle_s_fine(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "S.DIR" => {
+        "S.DIR" | "SD" => {
             synth_params::handle_s_dir(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "S.LOOP" => {
+        "S.LOOP" | "SL" => {
             synth_params::handle_s_loop(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "S.START" => {
+        "S.START" | "SST" => {
             synth_params::handle_s_start(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "S.LEN" => {
+        "S.LEN" | "SLE" => {
             synth_params::handle_s_len(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "S.ATK" => {
+        "S.ATK" | "SA" => {
             synth_params::handle_s_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "S.DEC" => {
+        "S.DEC" | "SDC" => {
             synth_params::handle_s_dec(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "S.REL" => {
+        "S.REL" | "SRE" => {
             synth_params::handle_s_rel(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "S.SUST" => {
+        "S.SUST" | "SSU" => {
             synth_params::handle_s_sust(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "S.VOL" => {
+        "S.VOL" | "SV" => {
             synth_params::handle_s_vol(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "S.PAN" => {
+        "S.PAN" | "SP" => {
             synth_params::handle_s_pan(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "S.FX" => {
+        "S.FX" | "SFX" => {
             synth_params::handle_s_fx(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "S.RATEMOD" => {
+        "S.RATEMOD" | "SRM" => {
             synth_params::handle_s_ratemod(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "S.PITCHMOD" => {
+        "S.PITCHMOD" | "SPM" => {
             synth_params::handle_s_pitchmod(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "SF.CUT" => {
+        "SF.CUT" | "SFC" => {
             synth_params::handle_sf_cut(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "SF.RES" => {
+        "SF.RES" | "SFQ" => {
             synth_params::handle_sf_res(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "SF.TYPE" => {
+        "SF.TYPE" | "SFT" => {
             synth_params::handle_sf_type(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "SF.BITS" => {
+        "SF.BITS" | "SFB" => {
             synth_params::handle_sf_bits(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "SF.RATE" => {
+        "SF.RATE" | "SFR" => {
             synth_params::handle_sf_rate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "SF.DECI" => {
+        "SF.DECI" | "SFD" => {
             synth_params::handle_sf_deci(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "SF.PROB" => {
+        "SF.PROB" | "SFP" => {
             synth_params::handle_sf_prob(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "SF.MULT" => {
+        "SF.MULT" | "SFM" => {
             synth_params::handle_sf_mult(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
-        "SF.GLIT" => {
+        "SF.GLIT" | "SFG" => {
             synth_params::handle_sf_glit(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "BR.LEN" | "BRL" => {

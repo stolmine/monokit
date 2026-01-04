@@ -1,3 +1,4 @@
+use crate::commands::aliases::resolve_to_short;
 use crate::eval::eval_expression;
 use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_CONFIRMS};
 use anyhow::{Context, Result};
@@ -29,8 +30,9 @@ where
         return Ok(());
     }
     let param_input = parts[1].to_uppercase();
-    let param_alias = crate::commands::aliases::resolve_alias(&param_input);
-    let param_name = param_alias.to_lowercase();
+    // Resolve canonical form to short form for OSC (e.g., "REV.WET" -> "rw")
+    let param_short = resolve_to_short(&param_input);
+    let param_name = param_short.to_lowercase();
 
     if !SMOOTHABLE_PARAMS.contains(&param_name.as_str()) {
         output(format!("ERROR: INVALID PARAMETER '{}' FOR SLEW", param_input));

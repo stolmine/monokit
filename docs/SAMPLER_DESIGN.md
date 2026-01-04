@@ -680,6 +680,22 @@ Need to add:
 
 ---
 
+## UI Integration
+
+### Header S Trigger Indicator
+
+Add `S` indicator to header next to existing `H|P` section:
+- Shows `S` when sampler triggers (STR command)
+- Follows same activity pattern as other header indicators
+- Brief flash on trigger, same timing as H|P
+
+```
+Header layout: ... H|P|S ...
+- H = Help page indicator
+- P = Pattern activity
+- S = Sampler trigger (NEW)
+```
+
 ## Success Criteria
 
 - [ ] GRID.MODE 3 shows usable mixer with real-time levels
@@ -688,3 +704,4 @@ Need to add:
 - [ ] Same patterns work regardless of kit vs slice mode
 - [ ] Kit switching is fast enough for live use (<100ms)
 - [ ] Scene save/load preserves sampler state
+- [ ] Header shows S indicator on STR trigger

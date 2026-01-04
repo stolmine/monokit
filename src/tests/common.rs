@@ -123,6 +123,7 @@ pub struct TestContext {
     pub confirm_overwrite_scene: bool,
     pub scene_modified: bool,
     pub pending_confirmation: Option<ConfirmAction>,
+    pub sampler_state: crate::types::SamplerState,
 }
 
 impl Default for TestContext {
@@ -201,6 +202,7 @@ impl Default for TestContext {
             confirm_overwrite_scene: true,
             scene_modified: false,
             pending_confirmation: None,
+            sampler_state: crate::types::SamplerState::default(),
         }
     }
 }
@@ -275,6 +277,7 @@ impl TestContext {
             confirm_overwrite_scene: &mut self.confirm_overwrite_scene,
             scene_modified: &mut self.scene_modified,
             pending_confirmation: &mut self.pending_confirmation,
+            sampler_state: &mut self.sampler_state,
         };
 
         process_command(

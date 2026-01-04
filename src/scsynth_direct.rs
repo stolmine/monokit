@@ -376,13 +376,13 @@ impl ScsynthDirect {
             "/s_new",
             vec![
                 OscType::String("monokit_spectrum".to_string()),
-                OscType::Int(1005),
+                OscType::Int(crate::types::SPECTRUM_NODE_ID),
                 OscType::Int(1),
                 OscType::Int(0),
             ],
         )?;
         if !silent {
-            eprintln!("[monokit]   Created monokit_spectrum (node 1005)");
+            eprintln!("[monokit]   Created monokit_spectrum (node {})", crate::types::SPECTRUM_NODE_ID);
         }
 
         Self::send_osc_message_static(
@@ -390,13 +390,13 @@ impl ScsynthDirect {
             "/s_new",
             vec![
                 OscType::String("monokit_scope".to_string()),
-                OscType::Int(1006),
+                OscType::Int(crate::types::SCOPE_NODE_ID),
                 OscType::Int(1),
                 OscType::Int(0),
             ],
         )?;
         if !silent {
-            eprintln!("[monokit]   Created monokit_scope (node 1006)");
+            eprintln!("[monokit]   Created monokit_scope (node {})", crate::types::SCOPE_NODE_ID);
         }
 
         thread::sleep(Duration::from_millis(500));

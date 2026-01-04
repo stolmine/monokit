@@ -16,6 +16,7 @@ mod audio_devices;
 #[cfg(feature = "scsynth-direct")]
 mod scsynth_direct;
 
+mod sampler;
 mod scramble;
 mod scene;
 mod terminal;

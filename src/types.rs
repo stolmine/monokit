@@ -805,6 +805,17 @@ pub fn route_param_to_node(param: &str) -> i32 {
         // Plaits synth parameters
         "pitch" | "detune" | "engine" | "harmonics" | "timbre" | "morph" | "decay" | "lpg" | "plv" | "pav" | "pl_gate" | "t_gate_plaits" => PLAITS_NODE_ID,
 
+        // Sampler synth parameters (s_ prefix)
+        "s_rate" | "s_pitch" | "s_fine" | "s_direction" | "s_loop" |
+        "s_startFrame" | "s_endFrame" | "s_atk" | "s_dec" | "s_rel" | "s_sust" |
+        "s_volume" | "s_pan" | "s_fx" | "s_ratemod" | "s_pitchmod" |
+        "s_bufnum" | "t_gate" => SAMPLER_NODE_ID,
+
+        // Sampler FX parameters (sf_ prefix)
+        "sf_cut" | "sf_res" | "sf_type" |
+        "sf_bits" | "sf_rate" | "sf_deci" |
+        "sf_prob" | "sf_mult" | "sf_glit" => SAMPLER_NODE_ID,
+
         // Main synth parameters (effects, filters, etc.) - everything else
         _ => MAIN_NODE_ID,
     }

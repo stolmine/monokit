@@ -156,10 +156,10 @@ where
     Ok(())
 }
 
-// Pitch Parameters
+// Pitch Parameters (s_ prefix to avoid conflicts with other synths)
 define_int_param!(
     handle_s_rate,
-    "rate",
+    "s_rate",
     0,
     16383,
     "S.RATE",
@@ -169,7 +169,7 @@ define_int_param!(
 
 define_int_param!(
     handle_s_pitch,
-    "pitch",
+    "s_pitch",
     -24,
     24,
     "S.PITCH",
@@ -179,7 +179,7 @@ define_int_param!(
 
 define_int_param!(
     handle_s_fine,
-    "fine",
+    "s_fine",
     -100,
     100,
     "S.FINE",
@@ -190,7 +190,7 @@ define_int_param!(
 // Playback Parameters
 define_int_param!(
     handle_s_dir,
-    "direction",
+    "s_direction",
     0,
     1,
     "S.DIR",
@@ -200,7 +200,7 @@ define_int_param!(
 
 define_int_param!(
     handle_s_loop,
-    "loop",
+    "s_loop",
     0,
     1,
     "S.LOOP",
@@ -210,7 +210,7 @@ define_int_param!(
 
 define_int_param!(
     handle_s_start,
-    "start_offset",
+    "s_startFrame",
     0,
     16383,
     "S.START",
@@ -220,7 +220,7 @@ define_int_param!(
 
 define_int_param!(
     handle_s_len,
-    "loop_length",
+    "s_endFrame",
     0,
     16383,
     "S.LEN",
@@ -231,7 +231,7 @@ define_int_param!(
 // Envelope Parameters
 define_int_param!(
     handle_s_atk,
-    "attack",
+    "s_atk",
     0,
     16383,
     "S.ATK",
@@ -241,7 +241,7 @@ define_int_param!(
 
 define_int_param!(
     handle_s_dec,
-    "decay",
+    "s_dec",
     0,
     16383,
     "S.DEC",
@@ -251,7 +251,7 @@ define_int_param!(
 
 define_int_param!(
     handle_s_rel,
-    "release",
+    "s_rel",
     0,
     16383,
     "S.REL",
@@ -261,7 +261,7 @@ define_int_param!(
 
 define_int_param!(
     handle_s_sust,
-    "sustain",
+    "s_sust",
     0,
     1,
     "S.SUST",
@@ -272,7 +272,7 @@ define_int_param!(
 // Output Parameters
 define_int_param!(
     handle_s_vol,
-    "volume",
+    "s_volume",
     0,
     16383,
     "S.VOL",
@@ -282,7 +282,7 @@ define_int_param!(
 
 define_int_param!(
     handle_s_pan,
-    "pan",
+    "s_pan",
     -8192,
     8191,
     "S.PAN",
@@ -292,7 +292,7 @@ define_int_param!(
 
 define_int_param!(
     handle_s_fx,
-    "fx_routing",
+    "s_fx",
     0,
     2,
     "S.FX",
@@ -303,7 +303,7 @@ define_int_param!(
 // Modulation Parameters
 define_int_param!(
     handle_s_ratemod,
-    "rate_mod",
+    "s_ratemod",
     0,
     16383,
     "S.RATEMOD",
@@ -313,7 +313,7 @@ define_int_param!(
 
 define_int_param!(
     handle_s_pitchmod,
-    "pitch_mod",
+    "s_pitchmod",
     0,
     16383,
     "S.PITCHMOD",
@@ -321,10 +321,10 @@ define_int_param!(
     "Failed to parse sample pitch modulation"
 );
 
-// FX Parameters - Filter (DFM1)
+// FX Parameters - Filter (DFM1) - sf_ prefix for sampler
 define_int_param!(
     handle_sf_cut,
-    "filter_cut",
+    "sf_cut",
     0,
     16383,
     "SF.CUT",
@@ -334,7 +334,7 @@ define_int_param!(
 
 define_int_param!(
     handle_sf_res,
-    "filter_res",
+    "sf_res",
     0,
     16383,
     "SF.RES",
@@ -344,7 +344,7 @@ define_int_param!(
 
 define_int_param!(
     handle_sf_type,
-    "filter_type",
+    "sf_type",
     0,
     1,
     "SF.TYPE",
@@ -355,7 +355,7 @@ define_int_param!(
 // FX Parameters - Decimator
 define_int_param!(
     handle_sf_bits,
-    "bits",
+    "sf_bits",
     1,
     24,
     "SF.BITS",
@@ -365,7 +365,7 @@ define_int_param!(
 
 define_int_param!(
     handle_sf_rate,
-    "deci_rate",
+    "sf_rate",
     0,
     16383,
     "SF.RATE",
@@ -375,7 +375,7 @@ define_int_param!(
 
 define_int_param!(
     handle_sf_deci,
-    "deci_mix",
+    "sf_deci",
     0,
     16383,
     "SF.DECI",
@@ -386,7 +386,7 @@ define_int_param!(
 // FX Parameters - Disintegrator
 define_int_param!(
     handle_sf_prob,
-    "glitch_prob",
+    "sf_prob",
     0,
     16383,
     "SF.PROB",
@@ -396,7 +396,7 @@ define_int_param!(
 
 define_int_param!(
     handle_sf_mult,
-    "glitch_mult",
+    "sf_mult",
     0,
     16383,
     "SF.MULT",
@@ -406,7 +406,7 @@ define_int_param!(
 
 define_int_param!(
     handle_sf_glit,
-    "glitch_mix",
+    "sf_glit",
     0,
     16383,
     "SF.GLIT",

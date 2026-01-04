@@ -308,6 +308,30 @@ MiClouds Granular → Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ
 
 - `OUT.PAN` / `PAN <-16383 to 16383>` - Stereo position
 
+### Per-Voice Mixer
+
+Individual volume, pan, and mute for each voice. View in GRID.MODE 3.
+
+**Volume (0-16383):**
+- `VOL.OSC` / `VO` - Complex oscillator volume
+- `VOL.PLA` / `VP` - Plaits volume
+- `VOL.NOS` / `VN` - Noise volume
+- `VOL.SMP` / `VS` - Sampler volume
+
+**Pan (-8192 to 8191, 0=center):**
+- `PAN.OSC` / `PO` - Complex oscillator pan
+- `PAN.PLA` / `PP` - Plaits pan
+- `PAN.NOS` / `PNN` - Noise pan
+- `PAN.SMP` / `PS` - Sampler pan
+
+**Mute (0|1):**
+- `MUTE.OSC` / `MO` - Mute complex oscillator
+- `MUTE.PLA` / `MPL` - Mute Plaits
+- `MUTE.NOS` / `MN` - Mute noise
+- `MUTE.SMP` / `MS` - Mute sampler
+
+Note: These are distinct from script mutes (`MUTE.1-8`, `MUTE.M`, `MUTE.I`).
+
 ### MiClouds Granular Effect
 
 MiClouds continuously records incoming audio into its buffer. Use `CL.TRIG` to trigger grain playback from the buffer. Activates when `CL.WET` > 0.

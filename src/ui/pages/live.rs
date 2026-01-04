@@ -59,8 +59,9 @@ fn render_repl_view(app: &crate::App, height: usize) -> Paragraph<'static> {
 
 fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>) {
     const METER_CHARS: [char; 9] = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+    const METER_CHARS_ASCII: [char; 9] = [' ', '.', 'o', 'O', '0', '@', '#', '#', '#'];
 
-    // Helper to format volume (0-16383) to dB display (3 chars)
+    // Helper to format volume (0-16383) to dB display (3 chars, right-aligned)
     let vol_to_db = |vol: i32| -> String {
         let normalized = vol as f32 / 16383.0;
         let db = if normalized > 0.0001 {
@@ -68,11 +69,7 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
         } else {
             -60.0
         };
-        if db >= 0.0 {
-            format!("+{:<2.0}", db)
-        } else {
-            format!("{:>3.0}", db)
-        }
+        format!("{:>+3.0}", db)  // Right-aligned with sign: " +0", " -6", "-12", "-60"
     };
 
     // Helper to create volume bar components (13 chars total)
@@ -113,11 +110,15 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
         }
     };
 
-    // Helper to convert meter level (0.0-1.0) to character
+    // Helper to convert meter level (0.0-1.0) to character (respects ASCII mode)
     let level_to_meter_char = |level: f32| -> char {
         let clamped = level.clamp(0.0, 1.0);
         let idx = (clamped * 8.0).round() as usize;
-        METER_CHARS[idx.min(8)]
+        if app.ascii_meters {
+            METER_CHARS_ASCII[idx.min(8)]
+        } else {
+            METER_CHARS[idx.min(8)]
+        }
     };
 
     // Format: "OSC █████████████ +0  C  ·· ·"

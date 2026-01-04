@@ -31,6 +31,8 @@ impl App {
             self.trigger_activity = Some(std::time::Instant::now());
         } else if trimmed.eq_ignore_ascii_case("PLTR") {
             self.plaits_trigger_activity = Some(std::time::Instant::now());
+        } else if trimmed.to_uppercase().starts_with("STR") {
+            self.sampler_trigger_activity = Some(std::time::Instant::now());
         }
 
         // Mark parameter activity
@@ -71,6 +73,7 @@ impl App {
             show_seq_highlight: &mut self.show_seq_highlight,
             grid_mode: &mut self.grid_mode,
             eq_state: &mut self.eq_state,
+            mixer_data: &mut self.mixer_data,
             scope_settings: &mut self.scope_settings,
             current_page: &mut self.current_page,
             br_len: &mut self.br_len,

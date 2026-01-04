@@ -162,14 +162,8 @@ pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
         right_spans.push(Span::raw("|"));
         right_width += 1;
 
-        // S = Sampler single file (STR command with single file loaded)
-        let sampler_loaded = app.sampler_state.mode == crate::types::SamplerMode::Slice
-            && !app.sampler_state.slots.is_empty();
-        let s_color = if sampler_loaded {
-            app.theme.success
-        } else {
-            app.theme.activity_color(None, false, app.activity_hold_ms)
-        };
+        // S = Sampler (STR command)
+        let s_color = app.theme.activity_color(app.sampler_trigger_activity, false, app.activity_hold_ms);
         right_spans.push(Span::styled(
             "S",
             Style::default().fg(s_color),

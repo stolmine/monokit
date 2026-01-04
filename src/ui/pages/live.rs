@@ -139,15 +139,81 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
         fx_lines.push(format!("OUT {} MU{:+5.1}", out_bar, makeup_db));
         fx_lines
     } else if app.grid_mode == 3 {
-        // Mode 3: Mixer (placeholder)
-        vec![
-            "OSC ··········  0dB ·‹· ··".to_string(),
-            "PLA ··········  0dB ·‹· ··".to_string(),
-            "NOS ··········  0dB ·‹· ··".to_string(),
-            "SMP ··········  0dB ·‹· ··".to_string(),
-            "MIX ··········  0dB ·‹·   ".to_string(),
-            "                              ".to_string(),
-        ]
+        // Mode 3: Mixer - per-voice levels, pan, mute
+        let mut mixer_lines = Vec::new();
+
+        // Helper to format volume (0-16383) to dB display
+        let vol_to_db = |vol: i32| -> String {
+            let normalized = vol as f32 / 16383.0;
+            let db = if normalized > 0.0001 {
+                20.0 * normalized.log10()
+            } else {
+                -60.0
+            };
+            format!("{:+4.0}dB", db)
+        };
+
+        // Helper to create volume bar (10 chars)
+        let vol_bar = |vol: i32| -> String {
+            let filled = ((vol as f32 / 16383.0) * 10.0).round() as usize;
+            let empty = 10usize.saturating_sub(filled);
+            format!("{}{}", "█".repeat(filled), "·".repeat(empty))
+        };
+
+        let pan_indicator = |pan: i32| -> &'static str {
+            let normalized = pan as f32 / 8192.0;
+            if normalized.abs() < 0.1 {
+                "·‹·››"
+            } else if normalized > 0.0 {
+                let bars = ((normalized * 2.0).round() as usize).min(2);
+                match bars {
+                    2 => "·‹›››",
+                    1 => "·‹·››",
+                    _ => "·‹·››",
+                }
+            } else {
+                let bars = ((-normalized * 2.0).round() as usize).min(2);
+                match bars {
+                    2 => "‹‹·›·",
+                    1 => "·‹·››",
+                    _ => "·‹·››",
+                }
+            }
+        };
+
+        let mute_indicator = |muted: i32| -> &'static str {
+            if muted == 1 { "M·" } else { "··" }
+        };
+
+        // Format: "OSC ██████···· +0dB ·‹·›› ··"
+        //         NAME VOLBAR(10) DB(5)  PAN(5) MUT(2)
+        mixer_lines.push(format!("OSC {} {} {} {}",
+            vol_bar(app.mixer_data.vol_osc),
+            vol_to_db(app.mixer_data.vol_osc),
+            pan_indicator(app.mixer_data.pan_osc),
+            mute_indicator(app.mixer_data.mute_osc)));
+
+        mixer_lines.push(format!("PLA {} {} {} {}",
+            vol_bar(app.mixer_data.vol_pla),
+            vol_to_db(app.mixer_data.vol_pla),
+            pan_indicator(app.mixer_data.pan_pla),
+            mute_indicator(app.mixer_data.mute_pla)));
+
+        mixer_lines.push(format!("NOS {} {} {} {}",
+            vol_bar(app.mixer_data.vol_nos),
+            vol_to_db(app.mixer_data.vol_nos),
+            pan_indicator(app.mixer_data.pan_nos),
+            mute_indicator(app.mixer_data.mute_nos)));
+
+        mixer_lines.push(format!("SMP {} {} {} {}",
+            vol_bar(app.mixer_data.vol_smp),
+            vol_to_db(app.mixer_data.vol_smp),
+            pan_indicator(app.mixer_data.pan_smp),
+            mute_indicator(app.mixer_data.mute_smp)));
+
+        mixer_lines.push("                              ".to_string());
+        mixer_lines.push("                              ".to_string());
+        mixer_lines
     } else if app.grid_mode == 4 {
         // Mode 4: FX Viz (placeholder)
         vec![

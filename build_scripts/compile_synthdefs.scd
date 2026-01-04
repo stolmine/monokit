@@ -973,7 +973,19 @@ SynthDef(\monokit_main, {
         noiseBus = 18,
         plaitsMainBus = 19,
         plaitsAuxBus = 20,
-        samplerBus = 21;
+        samplerBus = 21,
+        vol_osc = 16383,
+        vol_pla = 16383,
+        vol_nos = 16383,
+        vol_smp = 16383,
+        pan_osc = 0,
+        pan_pla = 0,
+        pan_nos = 0,
+        pan_smp = 0,
+        mute_osc = 0,
+        mute_pla = 0,
+        mute_nos = 0,
+        mute_smp = 0;
 
     // All var declarations at top
     var trig, ampEnv, dcEnv, filterEnv, modBusEnv;
@@ -981,6 +993,10 @@ SynthDef(\monokit_main, {
     var primaryFreq, modOsc;
     var sig, amp, discontinuity;
     var primaryIn, modIn, noiseIn, plaitsMainIn, plaitsAuxIn, samplerIn;
+    var oscVol, plaVol, nosVol, smpVol, oscPan, plaPan, nosPan, smpPan;
+    var oscMuted, plaMuted, nosMuted, smpMuted;
+    var primaryL, primaryR, noiseL, noiseR, plaitsMainL, plaitsMainR, plaitsAuxL, plaitsAuxR;
+    var samplerL, samplerR;
     var filterCutoff, filterQ;
     var resonatorFreq, resonatorDelay, resonatorDecay, resonatorMix, resonated;
     var delayTime, delayFeedback, delayWet, sigL, sigR, delayedL, delayedR;
@@ -1079,10 +1095,22 @@ SynthDef(\monokit_main, {
     // Primary frequency tracking for filter key tracking
     primaryFreq = pf;
 
+    // Per-voice mixing: normalize parameters
+    oscVol = (vol_osc / 16383) * (1 - mute_osc);
+    plaVol = (vol_pla / 16383) * (1 - mute_pla);
+    nosVol = (vol_nos / 16383) * (1 - mute_nos);
+    smpVol = (vol_smp / 16383) * (1 - mute_smp);
+    oscPan = (pan_osc / 8192).clip(-1, 1);
+    plaPan = (pan_pla / 8192).clip(-1, 1);
+    nosPan = (pan_nos / 8192).clip(-1, 1);
+    smpPan = (pan_smp / 8192).clip(-1, 1);
+
     // Mix oscillator sources (pre-filter)
-    // NOTE: Plaits mixed in post-VCA to preserve its own envelope
+    // NOTE: Plaits and Sampler mixed in post-VCA to preserve their internal envelopes
+    // NOTE: Noise also mixed in post-filter to allow independent panning
     // modIn scaled by MV for audible mix, but modOsc (used for routing) is unscaled
-    sig = primaryIn + (modIn * mvSmooth) + noiseIn;
+    // Apply per-voice volume to complex osc (primary+mod) only
+    sig = (primaryIn * oscVol) + (modIn * mvSmooth * oscVol);
 
     // Discontinuity: base + (envelope * amount)
     discontinuity = dcAmount + (dcEnv * daCtl / 16383);
@@ -1192,14 +1220,31 @@ SynthDef(\monokit_main, {
     amp = Select.kr(vca_mode.clip(0, 1), [1.0, ampEnv]) * volumeSmooth * (1 + (modOsc * modBusValue * ma * 0.5));
     sig = sig * amp;
 
-    // Mix Plaits and Sampler post-VCA (bypasses envelope gating, preserves their internal envelopes)
-    sig = sig + plaitsMainIn + plaitsAuxIn + samplerIn;
+    // Per-voice stereo mixing: pan each voice individually before summing
+    // Complex osc (already has per-voice volume applied and went through VCA)
+    #primaryL, primaryR = Pan2.ar(sig, oscPan);
 
-    // Compressor with dry/wet mix
-    drySig = sig;
+    // Noise voice (bypass envelope gating and filters, preserve character)
+    #noiseL, noiseR = Pan2.ar(noiseIn * nosVol, nosPan);
+
+    // Plaits voices (bypass envelope gating, preserve their internal envelopes)
+    #plaitsMainL, plaitsMainR = Pan2.ar(plaitsMainIn * plaVol, plaPan);
+    #plaitsAuxL, plaitsAuxR = Pan2.ar(plaitsAuxIn * plaVol, plaPan);
+
+    // Sampler voice
+    #samplerL, samplerR = Pan2.ar(samplerIn * smpVol, smpPan);
+
+    // Sum all voices in stereo (with 0.5 headroom compensation for 5 voices)
+    sigL = (primaryL + noiseL + plaitsMainL + plaitsAuxL + samplerL) * 0.5;
+    sigR = (primaryR + noiseR + plaitsMainR + plaitsAuxR + samplerR) * 0.5;
+
+    // Compressor with dry/wet mix (stereo)
     compThresh = (ctSmooth / 16383).clip(0.001, 1);
     compRatio = 1 / cr.clip(1, 20);
-    wetSig = Compander.ar(sig, sig,
+
+    // Process L and R channels through compressor
+    drySig = (sigL + sigR) * 0.5;  // Mono sum for level detection
+    wetSig = Compander.ar([sigL, sigR], drySig,
         thresh: compThresh,
         slopeBelow: 1,
         slopeAbove: compRatio,
@@ -1210,7 +1255,7 @@ SynthDef(\monokit_main, {
     // Measure GR BEFORE makeup is applied
     // Note: .max(0.0001) on ratio prevents 0.ampdb → -inf; .max(-40) is extra guard
     compInputLevel = Amplitude.kr(drySig, 0.01, 0.1);
-    compOutputLevel = Amplitude.kr(wetSig, 0.01, 0.1);
+    compOutputLevel = Amplitude.kr((wetSig[0] + wetSig[1]) * 0.5, 0.01, 0.1);
     gainReductionDb = (compOutputLevel / compInputLevel.max(0.0001)).max(0.0001).ampdb.max(-40).min(0);
 
     // Makeup gain: auto uses actual GR (proportional), manual uses CM parameter
@@ -1223,18 +1268,19 @@ SynthDef(\monokit_main, {
     wetSig = wetSig * autoMakeup;
 
     // Measure final output level after makeup
-    compFinalLevel = Amplitude.kr(wetSig, 0.01, 0.1);
+    compFinalLevel = Amplitude.kr((wetSig[0] + wetSig[1]) * 0.5, 0.01, 0.1);
 
     // Dry/wet mix (0=100% dry, 16383=100% wet)
     compMixAmt = Lag.kr(cr_mix / 16383, 0.01);
-    sig = XFade2.ar(drySig, wetSig, compMixAmt * 2 - 1);
+    sigL = XFade2.ar(sigL, wetSig[0], compMixAmt * 2 - 1);
+    sigR = XFade2.ar(sigR, wetSig[1], compMixAmt * 2 - 1);
 
     // Send compressor data: input, final output (post-makeup), GR
     SendReply.kr(Impulse.kr(20), '/monokit/comp', [compInputLevel, compFinalLevel, gainReductionDb]);
 
-    // Pan control
+    // Master pan control (preserves stereo field, adjusts balance)
     panPos = (panSmooth / 16383).clip(-1, 1);
-    #sigL, sigR = Pan2.ar(sig, panPos);
+    #sigL, sigR = Balance2.ar(sigL, sigR, panPos);
 
     // MiClouds Granular Processing
     cloudsWet = Lag.kr(cl_wet / 16383, 0.01);

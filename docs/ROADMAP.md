@@ -187,8 +187,8 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 |---------|--------|--------|
 | **Phase 1: Mixer Mode** | | |
 | VOL.*/PAN.*/MUTE.* commands | Low | **DONE** |
-| GRID.MODE 3 mixer display | Medium | Placeholder |
-| monokit_main per-voice mixing | Medium | Pending |
+| GRID.MODE 3 mixer display | Medium | **DONE** |
+| monokit_main per-voice mixing | Medium | **DONE** |
 | **Phase 2: Basic Sampler** | | |
 | KIT/STR command parsing | Low | **DONE** |
 | Folder loading / kit mode | Low | **DONE** |

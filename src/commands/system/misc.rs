@@ -964,6 +964,55 @@ where
         std::thread::sleep(Duration::from_millis(delay_ms));
     }
 
+    ctx.metro_tx.send(MetroCommand::SendParam("vol_osc".to_string(), OscType::Int(16383)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("vol_pla".to_string(), OscType::Int(16383)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("vol_nos".to_string(), OscType::Int(16383)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("vol_smp".to_string(), OscType::Int(16383)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("pan_osc".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("pan_pla".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("pan_nos".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("pan_smp".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("mute_osc".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("mute_pla".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("mute_nos".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+    ctx.metro_tx.send(MetroCommand::SendParam("mute_smp".to_string(), OscType::Int(0)))?;
+    if delay_ms > 0 {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+    }
+
     ctx.output(
         OutputCategory::Essential,
         "RESET TO DEFAULTS".to_string(),

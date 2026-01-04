@@ -152,6 +152,8 @@ impl App {
                 self.trigger_activity = Some(std::time::Instant::now());
             } else if sub_cmd.eq_ignore_ascii_case("PLTR") {
                 self.plaits_trigger_activity = Some(std::time::Instant::now());
+            } else if sub_cmd.to_uppercase().starts_with("STR") {
+                self.sampler_trigger_activity = Some(std::time::Instant::now());
             }
 
             // Mark parameter activity

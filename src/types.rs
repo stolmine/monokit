@@ -472,6 +472,42 @@ pub struct CompressorData {
     pub gain_reduction_db: f32, // 0 to -40 (negative = reduction)
 }
 
+/// Mixer state for per-voice visualization
+#[derive(Debug, Clone)]
+pub struct MixerData {
+    pub vol_osc: i32,  // 0-16383
+    pub vol_pla: i32,  // 0-16383
+    pub vol_nos: i32,  // 0-16383
+    pub vol_smp: i32,  // 0-16383
+    pub pan_osc: i32,  // -8192 to 8191
+    pub pan_pla: i32,  // -8192 to 8191
+    pub pan_nos: i32,  // -8192 to 8191
+    pub pan_smp: i32,  // -8192 to 8191
+    pub mute_osc: i32, // 0 or 1
+    pub mute_pla: i32, // 0 or 1
+    pub mute_nos: i32, // 0 or 1
+    pub mute_smp: i32, // 0 or 1
+}
+
+impl Default for MixerData {
+    fn default() -> Self {
+        Self {
+            vol_osc: 8192,
+            vol_pla: 8192,
+            vol_nos: 8192,
+            vol_smp: 8192,
+            pan_osc: 0,
+            pan_pla: 0,
+            pan_nos: 0,
+            pan_smp: 0,
+            mute_osc: 0,
+            mute_pla: 0,
+            mute_nos: 0,
+            mute_smp: 0,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum MetroEvent {
     ExecuteScript(usize),

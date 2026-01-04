@@ -1532,19 +1532,33 @@ SynthDef(\monokit_sampler, {
         s_dec = 8192,
         s_rel = 1000,
         s_sust = 0,          // 0=percussive, 1=gate hold
-        s_volume = 8192;     // 0-16383
+        s_volume = 8192,     // 0-16383
+        sf_cut = 16383,      // Filter cutoff (0-16383, 16383=open)
+        sf_res = 0,          // Filter resonance (0-16383)
+        sf_type = 0,         // Filter type (0=LP, 1=HP, 2=BP)
+        sf_bits = 0,         // Bit depth reduction (0=off, 1-16)
+        sf_rate = 16383,     // Sample rate reduction (0-16383, 16383=none)
+        sf_deci = 0,         // Decimator mix (0-16383)
+        sf_prob = 0,         // Glitch probability (0-16383)
+        sf_mult = 8192,      // Glitch speed multiplier (0-16383, 8192=1x)
+        sf_glit = 0;         // Glitch mix (0-16383)
 
-    var trig, gate;
+    var trig, trigAr, gate;
     var rateBase, pitchRatio, fineRatio, finalRate;
     var bufFrames, actualEndFrame, playStart, playEnd;
     var phasorRate, phase;
+    var phasorAtEnd, oneShotMute;
     var sig, env;
     var atkTime, decTime, relTime, sustLevel;
     var volScale;
     var normPos;
+    var filterCutoff, filterRes;
+    var decimated, deciBits, deciRate, deciMix;
+    var glitchTrig, glitchRate, glitched, glitchMix;
 
     // Convert trigger to gate
     trig = Trig1.kr(t_gate_sampler, 0.001);
+    trigAr = T2A.ar(trig);  // Audio-rate trigger for one-shot detection
     gate = Latch.kr(s_sust, trig) + ((1 - s_sust) * trig);
 
     // Calculate playback rate from rate + pitch + fine + direction
@@ -1570,14 +1584,19 @@ SynthDef(\monokit_sampler, {
         resetPos: Select.kr(s_direction, [playStart, playEnd - 1])
     );
 
-    // Loop control: if loop=0, gate off when phase reaches end
-    gate = gate * Select.kr(s_loop, [
-        (phase < (playEnd - 1)).asInteger,  // one-shot: gate off at end
-        1                                     // loop: keep gate on
+    // Audio-rate one-shot detection - catches wrap immediately
+    // SetResetFF: set to 1 when phasor reaches end, reset to 0 on trigger
+    phasorAtEnd = (phase >= (playEnd - 1));
+    oneShotMute = Select.ar(s_loop, [
+        SetResetFF.ar(phasorAtEnd, trigAr),  // Reset on each trigger, set when done
+        DC.ar(0)
     ]);
 
     // Read from buffer with cubic interpolation
     sig = BufRd.ar(1, s_bufnum, phase, 1, 4);
+
+    // Kill signal immediately after wrap in one-shot mode
+    sig = sig * (1 - oneShotMute);
 
     // ADSR envelope
     atkTime = (s_atk / 16383) * 2.0;  // 0-2000ms
@@ -1594,6 +1613,47 @@ SynthDef(\monokit_sampler, {
     // Apply envelope and volume
     volScale = s_volume / 16383;
     sig = sig * env * volScale;
+
+    // Sampler FX Chain (applied before output to bus 21)
+
+    // Filter (only process if cutoff < max or resonance > 0)
+    sig = Select.ar((sf_cut < 16383) + (sf_res > 0), [
+        sig,
+        {
+            filterCutoff = (sf_cut / 16383).linexp(0, 1, 20, 20000);
+            filterRes = sf_res / 16383;
+            Select.ar(sf_type.clip(0, 2).round, [
+                RLPF.ar(sig, filterCutoff, (1.0 - (filterRes * 0.95)).clip(0.05, 1.0)),
+                RHPF.ar(sig, filterCutoff, (1.0 - (filterRes * 0.95)).clip(0.05, 1.0)),
+                BPF.ar(sig, filterCutoff, (1.0 - (filterRes * 0.95)).clip(0.05, 1.0))
+            ])
+        }.value
+    ]);
+
+    // Decimator (only process if mix > 0)
+    sig = Select.ar(sf_deci > 0, [
+        sig,
+        {
+            deciBits = sf_bits.clip(1, 16);
+            deciRate = (sf_rate / 16383).linexp(0, 1, 100, 48000);
+            deciMix = sf_deci / 16383;
+            decimated = (sig * (2.pow(deciBits - 1))).round / (2.pow(deciBits - 1));
+            decimated = Latch.ar(decimated, Impulse.ar(deciRate));
+            (sig * (1 - deciMix)) + (decimated * deciMix)
+        }.value
+    ]);
+
+    // Glitch (only process if mix > 0)
+    sig = Select.ar(sf_glit > 0, [
+        sig,
+        {
+            glitchRate = (sf_mult / 8192).clip(0.1, 2.0);
+            glitchTrig = Dust.ar((sf_prob / 16383) * 100);
+            glitched = Latch.ar(sig, glitchTrig + Impulse.ar(glitchRate * 10));
+            glitchMix = sf_glit / 16383;
+            (sig * (1 - glitchMix)) + (glitched * glitchMix)
+        }.value
+    ]);
 
     // Output to bus 21
     Out.ar(out, sig);

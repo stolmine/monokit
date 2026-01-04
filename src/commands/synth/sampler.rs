@@ -87,10 +87,6 @@ fn resolve_sample_path<F>(path_str: &str, debug_level: u8, mut output: F) -> Opt
 where
     F: FnMut(String),
 {
-    if debug_level >= TIER_ESSENTIAL {
-        output(format!("DEBUG: resolve_sample_path input: '{}'", path_str));
-    }
-
     let expanded = if path_str.starts_with('~') {
         match dirs::home_dir() {
             Some(home) => {
@@ -99,15 +95,9 @@ where
                 } else {
                     home.join(&path_str[2..]).to_string_lossy().to_string()
                 };
-                if debug_level >= TIER_QUERIES {
-                    output(format!("DEBUG: tilde expansion: '{}' -> '{}'", path_str, expanded_path));
-                }
                 expanded_path
             }
             None => {
-                if debug_level >= TIER_ESSENTIAL {
-                    output("DEBUG: home_dir() returned None for tilde expansion".to_string());
-                }
                 path_str.to_string()
             }
         }
@@ -118,49 +108,25 @@ where
     let path = Path::new(&expanded);
 
     if path.is_absolute() {
-        if debug_level >= TIER_ESSENTIAL {
-            output(format!("DEBUG: is_absolute: true, exists: {}", path.exists()));
-        }
         return if path.exists() {
-            if debug_level >= TIER_ESSENTIAL {
-                output(format!("DEBUG: resolved via absolute path: '{}'", path.display()));
-            }
             Some(path.to_path_buf())
         } else {
-            if debug_level >= TIER_ESSENTIAL {
-                output("DEBUG: absolute path does not exist, returning None".to_string());
-            }
             None
         };
-    }
-    if debug_level >= TIER_ESSENTIAL {
-        output("DEBUG: is_absolute: false".to_string());
     }
 
     let library_path = match dirs::home_dir() {
         Some(home) => {
             let lib_path = home.join(".config/monokit/samples");
-            if debug_level >= TIER_ESSENTIAL {
-                output(format!("DEBUG: library_path: '{}', exists: {}", lib_path.display(), lib_path.exists()));
-            }
             lib_path
         }
         None => {
-            if debug_level >= TIER_ESSENTIAL {
-                output("DEBUG: home_dir() returned None for library path, returning None".to_string());
-            }
             return None;
         }
     };
 
     let library_relative = library_path.join(path_str);
-    if debug_level >= TIER_ESSENTIAL {
-        output(format!("DEBUG: library-relative: '{}', exists: {}", library_relative.display(), library_relative.exists()));
-    }
     if library_relative.exists() {
-        if debug_level >= TIER_ESSENTIAL {
-            output(format!("DEBUG: resolved via library-relative: '{}'", library_relative.display()));
-        }
         return Some(library_relative);
     }
 
@@ -169,31 +135,14 @@ where
         .map(|n| n.to_string_lossy().to_string())
         .unwrap_or_else(|| path_str.to_string());
 
-    if debug_level >= TIER_QUERIES {
-        output(format!("DEBUG: searching library recursively for: '{}'", search_name));
-    }
-
     if let Some(found) = search_library_recursive(&library_path, &search_name) {
-        if debug_level >= TIER_ESSENTIAL {
-            output(format!("DEBUG: resolved via library search: '{}'", found.display()));
-        }
         return Some(found);
     }
 
-    if debug_level >= TIER_ESSENTIAL {
-        output(format!("DEBUG: library search found no matches, trying current directory: '{}', exists: {}", path.display(), path.exists()));
-    }
-
     if path.exists() {
-        if debug_level >= TIER_ESSENTIAL {
-            output(format!("DEBUG: resolved via current directory: '{}'", path.display()));
-        }
         return Some(path.to_path_buf());
     }
 
-    if debug_level >= TIER_ESSENTIAL {
-        output(format!("DEBUG: all resolution methods failed for: '{}'", path_str));
-    }
     None
 }
 
@@ -241,10 +190,6 @@ where
         ],
     };
 
-    if debug_level >= TIER_QUERIES {
-        output(format!("DEBUG: OSC → /b_allocRead {} \"{}\"", buffer_id, file_path));
-    }
-
     let packet = OscPacket::Message(msg);
     let buf = encoder::encode(&packet)
         .context("Failed to encode OSC message")?;
@@ -283,10 +228,6 @@ where
     let path = resolved_path.as_path();
     let resolved_path_str = resolved_path.to_string_lossy().to_string();
     let debug_level = *ctx.debug_level;
-
-    if debug_level >= TIER_QUERIES {
-        output(format!("DEBUG: Loading from resolved path: {}", resolved_path_str));
-    }
 
     // Determine mode based on path type
     let (mode, num_slots, slots) = if path.is_file() {
@@ -334,10 +275,6 @@ where
                 let buffer_id = SAMPLER_BUFFER_BASE + idx as u32;
                 let file_path = entry.path();
                 let file_path_str = file_path.to_string_lossy().to_string();
-
-                if debug_level >= TIER_QUERIES {
-                    output(format!("DEBUG: Loading kit slot {}: {}", idx, file_path.display()));
-                }
 
                 if let Err(e) = send_buffer_alloc_read(buffer_id, &file_path_str, debug_level, &mut output) {
                     output(format!("KIT: FAILED TO LOAD {}: {}", file_path.display(), e));
@@ -445,17 +382,6 @@ where
         // Slot not loaded, use 0 (no buffer)
         0
     };
-
-    if debug_level >= TIER_QUERIES {
-        output(format!("DEBUG: STR slot={} buffer_id={} num_slots={} s_atk={} s_rel={}",
-            slot, buffer_id, sampler_state.num_slots,
-            sampler_state.playback.attack, sampler_state.playback.release));
-    }
-
-    if debug_level >= TIER_QUERIES {
-        output(format!("DEBUG: Sending s_bufnum={} t_gate_sampler=1 to node {}",
-            buffer_id, crate::types::SAMPLER_NODE_ID));
-    }
 
     metro_tx
         .send(MetroCommand::SendParam(

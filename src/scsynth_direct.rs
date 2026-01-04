@@ -539,7 +539,6 @@ impl ScsynthDirect {
         )?;
         if !silent {
             eprintln!("[monokit]   Created monokit_sampler (node {})", SAMPLER_NODE_ID);
-            eprintln!("[monokit]   Sampler init: out=21, s_atk=0, s_dec=8192, s_rel=1000, s_volume=8192");
         }
 
         thread::sleep(Duration::from_millis(50));

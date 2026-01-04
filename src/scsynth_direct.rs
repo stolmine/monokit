@@ -421,7 +421,7 @@ impl ScsynthDirect {
     }
 
     fn spawn_voice_synths(socket: &UdpSocket, silent: bool) -> Result<(), String> {
-        use crate::types::{VoiceSynths, PRIMARY_BUS, MOD_BUS, NOISE_BUS, PLAITS_MAIN_BUS, PLAITS_AUX_BUS, SAMPLER_NODE_ID};
+        use crate::types::{VoiceSynths, PRIMARY_BUS, MOD_BUS, NOISE_BUS, PLAITS_MAIN_BUS, PLAITS_AUX_BUS, SAMPLER_BUS, SAMPLER_NODE_ID};
 
         let synths = VoiceSynths::new();
 
@@ -509,7 +509,7 @@ impl ScsynthDirect {
                 OscType::Int(21),
                 OscType::String("s_bufnum".to_string()),
                 OscType::Int(0),
-                OscType::String("t_gate".to_string()),
+                OscType::String("t_gate_sampler".to_string()),
                 OscType::Int(0),
                 OscType::String("s_rate".to_string()),
                 OscType::Int(8192),
@@ -539,6 +539,7 @@ impl ScsynthDirect {
         )?;
         if !silent {
             eprintln!("[monokit]   Created monokit_sampler (node {})", SAMPLER_NODE_ID);
+            eprintln!("[monokit]   Sampler init: out=21, s_atk=0, s_dec=8192, s_rel=1000, s_volume=8192");
         }
 
         thread::sleep(Duration::from_millis(50));
@@ -561,6 +562,8 @@ impl ScsynthDirect {
                 OscType::Int(PLAITS_MAIN_BUS),
                 OscType::String("plaitsAuxBus".to_string()),
                 OscType::Int(PLAITS_AUX_BUS),
+                OscType::String("samplerBus".to_string()),
+                OscType::Int(SAMPLER_BUS),
             ],
         )?;
         if !silent {

@@ -1,12 +1,259 @@
 use crate::commands::context::ExecutionContext;
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, SamplerMode, Variables, TIER_CONFIRMS};
+use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, SamplerMode, SampleSlot, Variables, TIER_CONFIRMS, TIER_ESSENTIAL, TIER_QUERIES, SAMPLER_BUFFER_BASE, OSC_ADDR};
 use anyhow::{Context, Result};
-use rosc::OscType;
-use std::path::Path;
+use rosc::{encoder, OscMessage, OscPacket, OscType};
+use std::net::UdpSocket;
+use std::path::{Path, PathBuf};
 use std::sync::mpsc::Sender;
 
 use super::common::define_int_param;
+
+macro_rules! define_sampler_envelope_param {
+    ($fn_name:ident, $osc_param:expr, $state_field:ident, $error_cmd:expr, $display_name:expr, $parse_ctx:expr) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            variables: &Variables,
+            patterns: &mut PatternStorage,
+            counters: &mut Counters,
+            scripts: &ScriptStorage,
+            script_index: usize,
+            metro_tx: &Sender<MetroCommand>,
+            debug_level: u8,
+            scale: &ScaleState,
+            sampler_state: &mut crate::types::SamplerState,
+            out_cfm: bool,
+            mut output: F,
+        ) -> Result<()>
+        where
+            F: FnMut(String),
+        {
+            if parts.len() < 2 {
+                output(format!("{}: REQUIRES VALUE", $error_cmd));
+                return Ok(());
+            }
+            let state_snapshot = (
+                patterns.toggle_state.clone(),
+                patterns.toggle_last_value.clone()
+            );
+            let value: i32 = if let Some((expr_val, consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                if consumed > 0 && parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let key = format!("{}_{}", script_index, parts[1..1+consumed].join("_"));
+                        patterns.direct_validation.insert(key, true);
+                    }
+                }
+                expr_val as i32
+            } else {
+                parts[1]
+                    .parse()
+                    .context($parse_ctx)?
+            };
+            if value < 0 || value > 16383 {
+                patterns.toggle_state = state_snapshot.0;
+                patterns.toggle_last_value = state_snapshot.1;
+                if parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let end_idx = parts.len().min(4);
+                        let key = format!("{}_{}", script_index, parts[1..end_idx].join("_"));
+                        patterns.direct_validation.insert(key, false);
+                    }
+                }
+                output(format!("{}: RANGE 0-16383", $error_cmd));
+                return Ok(());
+            }
+
+            sampler_state.playback.$state_field = value as i16;
+
+            metro_tx
+                .send(MetroCommand::SendParam($osc_param.to_string(), OscType::Int(value)))
+                .context("Failed to send param to metro thread")?;
+            if debug_level >= TIER_CONFIRMS || out_cfm {
+                output(format!("SET {} TO {}", $display_name, value));
+            }
+            Ok(())
+        }
+    };
+}
+
+/// Resolve sample path according to library search order:
+/// 1. Absolute path - use directly
+/// 2. Relative to library - prepend ~/.config/monokit/samples/
+/// 3. Search library - recursive search for matching name
+/// 4. Relative to current dir - use as-is
+fn resolve_sample_path<F>(path_str: &str, debug_level: u8, mut output: F) -> Option<PathBuf>
+where
+    F: FnMut(String),
+{
+    if debug_level >= TIER_ESSENTIAL {
+        output(format!("DEBUG: resolve_sample_path input: '{}'", path_str));
+    }
+
+    let expanded = if path_str.starts_with('~') {
+        match dirs::home_dir() {
+            Some(home) => {
+                let expanded_path = if path_str == "~" {
+                    home.to_string_lossy().to_string()
+                } else {
+                    home.join(&path_str[2..]).to_string_lossy().to_string()
+                };
+                if debug_level >= TIER_QUERIES {
+                    output(format!("DEBUG: tilde expansion: '{}' -> '{}'", path_str, expanded_path));
+                }
+                expanded_path
+            }
+            None => {
+                if debug_level >= TIER_ESSENTIAL {
+                    output("DEBUG: home_dir() returned None for tilde expansion".to_string());
+                }
+                path_str.to_string()
+            }
+        }
+    } else {
+        path_str.to_string()
+    };
+
+    let path = Path::new(&expanded);
+
+    if path.is_absolute() {
+        if debug_level >= TIER_ESSENTIAL {
+            output(format!("DEBUG: is_absolute: true, exists: {}", path.exists()));
+        }
+        return if path.exists() {
+            if debug_level >= TIER_ESSENTIAL {
+                output(format!("DEBUG: resolved via absolute path: '{}'", path.display()));
+            }
+            Some(path.to_path_buf())
+        } else {
+            if debug_level >= TIER_ESSENTIAL {
+                output("DEBUG: absolute path does not exist, returning None".to_string());
+            }
+            None
+        };
+    }
+    if debug_level >= TIER_ESSENTIAL {
+        output("DEBUG: is_absolute: false".to_string());
+    }
+
+    let library_path = match dirs::home_dir() {
+        Some(home) => {
+            let lib_path = home.join(".config/monokit/samples");
+            if debug_level >= TIER_ESSENTIAL {
+                output(format!("DEBUG: library_path: '{}', exists: {}", lib_path.display(), lib_path.exists()));
+            }
+            lib_path
+        }
+        None => {
+            if debug_level >= TIER_ESSENTIAL {
+                output("DEBUG: home_dir() returned None for library path, returning None".to_string());
+            }
+            return None;
+        }
+    };
+
+    let library_relative = library_path.join(path_str);
+    if debug_level >= TIER_ESSENTIAL {
+        output(format!("DEBUG: library-relative: '{}', exists: {}", library_relative.display(), library_relative.exists()));
+    }
+    if library_relative.exists() {
+        if debug_level >= TIER_ESSENTIAL {
+            output(format!("DEBUG: resolved via library-relative: '{}'", library_relative.display()));
+        }
+        return Some(library_relative);
+    }
+
+    let search_name = Path::new(path_str)
+        .file_name()
+        .map(|n| n.to_string_lossy().to_string())
+        .unwrap_or_else(|| path_str.to_string());
+
+    if debug_level >= TIER_QUERIES {
+        output(format!("DEBUG: searching library recursively for: '{}'", search_name));
+    }
+
+    if let Some(found) = search_library_recursive(&library_path, &search_name) {
+        if debug_level >= TIER_ESSENTIAL {
+            output(format!("DEBUG: resolved via library search: '{}'", found.display()));
+        }
+        return Some(found);
+    }
+
+    if debug_level >= TIER_ESSENTIAL {
+        output(format!("DEBUG: library search found no matches, trying current directory: '{}', exists: {}", path.display(), path.exists()));
+    }
+
+    if path.exists() {
+        if debug_level >= TIER_ESSENTIAL {
+            output(format!("DEBUG: resolved via current directory: '{}'", path.display()));
+        }
+        return Some(path.to_path_buf());
+    }
+
+    if debug_level >= TIER_ESSENTIAL {
+        output(format!("DEBUG: all resolution methods failed for: '{}'", path_str));
+    }
+    None
+}
+
+/// Recursively search library for a file or directory matching the given name
+fn search_library_recursive(dir: &Path, target: &str) -> Option<PathBuf> {
+    if !dir.exists() || !dir.is_dir() {
+        return None;
+    }
+
+    if let Ok(entries) = std::fs::read_dir(dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+
+            // Check if this entry matches the target
+            if let Some(name) = path.file_name() {
+                if name.to_string_lossy().eq_ignore_ascii_case(target) {
+                    return Some(path);
+                }
+            }
+
+            // Recurse into subdirectories (skip symlinks to prevent loops)
+            if path.is_dir() && !path.is_symlink() {
+                if let Some(found) = search_library_recursive(&path, target) {
+                    return Some(found);
+                }
+            }
+        }
+    }
+
+    None
+}
+
+fn send_buffer_alloc_read<F>(buffer_id: u32, file_path: &str, debug_level: u8, mut output: F) -> Result<()>
+where
+    F: FnMut(String),
+{
+    let socket = UdpSocket::bind("127.0.0.1:0")
+        .context("Failed to bind OSC socket for buffer allocation")?;
+
+    let msg = OscMessage {
+        addr: "/b_allocRead".to_string(),
+        args: vec![
+            OscType::Int(buffer_id as i32),
+            OscType::String(file_path.to_string()),
+        ],
+    };
+
+    if debug_level >= TIER_QUERIES {
+        output(format!("DEBUG: OSC → /b_allocRead {} \"{}\"", buffer_id, file_path));
+    }
+
+    let packet = OscPacket::Message(msg);
+    let buf = encoder::encode(&packet)
+        .context("Failed to encode OSC message")?;
+
+    socket.send_to(&buf, OSC_ADDR)
+        .context("Failed to send buffer allocation message")?;
+
+    Ok(())
+}
 
 /// KIT <path> - Load samples (file → slice mode, directory → kit mode)
 pub fn handle_kit<F>(
@@ -23,33 +270,93 @@ where
     }
 
     let path_str = parts[1..].join(" ");
-    let path = Path::new(&path_str);
+
+    // Resolve path using library search order
+    let resolved_path = match resolve_sample_path(&path_str, *ctx.debug_level, &mut output) {
+        Some(p) => p,
+        None => {
+            output(format!("KIT: PATH NOT FOUND: {}", path_str));
+            return Ok(());
+        }
+    };
+
+    let path = resolved_path.as_path();
+    let resolved_path_str = resolved_path.to_string_lossy().to_string();
+    let debug_level = *ctx.debug_level;
+
+    if debug_level >= TIER_QUERIES {
+        output(format!("DEBUG: Loading from resolved path: {}", resolved_path_str));
+    }
 
     // Determine mode based on path type
-    let (mode, num_slots) = if path.is_file() {
+    let (mode, num_slots, slots) = if path.is_file() {
         // File → slice mode
-        // For now, we'll use a default slice count (e.g., 16)
-        // Later phases will implement S.SLICE command
-        (SamplerMode::Slice, 16)
+        // For now, load the whole file into one buffer
+        // Later phases will implement S.SLICE command for actual slicing
+        let buffer_id = SAMPLER_BUFFER_BASE;
+
+        if let Err(e) = send_buffer_alloc_read(buffer_id, &resolved_path_str, debug_level, &mut output) {
+            output(format!("KIT: FAILED TO LOAD FILE: {}", e));
+            return Ok(());
+        }
+
+        let slot = SampleSlot {
+            buffer_id,
+            start_frame: 0,
+            end_frame: 0,
+        };
+
+        (SamplerMode::Slice, 1, vec![slot])
     } else if path.is_dir() {
         // Directory → kit mode
-        // Count files in directory (up to 128)
-        let mut count = 0;
+        // Load audio files from directory (up to 128)
+        let mut file_slots = Vec::new();
+
         if let Ok(entries) = std::fs::read_dir(path) {
-            for entry in entries.flatten() {
-                if let Ok(metadata) = entry.metadata() {
-                    if metadata.is_file() {
-                        count += 1;
-                        if count >= 128 {
-                            break;
+            let mut file_entries: Vec<_> = entries
+                .flatten()
+                .filter(|entry| {
+                    if let Ok(metadata) = entry.metadata() {
+                        if metadata.is_file() {
+                            if let Some(ext) = entry.path().extension() {
+                                let ext_str = ext.to_string_lossy().to_lowercase();
+                                return ext_str == "wav" || ext_str == "aif" || ext_str == "aiff";
+                            }
                         }
                     }
+                    false
+                })
+                .collect();
+
+            file_entries.sort_by_key(|entry| entry.file_name());
+
+            for (idx, entry) in file_entries.iter().enumerate().take(128) {
+                let buffer_id = SAMPLER_BUFFER_BASE + idx as u32;
+                let file_path = entry.path();
+                let file_path_str = file_path.to_string_lossy().to_string();
+
+                if debug_level >= TIER_QUERIES {
+                    output(format!("DEBUG: Loading kit slot {}: {}", idx, file_path.display()));
                 }
+
+                if let Err(e) = send_buffer_alloc_read(buffer_id, &file_path_str, debug_level, &mut output) {
+                    output(format!("KIT: FAILED TO LOAD {}: {}", file_path.display(), e));
+                    continue;
+                }
+
+                file_slots.push(SampleSlot {
+                    buffer_id,
+                    start_frame: 0,
+                    end_frame: 0,
+                });
             }
         }
-        (SamplerMode::Kit, count)
+
+        let count = file_slots.len();
+        (SamplerMode::Kit, count, file_slots)
     } else {
-        output(format!("KIT: PATH NOT FOUND: {}", path_str));
+        // Path exists but is neither file nor directory
+        output(format!("KIT: INVALID PATH TYPE: {}", path_str));
         return Ok(());
     };
 
@@ -67,8 +374,8 @@ where
         None
     };
 
-    // Clear existing slots (actual buffer loading will be implemented later)
-    sampler.slots.clear();
+    // Store loaded buffer slots
+    sampler.slots = slots;
 
     if *ctx.debug_level >= TIER_CONFIRMS || *ctx.out_cfm {
         let mode_str = match mode {
@@ -131,17 +438,32 @@ where
     // Update current slot
     sampler_state.current_slot = slot;
 
-    // Send OSC trigger via MetroCommand::SendParam
-    // For now, we'll send a simple trigger message
-    // Later phases will implement proper buffer playback
+    // Get buffer ID from the slot
+    let buffer_id = if slot < sampler_state.slots.len() {
+        sampler_state.slots[slot].buffer_id as i32
+    } else {
+        // Slot not loaded, use 0 (no buffer)
+        0
+    };
+
+    if debug_level >= TIER_QUERIES {
+        output(format!("DEBUG: STR slot={} buffer_id={} num_slots={} s_atk={} s_rel={}",
+            slot, buffer_id, sampler_state.num_slots,
+            sampler_state.playback.attack, sampler_state.playback.release));
+    }
+
+    if debug_level >= TIER_QUERIES {
+        output(format!("DEBUG: Sending s_bufnum={} t_gate_sampler=1 to node {}",
+            buffer_id, crate::types::SAMPLER_NODE_ID));
+    }
+
     metro_tx
         .send(MetroCommand::SendParam(
-            "sampler_slot".to_string(),
-            OscType::Int(slot as i32),
+            "s_bufnum".to_string(),
+            OscType::Int(buffer_id),
         ))
-        .context("Failed to send sampler slot param")?;
+        .context("Failed to send sampler buffer ID")?;
 
-    // Trigger the sampler (send t_gate)
     metro_tx
         .send(MetroCommand::SendParam(
             "t_gate_sampler".to_string(),
@@ -228,32 +550,28 @@ define_int_param!(
     "Failed to parse sample loop length"
 );
 
-// Envelope Parameters
-define_int_param!(
+define_sampler_envelope_param!(
     handle_s_atk,
     "s_atk",
-    0,
-    16383,
+    attack,
     "S.ATK",
     "SAMPLER ATTACK",
     "Failed to parse sample attack"
 );
 
-define_int_param!(
+define_sampler_envelope_param!(
     handle_s_dec,
     "s_dec",
-    0,
-    16383,
+    decay,
     "S.DEC",
     "SAMPLER DECAY",
     "Failed to parse sample decay"
 );
 
-define_int_param!(
+define_sampler_envelope_param!(
     handle_s_rel,
     "s_rel",
-    0,
-    16383,
+    release,
     "S.REL",
     "SAMPLER RELEASE",
     "Failed to parse sample release"

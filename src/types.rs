@@ -809,7 +809,7 @@ pub fn route_param_to_node(param: &str) -> i32 {
         "s_rate" | "s_pitch" | "s_fine" | "s_direction" | "s_loop" |
         "s_startFrame" | "s_endFrame" | "s_atk" | "s_dec" | "s_rel" | "s_sust" |
         "s_volume" | "s_pan" | "s_fx" | "s_ratemod" | "s_pitchmod" |
-        "s_bufnum" | "t_gate" => SAMPLER_NODE_ID,
+        "s_bufnum" | "t_gate_sampler" => SAMPLER_NODE_ID,
 
         // Sampler FX parameters (sf_ prefix)
         "sf_cut" | "sf_res" | "sf_type" |

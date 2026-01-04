@@ -726,13 +726,13 @@ where
             synth_params::handle_s_len(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
         "S.ATK" | "SA" => {
-            synth_params::handle_s_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_s_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "S.DEC" | "SDC" => {
-            synth_params::handle_s_dec(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_s_dec(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "S.REL" | "SRE" => {
-            synth_params::handle_s_rel(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_s_rel(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "S.SUST" | "SSU" => {
             synth_params::handle_s_sust(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;

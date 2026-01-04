@@ -972,14 +972,15 @@ SynthDef(\monokit_main, {
         modBus = 17,
         noiseBus = 18,
         plaitsMainBus = 19,
-        plaitsAuxBus = 20;
+        plaitsAuxBus = 20,
+        samplerBus = 21;
 
     // All var declarations at top
     var trig, ampEnv, dcEnv, filterEnv, modBusEnv;
     var modBusValue, dcAmount, mvSmooth;
     var primaryFreq, modOsc;
     var sig, amp, discontinuity;
-    var primaryIn, modIn, noiseIn, plaitsMainIn, plaitsAuxIn;
+    var primaryIn, modIn, noiseIn, plaitsMainIn, plaitsAuxIn, samplerIn;
     var filterCutoff, filterQ;
     var resonatorFreq, resonatorDelay, resonatorDecay, resonatorMix, resonated;
     var delayTime, delayFeedback, delayWet, sigL, sigR, delayedL, delayedR;
@@ -1059,12 +1060,13 @@ SynthDef(\monokit_main, {
     filterEnv = EnvGen.kr(Env.perc(flAtk, fedDynamic / 1000, 1, flCrv), trig);
     modBusEnv = EnvGen.kr(Env.perc(0.001, mbdDynamic / 1000, 1, -4), trig);
 
-    // Read audio from the 5 source busses
+    // Read audio from the 6 source busses
     primaryIn = InFeedback.ar(primaryBus, 1);
     modIn = InFeedback.ar(modBus, 1);
     noiseIn = InFeedback.ar(noiseBus, 1);
     plaitsMainIn = InFeedback.ar(plaitsMainBus, 1);
     plaitsAuxIn = InFeedback.ar(plaitsAuxBus, 1);
+    samplerIn = InFeedback.ar(samplerBus, 1);
 
     // Use modIn for modulation routing
     modOsc = modIn;
@@ -1190,8 +1192,8 @@ SynthDef(\monokit_main, {
     amp = Select.kr(vca_mode.clip(0, 1), [1.0, ampEnv]) * volumeSmooth * (1 + (modOsc * modBusValue * ma * 0.5));
     sig = sig * amp;
 
-    // Mix Plaits post-VCA (bypasses envelope gating, preserves Plaits internal envelope)
-    sig = sig + plaitsMainIn + plaitsAuxIn;
+    // Mix Plaits and Sampler post-VCA (bypasses envelope gating, preserves their internal envelopes)
+    sig = sig + plaitsMainIn + plaitsAuxIn + samplerIn;
 
     // Compressor with dry/wet mix
     drySig = sig;
@@ -1518,7 +1520,7 @@ SynthDef(\monokit_sampler, {
     // All args prefixed with s_ to avoid conflicts with other synths
     arg out = 21,
         s_bufnum = 0,
-        t_gate = 0,
+        t_gate_sampler = 0,
         s_rate = 8192,       // 0-16383, 8192=1x playback
         s_pitch = 0,         // -24 to +24 semitones
         s_fine = 0,          // -100 to +100 cents
@@ -1542,7 +1544,7 @@ SynthDef(\monokit_sampler, {
     var normPos;
 
     // Convert trigger to gate
-    trig = Trig1.kr(t_gate, 0.001);
+    trig = Trig1.kr(t_gate_sampler, 0.001);
     gate = Latch.kr(s_sust, trig) + ((1 - s_sust) * trig);
 
     // Calculate playback rate from rate + pitch + fine + direction
@@ -1586,7 +1588,7 @@ SynthDef(\monokit_sampler, {
     env = EnvGen.kr(
         Env.adsr(atkTime, decTime, sustLevel, relTime),
         gate,
-        doneAction: 2
+        doneAction: 0  // Keep synth alive for retriggering
     );
 
     // Apply envelope and volume

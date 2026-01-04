@@ -179,6 +179,44 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ## Future Versions
 
+### v0.5.0 - Sampler & Grid Expansion (IN PROGRESS)
+
+**See `docs/SAMPLER_DESIGN.md` for detailed design**
+
+| Feature | Effort | Status |
+|---------|--------|--------|
+| **Phase 1: Mixer Mode** | | |
+| VOL.*/PAN.*/MUTE.* commands | Low | **DONE** |
+| GRID.MODE 3 mixer display | Medium | Placeholder |
+| monokit_main per-voice mixing | Medium | Pending |
+| **Phase 2: Basic Sampler** | | |
+| KIT/STR command parsing | Low | **DONE** |
+| S.* playback params (16 cmds) | Low | **DONE** |
+| SF.* FX params (9 cmds) | Low | **DONE** |
+| Buffer loading (/b_allocRead) | Medium | Pending |
+| monokit_main bus 21 routing | Low | Pending |
+| OSC param routing fix | Low | Pending |
+| monokit_sampler SynthDef | Medium | Compiled |
+| **Phase 3: Slicing** | | |
+| Auto-slice on file load | Medium | Pending |
+| S.SLICE manual re-slice | Low | Pending |
+| S.ONSET transient detection | Medium | Pending |
+| aubio-rs integration | Medium | Pending |
+| **Phase 4: Polish** | | |
+| KIT.INFO command | Low | Pending |
+| GRID.MODE 4 FX viz | Medium | Placeholder |
+| GRID.MODE 5 sampler viz | Medium | Placeholder |
+| Help system updates | Low | Pending |
+| Scene persistence | Medium | Pending |
+
+**Current Blockers (must fix for audio):**
+1. monokit_main doesn't read bus 21 (sampler output)
+2. OSC params use wrong names (sampler_slot vs s_bufnum)
+3. No buffer allocation on KIT load
+4. route_param_to_node() missing sampler params
+
+---
+
 ### v0.4.3 - Stability & Polish (COMPLETE)
 
 **See `docs/V0.4.3_PLAN.md` for detailed progress tracking**

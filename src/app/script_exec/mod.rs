@@ -104,6 +104,7 @@ impl App {
             confirm_overwrite_scene: &mut self.confirm_overwrite_scene,
             scene_modified: &mut self.scene_modified,
             pending_confirmation: &mut self.pending_confirmation,
+            sampler_state: &mut self.sampler_state,
         };
 
         let result = process_command(

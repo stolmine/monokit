@@ -3,7 +3,7 @@ use crate::output::OutputDecider;
 use crate::terminal::TerminalCapabilities;
 use crate::theme::Theme;
 use crate::types::{
-    ColorMode, ConfirmAction, Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, NotesStorage, Page, ParamActivity, PatternStorage, ScaleState, ScopeData, ScriptMutes, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
+    ColorMode, ConfirmAction, Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, NotesStorage, Page, ParamActivity, PatternStorage, SamplerState, ScaleState, ScopeData, ScriptMutes, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables,
 };
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -117,6 +117,7 @@ pub struct App {
     pub confirm_overwrite_scene: bool,
     pub scene_modified: bool,
     pub pending_confirmation: Option<ConfirmAction>,
+    pub sampler_state: SamplerState,
 }
 
 impl App {
@@ -259,6 +260,7 @@ impl App {
             confirm_overwrite_scene: config.display.confirm_overwrite_scene,
             scene_modified: false,
             pending_confirmation: None,
+            sampler_state: SamplerState::default(),
         }
     }
 
@@ -454,6 +456,7 @@ impl App {
             confirm_overwrite_scene: &mut self.confirm_overwrite_scene,
             scene_modified: &mut self.scene_modified,
             pending_confirmation: &mut self.pending_confirmation,
+            sampler_state: &mut self.sampler_state,
         };
 
         let result = crate::commands::process_command(

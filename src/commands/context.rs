@@ -3,7 +3,7 @@ use crate::output::OutputDecider;
 use crate::terminal::TerminalCapabilities;
 use crate::theme::Theme;
 use crate::types::{
-    ColorMode, ConfirmAction, Counters, EqState, MetroCommand, NotesStorage, Page, PatternStorage, ScaleState,
+    ColorMode, ConfirmAction, Counters, EqState, MetroCommand, NotesStorage, Page, PatternStorage, SamplerState, ScaleState,
     ScriptMutes, ScriptStorage, ScopeSettings, SyncMode, Variables,
 };
 use std::sync::{mpsc::Sender, Arc};
@@ -80,6 +80,7 @@ pub struct ExecutionContext<'a> {
     pub confirm_overwrite_scene: &'a mut bool,
     pub scene_modified: &'a mut bool,
     pub pending_confirmation: &'a mut Option<ConfirmAction>,
+    pub sampler_state: &'a mut SamplerState,
 }
 
 impl<'a> ExecutionContext<'a> {}

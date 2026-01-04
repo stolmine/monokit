@@ -1514,6 +1514,94 @@ SynthDef(\monokit_recorder, { |bufnum|
 
 "  monokit_recorder.scsyndef".postln;
 
+SynthDef(\monokit_sampler, {
+    arg out = 21,
+        bufnum = 0,
+        t_gate = 0,
+        rate = 8192,       // 0-16383, 8192=1x playback
+        pitch = 0,         // -24 to +24 semitones
+        fine = 0,          // -100 to +100 cents
+        direction = 0,     // 0=forward, 1=reverse
+        loop = 0,          // 0=one-shot, 1=loop
+        startFrame = 0,
+        endFrame = -1,     // -1 means use buffer end
+        atk = 0,           // 0-16383 maps to 0-2000ms
+        dec = 8192,
+        rel = 1000,
+        sust = 0,          // 0=percussive, 1=gate hold
+        volume = 8192;     // 0-16383
+
+    var trig, gate;
+    var rateBase, pitchRatio, fineRatio, finalRate;
+    var bufFrames, actualEndFrame, playStart, playEnd;
+    var phasorRate, phase;
+    var sig, env;
+    var atkTime, decTime, relTime, sustLevel;
+    var volScale;
+    var normPos;
+
+    // Convert trigger to gate
+    trig = Trig1.kr(t_gate, 0.001);
+    gate = Latch.kr(sust, trig) + ((1 - sust) * trig);
+
+    // Calculate playback rate from rate + pitch + fine + direction
+    rateBase = rate / 8192;  // 0-16383 -> 0-2x
+    pitchRatio = (pitch / 12).midiratio;  // semitones to ratio
+    fineRatio = (fine / 1200).midiratio;  // cents to ratio
+    finalRate = rateBase * pitchRatio * fineRatio;
+    finalRate = Select.kr(direction, [finalRate, finalRate.neg]);
+
+    // Get buffer info and calculate boundaries
+    bufFrames = BufFrames.kr(bufnum);
+    actualEndFrame = Select.kr(endFrame < 0, [endFrame, bufFrames]);
+    playStart = startFrame.min(bufFrames - 1);
+    playEnd = actualEndFrame.min(bufFrames);
+
+    // Phasor for sample-accurate playback
+    phasorRate = finalRate * BufRateScale.kr(bufnum);
+    phase = Phasor.ar(
+        trig: trig,
+        rate: phasorRate,
+        start: playStart,
+        end: playEnd,
+        resetPos: Select.kr(direction, [playStart, playEnd - 1])
+    );
+
+    // Loop control: if loop=0, gate off when phase reaches end
+    gate = gate * Select.kr(loop, [
+        (phase < (playEnd - 1)).asInteger,  // one-shot: gate off at end
+        1                                     // loop: keep gate on
+    ]);
+
+    // Read from buffer with cubic interpolation
+    sig = BufRd.ar(1, bufnum, phase, 1, 4);
+
+    // ADSR envelope
+    atkTime = (atk / 16383) * 2.0;  // 0-2000ms
+    decTime = (dec / 16383) * 2.0;
+    relTime = (rel / 1000.0).min(5.0);  // 0-5000ms
+    sustLevel = Select.kr(sust > 0, [0, 1]);
+
+    env = EnvGen.kr(
+        Env.adsr(atkTime, decTime, sustLevel, relTime),
+        gate,
+        doneAction: 2
+    );
+
+    // Apply envelope and volume
+    volScale = volume / 16383;
+    sig = sig * env * volScale;
+
+    // Output to bus 21
+    Out.ar(out, sig);
+
+    // Send playhead position (normalized 0-1) at 20Hz for UI meter
+    normPos = ((phase - playStart) / (playEnd - playStart)).max(0).min(1);
+    SendReply.kr(Impulse.kr(20), '/monokit/sampler/position', normPos);
+}).writeDefFile(synthdefs_dir);
+
+"  monokit_sampler.scsyndef".postln;
+
 "".postln;
 ("SynthDefs compiled successfully to " ++ synthdefs_dir).postln;
 "  - monokit.scsyndef (monolithic - backward compatibility)".postln;
@@ -1525,6 +1613,7 @@ SynthDef(\monokit_recorder, { |bufnum|
 "  - monokit_spectrum.scsyndef (spectrum analyzer)".postln;
 "  - monokit_scope.scsyndef (oscilloscope)".postln;
 "  - monokit_recorder.scsyndef (audio recorder)".postln;
+"  - monokit_sampler.scsyndef (sample playback)".postln;
 "NOTE: Runtime uses 5-synth architecture (noise, mod, primary, plaits, main)".postln;
 { 0.exit }.defer(0.1);  // Deferred exit to allow postln to complete
 )

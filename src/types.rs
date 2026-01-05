@@ -983,6 +983,7 @@ pub struct SamplerState {
     pub playback: SamplerPlaybackParams,
     pub fx: SamplerFxParams,
     pub playing: bool,
+    pub total_frames: Option<usize>,
 }
 
 impl Default for SamplerState {
@@ -997,6 +998,7 @@ impl Default for SamplerState {
             playback: SamplerPlaybackParams::default(),
             fx: SamplerFxParams::default(),
             playing: false,
+            total_frames: None,
         }
     }
 }

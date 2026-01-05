@@ -732,6 +732,9 @@ where
         "S.LEN" | "SLE" => {
             synth_params::handle_s_len(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
         }
+        "S.SLICE" | "SSLC" => {
+            synth_params::handle_s_slice(&parts, variables, patterns, counters, scripts, script_index, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
+        }
         "S.ATK" | "SA" => {
             synth_params::handle_s_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }

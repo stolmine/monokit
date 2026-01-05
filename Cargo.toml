@@ -35,6 +35,9 @@ serde_json = "1"
 rand = "0.8"
 serde-big-array = "0.5.1"
 
+# WAV/AIFF file metadata reading
+hound = "3.5"
+
 # Static initialization for alias maps
 once_cell = "1.19"
 

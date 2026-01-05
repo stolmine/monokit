@@ -6,6 +6,7 @@ use rosc::{encoder, OscMessage, OscPacket, OscType};
 use std::net::UdpSocket;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::Sender;
+use std::fs::File;
 
 use super::common::define_int_param;
 
@@ -158,6 +159,18 @@ fn is_audio_file(path: &Path) -> bool {
     } else {
         false
     }
+}
+
+fn read_wav_frame_count(path: &Path) -> Option<usize> {
+    let file = File::open(path).ok()?;
+    let reader = hound::WavReader::new(file).ok()?;
+    let spec = reader.spec();
+    let channels = spec.channels as usize;
+    if channels == 0 {
+        return None;
+    }
+    let total_samples = reader.len() as usize;
+    Some(total_samples / channels)
 }
 
 fn find_kits_and_samples(base_dir: &Path, root_dir: &Path) -> (Vec<String>, Vec<String>) {
@@ -332,13 +345,15 @@ where
     let resolved_path_str = resolved_path.to_string_lossy();
     let debug_level = *ctx.debug_level;
 
-    let (mode, num_slots, slots) = if resolved_path.is_file() {
+    let (mode, num_slots, slots, total_frames) = if resolved_path.is_file() {
         let buffer_id = SAMPLER_BUFFER_BASE;
 
         if let Err(e) = send_buffer_alloc_read(buffer_id, &resolved_path_str, debug_level, &mut output) {
             output(format!("KIT: FAILED TO LOAD FILE: {}", e));
             return Ok(());
         }
+
+        let frame_count = read_wav_frame_count(&resolved_path);
 
         let slot = SampleSlot {
             buffer_id,
@@ -347,7 +362,7 @@ where
             file_path: Some(resolved_path_str.to_string()),
         };
 
-        (SamplerMode::Slice, 1, vec![slot])
+        (SamplerMode::Slice, 1, vec![slot], frame_count)
     } else if resolved_path.is_dir() {
         let mut file_slots = Vec::new();
 
@@ -384,7 +399,7 @@ where
         }
 
         let count = file_slots.len();
-        (SamplerMode::Kit, count, file_slots)
+        (SamplerMode::Kit, count, file_slots, None)
     } else {
         // Path exists but is neither file nor directory
         output(format!("KIT: INVALID PATH TYPE: {}", path_str));
@@ -407,6 +422,12 @@ where
 
     // Store loaded buffer slots
     sampler.slots = slots;
+
+    sampler.total_frames = if mode == SamplerMode::Slice {
+        total_frames
+    } else {
+        None
+    };
 
     // Update global KIT_SLOTS atomic for eval_expression
     crate::eval::KIT_SLOTS.store(num_slots as u16, std::sync::atomic::Ordering::Relaxed);
@@ -472,12 +493,17 @@ where
     // Update current slot
     sampler_state.current_slot = slot;
 
-    // Get buffer ID from the slot
-    let buffer_id = if slot < sampler_state.slots.len() {
-        sampler_state.slots[slot].buffer_id as i32
+    // Get buffer ID and frame boundaries from the slot
+    let (buffer_id, start_frame, end_frame) = if slot < sampler_state.slots.len() {
+        let slot_data = &sampler_state.slots[slot];
+        (
+            slot_data.buffer_id as i32,
+            slot_data.start_frame as i32,
+            slot_data.end_frame as i32,
+        )
     } else {
-        // Slot not loaded, use 0 (no buffer)
-        0
+        // Slot not loaded, use defaults
+        (0, 0, 0)
     };
 
     metro_tx
@@ -486,6 +512,20 @@ where
             OscType::Int(buffer_id),
         ))
         .context("Failed to send sampler buffer ID")?;
+
+    metro_tx
+        .send(MetroCommand::SendParam(
+            "s_startFrame".to_string(),
+            OscType::Int(start_frame),
+        ))
+        .context("Failed to send sampler start frame")?;
+
+    metro_tx
+        .send(MetroCommand::SendParam(
+            "s_endFrame".to_string(),
+            OscType::Int(end_frame),
+        ))
+        .context("Failed to send sampler end frame")?;
 
     metro_tx
         .send(MetroCommand::SendParam(
@@ -821,5 +861,99 @@ where
             }
         }
     }
+    Ok(())
+}
+
+/// S.SLICE <n> - Divide loaded buffer into N equal slices (2-128)
+pub fn handle_s_slice<F>(
+    parts: &[&str],
+    variables: &Variables,
+    patterns: &mut PatternStorage,
+    counters: &mut Counters,
+    scripts: &ScriptStorage,
+    script_index: usize,
+    debug_level: u8,
+    scale: &ScaleState,
+    sampler_state: &mut crate::types::SamplerState,
+    out_cfm: bool,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    if parts.len() < 2 {
+        output("S.SLICE: REQUIRES VALUE".to_string());
+        return Ok(());
+    }
+
+    if sampler_state.mode != SamplerMode::Slice {
+        output("S.SLICE: SLICE MODE ONLY".to_string());
+        return Ok(());
+    }
+
+    let total_frames = match sampler_state.total_frames {
+        Some(frames) => frames,
+        None => {
+            output("S.SLICE: NO FILE LOADED".to_string());
+            return Ok(());
+        }
+    };
+
+    let n: i32 = if let Some((expr_val, _)) = eval_expression(
+        parts, 1, variables, patterns, counters, scripts, script_index, scale
+    ) {
+        expr_val as i32
+    } else {
+        match parts[1].parse() {
+            Ok(v) => v,
+            Err(_) => {
+                output("S.SLICE: INVALID VALUE".to_string());
+                return Ok(());
+            }
+        }
+    };
+
+    if n < 2 || n > 128 {
+        output("S.SLICE: RANGE 2-128".to_string());
+        return Ok(());
+    }
+
+    let n = n as usize;
+
+    // Prevent zero-length slices when file is too small
+    if total_frames < n {
+        output("S.SLICE: FILE TOO SHORT".to_string());
+        return Ok(());
+    }
+
+    let slice_len = total_frames / n;
+
+    sampler_state.slots.clear();
+    for i in 0..n {
+        let start_frame = i * slice_len;
+        let end_frame = if i == n - 1 {
+            total_frames
+        } else {
+            (i + 1) * slice_len
+        };
+
+        sampler_state.slots.push(SampleSlot {
+            buffer_id: SAMPLER_BUFFER_BASE,
+            start_frame,
+            end_frame,
+            file_path: None,
+        });
+    }
+
+    sampler_state.num_slots = n;
+    sampler_state.slice_count = Some(n);
+    sampler_state.current_slot = 0;
+
+    crate::eval::KIT_SLOTS.store(n as u16, std::sync::atomic::Ordering::Relaxed);
+
+    if debug_level >= TIER_CONFIRMS || out_cfm {
+        output(format!("S.SLICE: {} SLICES", n));
+    }
+
     Ok(())
 }

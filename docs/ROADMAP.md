@@ -199,11 +199,12 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | monokit_main bus 21 routing | Low | **DONE** |
 | monokit_sampler SynthDef | Medium | **DONE** |
 | **Phase 3: Slicing** | | |
-| Auto-slice on file load | Medium | Pending |
-| S.SLICE manual re-slice | Low | Pending |
-| equal length slice mode | Medium | Pending |
+| S.SLICE equal division | Low | **DONE** |
+| STR sends frame boundaries | Low | **DONE** |
+| hound WAV metadata | Low | **DONE** |
 | S.ONSET transient detection | Medium | Pending |
 | aubio-rs integration | Medium | Pending |
+| GRID.MODE 5 slice visualization | Medium | Pending |
 | **Phase 4: Polish** | | |
 | Sample params coverage for RST | Low | **DONE** |
 | SFX command for FX routing | Low | Pending |
@@ -221,11 +222,9 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | Scene persistence | Medium | Pending |
 
 **Completed this session:**
-- Sampler audio output working (bus 21 routing, buffer allocation)
-- One-shot playback fixed (audio-rate SetResetFF detection)
-- First-trigger bug fixed
-- Case-insensitive kit path resolution
-- SF.* effects chain implemented
+- S.SLICE equal division slicing (2-128 slices)
+- STR sends frame boundaries for slice playback
+- hound crate integration for WAV metadata
 
 ---
 

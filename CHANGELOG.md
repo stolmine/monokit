@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.5.0 (January 2026) - Sampler & Grid Expansion (IN PROGRESS)
+
+### Phase 3A: Sampler Slicing
+
+**S.SLICE Equal Division**
+- Added S.SLICE / SSLC command to divide loaded buffer into 2-128 equal slices
+- STR command now sends s_startFrame and s_endFrame to SuperCollider
+- Each slice plays its corresponding portion of the audio file
+- Integrated hound crate for WAV file metadata (frame count) reading
+- Added total_frames tracking to SamplerState
+
+**Usage:**
+```
+KIT breaks/amen.wav    # Load a file in slice mode
+S.SLICE 16             # Divide into 16 equal slices
+STR 0                  # Play first slice
+STR 8                  # Play middle slice
+STR 15                 # Play last slice
+```
+
+---
+
 ## v0.4.3 (January 2026) - Stability & Polish
 
 ### New Features

@@ -735,6 +735,24 @@ where
         "S.SLICE" | "SSLC" => {
             synth_params::handle_s_slice(&parts, variables, patterns, counters, scripts, script_index, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
+        "S.ONSET" | "SONS" => {
+            synth_params::handle_s_onset(
+                &parts,
+                &mut *ctx.sampler_state,
+                *debug_level,
+                *out_cfm,
+                output,
+            )?;
+        }
+        "S.ONSET.MIN" | "SOMIN" => {
+            synth_params::handle_s_onset_min(
+                &parts,
+                &mut *ctx.sampler_state,
+                *debug_level,
+                *out_cfm,
+                output,
+            )?;
+        }
         "S.ATK" | "SA" => {
             synth_params::handle_s_atk(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }

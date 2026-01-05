@@ -1,6 +1,7 @@
 use crate::commands::context::ExecutionContext;
 use crate::eval::eval_expression;
 use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, SamplerMode, SampleSlot, Variables, TIER_CONFIRMS, SAMPLER_BUFFER_BASE, OSC_ADDR};
+use crate::sampler::onset::{OnsetDetector, to_mono};
 use anyhow::{Context, Result};
 use rosc::{encoder, OscMessage, OscPacket, OscType};
 use std::net::UdpSocket;
@@ -208,11 +209,11 @@ fn find_kits_and_samples_impl(base_dir: &Path, root_dir: &Path, depth: usize, ma
             if let Some(rel_str) = relative.to_str() {
                 if depth == 1 {
                     for audio_file in &audio_files {
-                        if let Some(file_name) = audio_file.file_stem().and_then(|s| s.to_str()) {
-                            let mut path = String::with_capacity(rel_str.len() + file_name.len() + 1);
+                        if let Some(fname) = audio_file.file_name().and_then(|s| s.to_str()) {
+                            let mut path = String::with_capacity(rel_str.len() + fname.len() + 1);
                             path.push_str(rel_str);
                             path.push('/');
-                            path.push_str(file_name);
+                            path.push_str(fname);
                             samples.push(path);
                         }
                     }
@@ -409,7 +410,7 @@ where
     // Update sampler state
     let sampler = &mut *ctx.sampler_state;
     sampler.mode = mode;
-    sampler.kit_path = Some(path_str.clone());
+    sampler.kit_path = Some(resolved_path_str.to_string());
     sampler.num_slots = num_slots;
     sampler.current_slot = 0;
 
@@ -953,6 +954,187 @@ where
 
     if debug_level >= TIER_CONFIRMS || out_cfm {
         output(format!("S.SLICE: {} SLICES", n));
+    }
+
+    Ok(())
+}
+
+pub fn handle_s_onset<F>(
+    parts: &[&str],
+    sampler_state: &mut crate::types::SamplerState,
+    debug_level: u8,
+    out_cfm: bool,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    if sampler_state.mode != SamplerMode::Slice {
+        output("S.ONSET: SLICE MODE ONLY".to_string());
+        return Ok(());
+    }
+
+    let kit_path = match &sampler_state.kit_path {
+        Some(path) => path,
+        None => {
+            output("S.ONSET: NO FILE LOADED".to_string());
+            return Ok(());
+        }
+    };
+
+    let sensitivity = if parts.len() >= 2 {
+        match parts[1].parse::<u32>() {
+            Ok(val) if val <= 10 => val,
+            _ => {
+                output("S.ONSET: SENS RANGE 0-10".to_string());
+                return Ok(());
+            }
+        }
+    } else {
+        sampler_state.onset_sensitivity
+    };
+
+    let path = PathBuf::from(kit_path);
+    let ext = path.extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("");
+
+    if !matches!(ext, "wav" | "WAV" | "aif" | "AIF" | "aiff" | "AIFF") {
+        output("S.ONSET: WAV/AIFF ONLY".to_string());
+        return Ok(());
+    }
+
+    let file = File::open(&path)
+        .context("Failed to open audio file")?;
+    let mut reader = hound::WavReader::new(file)
+        .context("Failed to read WAV file")?;
+
+    let spec = reader.spec();
+    let sample_rate = spec.sample_rate;
+    let channels = spec.channels;
+
+    let samples: Vec<f32> = reader.samples::<i32>()
+        .filter_map(|s| s.ok())
+        .map(|s| s as f32 / 2147483648.0)
+        .collect();
+
+    let mono = to_mono(&samples, channels);
+
+    let detector = OnsetDetector::new(sample_rate)
+        .with_sensitivity(sensitivity)
+        .with_min_spacing(sampler_state.onset_min_spacing_ms);
+
+    let onsets = detector.detect(&mono);
+
+    if onsets.len() < 2 {
+        output("S.ONSET: <2 FOUND, USING S.SLICE 16".to_string());
+
+        let total_frames = match sampler_state.total_frames {
+            Some(frames) => frames,
+            None => {
+                output("S.ONSET: NO FILE LOADED".to_string());
+                return Ok(());
+            }
+        };
+
+        let n = 16usize;
+        if total_frames < n {
+            output("S.SLICE: FILE TOO SHORT".to_string());
+            return Ok(());
+        }
+
+        let slice_len = total_frames / n;
+        sampler_state.slots.clear();
+
+        for i in 0..n {
+            let start_frame = i * slice_len;
+            let end_frame = if i == n - 1 {
+                total_frames
+            } else {
+                (i + 1) * slice_len
+            };
+
+            sampler_state.slots.push(SampleSlot {
+                buffer_id: SAMPLER_BUFFER_BASE,
+                start_frame,
+                end_frame,
+                file_path: None,
+            });
+        }
+
+        sampler_state.num_slots = n;
+        sampler_state.slice_count = Some(n);
+        sampler_state.current_slot = 0;
+        crate::eval::KIT_SLOTS.store(n as u16, std::sync::atomic::Ordering::Relaxed);
+
+        return Ok(());
+    }
+
+    let num_slices = onsets.len();
+    sampler_state.slots.clear();
+
+    for i in 0..num_slices {
+        let start_frame = onsets[i];
+        let end_frame = if i == num_slices - 1 {
+            mono.len()
+        } else {
+            onsets[i + 1]
+        };
+
+        sampler_state.slots.push(SampleSlot {
+            buffer_id: SAMPLER_BUFFER_BASE,
+            start_frame,
+            end_frame,
+            file_path: None,
+        });
+    }
+
+    sampler_state.num_slots = num_slices;
+    sampler_state.slice_count = Some(num_slices);
+    sampler_state.current_slot = 0;
+    sampler_state.onset_sensitivity = sensitivity;
+
+    crate::eval::KIT_SLOTS.store(num_slices as u16, std::sync::atomic::Ordering::Relaxed);
+
+    if debug_level >= TIER_CONFIRMS || out_cfm {
+        output(format!("S.ONSET: {} SLICES", num_slices));
+    }
+
+    Ok(())
+}
+
+pub fn handle_s_onset_min<F>(
+    parts: &[&str],
+    sampler_state: &mut crate::types::SamplerState,
+    debug_level: u8,
+    out_cfm: bool,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    if parts.len() < 2 {
+        output("S.ONSET.MIN: REQUIRES VALUE".to_string());
+        return Ok(());
+    }
+
+    let value: f32 = match parts[1].parse() {
+        Ok(v) => v,
+        Err(_) => {
+            output("S.ONSET.MIN: INVALID VALUE".to_string());
+            return Ok(());
+        }
+    };
+
+    if value < 10.0 || value > 500.0 {
+        output("S.ONSET.MIN: RANGE 10-500".to_string());
+        return Ok(());
+    }
+
+    sampler_state.onset_min_spacing_ms = value;
+
+    if debug_level >= TIER_CONFIRMS || out_cfm {
+        output(format!("S.ONSET.MIN: SET TO {}", value));
     }
 
     Ok(())

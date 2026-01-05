@@ -209,6 +209,10 @@ pub fn register_synth(m: &mut std::collections::HashMap<&'static str, CommandDef
     m.insert("SLE", CommandDef::new("SLE", Some("S.LEN"), ArgCount::AtLeast(1), "Sample loop length"));
     m.insert("S.SLICE", CommandDef::new("S.SLICE", None, ArgCount::AtLeast(1), "Divide buffer into N slices"));
     m.insert("SSLC", CommandDef::new("SSLC", Some("S.SLICE"), ArgCount::AtLeast(1), "Divide buffer into N slices"));
+    m.insert("S.ONSET", CommandDef::new("S.ONSET", None, ArgCount::Range(0, 1), "Auto-detect slices"));
+    m.insert("SONS", CommandDef::new("SONS", Some("S.ONSET"), ArgCount::Range(0, 1), "Auto-detect slices"));
+    m.insert("S.ONSET.MIN", CommandDef::new("S.ONSET.MIN", None, ArgCount::Exactly(1), "Min onset spacing ms"));
+    m.insert("SOMIN", CommandDef::new("SOMIN", Some("S.ONSET.MIN"), ArgCount::Exactly(1), "Min onset spacing ms"));
 
     // Sampler - Envelope Parameters
     m.insert("S.ATK", CommandDef::new("S.ATK", None, ArgCount::AtLeast(1), "Sample attack time"));

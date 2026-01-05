@@ -202,8 +202,9 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | S.SLICE equal division | Low | **DONE** |
 | STR sends frame boundaries | Low | **DONE** |
 | hound WAV metadata | Low | **DONE** |
-| S.ONSET transient detection | Medium | Pending |
-| aubio-rs integration | Medium | Pending |
+| S.ONSET energy-based detection | Medium | **DONE** |
+| S.ONSET.MIN spacing param | Low | **DONE** |
+| Spectral flux upgrade (rustfft) | Medium | Future |
 | GRID.MODE 5 slice visualization | Medium | Pending |
 | **Phase 4: Polish** | | |
 | Sample params coverage for RST | Low | **DONE** |
@@ -222,9 +223,10 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | Scene persistence | Medium | Pending |
 
 **Completed this session:**
-- S.SLICE equal division slicing (2-128 slices)
-- STR sends frame boundaries for slice playback
-- hound crate integration for WAV metadata
+- S.ONSET transient detection with exponential sensitivity curve
+- S.ONSET.MIN minimum spacing parameter
+- Pure-Rust energy-based onset detector (no external deps)
+- KIT listing now shows file extensions
 
 ---
 

@@ -984,6 +984,8 @@ pub struct SamplerState {
     pub fx: SamplerFxParams,
     pub playing: bool,
     pub total_frames: Option<usize>,
+    pub onset_sensitivity: u32,
+    pub onset_min_spacing_ms: f32,
 }
 
 impl Default for SamplerState {
@@ -999,6 +1001,8 @@ impl Default for SamplerState {
             fx: SamplerFxParams::default(),
             playing: false,
             total_frames: None,
+            onset_sensitivity: 5,
+            onset_min_spacing_ms: 50.0,
         }
     }
 }

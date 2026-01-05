@@ -2,6 +2,28 @@
 
 ## v0.5.0 (January 2026) - Sampler & Grid Expansion (IN PROGRESS)
 
+### Phase 3B: Transient Detection
+
+**S.ONSET Auto-Slicing**
+- Added S.ONSET / SONS command for automatic transient detection
+- Pure-Rust energy-based onset detector (no external dependencies)
+- Exponential sensitivity curve: 0=sensitive (0.5×), 5=balanced (2×), 10=conservative (8×)
+- Falls back to S.SLICE 16 if fewer than 2 transients detected
+- Added S.ONSET.MIN / SOMIN for minimum spacing control (10-500ms, default 50)
+
+**Bug Fixes**
+- KIT listing now shows file extensions (was using file_stem, now file_name)
+- KIT stores resolved absolute path for S.ONSET file access
+
+**Usage:**
+```
+KIT breaks/amen.wav    # Load a file in slice mode
+S.ONSET                # Auto-detect transients (default sens 5)
+S.ONSET 2              # More sensitive, more slices
+S.ONSET 8              # Less sensitive, fewer slices
+SOMIN 30               # Set minimum 30ms between onsets
+```
+
 ### Phase 3A: Sampler Slicing
 
 **S.SLICE Equal Division**

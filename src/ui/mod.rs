@@ -456,6 +456,7 @@ pub fn run_app<B: ratatui::backend::Backend>(
                                     &app.patterns,
                                     &app.notes,
                                     &app.script_mutes,
+                                    &app.sampler_state,
                                 );
                                 match crate::scene::save_scene(&name, &scene) {
                                     Ok(()) => {

@@ -1,4 +1,4 @@
-use crate::types::{ConfirmAction, NotesStorage, PatternStorage, ScriptMutes, ScriptStorage, Variables, TIER_ERRORS, TIER_ESSENTIAL, TIER_QUERIES, TIER_CONFIRMS};
+use crate::types::{ConfirmAction, NotesStorage, PatternStorage, SamplerState, ScriptMutes, ScriptStorage, Variables, TIER_ERRORS, TIER_ESSENTIAL, TIER_QUERIES, TIER_CONFIRMS};
 
 pub fn handle_save<F>(
     parts: &[&str],
@@ -17,6 +17,7 @@ pub fn handle_save<F>(
     confirm_overwrite_scene: bool,
     pending_confirmation: &mut Option<ConfirmAction>,
     scene_modified: &mut bool,
+    sampler_state: &SamplerState,
     mut output: F,
 ) where
     F: FnMut(String),
@@ -34,7 +35,7 @@ pub fn handle_save<F>(
         return;
     }
 
-    let scene = crate::scene::Scene::from_app_state(scripts, patterns, notes, script_mutes);
+    let scene = crate::scene::Scene::from_app_state(scripts, patterns, notes, script_mutes, sampler_state);
     match crate::scene::save_scene(&name, &scene) {
         Ok(()) => {
             *current_scene_name = Some(name.clone());
@@ -70,6 +71,7 @@ pub fn handle_load<F>(
     out_ess: bool,
     script_mutes: &mut ScriptMutes,
     scene_modified: &mut bool,
+    sampler_state: &mut SamplerState,
     mut output: F,
 ) -> bool
 where
@@ -82,7 +84,7 @@ where
     let name = parts[1..].join(" ");
     match crate::scene::load_scene(&name) {
         Ok(scene) => {
-            scene.apply_to_app_state(scripts, patterns, notes, script_mutes);
+            scene.apply_to_app_state(scripts, patterns, notes, script_mutes, sampler_state);
             *variables = crate::types::Variables::default();
             *current_scene_name = Some(name.clone());
             *scene_modified = false;

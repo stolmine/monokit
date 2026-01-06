@@ -1031,7 +1031,7 @@ where
             return misc::handle_script(&parts, variables, patterns, counters, scripts, script_index, scale);
         }
         "SAVE" => {
-            scene_cmds::handle_save(&parts, scripts, patterns, notes, current_scene_name, *scramble_enabled, *scramble_mode, *scramble_speed, *scramble_curve, header_scramble, *debug_level, *out_ess, &*ctx.script_mutes, *ctx.confirm_overwrite_scene, &mut *ctx.pending_confirmation, &mut *ctx.scene_modified, output);
+            scene_cmds::handle_save(&parts, scripts, patterns, notes, current_scene_name, *scramble_enabled, *scramble_mode, *scramble_speed, *scramble_curve, header_scramble, *debug_level, *out_ess, &*ctx.script_mutes, *ctx.confirm_overwrite_scene, &mut *ctx.pending_confirmation, &mut *ctx.scene_modified, &*ctx.sampler_state, output);
         }
         "LOAD" => {
             if *load_rst {
@@ -1040,7 +1040,7 @@ where
                 // RST sends 157 params with 5ms delays (785ms) + buffer for safety
                 std::thread::sleep(std::time::Duration::from_millis(160));
             }
-            if scene_cmds::handle_load(&parts, &mut *ctx.variables, &mut *ctx.scripts, &mut *ctx.patterns, &mut *ctx.notes, &mut *ctx.current_scene_name, *ctx.scramble_enabled, *ctx.scramble_mode, *ctx.scramble_speed, *ctx.scramble_curve, &mut *ctx.header_scramble, *ctx.debug_level, *ctx.out_ess, &mut *ctx.script_mutes, &mut *ctx.scene_modified, output) {
+            if scene_cmds::handle_load(&parts, &mut *ctx.variables, &mut *ctx.scripts, &mut *ctx.patterns, &mut *ctx.notes, &mut *ctx.current_scene_name, *ctx.scramble_enabled, *ctx.scramble_mode, *ctx.scramble_speed, *ctx.scramble_curve, &mut *ctx.header_scramble, *ctx.debug_level, *ctx.out_ess, &mut *ctx.script_mutes, &mut *ctx.scene_modified, &mut *ctx.sampler_state, output) {
                 log_command(&format!("CMD: {} → DISPATCHED", trimmed));
                 return Ok(vec![9]);
             }

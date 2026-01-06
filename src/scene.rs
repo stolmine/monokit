@@ -3,7 +3,7 @@ use std::env;
 use std::fs;
 use std::path::PathBuf;
 
-use crate::types::{NotesStorage, PatternStorage, ScriptMutes, ScriptStorage};
+use crate::types::{NotesStorage, PatternStorage, SamplerState, ScriptMutes, ScriptStorage};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Scene {
@@ -15,6 +15,8 @@ pub struct Scene {
     pub notes: Vec<String>,
     #[serde(default)]
     pub script_mutes: Vec<bool>,
+    #[serde(default)]
+    pub sampler: Option<SamplerState>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -119,7 +121,7 @@ pub fn delete_scene(name: &str) -> Result<(), SceneError> {
 }
 
 impl Scene {
-    pub fn from_app_state(scripts: &ScriptStorage, patterns: &PatternStorage, notes: &NotesStorage, script_mutes: &ScriptMutes) -> Self {
+    pub fn from_app_state(scripts: &ScriptStorage, patterns: &PatternStorage, notes: &NotesStorage, script_mutes: &ScriptMutes, sampler: &SamplerState) -> Self {
         let scene_scripts: Vec<SceneScript> = scripts
             .scripts
             .iter()
@@ -147,10 +149,11 @@ impl Scene {
             pattern_working: patterns.working,
             notes: notes.lines.to_vec(),
             script_mutes: script_mutes.muted.to_vec(),
+            sampler: Some(sampler.clone()),
         }
     }
 
-    pub fn apply_to_app_state(&self, scripts: &mut ScriptStorage, patterns: &mut PatternStorage, notes: &mut NotesStorage, script_mutes: &mut ScriptMutes) {
+    pub fn apply_to_app_state(&self, scripts: &mut ScriptStorage, patterns: &mut PatternStorage, notes: &mut NotesStorage, script_mutes: &mut ScriptMutes, sampler: &mut SamplerState) {
         for (i, scene_script) in self.scripts.iter().enumerate() {
             if i < scripts.scripts.len() {
                 for (j, line) in scene_script.lines.iter().enumerate() {
@@ -185,6 +188,11 @@ impl Scene {
         // Load script mutes
         for i in 0..10 {
             script_mutes.muted[i] = self.script_mutes.get(i).copied().unwrap_or(false);
+        }
+
+        // Load sampler state
+        if let Some(scene_sampler) = &self.sampler {
+            *sampler = scene_sampler.clone();
         }
     }
 }

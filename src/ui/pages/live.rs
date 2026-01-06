@@ -57,6 +57,125 @@ fn render_repl_view(app: &crate::App, height: usize) -> Paragraph<'static> {
         )
 }
 
+fn render_sampler_viz(app: &crate::App) -> Vec<String> {
+    use crate::types::SamplerMode;
+    use std::path::Path;
+
+    let mut lines = Vec::new();
+
+    // Row 1: Kit name or file name
+    let kit_display = if let Some(ref kit_path) = app.sampler_state.kit_path {
+        let name = Path::new(kit_path)
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("???");
+
+        let truncated = if name.len() > 21 {
+            format!("{}...", &name[..18])
+        } else {
+            name.to_string()
+        };
+
+        format!("KIT  {:<21}", truncated)
+    } else {
+        "KIT  (none loaded)       ".to_string()
+    };
+    lines.push(format!("{:<30}", kit_display));
+
+    // Row 2: Mode + Slot info
+    let mode_str = match app.sampler_state.mode {
+        SamplerMode::Slice => "SLC",
+        SamplerMode::Kit => "KIT",
+    };
+
+    let slot_display = if app.sampler_state.num_slots > 0 {
+        format!("{} {:>3}/{:<3}", mode_str, app.sampler_state.current_slot, app.sampler_state.num_slots)
+    } else {
+        format!("{} --/--", mode_str)
+    };
+
+    // Add slice count if in slice mode
+    let slice_info = if let Some(slice_count) = app.sampler_state.slice_count {
+        format!(" {}SL", slice_count)
+    } else {
+        "".to_string()
+    };
+
+    lines.push(format!("{:<30}", format!("SLOT {}{:<16}", slot_display, slice_info)));
+
+    // Row 3: Playback parameters - Pitch, Direction, Loop
+    let pitch = app.sampler_state.playback.pitch;
+    let pitch_display = if pitch >= 0 {
+        format!("+{:>2}st", pitch)
+    } else {
+        format!("{:>3}st", pitch)
+    };
+
+    let dir_char = if app.sampler_state.playback.direction { "◄" } else { "►" };
+    let loop_char = if app.sampler_state.playback.loop_mode { "●" } else { "·" };
+
+    lines.push(format!("{:<30}", format!("PITCH {}  DIR{} LOOP{}", pitch_display, dir_char, loop_char)));
+
+    // Row 4: Envelope - Attack, Decay, Release
+    let atk = app.sampler_state.playback.attack;
+    let dec = app.sampler_state.playback.decay;
+    let rel = app.sampler_state.playback.release;
+
+    // Convert 0-16383 to milliseconds (rough estimate)
+    let atk_ms = (atk as f32 / 16383.0 * 1000.0) as u32;
+    let dec_ms = (dec as f32 / 16383.0 * 1000.0) as u32;
+    let rel_ms = (rel as f32 / 16383.0 * 1000.0) as u32;
+
+    lines.push(format!("{:<30}", format!("ENV A{:>4} D{:>4} R{:>4}", atk_ms, dec_ms, rel_ms)));
+
+    // Row 5: Volume and Pan
+    let vol = app.sampler_state.playback.volume;
+    let vol_db = if vol > 0 {
+        let normalized = vol as f32 / 16383.0;
+        20.0 * normalized.log10()
+    } else {
+        -60.0
+    };
+
+    let pan = app.sampler_state.playback.pan;
+    let pan_normalized = (pan as f32 / 8192.0).clamp(-1.0, 1.0);
+    let pan_value = (pan_normalized * 50.0).round() as i32;
+    let pan_display = if pan_value.abs() <= 2 {
+        " C ".to_string()
+    } else if pan_value < 0 {
+        format!("L{:<2}", pan_value.abs())
+    } else {
+        format!("R{:<2}", pan_value)
+    };
+
+    lines.push(format!("{:<30}", format!("MIX {:>+4.0}dB  PAN {}", vol_db, pan_display)));
+
+    // Row 6: FX routing and filter
+    let fx_routing = app.sampler_state.playback.fx_routing;
+    let fx_display = match fx_routing {
+        0 => "DRY",
+        1 => "PRE",
+        2 => "PST",
+        _ => "???",
+    };
+
+    let filter_cut = app.sampler_state.fx.filter_cut;
+    let cut_normalized = filter_cut as f32 / 16383.0;
+    let cut_freq = 20.0 + (cut_normalized * (20000.0 - 20.0));
+    let cut_display = if cut_freq >= 1000.0 {
+        format!("{:.1}k", cut_freq / 1000.0)
+    } else {
+        format!("{:.0}", cut_freq)
+    };
+
+    let filter_res = app.sampler_state.fx.filter_res;
+    let res_normalized = (filter_res as f32 / 16383.0 * 100.0) as u32;
+
+    lines.push(format!("{:<30}", format!("FX {} FLT {:>5}Hz R{:>2}%", fx_display, cut_display, res_normalized)));
+
+    lines
+}
+
 fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>) {
     const METER_CHARS: [char; 9] = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
     const METER_CHARS_ASCII: [char; 9] = [' ', '.', 'o', 'O', '0', '@', '#', '#', '#'];
@@ -328,15 +447,8 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
             "                              ".to_string(),
         ]
     } else if app.grid_mode == 5 {
-        // Mode 5: Sampler (placeholder)
-        vec![
-            "KIT  (none loaded)        ".to_string(),
-            "SLOT --/--                ".to_string(),
-            "RATE +0st  DIR► LOOP· GATE·".to_string(),
-            "                              ".to_string(),
-            "                              ".to_string(),
-            "                              ".to_string(),
-        ]
+        // Mode 5: Sampler visualization
+        render_sampler_viz(app)
     } else {
         Vec::new()
     };

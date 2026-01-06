@@ -11,7 +11,25 @@
 - Falls back to S.SLICE 16 if fewer than 2 transients detected
 - Added S.ONSET.MIN / SOMIN for minimum spacing control (10-500ms, default 50)
 
-**Bug Fixes**
+### Bug Fixes
+
+**SC Optimizer Zeroing Decay Params**
+- Fixed SuperCollider optimizer bug zeroing decay parameters (ad, dd, fed, mbd)
+- Root cause: SC optimizer discards seemingly "unused" envelope params
+- Solution: Changed to NamedControl for affected parameters
+- Ensures envelope decays work correctly after RST
+
+**Sampler end_frame=0 No Audio**
+- Fixed sampler producing no audio when end_frame=0
+- PlayBuf requires valid frame range; 0 end_frame caused silent playback
+- Now properly calculates frame boundaries for sliced playback
+
+**Audio Device Restart**
+- Added `-l 4` flag to scsynth startup for audio device reconnection
+- Enables automatic audio device restart on disconnect/reconnect
+- Improves stability when audio interfaces are power-cycled
+
+**Other Fixes**
 - KIT listing now shows file extensions (was using file_stem, now file_name)
 - KIT stores resolved absolute path for S.ONSET file access
 

@@ -227,6 +227,9 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - S.ONSET.MIN minimum spacing parameter
 - Pure-Rust energy-based onset detector (no external deps)
 - KIT listing now shows file extensions
+- Bug fix: SC optimizer zeroing decay params (ad, dd, fed, mbd) - NamedControl solution
+- Bug fix: Sampler end_frame=0 causing no audio output
+- Bug fix: Audio device restart (-l 4 for scsynth)
 
 ---
 

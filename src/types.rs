@@ -839,16 +839,21 @@ impl VoiceSynths {
 }
 
 // Parameter routing: maps parameter names to their target synth node
+// For parameters that need multiple destinations, use route_param_to_nodes() instead
 pub fn route_param_to_node(param: &str) -> i32 {
     match param {
         // Noise synth parameters
         "nw" | "nv" => NOISE_NODE_ID,
 
         // Modulator synth parameters
-        "mf" | "mw" | "mv" | "fb" | "fba" | "fbd" | "mb" | "mba" | "mbd" | "md" => MOD_NODE_ID,
+        "mf" | "mw" | "mv" | "fb" | "fba" | "fbd" | "nm" | "md" => MOD_NODE_ID,
+
+        // Shared modbus parameters - send to MOD as primary target
+        // Note: These also need to go to PRIMARY - see route_param_to_nodes()
+        "mb" | "mba" | "mbd" => MOD_NODE_ID,
 
         // Primary synth parameters
-        "pf" | "pw" | "pv" | "fm" | "fa" | "fd" | "pa" | "pd" | "tk" => PRIMARY_NODE_ID,
+        "pf" | "pw" | "pv" | "fm" | "fa" | "fd" | "pa" | "pd" | "tk" | "np" | "mp" | "mt" => PRIMARY_NODE_ID,
         "dc" | "dm" | "dd" | "da" => MAIN_NODE_ID,  // Discontinuity is in MAIN synth
 
         // Plaits synth parameters
@@ -867,6 +872,18 @@ pub fn route_param_to_node(param: &str) -> i32 {
 
         // Main synth parameters (effects, filters, etc.) - everything else
         _ => MAIN_NODE_ID,
+    }
+}
+
+// Returns ALL nodes that should receive this parameter
+// Most parameters only need one node, but some are shared across multiple synths
+pub fn route_param_to_nodes(param: &str) -> Vec<i32> {
+    match param {
+        // Shared modbus parameters - used by BOTH modulator and primary oscillator
+        "mb" | "mba" | "mbd" => vec![MOD_NODE_ID, PRIMARY_NODE_ID],
+
+        // All other parameters go to single node
+        _ => vec![route_param_to_node(param)],
     }
 }
 

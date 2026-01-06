@@ -1,5 +1,5 @@
 use crate::osc_utils::{create_bundle, OSC_LATENCY_MS};
-use crate::types::{DelayedCommand, MetroCommand, MetroEvent, MetroState, SyncMode, OSC_ADDR, MONOKIT_NODE_ID, route_param_to_node, NOISE_NODE_ID, MOD_NODE_ID, PRIMARY_NODE_ID, MAIN_NODE_ID, PLAITS_NODE_ID};
+use crate::types::{DelayedCommand, MetroCommand, MetroEvent, MetroState, SyncMode, OSC_ADDR, MONOKIT_NODE_ID, route_param_to_node, route_param_to_nodes, NOISE_NODE_ID, MOD_NODE_ID, PRIMARY_NODE_ID, MAIN_NODE_ID, PLAITS_NODE_ID};
 use rosc::{encoder, OscMessage, OscPacket, OscType};
 use spin_sleep::SpinSleeper;
 use audio_thread_priority::promote_current_thread_to_real_time;
@@ -52,11 +52,28 @@ fn create_param_message(param_name: &str, value: OscType) -> OscMessage {
         args: vec![
             OscType::Int(node_id),
             OscType::String(param_name.to_string()),
-            value,
+            value.clone(),
         ],
     };
     log_osc_message(&msg, "CREATE_PARAM");
     msg
+}
+
+#[cfg(feature = "scsynth-direct")]
+fn create_param_messages(param_name: &str, value: OscType) -> Vec<OscMessage> {
+    let node_ids = route_param_to_nodes(param_name);
+    node_ids.into_iter().map(|node_id| {
+        let msg = OscMessage {
+            addr: "/n_set".to_string(),
+            args: vec![
+                OscType::Int(node_id),
+                OscType::String(param_name.to_string()),
+                value.clone(),
+            ],
+        };
+        log_osc_message(&msg, "CREATE_PARAM");
+        msg
+    }).collect()
 }
 
 #[cfg(not(feature = "scsynth-direct"))]
@@ -491,8 +508,18 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                     state.script_index = idx;
                 }
                 MetroCommand::SendParam(name, value) => {
-                    let msg = create_param_message(&name, value);
-                    send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
+                    #[cfg(feature = "scsynth-direct")]
+                    {
+                        // Send to all target nodes (some parameters need multiple destinations)
+                        for msg in create_param_messages(&name, value.clone()) {
+                            send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
+                        }
+                    }
+                    #[cfg(not(feature = "scsynth-direct"))]
+                    {
+                        let msg = create_param_message(&name, value);
+                        send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
+                    }
                 }
                 MetroCommand::SendTrigger => {
                     // Send t_gate to all 4 synths in multi-synth architecture

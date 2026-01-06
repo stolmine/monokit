@@ -205,7 +205,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | S.ONSET energy-based detection | Medium | **DONE** |
 | S.ONSET.MIN spacing param | Low | **DONE** |
 | Spectral flux upgrade (rustfft) | Medium | Future |
-| GRID.MODE 5 slice visualization | Medium | Pending |
+| GRID.MODE 5 slice visualization | Medium | **DONE** |
 | **Phase 4: Polish** | | |
 | Sample params coverage for RST | Low | **DONE** |
 | SFX command for FX routing | Low | Pending |
@@ -218,11 +218,13 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | KIT.INFO command | Low | **DONE** |
 | KIT getter (no arg lists kits, REPL only) | Low | **DONE** |
 | GRID.MODE 4 FX viz | Medium | Placeholder |
-| GRID.MODE 5 sampler viz | Medium | Placeholder |
 | Help system updates | Low | **DONE** |
-| Scene persistence | Medium | Pending |
+| Scene persistence | Medium | **DONE** |
 
 **Completed this session:**
+- GRID.MODE 5 sampler visualization (kit info, slot, pitch, envelope, FX)
+- Scene persistence for sampler state (backward compatible)
+- Multi-node param routing for modbus (mb, mba, mbd)
 - S.ONSET transient detection with exponential sensitivity curve
 - S.ONSET.MIN minimum spacing parameter
 - Pure-Rust energy-based onset detector (no external deps)

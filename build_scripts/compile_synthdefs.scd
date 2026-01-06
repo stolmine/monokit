@@ -868,8 +868,22 @@ if(hasMiPlaits, {
     "  monokit_plaits.scsyndef (STUB - MiPlaits not available)".postln;
 });
 
+// =============================================================================
+// IMPORTANT: SC OPTIMIZER BUG - DO NOT ADD ad, dd, fed, mbd TO ARG LIST
+// =============================================================================
+// SuperCollider's optimizer can incorrectly zero arg-based parameters in complex
+// SynthDefs. These decay parameters MUST use NamedControl syntax (\param.kr(default))
+// instead of arg declarations. See lines ~1065-1069 where they are defined.
+//
+// If you add these back as args, OSC /n_set messages will update the arg control,
+// but the code will read from a separate NamedControl - causing params to appear
+// stuck at 0 or default values.
+//
+// Affected params: ad (amp decay), dd (DC decay), fed (filter env decay), mbd (modbus decay)
+// =============================================================================
 SynthDef(\monokit_main, {
     // Defaults match RST command values
+    // NOTE: ad, dd, fed, mbd use NamedControl below - DO NOT add them here!
     arg pf = 131,     // Primary freq (C3) - needed for tracking
         mf = 262,     // Mod freq (C4) - needed for tracking
         mv = 0,       // Modulator volume (audible level only, not routing)
@@ -877,18 +891,17 @@ SynthDef(\monokit_main, {
         dm = 0,
         mb = 0,
         mba = 0,
-        mbd = 100,
+        // mbd - uses NamedControl (SC optimizer bug workaround)
         ma = 0,
         mc = 0,
         mq = 0,
-        ad = 100,
-        dd = 10,
+        // ad, dd - use NamedControl (SC optimizer bug workaround)
         da = 0,
         fc = 10000,   // Filter wide open
         fq = 0,
         ft = 0,
         fe = 0,
-        fed = 100,
+        // fed - uses NamedControl (SC optimizer bug workaround)
         fk = 0,
         mf_f = 0,
         mf_q = 0,
@@ -1063,11 +1076,11 @@ SynthDef(\monokit_main, {
     dCrv = Select.kr(denv_crv > -100, [env_crv, denv_crv]);
     flCrv = Select.kr(flev_crv > -100, [env_crv, flev_crv]);
 
-    // Force dynamic evaluation of decay params
-    adDynamic = Lag.kr(ad, 0);
-    ddDynamic = Lag.kr(dd, 0);
-    fedDynamic = Lag.kr(fed, 0);
-    mbdDynamic = Lag.kr(mbd, 0);
+    // Use NamedControl for decay params (fixes SC optimizer bug that zeroed arg-based controls)
+    adDynamic = Lag.kr(\ad.kr(100), 0.001);
+    ddDynamic = Lag.kr(\dd.kr(10), 0.001);
+    fedDynamic = Lag.kr(\fed.kr(100), 0.001);
+    mbdDynamic = Lag.kr(\mbd.kr(100), 0.001);
 
     // Trigger and envelopes
     trig = Trig1.kr(t_gate, 0.001);

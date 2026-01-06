@@ -57,7 +57,7 @@ impl ScsynthDirect {
         cmd.arg("-o").arg("2");       // Output channels (stereo)
         cmd.arg("-i").arg("0");       // No input channels (avoid sample rate mismatch)
         cmd.arg("-R").arg("0");       // Don't load default synthdefs
-        cmd.arg("-l").arg("1");       // Max logins
+        cmd.arg("-l").arg("4");       // Max logins (allow for restart re-registration)
 
         // Build plugin path with both app plugins and user extensions
         let mut plugin_paths: Vec<String> = Vec::new();
@@ -326,7 +326,7 @@ impl ScsynthDirect {
 
     fn send_boot_sequence(&self, socket: &UdpSocket, synthdefs_dir: &PathBuf, silent: bool) -> Result<(), String> {
         // Only send /notify on initial boot (not silent)
-        // On restart, meter_thread sends /notify from port 57121
+        // On restart, meter_thread sends /notify from port 57121 after receiving /monokit/ready
         if !silent {
             eprintln!("[monokit] Sending /notify...");
             Self::send_osc_message_static(socket, "/notify", vec![OscType::Int(1)])?;
@@ -532,7 +532,7 @@ impl ScsynthDirect {
                 OscType::String("s_rel".to_string()),
                 OscType::Int(1000),
                 OscType::String("s_sust".to_string()),
-                OscType::Int(0),
+                OscType::Int(1),  // Gate mode - sustain at full level until release
                 OscType::String("s_volume".to_string()),
                 OscType::Int(8192),
             ],
@@ -549,7 +549,7 @@ impl ScsynthDirect {
             vec![
                 OscType::String("monokit_main".to_string()),
                 OscType::Int(synths.main_node),
-                OscType::Int(0),
+                OscType::Int(0),  // addAction=0 (addToHead)
                 OscType::Int(0),
                 OscType::String("primaryBus".to_string()),
                 OscType::Int(PRIMARY_BUS),
@@ -563,6 +563,13 @@ impl ScsynthDirect {
                 OscType::Int(PLAITS_AUX_BUS),
                 OscType::String("samplerBus".to_string()),
                 OscType::Int(SAMPLER_BUS),
+                // Envelope decay defaults (ensure synth starts with known values)
+                OscType::String("ad".to_string()),
+                OscType::Int(100),
+                OscType::String("dd".to_string()),
+                OscType::Int(10),
+                OscType::String("fed".to_string()),
+                OscType::Int(100),
             ],
         )?;
         if !silent {

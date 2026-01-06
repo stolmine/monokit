@@ -356,10 +356,12 @@ where
 
         let frame_count = read_wav_frame_count(&resolved_path);
 
+        // IMPORTANT: end_frame MUST be set to actual frame count, not 0!
+        // If end_frame=0, the sampler phasor has zero-length range and produces no audio.
         let slot = SampleSlot {
             buffer_id,
             start_frame: 0,
-            end_frame: 0,
+            end_frame: frame_count.unwrap_or(0),
             file_path: Some(resolved_path_str.to_string()),
         };
 
@@ -390,10 +392,12 @@ where
                     continue;
                 }
 
+                // IMPORTANT: Must read actual frame count - end_frame=0 produces no audio
+                let frame_count = read_wav_frame_count(&file_path).unwrap_or(0);
                 file_slots.push(SampleSlot {
                     buffer_id,
                     start_frame: 0,
-                    end_frame: 0,
+                    end_frame: frame_count,
                     file_path: Some(file_path_str.to_string()),
                 });
             }

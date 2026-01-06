@@ -156,13 +156,15 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
                             // On initial boot, the boot sequence already sent /notify.
                             #[cfg(feature = "scsynth-direct")]
                             if initial_boot_complete {
-                                // This is a restart - we need to re-register with the new scsynth
+                                // This is a restart - re-register with new scsynth from port 57121
                                 let notify_msg = OscMessage {
                                     addr: "/notify".to_string(),
                                     args: vec![OscType::Int(1)],
                                 };
                                 if let Ok(packet) = encoder::encode(&OscPacket::Message(notify_msg)) {
-                                    let _ = socket.send_to(&packet, format!("127.0.0.1:{}", SCSYNTH_PORT));
+                                    if let Err(e) = socket.send_to(&packet, format!("127.0.0.1:{}", SCSYNTH_PORT)) {
+                                        eprintln!("[meter] Failed to send /notify on restart: {}", e);
+                                    }
                                 }
                             } else {
                                 // First /monokit/ready - initial boot is now complete

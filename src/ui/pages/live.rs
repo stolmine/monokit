@@ -58,7 +58,6 @@ fn render_repl_view(app: &crate::App, height: usize) -> Paragraph<'static> {
 }
 
 fn render_sampler_viz(app: &crate::App) -> Vec<String> {
-    use crate::types::SamplerMode;
     use std::path::Path;
 
     let mut lines = Vec::new();
@@ -82,26 +81,46 @@ fn render_sampler_viz(app: &crate::App) -> Vec<String> {
     };
     lines.push(format!("{:<30}", kit_display));
 
-    // Row 2: Mode + Slot info
-    let mode_str = match app.sampler_state.mode {
-        SamplerMode::Slice => "SLC",
-        SamplerMode::Kit => "KIT",
-    };
-
-    let slot_display = if app.sampler_state.num_slots > 0 {
-        format!("{} {:>3}/{:<3}", mode_str, app.sampler_state.current_slot, app.sampler_state.num_slots)
-    } else {
-        format!("{} --/--", mode_str)
-    };
-
-    // Add slice count if in slice mode
+    // Row 2: Slot info (mode already shown via KIT row above)
     let slice_info = if let Some(slice_count) = app.sampler_state.slice_count {
-        format!(" {}SL", slice_count)
+        format!("{}SL", slice_count)
     } else {
         "".to_string()
     };
 
-    lines.push(format!("{:<30}", format!("SLOT {}{:<16}", slot_display, slice_info)));
+    // Visual threshold: "SLOT " = 5 chars, leaving 25 for visual
+    // With slice info: "SLOT "(5) + visual(N) + " "(1) + slice(S) ≤ 30 → N ≤ 24 - S
+    let slice_len = slice_info.len();
+    let visual_threshold = if slice_len == 0 { 25 } else { 24usize.saturating_sub(slice_len) };
+
+    let slot_display = if app.sampler_state.num_slots == 0 {
+        format!("SLOT --/--")
+    } else if app.sampler_state.num_slots <= visual_threshold {
+        // Visual mode: SLOT ●○○○○○○○ [slice_info]
+        let mut visual = String::new();
+        for i in 0..app.sampler_state.num_slots {
+            if i == app.sampler_state.current_slot {
+                visual.push('●');
+            } else {
+                visual.push('○');
+            }
+        }
+        if slice_info.is_empty() {
+            format!("SLOT {}", visual)
+        } else {
+            format!("SLOT {} {}", visual, slice_info)
+        }
+    } else {
+        // Numeric: "SLOT X out of Y" where Y = max index (num_slots - 1) for 0-indexed clarity
+        let max_index = app.sampler_state.num_slots.saturating_sub(1);
+        if slice_info.is_empty() {
+            format!("SLOT {} out of {}", app.sampler_state.current_slot, max_index)
+        } else {
+            format!("SLOT {} out of {} {}", app.sampler_state.current_slot, max_index, slice_info)
+        }
+    };
+
+    lines.push(format!("{:<30}", slot_display));
 
     // Row 3: Playback parameters - Pitch, Direction, Loop
     let pitch = app.sampler_state.playback.pitch;

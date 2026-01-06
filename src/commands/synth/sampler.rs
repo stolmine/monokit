@@ -80,6 +80,342 @@ macro_rules! define_sampler_envelope_param {
     };
 }
 
+macro_rules! define_sampler_playback_param {
+    ($fn_name:ident, $osc_param:expr, $min:expr, $max:expr, $state_field:ident, i16, $error_cmd:expr, $display_name:expr, $parse_ctx:expr) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            variables: &Variables,
+            patterns: &mut PatternStorage,
+            counters: &mut Counters,
+            scripts: &ScriptStorage,
+            script_index: usize,
+            metro_tx: &Sender<MetroCommand>,
+            debug_level: u8,
+            scale: &ScaleState,
+            sampler_state: &mut crate::types::SamplerState,
+            out_cfm: bool,
+            mut output: F,
+        ) -> Result<()>
+        where
+            F: FnMut(String),
+        {
+            if parts.len() < 2 {
+                output(format!("{}: REQUIRES VALUE", $error_cmd));
+                return Ok(());
+            }
+            let state_snapshot = (
+                patterns.toggle_state.clone(),
+                patterns.toggle_last_value.clone()
+            );
+            let value: i32 = if let Some((expr_val, consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                if consumed > 0 && parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let key = format!("{}_{}", script_index, parts[1..1+consumed].join("_"));
+                        patterns.direct_validation.insert(key, true);
+                    }
+                }
+                expr_val as i32
+            } else {
+                parts[1]
+                    .parse()
+                    .context($parse_ctx)?
+            };
+            if value < $min || value > $max {
+                patterns.toggle_state = state_snapshot.0;
+                patterns.toggle_last_value = state_snapshot.1;
+                if parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let end_idx = parts.len().min(4);
+                        let key = format!("{}_{}", script_index, parts[1..end_idx].join("_"));
+                        patterns.direct_validation.insert(key, false);
+                    }
+                }
+                output(format!("{}: RANGE {}-{}", $error_cmd, $min, $max));
+                return Ok(());
+            }
+
+            sampler_state.playback.$state_field = value as i16;
+
+            metro_tx
+                .send(MetroCommand::SendParam($osc_param.to_string(), OscType::Int(value)))
+                .context("Failed to send param to metro thread")?;
+            if debug_level >= TIER_CONFIRMS || out_cfm {
+                output(format!("SET {} TO {}", $display_name, value));
+            }
+            Ok(())
+        }
+    };
+    ($fn_name:ident, $osc_param:expr, $min:expr, $max:expr, $state_field:ident, bool, $error_cmd:expr, $display_name:expr, $parse_ctx:expr) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            variables: &Variables,
+            patterns: &mut PatternStorage,
+            counters: &mut Counters,
+            scripts: &ScriptStorage,
+            script_index: usize,
+            metro_tx: &Sender<MetroCommand>,
+            debug_level: u8,
+            scale: &ScaleState,
+            sampler_state: &mut crate::types::SamplerState,
+            out_cfm: bool,
+            mut output: F,
+        ) -> Result<()>
+        where
+            F: FnMut(String),
+        {
+            if parts.len() < 2 {
+                output(format!("{}: REQUIRES VALUE", $error_cmd));
+                return Ok(());
+            }
+            let state_snapshot = (
+                patterns.toggle_state.clone(),
+                patterns.toggle_last_value.clone()
+            );
+            let value: i32 = if let Some((expr_val, consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                if consumed > 0 && parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let key = format!("{}_{}", script_index, parts[1..1+consumed].join("_"));
+                        patterns.direct_validation.insert(key, true);
+                    }
+                }
+                expr_val as i32
+            } else {
+                parts[1]
+                    .parse()
+                    .context($parse_ctx)?
+            };
+            if value < $min || value > $max {
+                patterns.toggle_state = state_snapshot.0;
+                patterns.toggle_last_value = state_snapshot.1;
+                if parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let end_idx = parts.len().min(4);
+                        let key = format!("{}_{}", script_index, parts[1..end_idx].join("_"));
+                        patterns.direct_validation.insert(key, false);
+                    }
+                }
+                output(format!("{}: RANGE {}-{}", $error_cmd, $min, $max));
+                return Ok(());
+            }
+
+            sampler_state.playback.$state_field = value != 0;
+
+            metro_tx
+                .send(MetroCommand::SendParam($osc_param.to_string(), OscType::Int(value)))
+                .context("Failed to send param to metro thread")?;
+            if debug_level >= TIER_CONFIRMS || out_cfm {
+                output(format!("SET {} TO {}", $display_name, value));
+            }
+            Ok(())
+        }
+    };
+    ($fn_name:ident, $osc_param:expr, $min:expr, $max:expr, $state_field:ident, u8, $error_cmd:expr, $display_name:expr, $parse_ctx:expr) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            variables: &Variables,
+            patterns: &mut PatternStorage,
+            counters: &mut Counters,
+            scripts: &ScriptStorage,
+            script_index: usize,
+            metro_tx: &Sender<MetroCommand>,
+            debug_level: u8,
+            scale: &ScaleState,
+            sampler_state: &mut crate::types::SamplerState,
+            out_cfm: bool,
+            mut output: F,
+        ) -> Result<()>
+        where
+            F: FnMut(String),
+        {
+            if parts.len() < 2 {
+                output(format!("{}: REQUIRES VALUE", $error_cmd));
+                return Ok(());
+            }
+            let state_snapshot = (
+                patterns.toggle_state.clone(),
+                patterns.toggle_last_value.clone()
+            );
+            let value: i32 = if let Some((expr_val, consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                if consumed > 0 && parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let key = format!("{}_{}", script_index, parts[1..1+consumed].join("_"));
+                        patterns.direct_validation.insert(key, true);
+                    }
+                }
+                expr_val as i32
+            } else {
+                parts[1]
+                    .parse()
+                    .context($parse_ctx)?
+            };
+            if value < $min || value > $max {
+                patterns.toggle_state = state_snapshot.0;
+                patterns.toggle_last_value = state_snapshot.1;
+                if parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let end_idx = parts.len().min(4);
+                        let key = format!("{}_{}", script_index, parts[1..end_idx].join("_"));
+                        patterns.direct_validation.insert(key, false);
+                    }
+                }
+                output(format!("{}: RANGE {}-{}", $error_cmd, $min, $max));
+                return Ok(());
+            }
+
+            sampler_state.playback.$state_field = value as u8;
+
+            metro_tx
+                .send(MetroCommand::SendParam($osc_param.to_string(), OscType::Int(value)))
+                .context("Failed to send param to metro thread")?;
+            if debug_level >= TIER_CONFIRMS || out_cfm {
+                output(format!("SET {} TO {}", $display_name, value));
+            }
+            Ok(())
+        }
+    };
+}
+
+macro_rules! define_sampler_fx_param {
+    ($fn_name:ident, $osc_param:expr, $min:expr, $max:expr, $state_field:ident, i16, $error_cmd:expr, $display_name:expr, $parse_ctx:expr) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            variables: &Variables,
+            patterns: &mut PatternStorage,
+            counters: &mut Counters,
+            scripts: &ScriptStorage,
+            script_index: usize,
+            metro_tx: &Sender<MetroCommand>,
+            debug_level: u8,
+            scale: &ScaleState,
+            sampler_state: &mut crate::types::SamplerState,
+            out_cfm: bool,
+            mut output: F,
+        ) -> Result<()>
+        where
+            F: FnMut(String),
+        {
+            if parts.len() < 2 {
+                output(format!("{}: REQUIRES VALUE", $error_cmd));
+                return Ok(());
+            }
+            let state_snapshot = (
+                patterns.toggle_state.clone(),
+                patterns.toggle_last_value.clone()
+            );
+            let value: i32 = if let Some((expr_val, consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                if consumed > 0 && parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let key = format!("{}_{}", script_index, parts[1..1+consumed].join("_"));
+                        patterns.direct_validation.insert(key, true);
+                    }
+                }
+                expr_val as i32
+            } else {
+                parts[1]
+                    .parse()
+                    .context($parse_ctx)?
+            };
+            if value < $min || value > $max {
+                patterns.toggle_state = state_snapshot.0;
+                patterns.toggle_last_value = state_snapshot.1;
+                if parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let end_idx = parts.len().min(4);
+                        let key = format!("{}_{}", script_index, parts[1..end_idx].join("_"));
+                        patterns.direct_validation.insert(key, false);
+                    }
+                }
+                output(format!("{}: RANGE {}-{}", $error_cmd, $min, $max));
+                return Ok(());
+            }
+
+            sampler_state.fx.$state_field = value as i16;
+
+            metro_tx
+                .send(MetroCommand::SendParam($osc_param.to_string(), OscType::Int(value)))
+                .context("Failed to send param to metro thread")?;
+            if debug_level >= TIER_CONFIRMS || out_cfm {
+                output(format!("SET {} TO {}", $display_name, value));
+            }
+            Ok(())
+        }
+    };
+    ($fn_name:ident, $osc_param:expr, $min:expr, $max:expr, $state_field:ident, u8, $error_cmd:expr, $display_name:expr, $parse_ctx:expr) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            variables: &Variables,
+            patterns: &mut PatternStorage,
+            counters: &mut Counters,
+            scripts: &ScriptStorage,
+            script_index: usize,
+            metro_tx: &Sender<MetroCommand>,
+            debug_level: u8,
+            scale: &ScaleState,
+            sampler_state: &mut crate::types::SamplerState,
+            out_cfm: bool,
+            mut output: F,
+        ) -> Result<()>
+        where
+            F: FnMut(String),
+        {
+            if parts.len() < 2 {
+                output(format!("{}: REQUIRES VALUE", $error_cmd));
+                return Ok(());
+            }
+            let state_snapshot = (
+                patterns.toggle_state.clone(),
+                patterns.toggle_last_value.clone()
+            );
+            let value: i32 = if let Some((expr_val, consumed)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                if consumed > 0 && parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let key = format!("{}_{}", script_index, parts[1..1+consumed].join("_"));
+                        patterns.direct_validation.insert(key, true);
+                    }
+                }
+                expr_val as i32
+            } else {
+                parts[1]
+                    .parse()
+                    .context($parse_ctx)?
+            };
+            if value < $min || value > $max {
+                patterns.toggle_state = state_snapshot.0;
+                patterns.toggle_last_value = state_snapshot.1;
+                if parts.len() > 1 {
+                    let op = parts[1].to_uppercase();
+                    if op == "TOG" || op == "EITH" || op.starts_with("SEQ") {
+                        let end_idx = parts.len().min(4);
+                        let key = format!("{}_{}", script_index, parts[1..end_idx].join("_"));
+                        patterns.direct_validation.insert(key, false);
+                    }
+                }
+                output(format!("{}: RANGE {}-{}", $error_cmd, $min, $max));
+                return Ok(());
+            }
+
+            sampler_state.fx.$state_field = value as u8;
+
+            metro_tx
+                .send(MetroCommand::SendParam($osc_param.to_string(), OscType::Int(value)))
+                .context("Failed to send param to metro thread")?;
+            if debug_level >= TIER_CONFIRMS || out_cfm {
+                output(format!("SET {} TO {}", $display_name, value));
+            }
+            Ok(())
+        }
+    };
+}
+
 fn resolve_sample_path<F>(path_str: &str, debug_level: u8, mut output: F) -> Option<PathBuf>
 where
     F: FnMut(String),
@@ -547,72 +883,86 @@ where
 }
 
 // Pitch Parameters (s_ prefix to avoid conflicts with other synths)
-define_int_param!(
+define_sampler_playback_param!(
     handle_s_rate,
     "s_rate",
     0,
     16383,
+    rate,
+    i16,
     "S.RATE",
     "SAMPLER RATE",
     "Failed to parse sample rate"
 );
 
-define_int_param!(
+define_sampler_playback_param!(
     handle_s_pitch,
     "s_pitch",
     -24,
     24,
+    pitch,
+    i16,
     "S.PITCH",
     "SAMPLER PITCH",
     "Failed to parse sample pitch"
 );
 
-define_int_param!(
+define_sampler_playback_param!(
     handle_s_fine,
     "s_fine",
     -100,
     100,
+    fine,
+    i16,
     "S.FINE",
     "SAMPLER FINE PITCH",
     "Failed to parse sample fine pitch"
 );
 
 // Playback Parameters
-define_int_param!(
+define_sampler_playback_param!(
     handle_s_dir,
     "s_direction",
     0,
     1,
+    direction,
+    bool,
     "S.DIR",
     "SAMPLER DIRECTION",
     "Failed to parse sample direction"
 );
 
-define_int_param!(
+define_sampler_playback_param!(
     handle_s_loop,
     "s_loop",
     0,
     1,
+    loop_mode,
+    bool,
     "S.LOOP",
     "SAMPLER LOOP",
     "Failed to parse sample loop"
 );
 
-define_int_param!(
+define_sampler_playback_param!(
     handle_s_start,
     "s_startFrame",
     0,
     16383,
+    start_offset,
+    i16,
     "S.START",
     "SAMPLER START",
     "Failed to parse sample start offset"
 );
 
-define_int_param!(
+define_sampler_playback_param!(
     handle_s_len,
     "s_endFrame",
     0,
     16383,
+    length,
+    i16,
     "S.LEN",
     "SAMPLER LENGTH",
     "Failed to parse sample loop length"
@@ -645,156 +995,186 @@ define_sampler_envelope_param!(
     "Failed to parse sample release"
 );
 
-define_int_param!(
+define_sampler_playback_param!(
     handle_s_sust,
     "s_sust",
     0,
     1,
+    sustain_mode,
+    bool,
     "S.SUST",
     "SAMPLER SUSTAIN MODE",
     "Failed to parse sample sustain mode"
 );
 
 // Output Parameters
-define_int_param!(
+define_sampler_playback_param!(
     handle_s_vol,
     "s_volume",
     0,
     16383,
+    volume,
+    i16,
     "S.VOL",
     "SAMPLER VOLUME",
     "Failed to parse sample volume"
 );
 
-define_int_param!(
+define_sampler_playback_param!(
     handle_s_pan,
     "s_pan",
     -8192,
     8191,
+    pan,
+    i16,
     "S.PAN",
     "SAMPLER PAN",
     "Failed to parse sample pan"
 );
 
-define_int_param!(
+define_sampler_playback_param!(
     handle_s_fx,
     "s_fx",
     0,
     2,
+    fx_routing,
+    u8,
     "S.FX",
     "SAMPLER FX ROUTING",
     "Failed to parse sample fx routing"
 );
 
 // Modulation Parameters
-define_int_param!(
+define_sampler_playback_param!(
     handle_s_ratemod,
     "s_ratemod",
     0,
     16383,
+    rate_mod,
+    i16,
     "S.RATEMOD",
     "SAMPLER RATE MOD",
     "Failed to parse sample rate modulation"
 );
 
-define_int_param!(
+define_sampler_playback_param!(
     handle_s_pitchmod,
     "s_pitchmod",
     0,
     16383,
+    pitch_mod,
+    i16,
     "S.PITCHMOD",
     "SAMPLER PITCH MOD",
     "Failed to parse sample pitch modulation"
 );
 
 // FX Parameters - Filter (DFM1) - sf_ prefix for sampler
-define_int_param!(
+define_sampler_fx_param!(
     handle_sf_cut,
     "sf_cut",
     0,
     16383,
+    filter_cut,
+    i16,
     "SF.CUT",
     "SAMPLER FX CUTOFF",
     "Failed to parse filter cutoff"
 );
 
-define_int_param!(
+define_sampler_fx_param!(
     handle_sf_res,
     "sf_res",
     0,
     16383,
+    filter_res,
+    i16,
     "SF.RES",
     "SAMPLER FX RESONANCE",
     "Failed to parse filter resonance"
 );
 
-define_int_param!(
+define_sampler_fx_param!(
     handle_sf_type,
     "sf_type",
     0,
     1,
+    filter_type,
+    u8,
     "SF.TYPE",
     "SAMPLER FX TYPE",
     "Failed to parse filter type"
 );
 
 // FX Parameters - Decimator
-define_int_param!(
+define_sampler_fx_param!(
     handle_sf_bits,
     "sf_bits",
     1,
     24,
+    bits,
+    u8,
     "SF.BITS",
     "SAMPLER BITS",
     "Failed to parse bit depth"
 );
 
-define_int_param!(
+define_sampler_fx_param!(
     handle_sf_rate,
     "sf_rate",
     0,
     16383,
+    rate_reduce,
+    i16,
     "SF.RATE",
     "SAMPLER SRR",
     "Failed to parse rate reduction"
 );
 
-define_int_param!(
+define_sampler_fx_param!(
     handle_sf_deci,
     "sf_deci",
     0,
     16383,
+    deci_mix,
+    i16,
     "SF.DECI",
     "SAMPLER DECI MIX",
     "Failed to parse decimator mix"
 );
 
 // FX Parameters - Disintegrator
-define_int_param!(
+define_sampler_fx_param!(
     handle_sf_prob,
     "sf_prob",
     0,
     16383,
+    prob,
+    i16,
     "SF.PROB",
     "SAMPLER GLIT PROB",
     "Failed to parse glitch probability"
 );
 
-define_int_param!(
+define_sampler_fx_param!(
     handle_sf_mult,
     "sf_mult",
     0,
     16383,
+    mult,
+    i16,
     "SF.MULT",
     "SAMPLER GLIT MULT",
     "Failed to parse glitch multiplier"
 );
 
-define_int_param!(
+define_sampler_fx_param!(
     handle_sf_glit,
     "sf_glit",
     0,
     16383,
+    glit_mix,
+    i16,
     "SF.GLIT",
     "SAMPLER GLIT MIX",
     "Failed to parse disintegrator mix"

@@ -712,25 +712,25 @@ where
             synth_params::handle_kit_info(&*ctx.sampler_state, *debug_level, *out_qry, output)?;
         }
         "S.RATE" | "SR" => {
-            synth_params::handle_s_rate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_s_rate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "S.PITCH" | "SPT" => {
-            synth_params::handle_s_pitch(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_s_pitch(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "S.FINE" | "SFN" => {
-            synth_params::handle_s_fine(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_s_fine(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "S.DIR" | "SD" => {
-            synth_params::handle_s_dir(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_s_dir(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "S.LOOP" | "SL" => {
-            synth_params::handle_s_loop(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_s_loop(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "S.START" | "SST" => {
-            synth_params::handle_s_start(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_s_start(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "S.LEN" | "SLE" => {
-            synth_params::handle_s_len(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_s_len(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "S.SLICE" | "SSLC" => {
             synth_params::handle_s_slice(&parts, variables, patterns, counters, scripts, script_index, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
@@ -763,49 +763,49 @@ where
             synth_params::handle_s_rel(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "S.SUST" | "SSU" => {
-            synth_params::handle_s_sust(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_s_sust(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "S.VOL" | "SV" => {
-            synth_params::handle_s_vol(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_s_vol(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "S.PAN" | "SP" => {
-            synth_params::handle_s_pan(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_s_pan(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "S.FX" | "SFX" => {
-            synth_params::handle_s_fx(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_s_fx(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "S.RATEMOD" | "SRM" => {
-            synth_params::handle_s_ratemod(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_s_ratemod(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "S.PITCHMOD" | "SPM" => {
-            synth_params::handle_s_pitchmod(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_s_pitchmod(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "SF.CUT" | "SFC" => {
-            synth_params::handle_sf_cut(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_sf_cut(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "SF.RES" | "SFQ" => {
-            synth_params::handle_sf_res(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_sf_res(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "SF.TYPE" | "SFT" => {
-            synth_params::handle_sf_type(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_sf_type(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "SF.BITS" | "SFB" => {
-            synth_params::handle_sf_bits(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_sf_bits(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "SF.RATE" | "SFR" => {
-            synth_params::handle_sf_rate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_sf_rate(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "SF.DECI" | "SFD" => {
-            synth_params::handle_sf_deci(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_sf_deci(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "SF.PROB" | "SFP" => {
-            synth_params::handle_sf_prob(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_sf_prob(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "SF.MULT" | "SFM" => {
-            synth_params::handle_sf_mult(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_sf_mult(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "SF.GLIT" | "SFG" => {
-            synth_params::handle_sf_glit(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;
+            synth_params::handle_sf_glit(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
         "BR.LEN" | "BRL" => {
             synth_params::handle_br_len(&parts, *metro_interval, br_len, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, *out_cfm, output)?;

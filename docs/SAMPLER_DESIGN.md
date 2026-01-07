@@ -691,7 +691,7 @@ Need to add:
 
 - [ ] KIT.LOAD preloading
 - [ ] GRID.MODE 4 FX viz
-- [x] GRID.MODE 5 Sampler viz (layout done, state tracking macros added - live data needs verification)
+- [x] GRID.MODE 5 Sampler viz (complete with live state tracking)
 - [ ] Sample library browsing (S.LS)
 - [ ] Help system updates
 - [ ] Documentation (MANUAL.md updates)
@@ -825,7 +825,7 @@ Update `docs/manual.md` with:
 ### UI & Documentation
 - [x] GRID.MODE 3 shows usable mixer with real-time levels
 - [ ] GRID.MODE 4 shows FX visualization
-- [~] GRID.MODE 5 shows sampler state (layout complete, state tracking added - live param updates need verification)
+- [x] GRID.MODE 5 shows sampler state (complete with live state tracking)
 - [x] Header shows S indicator on STR trigger
 - [ ] Internal help updated for all sampler commands
 - [ ] MANUAL.md documents sampler and mixer features

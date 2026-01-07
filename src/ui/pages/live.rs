@@ -135,17 +135,12 @@ fn render_sampler_viz(app: &crate::App) -> Vec<String> {
 
     lines.push(format!("{:<30}", format!("PITCH {}  DIR{} LOOP{}", pitch_display, dir_char, loop_char)));
 
-    // Row 4: Envelope - Attack, Decay, Release
+    // Row 4: Envelope - Attack, Decay, Release (values are raw ms, 0-16383)
     let atk = app.sampler_state.playback.attack;
     let dec = app.sampler_state.playback.decay;
     let rel = app.sampler_state.playback.release;
 
-    // Convert 0-16383 to milliseconds (rough estimate)
-    let atk_ms = (atk as f32 / 16383.0 * 1000.0) as u32;
-    let dec_ms = (dec as f32 / 16383.0 * 1000.0) as u32;
-    let rel_ms = (rel as f32 / 16383.0 * 1000.0) as u32;
-
-    lines.push(format!("{:<30}", format!("ENV A{:>4} D{:>4} R{:>4}", atk_ms, dec_ms, rel_ms)));
+    lines.push(format!("{:<30}", format!("ENV A{:>4} D{:>4} R{:>4}", atk, dec, rel)));
 
     // Row 5: Volume and Pan
     let vol = app.sampler_state.playback.volume;

@@ -210,8 +210,7 @@ fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static
             // 9+1+9+1+10 grid: FX | CUT | RES
             let fx_display = match app.sampler_state.playback.fx_routing {
                 0 => "DRY",
-                1 => "PRE",
-                2 => "PST",
+                1 => "WET",
                 _ => "???",
             };
             spans.push(Span::styled("FX", Style::default().fg(app.theme.foreground)));

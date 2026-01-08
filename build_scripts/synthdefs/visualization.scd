@@ -50,4 +50,4 @@ SynthDef(\monokit_recorder, { |bufnum|
 }).writeDefFile(synthdefs_dir);
 
 "  monokit_recorder.scsyndef".postln;
-}.value;
+}

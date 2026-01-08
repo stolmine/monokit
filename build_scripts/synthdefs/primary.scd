@@ -81,4 +81,4 @@ SynthDef(\monokit_primary, {
 }).writeDefFile(synthdefs_dir);
 
 "  monokit_primary.scsyndef".postln;
-}.value;
+}

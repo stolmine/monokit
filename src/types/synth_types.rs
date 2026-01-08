@@ -62,6 +62,7 @@ pub fn route_param_to_node(param: &str) -> i32 {
 pub fn route_param_to_nodes(param: &str) -> Vec<i32> {
     match param {
         "mb" | "mba" | "mbd" => vec![MOD_NODE_ID, PRIMARY_NODE_ID],
+        "s_fx" => vec![super::sampler_types::SAMPLER_NODE_ID, MAIN_NODE_ID],
 
         _ => vec![route_param_to_node(param)],
     }

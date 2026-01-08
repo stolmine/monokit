@@ -271,7 +271,7 @@ Uses ADSR envelope with variable sustain level for gate mode support.
 |---------|-------|-------|-------------|--------|
 | S.VOL | SV | 0-16383 | Sample volume | **WORKING** |
 | S.PAN | SP | -8192 to 8191 | Pan position (0=center) | **WORKING** |
-| S.FX | SFX | 0/1/2 | FX routing (0=dry, 1=post-filter, 2=post-all) | **WORKING** |
+| S.FX | SFX | 0/1 | FX routing (0=bypass spatial FX, 1=full chain) | **WORKING** |
 
 #### Modulation Parameters
 

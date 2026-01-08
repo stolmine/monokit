@@ -95,4 +95,4 @@ SynthDef(\monokit_mod, {
 }).writeDefFile(synthdefs_dir);
 
 "  monokit_mod.scsyndef".postln;
-}.value;
+}

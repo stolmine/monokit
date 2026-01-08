@@ -110,7 +110,8 @@ SynthDef(\monokit_main, {
         mute_osc = 0,
         mute_pla = 0,
         mute_nos = 0,
-        mute_smp = 0;
+        mute_smp = 0,
+        s_fx = 0;    // 0=bypass spatial FX, 1=full chain
 
     var trig, ampEnv, dcEnv, filterEnv, modBusEnv;
     var modBusValue, dcAmount, mvSmooth;
@@ -121,6 +122,7 @@ SynthDef(\monokit_main, {
     var oscMuted, plaMuted, nosMuted, smpMuted;
     var primaryL, primaryR, noiseL, noiseR, plaitsMainL, plaitsMainR, plaitsAuxL, plaitsAuxR;
     var samplerL, samplerR;
+    var samplerFxMode;
     var filterCutoff, filterQ;
     var resonatorFreq, resonatorDelay, resonatorDecay, resonatorMix, resonated;
     var delayTime, delayFeedback, delayWet, sigL, sigR, delayedL, delayedR;
@@ -217,6 +219,8 @@ SynthDef(\monokit_main, {
     plaPan = (pan_pla / 8192).clip(-1, 1);
     nosPan = (pan_nos / 8192).clip(-1, 1);
     smpPan = (pan_smp / 8192).clip(-1, 1);
+
+    samplerFxMode = s_fx.clip(0, 1).round;
 
     sig = (primaryIn * oscVol) + (modIn * mvSmooth * oscVol);
 
@@ -322,8 +326,8 @@ SynthDef(\monokit_main, {
     SendPeakRMS.kr(samplerL, 20, 3, '/monokit/voice_smp', 1);
     SendPeakRMS.kr(samplerR, 20, 3, '/monokit/voice_smp', 2);
 
-    sigL = (primaryL + noiseL + plaitsMainL + plaitsAuxL + samplerL) * 0.5;
-    sigR = (primaryR + noiseR + plaitsMainR + plaitsAuxR + samplerR) * 0.5;
+    sigL = (primaryL + noiseL + plaitsMainL + plaitsAuxL + Select.ar(samplerFxMode, [DC.ar(0), samplerL])) * 0.5;
+    sigR = (primaryR + noiseR + plaitsMainR + plaitsAuxR + Select.ar(samplerFxMode, [DC.ar(0), samplerR])) * 0.5;
 
     compThresh = (ctSmooth / 16383).clip(0.001, 1);
     compRatio = 1 / cr.clip(1, 20);
@@ -539,6 +543,10 @@ SynthDef(\monokit_main, {
         sigR + (reverbedR * Select.kr(rtail.clip(0, 2).round, [reverbWetSmooth, 1, 1]))
     ]);
 
+    // S.FX bypass: add sampler when s_fx=0
+    sigL = sigL + Select.ar(samplerFxMode, [samplerL, DC.ar(0)]);
+    sigR = sigR + Select.ar(samplerFxMode, [samplerR, DC.ar(0)]);
+
     #sigL, sigR = Select.ar(limit.clip(0, 1).round, [
         [sigL, sigR],
         Limiter.ar([sigL, sigR], 1.0, 0.01)
@@ -554,4 +562,4 @@ SynthDef(\monokit_main, {
 }).writeDefFile(synthdefs_dir);
 
 "  monokit_main.scsyndef".postln;
-}.value;
+}

@@ -218,18 +218,17 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 | Tier | # | Item | Effort | Rationale |
 |------|---|------|--------|-----------|
-| **1: Core** | 1 | S.FX SynthDef implementation | Low | Prerequisite for SFX command |
-| | 2 | SFX command for FX routing | Low | Enables per-sample FX |
-| | 3 | Sampler modbus routing | Medium | Fills modulation gap |
-| **2: Playback** | 4 | S.PITCH range & note LUT | Low | Quick win, improves musicality |
-| | 5 | Gate length control | Low | Common need |
-| **3: Viz** | 6 | GRID.MODE 4 FX viz | Medium | Visual feedback for FX params |
-| **4: Nice to Have** | 7 | Filter options (more types) | Medium | Already have 14, lower priority |
-| | 8 | Replace glitch effect | Medium | Polish, can defer |
-| **5: Cleanup** | 9 | Stale vol/pan param cleanup | Low | Tech debt from consolidation |
-| | 10 | Help system final pass | Low | Documentation accuracy |
-| | 11 | Complete DRY pass | Low | Code quality |
-| | 12 | File size audit (750 line max) | Low | **DONE** |
+| **1: Core** | 1 | S.FX SynthDef + command | Low | **DONE** - 0=bypass, 1=full chain |
+| | 2 | Sampler modbus routing | Medium | Fills modulation gap |
+| **2: Playback** | 3 | S.PITCH range & note LUT | Low | Quick win, improves musicality |
+| | 4 | Gate length control | Low | Common need |
+| **3: Viz** | 5 | GRID.MODE 4 FX viz | Medium | Visual feedback for FX params |
+| **4: Nice to Have** | 6 | Filter options (more types) | Medium | Already have 14, lower priority |
+| | 7 | Replace glitch effect | Medium | Polish, can defer |
+| **5: Cleanup** | 8 | Stale vol/pan param cleanup | Low | Tech debt from consolidation |
+| | 9 | Help system final pass | Low | Documentation accuracy |
+| | 10 | Complete DRY pass | Low | Code quality |
+| | 11 | File size audit (750 line max) | Low | **DONE** |
 
 #### Future (post v0.5.0)
 - Spectral flux upgrade (rustfft) for improved onset detection
@@ -243,6 +242,8 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - Shared UI helpers: level_to_meter_char, vol_to_db, vol_bar_parts, pan_numeric
 - Bug fixes: SC optimizer decay params, end_frame=0, audio device restart
 - File size audit: 9 files >1000 lines split into modular structure (750 line target)
+- S.FX routing: 0=bypass spatial FX, 1=full chain (simplified from 0/1/2)
+- SynthDef compilation fix: removed errant `.value` from all synthdef files
 
 
 ---

@@ -557,4 +557,4 @@ SynthDef(\monokit, {
 }).writeDefFile(synthdefs_dir);
 
 "  monokit.scsyndef".postln;
-}.value;
+}

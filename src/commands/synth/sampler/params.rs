@@ -138,7 +138,7 @@ define_sampler_playback_param!(
     handle_s_fx,
     "s_fx",
     0,
-    2,
+    1,
     fx_routing,
     u8,
     "S.FX",

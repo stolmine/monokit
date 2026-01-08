@@ -129,4 +129,4 @@ SynthDef(\monokit_sampler, {
 }).writeDefFile(synthdefs_dir);
 
 "  monokit_sampler.scsyndef".postln;
-}.value;
+}

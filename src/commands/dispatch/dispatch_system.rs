@@ -84,7 +84,7 @@ where
         "RST" => Some(triggers::handle_rst(ctx, output, 0).map(|_| vec![])),
         "SCRIPT" | "$" => {
             log_command(&format!("CMD: {} → DISPATCHED", input.trim()));
-            Some(utility::handle_script(parts, variables, patterns, counters, scripts, script_index, scale).map(|_| vec![]))
+            Some(utility::handle_script(parts, variables, patterns, counters, scripts, script_index, scale))
         }
         "SAVE" => {
             scene_cmds::handle_save(parts, scripts, patterns, notes, current_scene_name, *scramble_enabled, *scramble_mode, *scramble_speed, *scramble_curve, header_scramble, *debug_level, *out_ess, &*ctx.script_mutes, *ctx.confirm_overwrite_scene, &mut *ctx.pending_confirmation, &mut *ctx.scene_modified, &*ctx.sampler_state, output);

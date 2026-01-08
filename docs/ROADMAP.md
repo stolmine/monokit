@@ -244,6 +244,9 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - File size audit: 9 files >1000 lines split into modular structure (750 line target)
 - S.FX routing: 0=bypass spatial FX, 1=full chain (simplified from 0/1/2)
 - SynthDef compilation fix: removed errant `.value` from all synthdef files
+- Sampler modbus: S.RATEMOD (0-2x), S.PITCHMOD (±12 semi), SF.CUTMOD, SF.RESMOD/SFQM
+- Pitch mod fix: was dividing by 12, now proper ±octave range
+- Filter mod: activates when mod amounts set, res range 0-0.9 for audible effect
 
 
 ---

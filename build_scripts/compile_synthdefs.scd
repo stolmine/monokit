@@ -1601,7 +1601,7 @@ SynthDef(\monokit_sampler, {
         s_dec = 8192,
         s_rel = 1000,
         s_sust = 0,          // 0=percussive, 1=gate hold
-        s_volume = 8192,     // 0-16383
+        s_volume = 16383,    // 0-16383, use vol_smp for mixing
         sf_cut = 16383,      // Filter cutoff (0-16383, 16383=open)
         sf_res = 0,          // Filter resonance (0-16383)
         sf_type = 0,         // Filter type (0=LP, 1=HP, 2=BP)

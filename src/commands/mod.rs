@@ -765,12 +765,7 @@ where
         "S.SUST" | "SSU" => {
             synth_params::handle_s_sust(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }
-        "S.VOL" | "SV" => {
-            synth_params::handle_s_vol(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
-        }
-        "S.PAN" | "SP" => {
-            synth_params::handle_s_pan(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
-        }
+        // S.VOL/SV and S.PAN/SP removed - use VOL.SMP/VS and PAN.SMP/PS instead
         "S.FX" | "SFX" => {
             synth_params::handle_s_fx(&parts, variables, patterns, counters, scripts, script_index, metro_tx, *debug_level, scale, &mut *ctx.sampler_state, *out_cfm, output)?;
         }

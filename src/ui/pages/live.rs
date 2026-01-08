@@ -179,12 +179,12 @@ fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static
             spans.push(Span::styled(format!("{:>7}", rel), Style::default().fg(app.theme.success)));
         }
         4 => {
-            // 9+1+9+1+10 grid: VOL | PAN | MTR
+            // 9+1+9+1+10 grid: VOL | PAN | MTR (uses mixer_data for consistency with VOL.SMP/PAN.SMP)
             spans.push(Span::styled("VOL", Style::default().fg(app.theme.foreground)));
-            spans.push(Span::styled(format!("{:>6}", vol_to_db(app.sampler_state.playback.volume as i32)), Style::default().fg(app.theme.success)));
+            spans.push(Span::styled(format!("{:>6}", vol_to_db(app.mixer_data.vol_smp)), Style::default().fg(app.theme.success)));
             spans.push(Span::raw(" "));
 
-            let pan_normalized = (app.sampler_state.playback.pan as f32 / 8192.0).clamp(-1.0, 1.0);
+            let pan_normalized = (app.mixer_data.pan_smp as f32 / 8192.0).clamp(-1.0, 1.0);
             let pan_value = (pan_normalized * 50.0).round() as i32;
             let pan_display = if pan_value.abs() <= 2 {
                 "C".to_string()

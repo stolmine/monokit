@@ -224,11 +224,7 @@ pub fn register_synth(m: &mut std::collections::HashMap<&'static str, CommandDef
     m.insert("S.SUST", CommandDef::new("S.SUST", None, ArgCount::AtLeast(1), "Sample sustain mode"));
     m.insert("SSU", CommandDef::new("SSU", Some("S.SUST"), ArgCount::AtLeast(1), "Sample sustain mode"));
 
-    // Sampler - Output Parameters
-    m.insert("S.VOL", CommandDef::new("S.VOL", None, ArgCount::AtLeast(1), "Sample volume"));
-    m.insert("SV", CommandDef::new("SV", Some("S.VOL"), ArgCount::AtLeast(1), "Sample volume"));
-    m.insert("S.PAN", CommandDef::new("S.PAN", None, ArgCount::AtLeast(1), "Sample pan position"));
-    m.insert("SP", CommandDef::new("SP", Some("S.PAN"), ArgCount::AtLeast(1), "Sample pan position"));
+    // Sampler - Output Parameters (VOL.SMP/VS and PAN.SMP/PS are in mixer section)
     m.insert("S.FX", CommandDef::new("S.FX", None, ArgCount::AtLeast(1), "Sample FX routing"));
     m.insert("SFX", CommandDef::new("SFX", Some("S.FX"), ArgCount::AtLeast(1), "Sample FX routing"));
 

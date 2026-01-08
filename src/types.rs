@@ -930,8 +930,7 @@ pub struct SamplerPlaybackParams {
     pub decay: i16,
     pub release: i16,
     pub sustain_mode: bool,
-    pub volume: i16,
-    pub pan: i16,
+    // volume and pan removed - use VOL.SMP/PAN.SMP (mixer) instead
     pub fx_routing: u8,
     pub rate_mod: i16,
     pub pitch_mod: i16,
@@ -951,8 +950,6 @@ impl Default for SamplerPlaybackParams {
             decay: 0,
             release: 0,
             sustain_mode: false,
-            volume: 8192,
-            pan: 0,
             fx_routing: 0,
             rate_mod: 0,
             pitch_mod: 0,

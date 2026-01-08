@@ -1007,31 +1007,7 @@ define_sampler_playback_param!(
     "Failed to parse sample sustain mode"
 );
 
-// Output Parameters
-define_sampler_playback_param!(
-    handle_s_vol,
-    "s_volume",
-    0,
-    16383,
-    volume,
-    i16,
-    "S.VOL",
-    "SAMPLER VOLUME",
-    "Failed to parse sample volume"
-);
-
-define_sampler_playback_param!(
-    handle_s_pan,
-    "s_pan",
-    -8192,
-    8191,
-    pan,
-    i16,
-    "S.PAN",
-    "SAMPLER PAN",
-    "Failed to parse sample pan"
-);
-
+// Output Parameters (VOL.SMP/VS and PAN.SMP/PS are in mixer.rs)
 define_sampler_playback_param!(
     handle_s_fx,
     "s_fx",

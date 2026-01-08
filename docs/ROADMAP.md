@@ -214,13 +214,21 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | Replace glitch effect | Medium | Pending |
 | S.PITCH range & note LUT | Low | Pending |
 | Gate length control | Low | Pending |
+| Sampler vol/pan consolidation | Low | **DONE** |
 | STR indicator 'S' in header | Low | **DONE** |
 | KIT.LEN / KL getter | Low | **DONE** |
 | KIT.INFO command | Low | **DONE** |
 | KIT getter (no arg lists kits, REPL only) | Low | **DONE** |
-| GRID.MODE 4 FX viz | Medium | Placeholder |
+| GRID.MODE 4 FX viz | Medium | Pending |
 | Help system updates | Low | **DONE** |
 | Scene persistence | Medium | **DONE** |
+| **Phase 5: Release Polish** | | |
+| S.FX SynthDef implementation | Low | Pending |
+| S.RATEMOD/S.PITCHMOD SynthDef impl | Low | Pending |
+| Help system final pass | Low | Pending |
+| Complete DRY pass | Low | Pending |
+| File size audit (500 line max) | Low | Pending |
+| Stale per-voice vol/pan param cleanup | Low | Pending |
 
 **Completed this session:**
 - GRID.MODE 5 sampler visualization (kit info, slot, pitch, envelope, FX)

@@ -922,7 +922,7 @@ where
     if delay_ms > 0 {
         std::thread::sleep(Duration::from_millis(delay_ms));
     }
-    ctx.metro_tx.send(MetroCommand::SendParam("s_volume".to_string(), OscType::Int(8192)))?;
+    ctx.metro_tx.send(MetroCommand::SendParam("s_volume".to_string(), OscType::Int(16383)))?; // Max - use vol_smp for actual control
     if delay_ms > 0 {
         std::thread::sleep(Duration::from_millis(delay_ms));
     }

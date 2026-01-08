@@ -1,39 +1,9 @@
 use std::collections::HashMap;
-use std::time::Instant;
-use ratatui::prelude::*;
-use ratatui::style::{Color, Style};
 
 use crate::eval::seq::{extract_quoted_string, parse_seq_pattern};
-use crate::types::LineSegmentActivity;
-use crate::theme::Theme;
 use crate::utils::split_respecting_quotes;
 
-#[derive(Debug, Clone)]
-pub struct HighlightedSegment {
-    pub text: String,
-    pub is_highlighted: bool,
-}
-
-#[derive(Debug, Clone)]
-pub struct HighlightedLine {
-    pub segments: Vec<HighlightedSegment>,
-}
-
-impl HighlightedLine {
-    pub fn to_spans(&self, normal_color: Color, highlight_color: Color) -> Vec<Span<'static>> {
-        self.segments
-            .iter()
-            .map(|seg| {
-                let color = if seg.is_highlighted {
-                    highlight_color
-                } else {
-                    normal_color
-                };
-                Span::styled(seg.text.clone(), Style::default().fg(color))
-            })
-            .collect()
-    }
-}
+use super::types::{HighlightedSegment, HighlightedLine};
 
 pub fn highlight_stateful_operators(
     line: &str,
@@ -131,22 +101,16 @@ fn highlight_single_command(
     while i < parts.len() {
         let part = parts[i];
 
-        // Check for SEQ with or without space before quote
         let (is_seq, seq_pattern_direct) = if part == "SEQ" {
             (true, None)
         } else if part.starts_with("SEQ\"") || part.starts_with("SEQ'") {
-            // Handle SEQ"..." without space by extracting from the command
-            // Find SEQ in the command starting from current_pos
             let seq_pos = cmd[current_pos..].find("SEQ").map(|p| current_pos + p);
             if let Some(seq_start) = seq_pos {
                 let after_seq = &cmd[seq_start + 3..];
                 let quote_char = if after_seq.starts_with('"') { '"' } else if after_seq.starts_with('\'') { '\'' } else { ' ' };
                 if quote_char != ' ' {
-                    // Find closing quote
                     if let Some(close_pos) = after_seq[1..].find(quote_char) {
                         let pattern = after_seq[1..close_pos + 1].to_string();
-                        // Calculate how many parts to consume
-                        // SEQ is at seq_start, pattern starts at seq_start + 3 + 1, ends at seq_start + 3 + 1 + close_pos + 1
                         let expr_end = seq_start + 3 + 1 + close_pos + 1 + 1;
                         let expr_end = expr_end.min(cmd.len());
                         let full_expr = &cmd[seq_start..expr_end];
@@ -287,7 +251,6 @@ fn highlight_single_command(
                     ) {
                         segments.extend(highlighted_segments);
 
-                        // Use whole-word search to find val2 end position
                         let val2_end = find_whole_word(&cmd[start_pos..], parts[i+2])
                             .map(|p| start_pos + p + parts[i+2].len())
                             .unwrap_or(cmd.len());
@@ -345,7 +308,6 @@ fn highlight_single_command(
                     ) {
                         segments.extend(highlighted_segments);
 
-                        // Use whole-word search to find val2 end position
                         let val2_end = find_whole_word(&cmd[start_pos..], parts[i+2])
                             .map(|p| start_pos + p + parts[i+2].len())
                             .unwrap_or(cmd.len());
@@ -424,9 +386,7 @@ fn highlight_seq_pattern(
         let is_current = token_step_index == step_index
             || (step_index >= token_step_index && step_index < token_step_index + repeat_count);
 
-        // Check if this is an alternation <a b> or random choice {a b}
         if is_current && (token.starts_with('<') || token.starts_with('{')) {
-            // For alternation, look up the nested state to highlight the active option
             let inner_segments = highlight_nested_token(
                 token,
                 script_index,
@@ -454,7 +414,6 @@ fn highlight_seq_pattern(
     Some(segments)
 }
 
-/// Highlight a nested token like <a b> or {a b} showing which option is active
 fn highlight_nested_token(
     token: &str,
     script_index: usize,
@@ -465,25 +424,21 @@ fn highlight_nested_token(
 ) -> Vec<HighlightedSegment> {
     let mut segments = Vec::new();
 
-    // Check bracket type
     let (open_bracket, close_bracket, is_alternation) = if token.starts_with('<') {
         ('<', '>', true)
     } else if token.starts_with('{') {
         ('{', '}', false)
     } else {
-        // Not a nested token, just highlight the whole thing
         return vec![HighlightedSegment {
             text: token.to_string(),
             is_highlighted: true,
         }];
     };
 
-    // Extract content inside brackets (handle repeat suffix like <a b>*2)
     let bracket_end = token.rfind(close_bracket).unwrap_or(token.len() - 1);
     let inner_content = &token[1..bracket_end];
-    let suffix = &token[bracket_end + 1..]; // e.g., "*2"
+    let suffix = &token[bracket_end + 1..];
 
-    // Parse inner options
     let options: Vec<&str> = inner_content.split_whitespace().collect();
 
     if options.is_empty() {
@@ -493,10 +448,6 @@ fn highlight_nested_token(
         }];
     }
 
-    // For alternation <a b>, look up the last returned value
-    // Key format: seq_alt_{script}_{pattern}_{step_index}
-    // For random choice {a b}, look up the last returned value
-    // Key format: seq_rnd_{script}_{pattern}_{step_index}
     let key = if is_alternation {
         format!("seq_alt_{}_{}_{}", script_index, pattern, step_index)
     } else {
@@ -504,9 +455,7 @@ fn highlight_nested_token(
     };
 
     let active_option_idx = toggle_last_value.get(&key).and_then(|&stored_value| {
-        // Parse each option to find which one matches the stored value
         options.iter().position(|opt| {
-            // Parse the option as a simple value
             if let Ok(val) = opt.parse::<i16>() {
                 val == stored_value
             } else if opt == &"_" || opt == &"." {
@@ -514,16 +463,14 @@ fn highlight_nested_token(
             } else if opt.to_uppercase() == "X" {
                 stored_value == 1
             } else {
-                // Try to parse as note name
                 crate::eval::seq::parse_note_name(opt).map_or(false, |v| v == stored_value)
             }
         })
     });
 
-    // Build segments: <, then options with one highlighted, then >, then suffix
     segments.push(HighlightedSegment {
         text: open_bracket.to_string(),
-        is_highlighted: false, // Brackets are not highlighted, only active values
+        is_highlighted: false,
     });
 
     for (idx, option) in options.iter().enumerate() {
@@ -544,13 +491,13 @@ fn highlight_nested_token(
 
     segments.push(HighlightedSegment {
         text: close_bracket.to_string(),
-        is_highlighted: false, // Brackets are not highlighted, only active values
+        is_highlighted: false,
     });
 
     if !suffix.is_empty() {
         segments.push(HighlightedSegment {
             text: suffix.to_string(),
-            is_highlighted: false, // Suffix is structural, not highlighted
+            is_highlighted: false,
         });
     }
 
@@ -566,18 +513,14 @@ fn highlight_tog_expression(
 ) -> Option<Vec<HighlightedSegment>> {
     let mut segments = Vec::new();
 
-    // Find val1 as a whole word (not a substring of another number)
     let val1_pos = find_whole_word(line_from_tog, val1)?;
     let val1_end = val1_pos + val1.len();
 
-    // Find val2 as a whole word AFTER val1
     let val2_pos = find_whole_word(&line_from_tog[val1_end..], val2).map(|p| p + val1_end)?;
 
-    // Parse val1 and val2 to compare with stored value
     let val1_parsed = val1.parse::<i16>().ok();
     let val2_parsed = val2.parse::<i16>().ok();
 
-    // Get stored value to determine which option to highlight
     let stored_value = toggle_last_value.get(key);
 
     let tog_to_val1 = &line_from_tog[..val1_pos];
@@ -614,18 +557,14 @@ fn highlight_eith_expression(
 ) -> Option<Vec<HighlightedSegment>> {
     let mut segments = Vec::new();
 
-    // Find val1 as a whole word (not a substring of another number)
     let val1_pos = find_whole_word(line_from_eith, val1)?;
     let val1_end = val1_pos + val1.len();
 
-    // Find val2 as a whole word AFTER val1
     let val2_pos = find_whole_word(&line_from_eith[val1_end..], val2).map(|p| p + val1_end)?;
 
-    // Parse val1 and val2 to compare with stored value
     let val1_parsed = val1.parse::<i16>().ok();
     let val2_parsed = val2.parse::<i16>().ok();
 
-    // Get stored value to determine which option to highlight
     let stored_value = toggle_last_value.get(key);
 
     let eith_to_val1 = &line_from_eith[..val1_pos];
@@ -698,8 +637,6 @@ fn get_repeat_count(token: &str) -> usize {
     }
 }
 
-/// Find a value as a whole word, not as a substring of another token.
-/// Returns the position of the match if found.
 fn find_whole_word(haystack: &str, needle: &str) -> Option<usize> {
     let mut search_start = 0;
     while let Some(pos) = haystack[search_start..].find(needle) {
@@ -719,511 +656,4 @@ fn find_whole_word(haystack: &str, needle: &str) -> Option<usize> {
         search_start = abs_pos + 1;
     }
     None
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_highlight_seq_basic() {
-        let mut state = HashMap::new();
-        state.insert("seq_0_C3 E3 G3".to_string(), 1);
-        let mut last_value = HashMap::new();
-        last_value.insert("seq_0_C3 E3 G3".to_string(), 4);
-        let direct_validation = HashMap::new();
-
-        let line = "N ON SEQ \"C3 E3 G3\"";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
-
-        let highlighted_tokens: Vec<_> = result.segments
-            .iter()
-            .filter(|s| s.is_highlighted)
-            .map(|s| s.text.as_str())
-            .collect();
-
-        assert_eq!(highlighted_tokens, vec!["E3"]);
-    }
-
-    #[test]
-    fn test_highlight_seq_first_position() {
-        let state = HashMap::new();
-        let mut last_value = HashMap::new();
-        last_value.insert("seq_0_C3 E3 G3".to_string(), 0);
-        let direct_validation = HashMap::new();
-
-        let line = "N ON SEQ \"C3 E3 G3\"";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
-
-        let highlighted_tokens: Vec<_> = result.segments
-            .iter()
-            .filter(|s| s.is_highlighted)
-            .map(|s| s.text.as_str())
-            .collect();
-
-        assert_eq!(highlighted_tokens, vec!["C3"]);
-    }
-
-    #[test]
-    fn test_highlight_tog_first_value() {
-        let state = HashMap::new();
-        let mut last_value = HashMap::new();
-        last_value.insert("0_TOG_10_20".to_string(), 10);
-
-        let direct_validation = HashMap::new();
-
-        let line = "N ON TOG 10 20";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
-
-        let highlighted_tokens: Vec<_> = result.segments
-            .iter()
-            .filter(|s| s.is_highlighted)
-            .map(|s| s.text.as_str())
-            .collect();
-
-        assert_eq!(highlighted_tokens, vec!["10"]);
-    }
-
-    #[test]
-    fn test_highlight_tog_second_value() {
-        let mut state = HashMap::new();
-        state.insert("0_TOG_10_20".to_string(), 1);
-        let mut last_value = HashMap::new();
-        last_value.insert("0_TOG_10_20".to_string(), 20);
-
-        let direct_validation = HashMap::new();
-
-        let line = "N ON TOG 10 20";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
-
-        let highlighted_tokens: Vec<_> = result.segments
-            .iter()
-            .filter(|s| s.is_highlighted)
-            .map(|s| s.text.as_str())
-            .collect();
-
-        assert_eq!(highlighted_tokens, vec!["20"]);
-    }
-
-    #[test]
-    fn test_highlight_tog_with_zero() {
-        // Bug: "DC TOG 2000 0" was displaying as "DC TOG 2000 000 0"
-        // The "0" was being found inside "2000" instead of as a separate token
-        let state = HashMap::new();
-        let mut last_value = HashMap::new();
-        last_value.insert("0_TOG_2000_0".to_string(), 2000);
-
-        let direct_validation = HashMap::new();
-
-        let line = "DC TOG 2000 0";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
-
-        let highlighted_tokens: Vec<_> = result.segments
-            .iter()
-            .filter(|s| s.is_highlighted)
-            .map(|s| s.text.as_str())
-            .collect();
-
-        // First value (2000) should be highlighted when state is 0
-        assert_eq!(highlighted_tokens, vec!["2000"]);
-
-        // Full text should be preserved correctly
-        let full_text: String = result.segments.iter().map(|s| s.text.as_str()).collect();
-        assert_eq!(full_text, "DC TOG 2000 0");
-    }
-
-    #[test]
-    fn test_highlight_tog_with_zero_second_value() {
-        let mut state = HashMap::new();
-        state.insert("0_TOG_2000_0".to_string(), 1);
-        let mut last_value = HashMap::new();
-        last_value.insert("0_TOG_2000_0".to_string(), 0);
-
-        let direct_validation = HashMap::new();
-
-        let line = "DC TOG 2000 0";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
-
-        let highlighted_tokens: Vec<_> = result.segments
-            .iter()
-            .filter(|s| s.is_highlighted)
-            .map(|s| s.text.as_str())
-            .collect();
-
-        // Second value (0) should be highlighted when state is 1
-        assert_eq!(highlighted_tokens, vec!["0"]);
-    }
-
-    #[test]
-    fn test_highlight_seq_with_repeat() {
-        let mut state = HashMap::new();
-        state.insert("seq_0_C3*2 E3".to_string(), 1);
-        let mut last_value = HashMap::new();
-        last_value.insert("seq_0_C3*2 E3".to_string(), 0);
-
-        let direct_validation = HashMap::new();
-
-        let line = "N ON SEQ \"C3*2 E3\"";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
-
-        let highlighted_tokens: Vec<_> = result.segments
-            .iter()
-            .filter(|s| s.is_highlighted)
-            .map(|s| s.text.as_str())
-            .collect();
-
-        assert_eq!(highlighted_tokens, vec!["C3*2"]);
-    }
-
-    #[test]
-    fn test_no_operators() {
-        let state = HashMap::new();
-        let last_value = HashMap::new();
-        let direct_validation = HashMap::new();
-        let line = "N ON 60";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
-
-        assert_eq!(result.segments.len(), 1);
-        assert_eq!(result.segments[0].text, "N ON 60");
-        assert!(!result.segments[0].is_highlighted);
-    }
-
-    #[test]
-    fn test_highlight_seq_alternation_first_option() {
-        let mut state = HashMap::new();
-        // Main SEQ at step 2 (the alternation step)
-        state.insert("seq_0_5 3 <1 0> 4".to_string(), 2);
-        // Alternation state at 0 means first option (1) will be returned
-        state.insert("seq_alt_0_5 3 <1 0> 4_2".to_string(), 0);
-        let mut last_value = HashMap::new();
-        last_value.insert("seq_alt_0_5 3 <1 0> 4_2".to_string(), 1);
-
-        let direct_validation = HashMap::new();
-
-        let line = "PF SEQ \"5 3 <1 0> 4\"";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
-
-        // Find the highlighted segments
-        let highlighted: Vec<_> = result.segments
-            .iter()
-            .filter(|s| s.is_highlighted)
-            .map(|s| s.text.as_str())
-            .collect();
-
-        // Should highlight only the active option (1), not the brackets
-        assert!(!highlighted.contains(&"<"), "Should NOT highlight open bracket");
-        assert!(highlighted.contains(&"1"), "Should highlight first option");
-        assert!(!highlighted.contains(&">"), "Should NOT highlight close bracket");
-        assert!(!highlighted.contains(&"0"), "Should NOT highlight second option");
-    }
-
-    #[test]
-    fn test_highlight_seq_alternation_second_option() {
-        let mut state = HashMap::new();
-        // Main SEQ at step 2 (the alternation step)
-        state.insert("seq_0_5 3 <1 0> 4".to_string(), 2);
-        // Alternation state at 1 means second option (0) will be returned
-        state.insert("seq_alt_0_5 3 <1 0> 4_2".to_string(), 1);
-        let mut last_value = HashMap::new();
-        last_value.insert("seq_alt_0_5 3 <1 0> 4_2".to_string(), 0);
-
-        let direct_validation = HashMap::new();
-
-        let line = "PF SEQ \"5 3 <1 0> 4\"";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
-
-        // Find the highlighted segments
-        let highlighted: Vec<_> = result.segments
-            .iter()
-            .filter(|s| s.is_highlighted)
-            .map(|s| s.text.as_str())
-            .collect();
-
-        // Should highlight only the active option (0), not the brackets
-        assert!(!highlighted.contains(&"<"), "Should NOT highlight open bracket");
-        assert!(highlighted.contains(&"0"), "Should highlight second option");
-        assert!(!highlighted.contains(&">"), "Should NOT highlight close bracket");
-        assert!(!highlighted.contains(&"1"), "Should NOT highlight first option");
-    }
-
-    #[test]
-    fn test_highlight_seq_random_choice_first_option() {
-        let mut state = HashMap::new();
-        // Main SEQ at step 2 (the random choice step)
-        state.insert("seq_0_5 3 {1 0} 4".to_string(), 2);
-        // Random choice state at 0 means first option (1) was selected
-        state.insert("seq_rnd_0_5 3 {1 0} 4_2".to_string(), 0);
-        let mut last_value = HashMap::new();
-        last_value.insert("seq_rnd_0_5 3 {1 0} 4_2".to_string(), 1);
-
-        let direct_validation = HashMap::new();
-
-        let line = "PF SEQ \"5 3 {1 0} 4\"";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
-
-        // Find the highlighted segments
-        let highlighted: Vec<_> = result.segments
-            .iter()
-            .filter(|s| s.is_highlighted)
-            .map(|s| s.text.as_str())
-            .collect();
-
-        // Should highlight the first option (1) that was randomly selected
-        assert!(!highlighted.contains(&"{"), "Should NOT highlight open bracket");
-        assert!(highlighted.contains(&"1"), "Should highlight first option");
-        assert!(!highlighted.contains(&"}"), "Should NOT highlight close bracket");
-        assert!(!highlighted.contains(&"0"), "Should NOT highlight second option");
-    }
-
-    #[test]
-    fn test_highlight_seq_random_choice_second_option() {
-        let mut state = HashMap::new();
-        // Main SEQ at step 2 (the random choice step)
-        state.insert("seq_0_5 3 {1 0} 4".to_string(), 2);
-        // Random choice state at 1 means second option (0) was selected
-        state.insert("seq_rnd_0_5 3 {1 0} 4_2".to_string(), 1);
-        let mut last_value = HashMap::new();
-        last_value.insert("seq_rnd_0_5 3 {1 0} 4_2".to_string(), 0);
-
-        let direct_validation = HashMap::new();
-
-        let line = "PF SEQ \"5 3 {1 0} 4\"";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
-
-        // Find the highlighted segments
-        let highlighted: Vec<_> = result.segments
-            .iter()
-            .filter(|s| s.is_highlighted)
-            .map(|s| s.text.as_str())
-            .collect();
-
-        // Should highlight the second option (0) that was randomly selected
-        assert!(!highlighted.contains(&"{"), "Should NOT highlight open bracket");
-        assert!(highlighted.contains(&"0"), "Should highlight second option");
-        assert!(!highlighted.contains(&"}"), "Should NOT highlight close bracket");
-        assert!(!highlighted.contains(&"1"), "Should NOT highlight first option");
-    }
-
-    #[test]
-    fn test_highlight_seq_no_space_before_quote() {
-        let mut state = HashMap::new();
-        state.insert("seq_0_0 10 2".to_string(), 1);
-        let mut last_value = HashMap::new();
-        last_value.insert("seq_0_0 10 2".to_string(), 10);
-
-        let direct_validation = HashMap::new();
-
-        let line = "N ON SEQ\"0 10 2\"";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
-
-        let highlighted_tokens: Vec<_> = result.segments
-            .iter()
-            .filter(|s| s.is_highlighted)
-            .map(|s| s.text.as_str())
-            .collect();
-
-        assert_eq!(highlighted_tokens, vec!["10"]);
-    }
-
-    #[test]
-    fn test_highlight_seq_unterminated_quote() {
-        let state = HashMap::new();
-        let last_value = HashMap::new();
-        let direct_validation = HashMap::new();
-        let line = "N ON SEQ \"C3 E3";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
-
-        // Should not panic, should treat the whole line as non-highlighted
-        assert!(!result.segments.is_empty());
-        let has_any_highlighted = result.segments.iter().any(|s| s.is_highlighted);
-        assert!(!has_any_highlighted, "Unterminated quote should not highlight anything");
-    }
-
-    #[test]
-    fn test_highlight_seq_with_semicolon_separated_commands() {
-        let mut state = HashMap::new();
-        state.insert("seq_0_5000*15 1250".to_string(), 0);
-        let mut last_value = HashMap::new();
-        last_value.insert("seq_0_5000*15 1250".to_string(), 5000);
-
-        let direct_validation = HashMap::new();
-
-        let line = "PF SEQ \"5000*15 1250\"; AD 5; PA 0";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
-
-        let highlighted_tokens: Vec<_> = result.segments
-            .iter()
-            .filter(|s| s.is_highlighted)
-            .map(|s| s.text.as_str())
-            .collect();
-
-        assert_eq!(highlighted_tokens, vec!["5000*15"]);
-
-        let full_text: String = result.segments.iter().map(|s| s.text.as_str()).collect();
-        assert!(full_text.contains(";"), "Should preserve semicolons in output");
-        assert!(full_text.contains("AD 5"), "Should preserve commands after semicolon");
-        assert!(full_text.contains("PA 0"), "Should preserve all commands");
-    }
-
-    #[test]
-    fn test_highlight_eith_first_value() {
-        let mut state = HashMap::new();
-        state.insert("0_EITH_10_20".to_string(), 0);
-        let mut last_value = HashMap::new();
-        last_value.insert("0_EITH_10_20".to_string(), 10);
-
-        let direct_validation = HashMap::new();
-
-        let line = "N ON EITH 10 20";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
-
-        let highlighted_tokens: Vec<_> = result.segments
-            .iter()
-            .filter(|s| s.is_highlighted)
-            .map(|s| s.text.as_str())
-            .collect();
-
-        assert_eq!(highlighted_tokens, vec!["10"]);
-    }
-
-    #[test]
-    fn test_highlight_eith_second_value() {
-        let mut state = HashMap::new();
-        state.insert("0_EITH_100_200".to_string(), 1);
-        let mut last_value = HashMap::new();
-        last_value.insert("0_EITH_100_200".to_string(), 200);
-
-        let direct_validation = HashMap::new();
-
-        let line = "PF EITH 100 200";
-        let result = highlight_stateful_operators(line, 0, &state, &last_value, &direct_validation);
-
-        let highlighted_tokens: Vec<_> = result.segments
-            .iter()
-            .filter(|s| s.is_highlighted)
-            .map(|s| s.text.as_str())
-            .collect();
-
-        assert_eq!(highlighted_tokens, vec!["200"]);
-    }
-}
-
-pub fn apply_conditional_activity(
-    highlighted: HighlightedLine,
-    conditional_activity: &LineSegmentActivity,
-    theme: &Theme,
-    hold_ms: f32,
-    is_selected: bool,
-) -> Vec<Span<'static>> {
-    let (normal_color, highlight_color) = if is_selected {
-        (theme.highlight_fg, theme.success)
-    } else {
-        (theme.secondary, theme.foreground)
-    };
-
-    if conditional_activity.segments.is_empty() {
-        return highlighted.segments.iter().map(|seg| {
-            let color = if seg.is_highlighted {
-                highlight_color
-            } else {
-                normal_color
-            };
-            Span::styled(seg.text.clone(), Style::default().fg(color))
-        }).collect();
-    }
-
-    // Collect active conditional segments with their decay progress
-    let active_conds: Vec<_> = conditional_activity.segments.iter()
-        .filter_map(|cond_seg| {
-            let elapsed_ms = cond_seg.timestamp.elapsed().as_millis() as f32;
-            let is_visible = elapsed_ms < hold_ms + crate::theme::ACTIVITY_DECAY_MS;
-            if is_visible {
-                let progress = if elapsed_ms < hold_ms {
-                    0.0
-                } else {
-                    let decay_elapsed = (elapsed_ms - hold_ms) / crate::theme::ACTIVITY_DECAY_MS;
-                    1.0 - (1.0 - decay_elapsed.min(1.0)).powi(3)
-                };
-                Some((cond_seg.start, cond_seg.end, progress))
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    let mut result_spans = Vec::new();
-    let mut char_pos = 0;
-
-    for segment in &highlighted.segments {
-        let segment_start = char_pos;
-        let segment_end = char_pos + segment.text.len();
-        let segment_text = &segment.text;
-
-        let base_color = if segment.is_highlighted {
-            highlight_color
-        } else {
-            normal_color
-        };
-
-        // Find all conditional segments that overlap with this text segment
-        let overlapping: Vec<_> = active_conds.iter()
-            .filter(|(start, end, _)| *start < segment_end && *end > segment_start)
-            .collect();
-
-        if overlapping.is_empty() {
-            // No conditional activity - use base color
-            result_spans.push(Span::styled(segment_text.clone(), Style::default().fg(base_color)));
-        } else {
-            // Split segment at conditional boundaries and apply colors
-            let mut pos = 0;
-            let mut boundaries: Vec<usize> = Vec::new();
-
-            // Collect all boundary points within this segment
-            for (cond_start, cond_end, _) in &overlapping {
-                if *cond_start > segment_start && *cond_start < segment_end {
-                    boundaries.push(*cond_start - segment_start);
-                }
-                if *cond_end > segment_start && *cond_end < segment_end {
-                    boundaries.push(*cond_end - segment_start);
-                }
-            }
-            boundaries.sort();
-            boundaries.dedup();
-            boundaries.push(segment_text.len()); // End boundary
-
-            for boundary in boundaries {
-                if boundary <= pos {
-                    continue;
-                }
-
-                let slice = &segment_text[pos..boundary];
-                let slice_abs_start = segment_start + pos;
-                let slice_abs_end = segment_start + boundary;
-
-                // Check if this slice is covered by any active conditional
-                let cond_progress = overlapping.iter()
-                    .filter(|(start, end, _)| *start <= slice_abs_start && *end >= slice_abs_end)
-                    .map(|(_, _, progress)| *progress)
-                    .min_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
-
-                let color = if let Some(progress) = cond_progress {
-                    let active_color = if is_selected {
-                        theme.success
-                    } else {
-                        theme.foreground
-                    };
-                    Theme::lerp_color(active_color, base_color, progress)
-                } else {
-                    base_color
-                };
-
-                result_spans.push(Span::styled(slice.to_string(), Style::default().fg(color)));
-                pos = boundary;
-            }
-        }
-
-        char_pos = segment_end;
-    }
-
-    result_spans
 }

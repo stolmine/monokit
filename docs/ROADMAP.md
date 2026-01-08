@@ -183,68 +183,66 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 **See `docs/SAMPLER_DESIGN.md` for detailed design**
 
-| Feature | Effort | Status |
-|---------|--------|--------|
-| **Phase 1: Mixer Mode** | | |
-| VOL.*/PAN.*/MUTE.* commands | Low | **DONE** |
-| GRID.MODE 3 mixer display | Medium | **DONE** |
-| monokit_main per-voice mixing | Medium | **DONE** |
-| **Phase 2: Basic Sampler** | | |
-| KIT/STR command parsing | Low | **DONE** |
-| Folder loading / kit mode | Low | **DONE** |
-| S.* playback params (16 cmds) | Low | **DONE** |
-| SF.* FX params (9 cmds) | Low | **DONE** |
-| OSC param routing | Low | **DONE** |
-| Buffer loading (/b_allocRead) | Medium | **DONE** |
-| monokit_main bus 21 routing | Low | **DONE** |
-| monokit_sampler SynthDef | Medium | **DONE** |
-| **Phase 3: Slicing** | | |
-| S.SLICE equal division | Low | **DONE** |
-| STR sends frame boundaries | Low | **DONE** |
-| hound WAV metadata | Low | **DONE** |
-| S.ONSET energy-based detection | Medium | **DONE** |
-| S.ONSET.MIN spacing param | Low | **DONE** |
-| Spectral flux upgrade (rustfft) | Medium | Future |
-| GRID.MODE 5 sampler visualization | Medium | **DONE** |
-| **Phase 4: Polish** | | |
-| Sample params coverage for RST | Low | **DONE** |
-| Sample viz styling | Low | **DONE** |
-| SFX command for FX routing | Low | Pending |
-| Filter options (more types) | Medium | Pending |
-| Replace glitch effect | Medium | Pending |
-| S.PITCH range & note LUT | Low | Pending |
-| Gate length control | Low | Pending |
-| Sampler vol/pan consolidation | Low | **DONE** |
-| STR indicator 'S' in header | Low | **DONE** |
-| KIT.LEN / KL getter | Low | **DONE** |
-| KIT.INFO command | Low | **DONE** |
-| KIT getter (no arg lists kits, REPL only) | Low | **DONE** |
-| GRID.MODE 4 FX viz | Medium | Pending |
-| Help system updates | Low | **DONE** |
-| Scene persistence | Medium | **DONE** |
-| **Phase 5: Release Polish** | | |
-| S.FX SynthDef implementation | Low | Pending |
-| Sampler modbus routing | Medium | Pending |
-| Help system final pass | Low | Pending |
-| Complete DRY pass | Low | Pending |
-| File size audit (500 line max) | Low | Pending |
-| Stale per-voice vol/pan param cleanup | Low | Pending |
+#### Completed Phases
 
-**Completed this session:**
-- GRID.MODE 5 sampler visualization (kit info, slot, pitch, envelope, FX)
-- GRID.MODE 5 slot display: visual (●○○○) for small kits, "X out of Y" for large
-- GRID.MODE 5 styling: 10-10-10 column grid, proper label/value colors, MTR label
+| Phase | Feature | Status |
+|-------|---------|--------|
+| **1: Mixer Mode** | VOL.*/PAN.*/MUTE.* commands | **DONE** |
+| | GRID.MODE 3 mixer display | **DONE** |
+| | monokit_main per-voice mixing | **DONE** |
+| **2: Basic Sampler** | KIT/STR command parsing | **DONE** |
+| | Folder loading / kit mode | **DONE** |
+| | S.* playback params (16 cmds) | **DONE** |
+| | SF.* FX params (9 cmds) | **DONE** |
+| | OSC param routing | **DONE** |
+| | Buffer loading (/b_allocRead) | **DONE** |
+| | monokit_main bus 21 routing | **DONE** |
+| | monokit_sampler SynthDef | **DONE** |
+| **3: Slicing** | S.SLICE equal division | **DONE** |
+| | STR sends frame boundaries | **DONE** |
+| | hound WAV metadata | **DONE** |
+| | S.ONSET energy-based detection | **DONE** |
+| | S.ONSET.MIN spacing param | **DONE** |
+| | GRID.MODE 5 sampler visualization | **DONE** |
+| **4: Polish (partial)** | Sample params coverage for RST | **DONE** |
+| | Sample viz styling | **DONE** |
+| | Sampler vol/pan consolidation | **DONE** |
+| | STR indicator 'S' in header | **DONE** |
+| | KIT.LEN / KL getter | **DONE** |
+| | KIT.INFO command | **DONE** |
+| | KIT getter (no arg lists kits) | **DONE** |
+| | Help system updates | **DONE** |
+| | Scene persistence | **DONE** |
+
+#### Pending Work (Prioritized)
+
+| Tier | # | Item | Effort | Rationale |
+|------|---|------|--------|-----------|
+| **1: Core** | 1 | S.FX SynthDef implementation | Low | Prerequisite for SFX command |
+| | 2 | SFX command for FX routing | Low | Enables per-sample FX |
+| | 3 | Sampler modbus routing | Medium | Fills modulation gap |
+| **2: Playback** | 4 | S.PITCH range & note LUT | Low | Quick win, improves musicality |
+| | 5 | Gate length control | Low | Common need |
+| **3: Viz** | 6 | GRID.MODE 4 FX viz | Medium | Visual feedback for FX params |
+| **4: Nice to Have** | 7 | Filter options (more types) | Medium | Already have 14, lower priority |
+| | 8 | Replace glitch effect | Medium | Polish, can defer |
+| **5: Cleanup** | 9 | Stale vol/pan param cleanup | Low | Tech debt from consolidation |
+| | 10 | Help system final pass | Low | Documentation accuracy |
+| | 11 | Complete DRY pass | Low | Code quality |
+| | 12 | File size audit (750 line max) | Low | **DONE** |
+
+#### Future (post v0.5.0)
+- Spectral flux upgrade (rustfft) for improved onset detection
+
+#### Session Notes
+- GRID.MODE 5: kit info, slot display (●○○○ or X/Y), pitch, envelope, FX
 - Sampler state tracking macros (define_sampler_playback_param!, define_sampler_fx_param!)
 - Scene persistence for sampler state (backward compatible)
 - Multi-node param routing for modbus (mb, mba, mbd)
-- S.ONSET transient detection with exponential sensitivity curve
-- S.ONSET.MIN minimum spacing parameter
-- Pure-Rust energy-based onset detector (no external deps)
-- KIT listing now shows file extensions
+- S.ONSET: exponential sensitivity curve, pure-Rust energy-based detector
 - Shared UI helpers: level_to_meter_char, vol_to_db, vol_bar_parts, pan_numeric
-- Bug fix: SC optimizer zeroing decay params (ad, dd, fed, mbd) - NamedControl solution
-- Bug fix: Sampler end_frame=0 causing no audio output
-- Bug fix: Audio device restart (-l 4 for scsynth)
+- Bug fixes: SC optimizer decay params, end_frame=0, audio device restart
+- File size audit: 9 files >1000 lines split into modular structure (750 line target)
 
 
 ---

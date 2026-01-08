@@ -1,5 +1,9 @@
-mod help_content;
 pub mod help;
+pub mod help_content;
+pub mod help_categories;
+pub mod help_synth;
+pub mod help_effects;
+pub mod help_system;
 pub mod init;
 pub mod live;
 pub mod metro;

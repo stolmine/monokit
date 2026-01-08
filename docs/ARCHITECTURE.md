@@ -24,7 +24,6 @@ Project structure, key files, and technical documentation.
 ### Technical Specifications
 - **scsynth_direct_integration.md** - Direct scsynth integration design
 - **DSP_TIER1_IMPLEMENTATION_PLAN.md** - Filter, Resonator, Delay, Reverb
-- **DSP_TIER3_BUFFER_EFFECTS_PLAN.md** - Beat Repeat and Pitch Shift
 - **EFFECT_ROUTING_DESIGN.md** - Effect routing system
 - **DRY_REFACTOR_PLAN.md** - Codebase refactoring plan
 - **UI_REFINEMENT_PLAN.md** - UI enhancements
@@ -37,6 +36,7 @@ Project structure, key files, and technical documentation.
 - **history/CHANGELOG.md** - Detailed completion records
 - **history/PHASES.md** - Development phases 1-6
 - **history/FUTURE.md** - Phase 7-8 plans
+- **history/planning/** - Archived planning documents and feasibility reports
 
 ### Deferred Features
 - **ON_HOLD.md** - Features deferred due to technical constraints

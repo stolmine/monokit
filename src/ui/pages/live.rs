@@ -159,7 +159,7 @@ fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static
             let (loop_char, loop_color) = if app.sampler_state.playback.loop_mode {
                 ("●", app.theme.success)
             } else {
-                ("○", app.theme.secondary)
+                ("○", app.theme.success)
             };
             spans.push(Span::styled("LOOP", Style::default().fg(app.theme.foreground)));
             spans.push(Span::styled(format!("{:>6}", loop_char), Style::default().fg(loop_color)));

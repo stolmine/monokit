@@ -57,190 +57,207 @@ fn render_repl_view(app: &crate::App, height: usize) -> Paragraph<'static> {
         )
 }
 
-fn render_sampler_viz(app: &crate::App) -> Vec<String> {
-    use std::path::Path;
+const METER_CHARS: [char; 9] = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+const METER_CHARS_ASCII: [char; 9] = [' ', '.', 'o', 'O', '0', '@', '#', '#', '#'];
 
-    let mut lines = Vec::new();
-
-    // Row 1: Kit name or file name
-    let kit_display = if let Some(ref kit_path) = app.sampler_state.kit_path {
-        let name = Path::new(kit_path)
-            .file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("???");
-
-        let truncated = if name.len() > 21 {
-            format!("{}...", &name[..18])
-        } else {
-            name.to_string()
-        };
-
-        format!("KIT  {:<21}", truncated)
+fn level_to_meter_char(level: f32, ascii_mode: bool) -> char {
+    let idx = (level.clamp(0.0, 1.0) * 8.0).round() as usize;
+    if ascii_mode {
+        METER_CHARS_ASCII[idx.min(8)]
     } else {
-        "KIT  (none loaded)       ".to_string()
-    };
-    lines.push(format!("{:<30}", kit_display));
+        METER_CHARS[idx.min(8)]
+    }
+}
 
-    // Row 2: Slot info (mode already shown via KIT row above)
-    let slice_info = if let Some(slice_count) = app.sampler_state.slice_count {
-        format!("{}SL", slice_count)
-    } else {
-        "".to_string()
-    };
-
-    // Visual threshold: "SLOT " = 5 chars, leaving 25 for visual
-    // With slice info: "SLOT "(5) + visual(N) + " "(1) + slice(S) ≤ 30 → N ≤ 24 - S
-    let slice_len = slice_info.len();
-    let visual_threshold = if slice_len == 0 { 25 } else { 24usize.saturating_sub(slice_len) };
-
-    let slot_display = if app.sampler_state.num_slots == 0 {
-        format!("SLOT --/--")
-    } else if app.sampler_state.num_slots <= visual_threshold {
-        // Visual mode: SLOT ●○○○○○○○ [slice_info]
-        let mut visual = String::new();
-        for i in 0..app.sampler_state.num_slots {
-            if i == app.sampler_state.current_slot {
-                visual.push('●');
-            } else {
-                visual.push('○');
-            }
-        }
-        if slice_info.is_empty() {
-            format!("SLOT {}", visual)
-        } else {
-            format!("SLOT {} {}", visual, slice_info)
-        }
-    } else {
-        // Numeric: "SLOT X out of Y" where Y = max index (num_slots - 1) for 0-indexed clarity
-        let max_index = app.sampler_state.num_slots.saturating_sub(1);
-        if slice_info.is_empty() {
-            format!("SLOT {} out of {}", app.sampler_state.current_slot, max_index)
-        } else {
-            format!("SLOT {} out of {} {}", app.sampler_state.current_slot, max_index, slice_info)
-        }
-    };
-
-    lines.push(format!("{:<30}", slot_display));
-
-    // Row 3: Playback parameters - Pitch, Direction, Loop
-    let pitch = app.sampler_state.playback.pitch;
-    let pitch_display = if pitch >= 0 {
-        format!("+{:>2}st", pitch)
-    } else {
-        format!("{:>3}st", pitch)
-    };
-
-    let dir_char = if app.sampler_state.playback.direction { "◄" } else { "►" };
-    let loop_char = if app.sampler_state.playback.loop_mode { "●" } else { "·" };
-
-    lines.push(format!("{:<30}", format!("PITCH {}  DIR{} LOOP{}", pitch_display, dir_char, loop_char)));
-
-    // Row 4: Envelope - Attack, Decay, Release (values are raw ms, 0-16383)
-    let atk = app.sampler_state.playback.attack;
-    let dec = app.sampler_state.playback.decay;
-    let rel = app.sampler_state.playback.release;
-
-    lines.push(format!("{:<30}", format!("ENV A{:>4} D{:>4} R{:>4}", atk, dec, rel)));
-
-    // Row 5: Volume and Pan
-    let vol = app.sampler_state.playback.volume;
-    let vol_db = if vol > 0 {
-        let normalized = vol as f32 / 16383.0;
-        20.0 * normalized.log10()
+fn vol_to_db(vol: i32) -> String {
+    let db = if vol > 0 {
+        20.0 * (vol as f32 / 16383.0).log10()
     } else {
         -60.0
     };
+    format!("{:>+3.0}", db)
+}
 
-    let pan = app.sampler_state.playback.pan;
-    let pan_normalized = (pan as f32 / 8192.0).clamp(-1.0, 1.0);
-    let pan_value = (pan_normalized * 50.0).round() as i32;
-    let pan_display = if pan_value.abs() <= 2 {
+fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>) {
+    use std::path::Path;
+
+    match row {
+        0 => {
+            spans.push(Span::styled("KIT ", Style::default().fg(app.theme.label)));
+
+            let name_str = if let Some(ref kit_path) = app.sampler_state.kit_path {
+                Path::new(kit_path)
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .unwrap_or("???")
+            } else {
+                "(none loaded)"
+            };
+
+            let display = if name_str.len() > 25 {
+                format!("{}...", &name_str[..22])
+            } else {
+                format!("{:<26}", name_str)
+            };
+
+            spans.push(Span::styled(display, Style::default().fg(app.theme.foreground)));
+        }
+        1 => {
+            spans.push(Span::styled("SLOT ", Style::default().fg(app.theme.label)));
+
+            let slice_info = app.sampler_state.slice_count
+                .map(|c| format!("{}SL", c))
+                .unwrap_or_default();
+            let slice_len = slice_info.len();
+            let visual_threshold = 24usize.saturating_sub(slice_len);
+
+            if app.sampler_state.num_slots == 0 {
+                spans.push(Span::styled(format!("{:<25}", "--/--"), Style::default().fg(app.theme.foreground)));
+            } else if app.sampler_state.num_slots <= visual_threshold {
+                for i in 0..app.sampler_state.num_slots {
+                    let (char, color) = if i == app.sampler_state.current_slot {
+                        ("●", app.theme.success)
+                    } else {
+                        ("○", app.theme.secondary)
+                    };
+                    spans.push(Span::styled(char, Style::default().fg(color)));
+                }
+                if !slice_info.is_empty() {
+                    spans.push(Span::raw(" "));
+                    spans.push(Span::styled(slice_info.clone(), Style::default().fg(app.theme.foreground)));
+                }
+                let used = app.sampler_state.num_slots + if slice_info.is_empty() { 0 } else { 1 + slice_len };
+                let padding = 25usize.saturating_sub(used);
+                if padding > 0 {
+                    spans.push(Span::raw(" ".repeat(padding)));
+                }
+            } else {
+                let max_index = app.sampler_state.num_slots.saturating_sub(1);
+                let numeric_display = if slice_info.is_empty() {
+                    format!("{} out of {}", app.sampler_state.current_slot, max_index)
+                } else {
+                    format!("{} out of {} {}", app.sampler_state.current_slot, max_index, slice_info)
+                };
+                spans.push(Span::styled(format!("{:<25}", numeric_display), Style::default().fg(app.theme.foreground)));
+            }
+        }
+        2 => {
+            // 9+1+9+1+10 grid: PIT | DIR | LOOP
+            let pitch = app.sampler_state.playback.pitch;
+            let pitch_val = if pitch >= 0 { format!("+{}", pitch) } else { format!("{}", pitch) };
+            spans.push(Span::styled("PIT", Style::default().fg(app.theme.label)));
+            spans.push(Span::styled(format!("{:>6}", pitch_val), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+
+            let dir_char = if app.sampler_state.playback.direction { "◄" } else { "►" };
+            spans.push(Span::styled("DIR", Style::default().fg(app.theme.label)));
+            spans.push(Span::styled(format!("{:>6}", dir_char), Style::default().fg(app.theme.success)));
+            spans.push(Span::raw(" "));
+
+            let (loop_char, loop_color) = if app.sampler_state.playback.loop_mode {
+                ("●", app.theme.success)
+            } else {
+                ("○", app.theme.secondary)
+            };
+            spans.push(Span::styled("LOOP", Style::default().fg(app.theme.label)));
+            spans.push(Span::styled(format!("{:>6}", loop_char), Style::default().fg(loop_color)));
+        }
+        3 => {
+            // 9+1+9+1+10 grid: ATK | DEC | REL (values clamped to 4 digits)
+            let atk = app.sampler_state.playback.attack.min(9999);
+            let dec = app.sampler_state.playback.decay.min(9999);
+            let rel = app.sampler_state.playback.release.min(9999);
+            spans.push(Span::styled("ATK", Style::default().fg(app.theme.label)));
+            spans.push(Span::styled(format!("{:>6}", atk), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+            spans.push(Span::styled("DEC", Style::default().fg(app.theme.label)));
+            spans.push(Span::styled(format!("{:>6}", dec), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+            spans.push(Span::styled("REL", Style::default().fg(app.theme.label)));
+            spans.push(Span::styled(format!("{:>7}", rel), Style::default().fg(app.theme.foreground)));
+        }
+        4 => {
+            // 9+1+9+1+10 grid: VOL | PAN | MTR
+            spans.push(Span::styled("VOL", Style::default().fg(app.theme.label)));
+            spans.push(Span::styled(format!("{:>6}", vol_to_db(app.sampler_state.playback.volume as i32)), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+
+            let pan_normalized = (app.sampler_state.playback.pan as f32 / 8192.0).clamp(-1.0, 1.0);
+            let pan_value = (pan_normalized * 50.0).round() as i32;
+            let pan_display = if pan_value.abs() <= 2 {
+                "C".to_string()
+            } else if pan_value < 0 {
+                format!("L{}", pan_value.abs())
+            } else {
+                format!("R{}", pan_value)
+            };
+            spans.push(Span::styled("PAN", Style::default().fg(app.theme.label)));
+            spans.push(Span::styled(format!("{:>6}", pan_display), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+
+            let meter_l = app.voice_meter_data.smp_l;
+            let meter_r = app.voice_meter_data.smp_r;
+            let l_char = level_to_meter_char(meter_l, app.ascii_meters);
+            let r_char = level_to_meter_char(meter_r, app.ascii_meters);
+            let meter_color = if meter_l > 0.0 || meter_r > 0.0 { app.theme.success } else { app.theme.secondary };
+            let meter_str = format!("{}{}", l_char, r_char);
+            spans.push(Span::styled("MTR", Style::default().fg(app.theme.label)));
+            spans.push(Span::styled(format!("{:>7}", meter_str), Style::default().fg(meter_color)));
+        }
+        5 => {
+            // 9+1+9+1+10 grid: FX | CUT | RES
+            let fx_display = match app.sampler_state.playback.fx_routing {
+                0 => "DRY",
+                1 => "PRE",
+                2 => "PST",
+                _ => "???",
+            };
+            spans.push(Span::styled("FX", Style::default().fg(app.theme.label)));
+            spans.push(Span::styled(format!("{:>7}", fx_display), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+
+            let cut_normalized = app.sampler_state.fx.filter_cut as f32 / 16383.0;
+            let cut_freq = 20.0 + cut_normalized * 19980.0;
+            let cut_display = if cut_freq >= 1000.0 {
+                format!("{:.1}k", cut_freq / 1000.0)
+            } else {
+                format!("{:.0}", cut_freq)
+            };
+            spans.push(Span::styled("CUT", Style::default().fg(app.theme.label)));
+            spans.push(Span::styled(format!("{:>6}", cut_display), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+
+            let res_normalized = (app.sampler_state.fx.filter_res as f32 / 16383.0 * 100.0) as u32;
+            let res_str = format!("{}%", res_normalized);
+            spans.push(Span::styled("RES", Style::default().fg(app.theme.label)));
+            spans.push(Span::styled(format!("{:>7}", res_str), Style::default().fg(app.theme.foreground)));
+        }
+        _ => {}
+    }
+}
+
+fn vol_bar_parts(vol: i32) -> (String, String) {
+    let filled_count = ((vol as f32 / 16383.0) * 13.0).round() as usize;
+    let empty_count = 13usize.saturating_sub(filled_count);
+    ("█".repeat(filled_count), "·".repeat(empty_count))
+}
+
+fn pan_numeric(pan: i32) -> String {
+    let normalized = (pan as f32 / 8192.0).clamp(-1.0, 1.0);
+    let pan_value = (normalized * 50.0).round() as i32;
+    if pan_value.abs() <= 2 {
         " C ".to_string()
     } else if pan_value < 0 {
         format!("L{:<2}", pan_value.abs())
     } else {
         format!("R{:<2}", pan_value)
-    };
-
-    lines.push(format!("{:<30}", format!("MIX {:>+4.0}dB  PAN {}", vol_db, pan_display)));
-
-    // Row 6: FX routing and filter
-    let fx_routing = app.sampler_state.playback.fx_routing;
-    let fx_display = match fx_routing {
-        0 => "DRY",
-        1 => "PRE",
-        2 => "PST",
-        _ => "???",
-    };
-
-    let filter_cut = app.sampler_state.fx.filter_cut;
-    let cut_normalized = filter_cut as f32 / 16383.0;
-    let cut_freq = 20.0 + (cut_normalized * (20000.0 - 20.0));
-    let cut_display = if cut_freq >= 1000.0 {
-        format!("{:.1}k", cut_freq / 1000.0)
-    } else {
-        format!("{:.0}", cut_freq)
-    };
-
-    let filter_res = app.sampler_state.fx.filter_res;
-    let res_normalized = (filter_res as f32 / 16383.0 * 100.0) as u32;
-
-    lines.push(format!("{:<30}", format!("FX {} FLT {:>5}Hz R{:>2}%", fx_display, cut_display, res_normalized)));
-
-    lines
+    }
 }
 
 fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>) {
-    const METER_CHARS: [char; 9] = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
-    const METER_CHARS_ASCII: [char; 9] = [' ', '.', 'o', 'O', '0', '@', '#', '#', '#'];
 
-    // Helper to format volume (0-16383) to dB display (3 chars, right-aligned)
-    let vol_to_db = |vol: i32| -> String {
-        let normalized = vol as f32 / 16383.0;
-        let db = if normalized > 0.0001 {
-            20.0 * normalized.log10()
-        } else {
-            -60.0
-        };
-        format!("{:>+3.0}", db)  // Right-aligned with sign: " +0", " -6", "-12", "-60"
-    };
-
-    // Helper to create volume bar components (13 chars total)
-    let vol_bar_parts = |vol: i32| -> (String, String) {
-        let filled_count = ((vol as f32 / 16383.0) * 13.0).round() as usize;
-        let empty_count = 13usize.saturating_sub(filled_count);
-        ("█".repeat(filled_count), "·".repeat(empty_count))
-    };
-
-    // Helper to format pan (-8192 to 8191) as numeric display (3 chars)
-    let pan_numeric = |pan: i32| -> String {
-        let normalized = (pan as f32 / 8192.0).clamp(-1.0, 1.0);
-        let pan_value = (normalized * 50.0).round() as i32;
-        if pan_value.abs() <= 2 {
-            " C ".to_string()
-        } else if pan_value < 0 {
-            format!("L{:<2}", pan_value.abs())
-        } else {
-            format!("R{:<2}", pan_value)
-        }
-    };
-
-    // Helper to convert meter level (0.0-1.0) to character (respects ASCII mode)
-    let level_to_meter_char = |level: f32| -> char {
-        let clamped = level.clamp(0.0, 1.0);
-        let idx = (clamped * 8.0).round() as usize;
-        if app.ascii_meters {
-            METER_CHARS_ASCII[idx.min(8)]
-        } else {
-            METER_CHARS[idx.min(8)]
-        }
-    };
-
-    // Format: "OSC █████████████ +0  C  ·· ·"
-    //         NAME(3) SPC(1) VOLBAR(13) SPC(1) DB(3) SPC(1) PAN(3) SPC(1) METERS(2) SPC(1) MUTE(1)
     match row {
         0 => {
-            // OSC voice
             let name_color = app.theme.activity_color(app.trigger_activity, false, app.activity_hold_ms);
             spans.push(Span::styled("OSC", Style::default().fg(name_color)));
             spans.push(Span::raw(" "));
@@ -258,18 +275,20 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
 
             let meter_l = app.voice_meter_data.osc_l;
             let meter_r = app.voice_meter_data.osc_r;
-            let l_char = level_to_meter_char(meter_l);
-            let r_char = level_to_meter_char(meter_r);
+            let l_char = level_to_meter_char(meter_l, app.ascii_meters);
+            let r_char = level_to_meter_char(meter_r, app.ascii_meters);
             let meter_color = if meter_l > 0.0 || meter_r > 0.0 { app.theme.success } else { app.theme.secondary };
             spans.push(Span::styled(format!("{}{}", l_char, r_char), Style::default().fg(meter_color)));
             spans.push(Span::raw(" "));
 
-            let mute_char = if app.mixer_data.mute_osc == 1 { "M" } else { "·" };
-            let mute_color = if app.mixer_data.mute_osc == 1 { app.theme.error } else { app.theme.secondary };
+            let (mute_char, mute_color) = if app.mixer_data.mute_osc == 1 {
+                ("M", app.theme.error)
+            } else {
+                ("·", app.theme.secondary)
+            };
             spans.push(Span::styled(mute_char, Style::default().fg(mute_color)));
         }
         1 => {
-            // PLA voice
             let name_color = app.theme.activity_color(app.plaits_trigger_activity, false, app.activity_hold_ms);
             spans.push(Span::styled("PLA", Style::default().fg(name_color)));
             spans.push(Span::raw(" "));
@@ -287,18 +306,20 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
 
             let meter_l = app.voice_meter_data.pla_l;
             let meter_r = app.voice_meter_data.pla_r;
-            let l_char = level_to_meter_char(meter_l);
-            let r_char = level_to_meter_char(meter_r);
+            let l_char = level_to_meter_char(meter_l, app.ascii_meters);
+            let r_char = level_to_meter_char(meter_r, app.ascii_meters);
             let meter_color = if meter_l > 0.0 || meter_r > 0.0 { app.theme.success } else { app.theme.secondary };
             spans.push(Span::styled(format!("{}{}", l_char, r_char), Style::default().fg(meter_color)));
             spans.push(Span::raw(" "));
 
-            let mute_char = if app.mixer_data.mute_pla == 1 { "M" } else { "·" };
-            let mute_color = if app.mixer_data.mute_pla == 1 { app.theme.error } else { app.theme.secondary };
+            let (mute_char, mute_color) = if app.mixer_data.mute_pla == 1 {
+                ("M", app.theme.error)
+            } else {
+                ("·", app.theme.secondary)
+            };
             spans.push(Span::styled(mute_char, Style::default().fg(mute_color)));
         }
         2 => {
-            // NOS voice (no trigger tracking)
             spans.push(Span::styled("NOS", Style::default().fg(app.theme.secondary)));
             spans.push(Span::raw(" "));
 
@@ -315,18 +336,20 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
 
             let meter_l = app.voice_meter_data.nos_l;
             let meter_r = app.voice_meter_data.nos_r;
-            let l_char = level_to_meter_char(meter_l);
-            let r_char = level_to_meter_char(meter_r);
+            let l_char = level_to_meter_char(meter_l, app.ascii_meters);
+            let r_char = level_to_meter_char(meter_r, app.ascii_meters);
             let meter_color = if meter_l > 0.0 || meter_r > 0.0 { app.theme.success } else { app.theme.secondary };
             spans.push(Span::styled(format!("{}{}", l_char, r_char), Style::default().fg(meter_color)));
             spans.push(Span::raw(" "));
 
-            let mute_char = if app.mixer_data.mute_nos == 1 { "M" } else { "·" };
-            let mute_color = if app.mixer_data.mute_nos == 1 { app.theme.error } else { app.theme.secondary };
+            let (mute_char, mute_color) = if app.mixer_data.mute_nos == 1 {
+                ("M", app.theme.error)
+            } else {
+                ("·", app.theme.secondary)
+            };
             spans.push(Span::styled(mute_char, Style::default().fg(mute_color)));
         }
         3 => {
-            // SMP voice
             let name_color = app.theme.activity_color(app.sampler_trigger_activity, false, app.activity_hold_ms);
             spans.push(Span::styled("SMP", Style::default().fg(name_color)));
             spans.push(Span::raw(" "));
@@ -344,14 +367,17 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
 
             let meter_l = app.voice_meter_data.smp_l;
             let meter_r = app.voice_meter_data.smp_r;
-            let l_char = level_to_meter_char(meter_l);
-            let r_char = level_to_meter_char(meter_r);
+            let l_char = level_to_meter_char(meter_l, app.ascii_meters);
+            let r_char = level_to_meter_char(meter_r, app.ascii_meters);
             let meter_color = if meter_l > 0.0 || meter_r > 0.0 { app.theme.success } else { app.theme.secondary };
             spans.push(Span::styled(format!("{}{}", l_char, r_char), Style::default().fg(meter_color)));
             spans.push(Span::raw(" "));
 
-            let mute_char = if app.mixer_data.mute_smp == 1 { "M" } else { "·" };
-            let mute_color = if app.mixer_data.mute_smp == 1 { app.theme.error } else { app.theme.secondary };
+            let (mute_char, mute_color) = if app.mixer_data.mute_smp == 1 {
+                ("M", app.theme.error)
+            } else {
+                ("·", app.theme.secondary)
+            };
             spans.push(Span::styled(mute_char, Style::default().fg(mute_color)));
         }
         4 => {
@@ -378,11 +404,15 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
     // Calculate total content height based on enabled elements
     // Always reserve space for grid (6 rows) so spectrum/meters don't move when grid is hidden
     // + 1 meter label (if grid meters shown)
+    // + 1 sampler label (if grid mode 5, always shown)
     // + 2 spectrum rows (if spectrum shown)
     // + 1 spectrum label (if spectrum shown)
     let mut total_content_height = 6;
     // But spectrum and meters still affect layout when toggled
     if app.show_meters_grid {
+        total_content_height += 1;
+    } else if app.grid_mode == 5 {
+        // Sampler label row (shown even without meters)
         total_content_height += 1;
     }
     if app.show_spectrum {
@@ -460,9 +490,6 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
             "FLT ··········  0%        ".to_string(),
             "                              ".to_string(),
         ]
-    } else if app.grid_mode == 5 {
-        // Mode 5: Sampler visualization
-        render_sampler_viz(app)
     } else {
         Vec::new()
     };
@@ -494,10 +521,13 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
             } else if app.grid_mode == 3 {
                 // Mode 3: Mixer - per-voice levels, pan, mute (styled spans)
                 render_mixer_row(row, app, &mut spans);
-            } else if app.grid_mode == 4 || app.grid_mode == 5 {
-                // Modes 4, 5: FX Viz 2, Sampler (placeholder)
+            } else if app.grid_mode == 4 {
+                // Mode 4: FX Viz 2 (placeholder)
                 let color = app.theme.secondary;
                 spans.push(Span::styled(fx_viz_lines[row].clone(), Style::default().fg(color)));
+            } else if app.grid_mode == 5 {
+                // Mode 5: Sampler visualization
+                render_sampler_row(row, app, &mut spans);
             } else {
                 // Render grid icons or labels based on grid_mode
                 for col in 0..8 {
@@ -555,15 +585,27 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
         lines.push(Line::from(spans).alignment(Alignment::Center));
     }
 
-    // Meter labels row (only if grid meters are shown)
+    // Meter/sampler labels row
     if app.show_meters_grid {
         let mut meter_label = vec![];
-        meter_label.push(Span::raw("                              "));  // Grid space (30 chars, matches mode 0)
+        // Grid space: show SAMPLER label if mode 5, otherwise blank
+        if app.grid_mode == 5 {
+            meter_label.push(Span::styled("SAMPLER", Style::default().fg(app.theme.label)));
+            meter_label.push(Span::raw("                       "));  // 23 spaces to fill 30 chars
+        } else {
+            meter_label.push(Span::raw("                              "));  // Grid space (30 chars, matches mode 0)
+        }
         meter_label.push(Span::raw("  "));
         meter_label.push(Span::styled("L ", Style::default().fg(app.theme.label)));
         meter_label.push(Span::raw(" "));
         meter_label.push(Span::styled("R ", Style::default().fg(app.theme.label)));
         lines.push(Line::from(meter_label).alignment(Alignment::Center));
+    } else if app.grid_mode == 5 {
+        // Sampler label row (shown even when meters hidden)
+        let mut label_row = vec![];
+        label_row.push(Span::styled("SAMPLER", Style::default().fg(app.theme.label)));
+        label_row.push(Span::raw("                       "));  // 23 spaces to fill 30 chars
+        lines.push(Line::from(label_row).alignment(Alignment::Center));
     }
 
     // Multi-row spectrum (2 rows tall) - only if spectrum is enabled

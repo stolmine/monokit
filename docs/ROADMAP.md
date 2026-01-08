@@ -208,6 +208,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | GRID.MODE 5 sampler visualization | Medium | **DONE** |
 | **Phase 4: Polish** | | |
 | Sample params coverage for RST | Low | **DONE** |
+| Sample viz styling | Low | **DONE** |
 | SFX command for FX routing | Low | Pending |
 | Filter options (more types) | Medium | Pending |
 | Replace glitch effect | Medium | Pending |

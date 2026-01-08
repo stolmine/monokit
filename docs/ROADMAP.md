@@ -224,7 +224,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | Scene persistence | Medium | **DONE** |
 | **Phase 5: Release Polish** | | |
 | S.FX SynthDef implementation | Low | Pending |
-| S.RATEMOD/S.PITCHMOD SynthDef impl | Low | Pending |
+| Sampler modbus routing | Medium | Pending |
 | Help system final pass | Low | Pending |
 | Complete DRY pass | Low | Pending |
 | File size audit (500 line max) | Low | Pending |
@@ -327,6 +327,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **Cross-Platform Compatibility** [High] - Linux/Windows/Intel Mac
 - **Sample Playback System** [Very High] - Major feature (see SAMPLE_PLAYBACK_DESIGN.md)
 - **Song Mode/Arranger** [Very High] - Pattern chaining, arrangement sequencing, section management for complete song construction beyond loop-based performance
+- **Command Naming & Param Organization Overhaul** [Medium] - Comprehensive consistency pass for all command names, aliases, and parameter organization; establish and document naming conventions; improve intuitiveness across voice types (osc, noise, plaits, sampler); unify modbus/modulation patterns
 - **Additional Voice Types** [Very High] - Architecture change
 - **Optional Polyphony** [Very High] - Architecture change
 

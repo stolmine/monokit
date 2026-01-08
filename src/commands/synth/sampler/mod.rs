@@ -10,5 +10,6 @@ pub use params::{
     handle_s_sust, handle_s_fx, handle_s_ratemod, handle_s_pitchmod,
     handle_sf_cut, handle_sf_res, handle_sf_type, handle_sf_bits,
     handle_sf_rate, handle_sf_deci, handle_sf_prob, handle_sf_mult,
-    handle_sf_glit, handle_s_slice, handle_s_onset, handle_s_onset_min,
+    handle_sf_glit, handle_sf_cutmod, handle_sf_resmod,
+    handle_s_slice, handle_s_onset, handle_s_onset_min,
 };

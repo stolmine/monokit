@@ -80,6 +80,8 @@ pub struct SamplerFxParams {
     pub prob: i16,
     pub mult: i16,
     pub glit_mix: i16,
+    pub filter_cut_mod: i16,
+    pub filter_res_mod: i16,
 }
 
 impl Default for SamplerFxParams {
@@ -94,6 +96,8 @@ impl Default for SamplerFxParams {
             prob: 0,
             mult: 0,
             glit_mix: 0,
+            filter_cut_mod: 0,
+            filter_res_mod: 0,
         }
     }
 }

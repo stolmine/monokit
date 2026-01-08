@@ -257,4 +257,10 @@ pub fn register_synth(m: &mut std::collections::HashMap<&'static str, CommandDef
     m.insert("SFM", CommandDef::new("SFM", Some("SF.MULT"), ArgCount::AtLeast(1), "Sampler glitch multiplier"));
     m.insert("SF.GLIT", CommandDef::new("SF.GLIT", None, ArgCount::AtLeast(1), "Sampler disintegrator mix"));
     m.insert("SFG", CommandDef::new("SFG", Some("SF.GLIT"), ArgCount::AtLeast(1), "Sampler disintegrator mix"));
+
+    // Sampler FX - Modulation
+    m.insert("SF.CUTMOD", CommandDef::new("SF.CUTMOD", None, ArgCount::AtLeast(1), "Sampler cutoff modulation"));
+    m.insert("SFCM", CommandDef::new("SFCM", Some("SF.CUTMOD"), ArgCount::AtLeast(1), "Sampler cutoff modulation"));
+    m.insert("SF.RESMOD", CommandDef::new("SF.RESMOD", None, ArgCount::AtLeast(1), "Sampler resonance modulation"));
+    m.insert("SFQM", CommandDef::new("SFQM", Some("SF.RESMOD"), ArgCount::AtLeast(1), "Sampler resonance modulation"));
 }

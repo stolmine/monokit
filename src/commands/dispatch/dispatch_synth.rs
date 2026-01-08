@@ -170,6 +170,8 @@ where
         "SF.PROB" | "SFP" => Some(synth_params::handle_sf_prob(parts, variables, patterns, counters, scripts, script_index, metro_tx, debug_level, scale, &mut *ctx.sampler_state, out_cfm, output).map(|_| vec![])),
         "SF.MULT" | "SFM" => Some(synth_params::handle_sf_mult(parts, variables, patterns, counters, scripts, script_index, metro_tx, debug_level, scale, &mut *ctx.sampler_state, out_cfm, output).map(|_| vec![])),
         "SF.GLIT" | "SFG" => Some(synth_params::handle_sf_glit(parts, variables, patterns, counters, scripts, script_index, metro_tx, debug_level, scale, &mut *ctx.sampler_state, out_cfm, output).map(|_| vec![])),
+        "SF.CUTMOD" | "SFCM" => Some(synth_params::handle_sf_cutmod(parts, variables, patterns, counters, scripts, script_index, metro_tx, debug_level, scale, &mut *ctx.sampler_state, out_cfm, output).map(|_| vec![])),
+        "SF.RESMOD" | "SFQM" => Some(synth_params::handle_sf_resmod(parts, variables, patterns, counters, scripts, script_index, metro_tx, debug_level, scale, &mut *ctx.sampler_state, out_cfm, output).map(|_| vec![])),
         "BR.LEN" | "BRL" => Some(synth_params::handle_br_len(parts, *metro_interval, br_len, variables, patterns, counters, scripts, script_index, metro_tx, debug_level, scale, out_cfm, output).map(|_| vec![])),
         "BR.REV" | "BRR" => Some(synth_params::handle_br_rev(parts, variables, patterns, counters, scripts, script_index, metro_tx, debug_level, scale, out_cfm, output).map(|_| vec![])),
         "BR.WIN" | "BRW" => Some(synth_params::handle_br_win(parts, variables, patterns, counters, scripts, script_index, metro_tx, debug_level, scale, out_cfm, output).map(|_| vec![])),

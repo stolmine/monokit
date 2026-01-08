@@ -2,30 +2,32 @@
 
 Design document for GRID.MODE expansion and unified sample playback system.
 
-**Status:** Phase 2 In Progress (Basic Sampler)
+**Status:** Phase 4 In Progress (Polish)
 **Date:** January 2026
 
 ---
 
 ## Current Status (January 2026)
 
-**Phase 2 Complete:**
+**Phase 2-3 Complete:**
 - ✅ Audio output working (bus 21 routing, buffer allocation)
 - ✅ One-shot playback working (audio-rate SetResetFF detection)
 - ✅ Kit/folder loading working
 - ✅ Case-insensitive path resolution (library search)
 - ✅ SF.* effects chain (filter, decimator, glitch)
 - ✅ S.* playback parameters working
+- ✅ S.FX routing command (0=bypass spatial, 1=full chain)
+- ✅ GRID.MODE 5 sampler visualization
+- ✅ S.SLICE / S.ONSET slicing
+
+**Phase 4 Complete:**
+- ✅ Sampler modbus routing (S.RATEMOD, S.PITCHMOD, SF.CUTMOD, SF.RESMOD)
 
 **Remaining for Phase 4 (Polish):**
-- Sample params coverage for RST
-- S.FX routing command (through/around global FX)
 - More filter types (like HD2 voice)
 - Replace glitch effect with better alternative
 - S.PITCH 14-bit range with note name LUT
 - Gate length control for sustain stage
-- STR 'S' indicator in header
-- KIT.LEN / KL getter (return slot count for dynamic mapping)
 
 ---
 

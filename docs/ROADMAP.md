@@ -219,7 +219,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | Tier | # | Item | Effort | Rationale |
 |------|---|------|--------|-----------|
 | **1: Core** | 1 | S.FX SynthDef + command | Low | **DONE** - 0=bypass, 1=full chain |
-| | 2 | Sampler modbus routing | Medium | Fills modulation gap |
+| | 2 | Sampler modbus routing | Medium | **DONE** - S.RATEMOD, S.PITCHMOD, SF.CUTMOD, SF.RESMOD |
 | **2: Playback** | 3 | S.PITCH range & note LUT | Low | Quick win, improves musicality |
 | | 4 | Gate length control | Low | Common need |
 | **3: Viz** | 5 | GRID.MODE 4 FX viz | Medium | Visual feedback for FX params |

@@ -23,7 +23,12 @@ SynthDef(\monokit_sampler, {
         sf_deci = 0,
         sf_prob = 0,
         sf_mult = 8192,
-        sf_glit = 0;
+        sf_glit = 0,
+        s_ratemod = 0,
+        s_pitchmod = 0,
+        sf_cutmod = 0,
+        sf_resmod = 0,
+        modBus = 17;
 
     var trig, trigAr, gate;
     var rateBase, pitchRatio, fineRatio, finalRate;
@@ -37,13 +42,17 @@ SynthDef(\monokit_sampler, {
     var filterCutoff, filterRes;
     var decimated, deciBits, deciRate, deciMix;
     var glitchTrig, glitchRate, glitched, glitchMix;
+    var modIn;
 
     trig = Trig1.kr(t_gate_sampler, 0.001);
     trigAr = T2A.ar(trig);
     gate = Latch.kr(s_sust, trig) + ((1 - s_sust) * trig);
 
-    rateBase = s_rate / 8192;
-    pitchRatio = (s_pitch / 12).midiratio;
+    modIn = InFeedback.ar(modBus, 1);
+
+    rateBase = (s_rate / 8192) * (1 + (modIn * (s_ratemod / 16383) * 2));
+    // Pitch mod: base pitch (semitones) + modulation (±12 semitones at full)
+    pitchRatio = ((s_pitch / 12) + (modIn * (s_pitchmod / 16383) * 12)).midiratio;
     fineRatio = (s_fine / 1200).midiratio;
     finalRate = rateBase * pitchRatio * fineRatio;
     finalRate = Select.kr(s_direction, [finalRate, finalRate.neg]);
@@ -86,11 +95,13 @@ SynthDef(\monokit_sampler, {
     volScale = s_volume / 16383;
     sig = sig * env * volScale;
 
-    sig = Select.ar((sf_cut < 16383) + (sf_res > 0), [
+    // Filter activates when base params OR mod amounts are set (.sign clamps to 0/1)
+    sig = Select.ar(((sf_cut < 16383) + (sf_res > 0) + (sf_cutmod > 0) + (sf_resmod > 0)).sign, [
         sig,
         {
-            filterCutoff = (sf_cut / 16383).linexp(0, 1, 20, 20000);
-            filterRes = sf_res / 16383;
+            filterCutoff = ((sf_cut / 16383) + (modIn * (sf_cutmod / 16383))).clip(0, 1).linexp(0, 1, 20, 20000);
+            // Res mod: larger range (0-0.9) for audible effect, rq goes 1.0 down to ~0.15
+            filterRes = ((sf_res / 16383) + (modIn * (sf_resmod / 16383))).clip(0, 0.9);
             Select.ar(sf_type.clip(0, 2).round, [
                 RLPF.ar(sig, filterCutoff, (1.0 - (filterRes * 0.95)).clip(0.05, 1.0)),
                 RHPF.ar(sig, filterCutoff, (1.0 - (filterRes * 0.95)).clip(0.05, 1.0)),

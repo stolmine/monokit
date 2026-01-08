@@ -278,6 +278,30 @@ define_sampler_fx_param!(
     "Failed to parse disintegrator mix"
 );
 
+define_sampler_fx_param!(
+    handle_sf_cutmod,
+    "sf_cutmod",
+    0,
+    16383,
+    filter_cut_mod,
+    i16,
+    "SF.CUTMOD",
+    "SAMPLER CUTOFF MOD",
+    "Failed to parse cutoff modulation"
+);
+
+define_sampler_fx_param!(
+    handle_sf_resmod,
+    "sf_resmod",
+    0,
+    16383,
+    filter_res_mod,
+    i16,
+    "SF.RESMOD",
+    "SAMPLER RES MOD",
+    "Failed to parse resonance modulation"
+);
+
 pub fn handle_s_slice<F>(
     parts: &[&str],
     variables: &Variables,

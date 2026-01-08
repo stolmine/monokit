@@ -74,6 +74,7 @@ impl App {
             grid_mode: &mut self.grid_mode,
             eq_state: &mut self.eq_state,
             mixer_data: &mut self.mixer_data,
+            fx_mix_state: &mut self.fx_mix_state,
             scope_settings: &mut self.scope_settings,
             current_page: &mut self.current_page,
             br_len: &mut self.br_len,

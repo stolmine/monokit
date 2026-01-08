@@ -220,17 +220,17 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 |------|---|------|--------|-----------|
 | **1: Core** | 1 | S.FX SynthDef + command | Low | **DONE** - 0=bypass, 1=full chain |
 | | 2 | Sampler modbus routing | Medium | **DONE** - S.RATEMOD, S.PITCHMOD, SF.CUTMOD, SF.RESMOD |
-| **2: Playback** | 3 | S.PITCH range & note LUT | Low | Quick win, improves musicality |
-| | 4 | Gate length control | Low | Common need |
-| **3: Viz** | 5 | GRID.MODE 4 FX viz | Medium | Visual feedback for FX params |
-| **4: Nice to Have** | 6 | Filter options (more types) | Medium | Already have 14, lower priority |
-| | 7 | Replace glitch effect | Medium | Polish, can defer |
-| **5: Cleanup** | 8 | Stale vol/pan param cleanup | Low | Tech debt from consolidation |
-| | 9 | Help system final pass | Low | Documentation accuracy |
-| | 10 | Complete DRY pass | Low | Code quality |
-| | 11 | File size audit (750 line max) | Low | **DONE** |
+| **2: Viz** | 3 | GRID.MODE 4 FX viz | Medium | **DONE** - 11 FX dry/wet levels, 3×6 grid |
+| **3: Nice to Have** | 4 | Filter options (more types) | Medium | Already have 14, lower priority |
+| | 5 | Replace glitch effect | Medium | Polish, can defer |
+| **4: Cleanup** | 6 | Stale vol/pan param cleanup | Low | Tech debt from consolidation |
+| | 7 | Help system final pass | Low | Documentation accuracy |
+| | 8 | Complete DRY pass | Low | Code quality |
+| | 9 | File size audit (750 line max) | Low | **DONE** |
 
 #### Future (post v0.5.0)
+- S.PITCH 14-bit range & note LUT (semitone approach works well as-is)
+- Gate length control for sampler
 - Spectral flux upgrade (rustfft) for improved onset detection
 
 #### Session Notes
@@ -247,6 +247,14 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - Sampler modbus: S.RATEMOD (0-2x), S.PITCHMOD (±12 semi), SF.CUTMOD, SF.RESMOD/SFQM
 - Pitch mod fix: was dividing by 12, now proper ±octave range
 - Filter mod: activates when mod amounts set, res range 0-0.9 for audible effect
+- GRID.MODE 4: FX dry/wet viz (11 FX: LFI/RNG/RSO/CMP/DLY/REV/BR/PS/CLD/DEC/GLI)
+- FxMixState: new state tracking for 9 global FX mix params
+- FX handler cleanup: standardized to simple clamp pattern, removed debug code
+- Grid UI convention: labels=fg, values=success, section labels=label color
+- GRID.MODE 0/1: added PARAM ACTIVITY label
+- GRID.MODE 2: restructured EQ/COMP with section labels, fixed colors
+- GRID.MODE 3: added CLD/REV rows, moved MIXER label, fixed mute (M dim/lit)
+- Horizontal ASCII meters: level_to_bar() now supports ascii_mode
 
 
 ---
@@ -305,7 +313,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **Multiple Reverb Types** [Medium] - Add alternative reverb algorithms (JVerb, FDN, etc.); allow switching between reverb types; maintain current FreeVerb as default
 - **Script Mute Hotkeys (Terminal Research)** [Medium] - Fix Ctrl+Shift+1-8/M/I hotkeys not working; terminal emulators handle Ctrl+Shift differently; research alternatives
 - **Global Distortion/Saturation** [Low-Medium] - Natural-sounding saturation/distortion with antialiasing; multiple modes (tube, tape, soft clip, fold)
-- **Alias & Command Name Standardization** [Low] - Audit all commands for consistent naming patterns; standardize canonical form patterns
+- **Alias & Command Name Standardization** [Low] - Audit all commands for consistent naming patterns; standardize canonical form patterns; add short aliases for verbose commands (e.g., GRID.MODE needs GM or similar)
 - **Help System Cleanup** [Low] - Comb through help to find and remove deprecated commands
 - **Dynamic Grid Layout** [Medium] - Responsive UI spacing
 - **Tempo-Synced Delay** [Low] - DS parameter for musical delay times

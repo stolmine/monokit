@@ -135,6 +135,7 @@ pub fn handle_ps_mix<F>(
     debug_level: u8,
     scale: &ScaleState,
     out_cfm: bool,
+    fx_mix_state: &mut crate::types::FxMixState,
     mut output: F,
 ) -> Result<()>
 where
@@ -152,6 +153,9 @@ where
             .context("Failed to parse pitch shift mix")?
     };
     let clipped = value.clamp(0, 16383);
+
+    fx_mix_state.pitch_shift_mix = clipped;
+
     metro_tx
         .send(MetroCommand::SendParam("ps_mix".to_string(), OscType::Int(clipped)))
         .context("Failed to send param to metro thread")?;

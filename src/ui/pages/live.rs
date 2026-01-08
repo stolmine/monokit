@@ -237,6 +237,92 @@ fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static
     }
 }
 
+fn render_fx_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>) {
+    match row {
+        0 => {
+            let lfi_pct = (app.fx_mix_state.lofi_mix as f32 / 16383.0 * 100.0).round() as i32;
+            let rng_pct = (app.fx_mix_state.ring_mix as f32 / 16383.0 * 100.0).round() as i32;
+            let rso_pct = (app.fx_mix_state.reso_mix as f32 / 16383.0 * 100.0).round() as i32;
+
+            spans.push(Span::styled("LFI", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+            spans.push(Span::styled(format!("{:>3}", lfi_pct), Style::default().fg(app.theme.success)));
+            spans.push(Span::raw("  "));
+
+            spans.push(Span::styled("RNG", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+            spans.push(Span::styled(format!("{:>3}", rng_pct), Style::default().fg(app.theme.success)));
+            spans.push(Span::raw("  "));
+
+            spans.push(Span::styled("RSO", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+            spans.push(Span::styled(format!("{:>3}", rso_pct), Style::default().fg(app.theme.success)));
+            spans.push(Span::raw("     "));
+        }
+        1 => {
+            let cmp_pct = (app.fx_mix_state.comp_mix as f32 / 16383.0 * 100.0).round() as i32;
+            let dly_pct = (app.fx_mix_state.delay_wet as f32 / 16383.0 * 100.0).round() as i32;
+            let rev_pct = (app.fx_mix_state.reverb_wet as f32 / 16383.0 * 100.0).round() as i32;
+
+            spans.push(Span::styled("CMP", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+            spans.push(Span::styled(format!("{:>3}", cmp_pct), Style::default().fg(app.theme.success)));
+            spans.push(Span::raw("  "));
+
+            spans.push(Span::styled("DLY", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+            spans.push(Span::styled(format!("{:>3}", dly_pct), Style::default().fg(app.theme.success)));
+            spans.push(Span::raw("  "));
+
+            spans.push(Span::styled("REV", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+            spans.push(Span::styled(format!("{:>3}", rev_pct), Style::default().fg(app.theme.success)));
+            spans.push(Span::raw("     "));
+        }
+        2 => {
+            let br_pct = (app.fx_mix_state.beat_rep_mix as f32 / 16383.0 * 100.0).round() as i32;
+            let ps_pct = (app.fx_mix_state.pitch_shift_mix as f32 / 16383.0 * 100.0).round() as i32;
+            let cld_pct = (app.fx_mix_state.clouds_wet as f32 / 16383.0 * 100.0).round() as i32;
+
+            spans.push(Span::styled("BR ", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+            spans.push(Span::styled(format!("{:>3}", br_pct), Style::default().fg(app.theme.success)));
+            spans.push(Span::raw("  "));
+
+            spans.push(Span::styled("PS ", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+            spans.push(Span::styled(format!("{:>3}", ps_pct), Style::default().fg(app.theme.success)));
+            spans.push(Span::raw("  "));
+
+            spans.push(Span::styled("CLD", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+            spans.push(Span::styled(format!("{:>3}", cld_pct), Style::default().fg(app.theme.success)));
+            spans.push(Span::raw("     "));
+        }
+        3 => {
+            let dec_pct = (app.sampler_state.fx.deci_mix as f32 / 16383.0 * 100.0).round() as i32;
+            let gli_pct = (app.sampler_state.fx.glit_mix as f32 / 16383.0 * 100.0).round() as i32;
+
+            spans.push(Span::styled("DEC", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+            spans.push(Span::styled(format!("{:>3}", dec_pct), Style::default().fg(app.theme.success)));
+            spans.push(Span::raw("  "));
+
+            spans.push(Span::styled("GLI", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+            spans.push(Span::styled(format!("{:>3}", gli_pct), Style::default().fg(app.theme.success)));
+            spans.push(Span::raw("              "));
+        }
+        4 => {
+            spans.push(Span::raw("                              "));
+        }
+        5 => {
+            spans.push(Span::raw("                              "));
+        }
+        _ => {}
+    }
+}
+
 fn vol_bar_parts(vol: i32) -> (String, String) {
     let filled_count = ((vol as f32 / 16383.0) * 13.0).round() as usize;
     let empty_count = 13usize.saturating_sub(filled_count);
@@ -282,12 +368,12 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
             spans.push(Span::styled(format!("{}{}", l_char, r_char), Style::default().fg(meter_color)));
             spans.push(Span::raw(" "));
 
-            let (mute_char, mute_color) = if app.mixer_data.mute_osc == 1 {
-                ("M", app.theme.error)
+            let mute_color = if app.mixer_data.mute_osc == 1 {
+                app.theme.success
             } else {
-                ("·", app.theme.secondary)
+                app.theme.secondary
             };
-            spans.push(Span::styled(mute_char, Style::default().fg(mute_color)));
+            spans.push(Span::styled("M", Style::default().fg(mute_color)));
         }
         1 => {
             let name_color = app.theme.activity_color(app.plaits_trigger_activity, false, app.activity_hold_ms);
@@ -313,12 +399,12 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
             spans.push(Span::styled(format!("{}{}", l_char, r_char), Style::default().fg(meter_color)));
             spans.push(Span::raw(" "));
 
-            let (mute_char, mute_color) = if app.mixer_data.mute_pla == 1 {
-                ("M", app.theme.error)
+            let mute_color = if app.mixer_data.mute_pla == 1 {
+                app.theme.success
             } else {
-                ("·", app.theme.secondary)
+                app.theme.secondary
             };
-            spans.push(Span::styled(mute_char, Style::default().fg(mute_color)));
+            spans.push(Span::styled("M", Style::default().fg(mute_color)));
         }
         2 => {
             spans.push(Span::styled("NOS", Style::default().fg(app.theme.secondary)));
@@ -343,12 +429,12 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
             spans.push(Span::styled(format!("{}{}", l_char, r_char), Style::default().fg(meter_color)));
             spans.push(Span::raw(" "));
 
-            let (mute_char, mute_color) = if app.mixer_data.mute_nos == 1 {
-                ("M", app.theme.error)
+            let mute_color = if app.mixer_data.mute_nos == 1 {
+                app.theme.success
             } else {
-                ("·", app.theme.secondary)
+                app.theme.secondary
             };
-            spans.push(Span::styled(mute_char, Style::default().fg(mute_color)));
+            spans.push(Span::styled("M", Style::default().fg(mute_color)));
         }
         3 => {
             let name_color = app.theme.activity_color(app.sampler_trigger_activity, false, app.activity_hold_ms);
@@ -374,21 +460,38 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
             spans.push(Span::styled(format!("{}{}", l_char, r_char), Style::default().fg(meter_color)));
             spans.push(Span::raw(" "));
 
-            let (mute_char, mute_color) = if app.mixer_data.mute_smp == 1 {
-                ("M", app.theme.error)
+            let mute_color = if app.mixer_data.mute_smp == 1 {
+                app.theme.success
             } else {
-                ("·", app.theme.secondary)
+                app.theme.secondary
             };
-            spans.push(Span::styled(mute_char, Style::default().fg(mute_color)));
+            spans.push(Span::styled("M", Style::default().fg(mute_color)));
         }
         4 => {
-            // Empty row
-            spans.push(Span::raw("                              "));
+            // CLD - Clouds wet level
+            spans.push(Span::styled("CLD ", Style::default().fg(app.theme.foreground)));
+
+            let (filled, empty) = vol_bar_parts(app.fx_mix_state.clouds_wet);
+            spans.push(Span::styled(filled, Style::default().fg(app.theme.success)));
+            spans.push(Span::styled(empty, Style::default().fg(app.theme.secondary)));
+            spans.push(Span::raw("  "));
+
+            let cld_pct = (app.fx_mix_state.clouds_wet as f32 / 16383.0 * 100.0).round() as i32;
+            spans.push(Span::styled(format!("{:>3}%", cld_pct), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw("       "));
         }
         5 => {
-            // MIXER label
-            spans.push(Span::styled("MIXER", Style::default().fg(app.theme.label)));
-            spans.push(Span::raw("                         "));
+            // REV - Reverb wet level
+            spans.push(Span::styled("REV ", Style::default().fg(app.theme.foreground)));
+
+            let (filled, empty) = vol_bar_parts(app.fx_mix_state.reverb_wet);
+            spans.push(Span::styled(filled, Style::default().fg(app.theme.success)));
+            spans.push(Span::styled(empty, Style::default().fg(app.theme.secondary)));
+            spans.push(Span::raw("  "));
+
+            let rev_pct = (app.fx_mix_state.reverb_wet as f32 / 16383.0 * 100.0).round() as i32;
+            spans.push(Span::styled(format!("{:>3}%", rev_pct), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw("       "));
         }
         _ => {}
     }
@@ -426,9 +529,17 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
     // Labels (mode 0) need tighter spacing (2-char label + 2 spaces), icons (mode 1) get 3 spaces
     let icon_spacing = if app.grid_mode == 0 { "  " } else { "   " };
 
-    // Pre-compute FX viz content for mode 2
-    let fx_viz_lines: Vec<String> = if app.grid_mode == 2 {
-        let mut fx_lines = Vec::new();
+    // Pre-compute FX viz content for mode 2 - now stored as structured data
+    struct FxVizRow {
+        label: String,
+        freq: Option<String>,
+        bar: Option<String>,
+        db: Option<String>,
+        q: Option<String>,
+    }
+
+    let fx_viz_rows: Vec<FxVizRow> = if app.grid_mode == 2 {
+        let mut fx_rows = Vec::new();
 
         // Helper to format frequency nicely
         let fmt_freq = |f: f32| -> String {
@@ -436,40 +547,61 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
             else { format!("{:.0}", f) }
         };
 
-        // Helper to create a gain bar (6 chars): center-balanced, fills left for cut, right for boost
+        // Helper to create a gain bar (12 chars): center-balanced, fills left for cut, right for boost
         let gain_bar = |db: f32| -> String {
             let normalized = (db / 24.0).clamp(-1.0, 1.0); // -24 to +24 dB range
-            let bars = (normalized.abs() * 3.0).round() as usize; // 0-3 bars each side
+            let bars = (normalized.abs() * 6.0).round() as usize; // 0-6 bars each side
             if db >= 0.0 {
-                format!("···{}", "█".repeat(bars) + &"·".repeat(3 - bars))
+                format!("······{}", "█".repeat(bars) + &"·".repeat(6 - bars))
             } else {
-                format!("{}{}", "·".repeat(3 - bars) + &"█".repeat(bars), "···")
+                format!("{}{}", "·".repeat(6 - bars) + &"█".repeat(bars), "······")
             }
         };
 
-        // Row 1: Low shelf (left-justified, pad to 30 chars)
-        fx_lines.push(format!("{:<30}",
-            format!("LO  {:>5}  {} {:+5.1}dB",
-                fmt_freq(app.eq_state.low_freq), gain_bar(app.eq_state.low_db), app.eq_state.low_db)));
-        // Row 2: Mid peak with Q
-        fx_lines.push(format!("{:<30}",
-            format!("MID {:>5}  {} {:+5.1}dB Q{:.1}",
-                fmt_freq(app.eq_state.mid_freq), gain_bar(app.eq_state.mid_db), app.eq_state.mid_db, app.eq_state.mid_q)));
-        // Row 3: High shelf
-        fx_lines.push(format!("{:<30}",
-            format!("HI  {:>5}  {} {:+5.1}dB",
-                fmt_freq(app.eq_state.high_freq), gain_bar(app.eq_state.high_db), app.eq_state.high_db)));
-        // Row 4: separator showing navigation hints (full 30 char width)
-        fx_lines.push("COMP ↓ ────────────────── EQ ↑".to_string());
-        // Row 5: Input meter + GR value
-        // Layout: "IN  " (4) + meter (18) + " GR" (3) + value (5) = 30 chars
-        let in_bar = level_to_bar(app.compressor_data.input_level, 18);
+        // Row 0: Low shelf
+        fx_rows.push(FxVizRow {
+            label: format!("{:<4}", "LO"),
+            freq: Some(format!("{:>5}", fmt_freq(app.eq_state.low_freq))),
+            bar: Some(gain_bar(app.eq_state.low_db)),
+            db: Some(format!("{:>7}", format!("{:+.1}dB", app.eq_state.low_db))),
+            q: Some("   ".to_string()),
+        });
+        // Row 1: Mid peak
+        fx_rows.push(FxVizRow {
+            label: format!("{:<4}", "MID"),
+            freq: Some(format!("{:>5}", fmt_freq(app.eq_state.mid_freq))),
+            bar: Some(gain_bar(app.eq_state.mid_db)),
+            db: Some(format!("{:>7}", format!("{:+.1}dB", app.eq_state.mid_db))),
+            q: Some("   ".to_string()),
+        });
+        // Row 2: High shelf
+        fx_rows.push(FxVizRow {
+            label: format!("{:<4}", "HI"),
+            freq: Some(format!("{:>5}", fmt_freq(app.eq_state.high_freq))),
+            bar: Some(gain_bar(app.eq_state.high_db)),
+            db: Some(format!("{:>7}", format!("{:+.1}dB", app.eq_state.high_db))),
+            q: Some("   ".to_string()),
+        });
+        // Row 3: EQ section label (30 chars)
+        fx_rows.push(FxVizRow {
+            label: format!("{:<30}", "EQ"),
+            freq: None,
+            bar: None,
+            db: None,
+            q: None,
+        });
+        // Row 4: Input meter + GR value
+        let in_bar = level_to_bar(app.compressor_data.input_level, 17, app.ascii_meters);
         let gr_db = app.compressor_data.gain_reduction_db;
-        fx_lines.push(format!("IN  {} GR{:+5.1}", in_bar, gr_db));
-        // Row 6: Output meter + Makeup value
-        // Layout: "OUT " (4) + meter (18) + " MU" (3) + value (5) = 30 chars
-        // Makeup = how much output exceeds compressed input (output_db - input_db - gr_db)
-        let out_bar = level_to_bar(app.compressor_data.output_level, 18);
+        fx_rows.push(FxVizRow {
+            label: format!("{:<4}", "IN"),
+            freq: Some(in_bar),
+            bar: Some(format!("GR{:+5.1}", gr_db)),
+            db: None,
+            q: None,
+        });
+        // Row 5: Output meter + Makeup value
+        let out_bar = level_to_bar(app.compressor_data.output_level, 17, app.ascii_meters);
         let in_db = if app.compressor_data.input_level > 0.0001 {
             20.0 * app.compressor_data.input_level.log10()
         } else { -60.0 };
@@ -477,20 +609,14 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
             20.0 * app.compressor_data.output_level.log10()
         } else { -60.0 };
         let makeup_db = (out_db - in_db - gr_db).clamp(-20.0, 20.0);
-        fx_lines.push(format!("OUT {} MU{:+5.1}", out_bar, makeup_db));
-        fx_lines
-    } else if app.grid_mode == 3 {
-        vec![]
-    } else if app.grid_mode == 4 {
-        // Mode 4: FX Viz (placeholder)
-        vec![
-            "DLY ··········  0%        ".to_string(),
-            "REV ··········  0%        ".to_string(),
-            "CHR ··········  0%        ".to_string(),
-            "DST ··········  0%        ".to_string(),
-            "FLT ··········  0%        ".to_string(),
-            "                              ".to_string(),
-        ]
+        fx_rows.push(FxVizRow {
+            label: format!("{:<4}", "OUT"),
+            freq: Some(out_bar),
+            bar: Some(format!("MU{:+5.1}", makeup_db)),
+            db: None,
+            q: None,
+        });
+        fx_rows
     } else {
         Vec::new()
     };
@@ -508,24 +634,43 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
 
         if app.show_grid {
             if app.grid_mode == 2 {
-                // FX Viz mode - render pre-computed line
-                let color = if row < 3 {
-                    app.theme.success  // EQ curve
-                } else if row == 3 {
-                    app.theme.label    // Frequency labels
-                } else if row == 4 {
-                    app.theme.success  // IN meter
+                // FX Viz mode - render with styled spans
+                let fx_row = &fx_viz_rows[row];
+                if row == 3 {
+                    // Row 3: EQ section label
+                    spans.push(Span::styled(fx_row.label.clone(), Style::default().fg(app.theme.label)));
+                } else if row < 3 {
+                    // Rows 0-2: EQ bands (LO/MID/HI)
+                    spans.push(Span::styled(fx_row.label.clone(), Style::default().fg(app.theme.foreground)));
+                    if let Some(ref freq) = fx_row.freq {
+                        spans.push(Span::raw(" "));
+                        spans.push(Span::styled(freq.clone(), Style::default().fg(app.theme.success)));
+                    }
+                    if let Some(ref bar) = fx_row.bar {
+                        spans.push(Span::raw(" "));
+                        spans.push(Span::styled(bar.clone(), Style::default().fg(app.theme.success)));
+                    }
+                    if let Some(ref db) = fx_row.db {
+                        spans.push(Span::styled(db.clone(), Style::default().fg(app.theme.success)));
+                    }
                 } else {
-                    app.theme.success  // OUT meter
-                };
-                spans.push(Span::styled(fx_viz_lines[row].clone(), Style::default().fg(color)));
+                    // Rows 4-5: Compressor (IN/OUT)
+                    spans.push(Span::styled(fx_row.label.clone(), Style::default().fg(app.theme.foreground)));
+                    if let Some(ref freq) = fx_row.freq {
+                        spans.push(Span::raw(" "));
+                        spans.push(Span::styled(freq.clone(), Style::default().fg(app.theme.success)));
+                    }
+                    if let Some(ref bar) = fx_row.bar {
+                        spans.push(Span::raw(" "));
+                        spans.push(Span::styled(bar.clone(), Style::default().fg(app.theme.success)));
+                    }
+                }
             } else if app.grid_mode == 3 {
                 // Mode 3: Mixer - per-voice levels, pan, mute (styled spans)
                 render_mixer_row(row, app, &mut spans);
             } else if app.grid_mode == 4 {
-                // Mode 4: FX Viz 2 (placeholder)
-                let color = app.theme.secondary;
-                spans.push(Span::styled(fx_viz_lines[row].clone(), Style::default().fg(color)));
+                // Mode 4: FX Viz 2
+                render_fx_row(row, app, &mut spans);
             } else if app.grid_mode == 5 {
                 // Mode 5: Sampler visualization
                 render_sampler_row(row, app, &mut spans);
@@ -589,10 +734,22 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
     // Meter/sampler labels row
     if app.show_meters_grid {
         let mut meter_label = vec![];
-        // Grid space: show SAMPLER label if mode 5, otherwise blank
+        // Grid space: show SAMPLER label if mode 5, FX label if mode 4, MIXER label if mode 3, COMP label if mode 2, otherwise blank
         if app.grid_mode == 5 {
             meter_label.push(Span::styled("SAMPLER", Style::default().fg(app.theme.label)));
             meter_label.push(Span::raw("                       "));  // 23 spaces to fill 30 chars
+        } else if app.grid_mode == 4 {
+            meter_label.push(Span::styled("FX", Style::default().fg(app.theme.label)));
+            meter_label.push(Span::raw("                            "));  // 28 spaces to fill 30 chars
+        } else if app.grid_mode == 3 {
+            meter_label.push(Span::styled("MIXER", Style::default().fg(app.theme.label)));
+            meter_label.push(Span::raw("                         "));  // 25 spaces to fill 30 chars
+        } else if app.grid_mode == 2 {
+            meter_label.push(Span::styled("COMP", Style::default().fg(app.theme.label)));
+            meter_label.push(Span::raw("                          "));  // 26 spaces to fill 30 chars
+        } else if app.grid_mode == 0 || app.grid_mode == 1 {
+            meter_label.push(Span::styled("PARAM ACTIVITY", Style::default().fg(app.theme.label)));
+            meter_label.push(Span::raw("                "));  // 16 spaces to fill 30 chars (14 + 16 = 30)
         } else {
             meter_label.push(Span::raw("                              "));  // Grid space (30 chars, matches mode 0)
         }
@@ -606,6 +763,30 @@ fn render_grid_view(app: &crate::App, width: usize, height: usize) -> Paragraph<
         let mut label_row = vec![];
         label_row.push(Span::styled("SAMPLER", Style::default().fg(app.theme.label)));
         label_row.push(Span::raw("                       "));  // 23 spaces to fill 30 chars
+        lines.push(Line::from(label_row).alignment(Alignment::Center));
+    } else if app.grid_mode == 4 {
+        // FX label row (shown even when meters hidden)
+        let mut label_row = vec![];
+        label_row.push(Span::styled("FX", Style::default().fg(app.theme.label)));
+        label_row.push(Span::raw("                            "));  // 28 spaces to fill 30 chars
+        lines.push(Line::from(label_row).alignment(Alignment::Center));
+    } else if app.grid_mode == 3 {
+        // Mixer label row (shown even when meters hidden)
+        let mut label_row = vec![];
+        label_row.push(Span::styled("MIXER", Style::default().fg(app.theme.label)));
+        label_row.push(Span::raw("                         "));  // 25 spaces to fill 30 chars
+        lines.push(Line::from(label_row).alignment(Alignment::Center));
+    } else if app.grid_mode == 2 {
+        // COMP label row (shown even when meters hidden)
+        let mut label_row = vec![];
+        label_row.push(Span::styled("COMP", Style::default().fg(app.theme.label)));
+        label_row.push(Span::raw("                          "));  // 26 spaces to fill 30 chars
+        lines.push(Line::from(label_row).alignment(Alignment::Center));
+    } else if app.grid_mode == 0 || app.grid_mode == 1 {
+        // Param Activity label row (shown even when meters hidden)
+        let mut label_row = vec![];
+        label_row.push(Span::styled("PARAM ACTIVITY", Style::default().fg(app.theme.label)));
+        label_row.push(Span::raw("                "));  // 16 spaces to fill 30 chars (14 + 16 = 30)
         lines.push(Line::from(label_row).alignment(Alignment::Center));
     }
 
@@ -749,34 +930,13 @@ fn get_meter_char_and_color_scaled(
     }
 }
 
-#[allow(dead_code)]
-fn get_meter_char_and_color(peak: f32, meter_row: usize, is_clipping: bool, theme: &crate::theme::Theme) -> (char, ratatui::style::Color) {
-    const METER_CHARS: [char; 9] = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
-
-    // 8 rows: row 0 = top (87.5%-100%), row 7 = bottom (0%-12.5%)
-    // Each row covers 12.5% of the range
-    let row_bottom = (7 - meter_row) as f32 / 8.0;  // row 7 -> 0.0, row 0 -> 0.875
-    let row_top = row_bottom + 0.125;               // row 7 -> 0.125, row 0 -> 1.0
-
-    let color = if is_clipping { theme.error } else { theme.success };
-
-    if peak >= row_top {
-        // Full block - level is above this row
-        (METER_CHARS[8], color)
-    } else if peak > row_bottom {
-        // Partial block - level is within this row
-        let fill = (peak - row_bottom) / 0.125;  // 0.0 to 1.0 within row
-        let char_idx = ((fill * 8.0).round() as usize).clamp(1, 8);
-        (METER_CHARS[char_idx], color)
-    } else {
-        // Empty - level is below this row
-        (' ', theme.secondary)
-    }
-}
-
-fn level_to_bar(level: f32, width: usize) -> String {
+fn level_to_bar(level: f32, width: usize, ascii_mode: bool) -> String {
     let filled = (level * width as f32).round() as usize;
     let empty = width.saturating_sub(filled);
-    format!("{}{}", "█".repeat(filled), "·".repeat(empty))
+    if ascii_mode {
+        format!("{}{}", "#".repeat(filled), ".".repeat(empty))
+    } else {
+        format!("{}{}", "█".repeat(filled), "·".repeat(empty))
+    }
 }
 

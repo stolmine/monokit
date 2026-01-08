@@ -1,47 +1,27 @@
 use crate::commands::context::ExecutionContext;
 use crate::eval::eval_expression;
 use crate::output::OutputDecider;
-use crate::types::{Counters, MetroCommand, OutputCategory, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_CONFIRMS};
+use crate::types::{Counters, FxMixState, MetroCommand, OutputCategory, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_CONFIRMS};
 use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
-use std::fs::OpenOptions;
-use std::io::Write;
 
 use super::super::common::{define_bool_param, define_int_param, define_mode_param};
-
-fn log_handler_debug(msg: &str) {
-    if let Ok(mut file) = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open("/tmp/monokit_commands.log")
-    {
-        let _ = writeln!(file, "{}", msg);
-    }
-}
 
 // CL.TRIG - Trigger grain playback
 pub fn handle_cl_trig(
     ctx: &mut ExecutionContext,
     output: &mut Vec<String>,
 ) -> Result<()> {
-    log_handler_debug("[DEBUG] [HANDLER-1] handle_cl_trig ENTERED");
-    log_handler_debug("[DEBUG] [HANDLER-2] Sending OSC: param='t_cl_trig' value=1");
-
     ctx.metro_tx.send(MetroCommand::SendParam(
         "t_cl_trig".to_string(),
         OscType::Int(1),
     ))?;
 
-    log_handler_debug("[DEBUG] [HANDLER-3] OSC sent successfully");
-    log_handler_debug("[DEBUG] [HANDLER-4] Generating output message...");
-
     ctx.output(OutputCategory::Confirm, "GRAINS TRIGGERED".to_string(), |msg| {
-        log_handler_debug(&format!("[DEBUG] [HANDLER-5] Output callback: msg='{}'", msg));
         output.push(msg);
     });
 
-    log_handler_debug(&format!("[DEBUG] [HANDLER-6] handle_cl_trig EXITING, output.len()={}", output.len()));
     Ok(())
 }
 
@@ -61,7 +41,42 @@ define_int_param!(handle_cl_dens, "cl_dens", 0, 16383, "CL.DENS", "CLOUDS DENSIT
 define_int_param!(handle_cl_tex, "cl_tex", 0, 16383, "CL.TEX", "CLOUDS TEXTURE", "Failed to parse clouds texture");
 
 // CL.WET / CLW - Wet/dry mix (0-16383)
-define_int_param!(handle_cl_wet, "cl_wet", 0, 16383, "CL.WET", "CLOUDS WET MIX", "Failed to parse clouds wet mix");
+pub fn handle_cl_wet<F>(
+    parts: &[&str],
+    variables: &Variables,
+    patterns: &mut PatternStorage,
+    counters: &mut Counters,
+    scripts: &ScriptStorage,
+    script_index: usize,
+    metro_tx: &Sender<MetroCommand>,
+    debug_level: u8,
+    scale: &ScaleState,
+    out_cfm: bool,
+    fx_mix_state: &mut FxMixState,
+    mut output: F,
+) -> Result<()>
+where
+    F: FnMut(String),
+{
+    if parts.len() < 2 {
+        anyhow::bail!("CL.WET requires a value");
+    }
+
+    let value: i32 = if let Some((v, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+        v as i32
+    } else {
+        parts[1].parse().context("Failed to parse clouds wet mix")?
+    };
+
+    let clamped = value.clamp(0, 16383);
+    fx_mix_state.clouds_wet = clamped;
+    metro_tx.send(MetroCommand::SendParam("cl_wet".to_string(), OscType::Int(clamped)))?;
+
+    if debug_level >= TIER_CONFIRMS || out_cfm {
+        output(format!("SET CLOUDS WET MIX TO {}", clamped));
+    }
+    Ok(())
+}
 
 // CL.GAIN / CLG - Input gain (0-16383, 8192=unity)
 define_int_param!(handle_cl_gain, "cl_gain", 0, 16383, "CL.GAIN", "CLOUDS INPUT GAIN", "Failed to parse clouds input gain");

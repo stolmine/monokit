@@ -1,5 +1,5 @@
 use crate::eval::eval_expression;
-use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_CONFIRMS};
+use crate::types::{Counters, FxMixState, MetroCommand, PatternStorage, ScaleState, ScriptStorage, Variables, TIER_CONFIRMS};
 use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
@@ -148,6 +148,7 @@ pub fn handle_br_mix<F>(
     debug_level: u8,
     scale: &ScaleState,
     out_cfm: bool,
+    fx_mix_state: &mut FxMixState,
     mut output: F,
 ) -> Result<()>
 where
@@ -165,6 +166,9 @@ where
             .context("Failed to parse beat repeat mix")?
     };
     let clipped = value.clamp(0, 16383);
+
+    fx_mix_state.beat_rep_mix = clipped;
+
     metro_tx
         .send(MetroCommand::SendParam("br_mix".to_string(), OscType::Int(clipped)))
         .context("Failed to send param to metro thread")?;

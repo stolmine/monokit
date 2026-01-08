@@ -3,7 +3,7 @@ use crate::output::OutputDecider;
 use crate::terminal::TerminalCapabilities;
 use crate::theme::Theme;
 use crate::types::{
-    ColorMode, ConfirmAction, Counters, CpuData, LineSegmentActivity, MeterData, MetroCommand, MetroState, MixerData, NotesStorage, Page, ParamActivity, PatternStorage, SamplerState, ScaleState, ScopeData, ScriptMutes, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables, VoiceMeterData,
+    ColorMode, ConfirmAction, Counters, CpuData, FxMixState, LineSegmentActivity, MeterData, MetroCommand, MetroState, MixerData, NotesStorage, Page, ParamActivity, PatternStorage, SamplerState, ScaleState, ScopeData, ScriptMutes, ScriptStorage, SearchMatch, SpectrumData, SyncMode, Variables, VoiceMeterData,
 };
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -69,6 +69,7 @@ pub struct App {
     pub eq_state: crate::types::EqState,
     pub compressor_data: crate::types::CompressorData,
     pub mixer_data: MixerData,
+    pub fx_mix_state: FxMixState,
     pub show_cpu: bool,
     pub show_bpm: bool,
     pub header_level: u8,
@@ -185,6 +186,7 @@ impl App {
             eq_state: crate::types::EqState::default(),
             compressor_data: crate::types::CompressorData::default(),
             mixer_data: MixerData::default(),
+            fx_mix_state: FxMixState::default(),
             show_cpu: config.display.show_cpu,
             show_bpm: config.display.show_bpm,
             header_level: config.display.header_level,
@@ -430,6 +432,7 @@ impl App {
             grid_mode: &mut self.grid_mode,
             eq_state: &mut self.eq_state,
             mixer_data: &mut self.mixer_data,
+            fx_mix_state: &mut self.fx_mix_state,
             scope_settings: &mut self.scope_settings,
             current_page: &mut self.current_page,
             br_len: &mut self.br_len,

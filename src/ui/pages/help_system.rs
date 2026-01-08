@@ -74,7 +74,7 @@ pub const UI_DISPLAY: HelpCategory = HelpCategory {
         "  ACTIVITY <0|1>    ACTIVITY IND",
         "  GRID <0|1>        PARAM GRID VIS",
         "  GRID.DEF <0|1>    DEF VIEW (REPL/GRID)",
-        "  GRID.MODE <0-3>   LBL/ICO/FX/MIX",
+        "  GRID.MODE <0-5>   LBL/ICO/EQ/MIX/FX/SMP",
         "  HL.SEQ <0|1>      SEQ/TOG HIGHL",
         "  HL.COND <0|1>     COND HIGHL",
         "  CPU <0|1>         CPU METER",

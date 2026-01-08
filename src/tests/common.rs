@@ -1,7 +1,7 @@
 use crate::commands::process_command;
 use crate::midi::{MidiConnection, MidiTimingStats};
 use crate::theme::Theme;
-use crate::types::{ConfirmAction, Counters, MetroCommand, NotesStorage, Page, PatternStorage, ScaleState, ScriptStorage, SyncMode, Variables};
+use crate::types::{ConfirmAction, Counters, FxMixState, MetroCommand, NotesStorage, Page, PatternStorage, ScaleState, ScriptStorage, SyncMode, Variables};
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::Arc;
 
@@ -95,6 +95,8 @@ pub struct TestContext {
     pub show_seq_highlight: bool,
     pub grid_mode: u8,
     pub eq_state: crate::types::EqState,
+    pub mixer_data: crate::types::MixerData,
+    pub fx_mix_state: FxMixState,
     pub current_scene_name: Option<String>,
     pub title_mode: u8,
     pub title_timer_enabled: bool,
@@ -171,6 +173,8 @@ impl Default for TestContext {
             show_seq_highlight: true,
             grid_mode: 1,
             eq_state: crate::types::EqState::default(),
+            mixer_data: crate::types::MixerData::default(),
+            fx_mix_state: FxMixState::default(),
             current_scene_name: None,
             title_mode: 0,
             title_timer_enabled: false,
@@ -244,6 +248,8 @@ impl TestContext {
             show_seq_highlight: &mut self.show_seq_highlight,
             grid_mode: &mut self.grid_mode,
             eq_state: &mut self.eq_state,
+            mixer_data: &mut self.mixer_data,
+            fx_mix_state: &mut self.fx_mix_state,
             scope_settings: &mut self.scope_settings,
             current_page: &mut self.current_page,
             br_len: &mut self.br_len,

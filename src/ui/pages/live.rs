@@ -81,9 +81,11 @@ fn vol_to_db(vol: i32) -> String {
 fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>) {
     use std::path::Path;
 
+    // Color scheme: section labels (SAMPLER) use theme.label
+    // Param labels use theme.foreground, param values use theme.success
     match row {
         0 => {
-            spans.push(Span::styled("KIT ", Style::default().fg(app.theme.label)));
+            spans.push(Span::styled("KIT ", Style::default().fg(app.theme.foreground)));
 
             let name_str = if let Some(ref kit_path) = app.sampler_state.kit_path {
                 Path::new(kit_path)
@@ -100,10 +102,10 @@ fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static
                 format!("{:<26}", name_str)
             };
 
-            spans.push(Span::styled(display, Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled(display, Style::default().fg(app.theme.success)));
         }
         1 => {
-            spans.push(Span::styled("SLOT ", Style::default().fg(app.theme.label)));
+            spans.push(Span::styled("SLOT ", Style::default().fg(app.theme.foreground)));
 
             let slice_info = app.sampler_state.slice_count
                 .map(|c| format!("{}SL", c))
@@ -112,7 +114,7 @@ fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static
             let visual_threshold = 24usize.saturating_sub(slice_len);
 
             if app.sampler_state.num_slots == 0 {
-                spans.push(Span::styled(format!("{:<25}", "--/--"), Style::default().fg(app.theme.foreground)));
+                spans.push(Span::styled(format!("{:<25}", "--/--"), Style::default().fg(app.theme.success)));
             } else if app.sampler_state.num_slots <= visual_threshold {
                 for i in 0..app.sampler_state.num_slots {
                     let (char, color) = if i == app.sampler_state.current_slot {
@@ -124,7 +126,7 @@ fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static
                 }
                 if !slice_info.is_empty() {
                     spans.push(Span::raw(" "));
-                    spans.push(Span::styled(slice_info.clone(), Style::default().fg(app.theme.foreground)));
+                    spans.push(Span::styled(slice_info.clone(), Style::default().fg(app.theme.success)));
                 }
                 let used = app.sampler_state.num_slots + if slice_info.is_empty() { 0 } else { 1 + slice_len };
                 let padding = 25usize.saturating_sub(used);
@@ -138,19 +140,19 @@ fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static
                 } else {
                     format!("{} out of {} {}", app.sampler_state.current_slot, max_index, slice_info)
                 };
-                spans.push(Span::styled(format!("{:<25}", numeric_display), Style::default().fg(app.theme.foreground)));
+                spans.push(Span::styled(format!("{:<25}", numeric_display), Style::default().fg(app.theme.success)));
             }
         }
         2 => {
             // 9+1+9+1+10 grid: PIT | DIR | LOOP
             let pitch = app.sampler_state.playback.pitch;
             let pitch_val = if pitch >= 0 { format!("+{}", pitch) } else { format!("{}", pitch) };
-            spans.push(Span::styled("PIT", Style::default().fg(app.theme.label)));
-            spans.push(Span::styled(format!("{:>6}", pitch_val), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled("PIT", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled(format!("{:>6}", pitch_val), Style::default().fg(app.theme.success)));
             spans.push(Span::raw(" "));
 
             let dir_char = if app.sampler_state.playback.direction { "◄" } else { "►" };
-            spans.push(Span::styled("DIR", Style::default().fg(app.theme.label)));
+            spans.push(Span::styled("DIR", Style::default().fg(app.theme.foreground)));
             spans.push(Span::styled(format!("{:>6}", dir_char), Style::default().fg(app.theme.success)));
             spans.push(Span::raw(" "));
 
@@ -159,7 +161,7 @@ fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static
             } else {
                 ("○", app.theme.secondary)
             };
-            spans.push(Span::styled("LOOP", Style::default().fg(app.theme.label)));
+            spans.push(Span::styled("LOOP", Style::default().fg(app.theme.foreground)));
             spans.push(Span::styled(format!("{:>6}", loop_char), Style::default().fg(loop_color)));
         }
         3 => {
@@ -167,19 +169,19 @@ fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static
             let atk = app.sampler_state.playback.attack.min(9999);
             let dec = app.sampler_state.playback.decay.min(9999);
             let rel = app.sampler_state.playback.release.min(9999);
-            spans.push(Span::styled("ATK", Style::default().fg(app.theme.label)));
-            spans.push(Span::styled(format!("{:>6}", atk), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled("ATK", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled(format!("{:>6}", atk), Style::default().fg(app.theme.success)));
             spans.push(Span::raw(" "));
-            spans.push(Span::styled("DEC", Style::default().fg(app.theme.label)));
-            spans.push(Span::styled(format!("{:>6}", dec), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled("DEC", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled(format!("{:>6}", dec), Style::default().fg(app.theme.success)));
             spans.push(Span::raw(" "));
-            spans.push(Span::styled("REL", Style::default().fg(app.theme.label)));
-            spans.push(Span::styled(format!("{:>7}", rel), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled("REL", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled(format!("{:>7}", rel), Style::default().fg(app.theme.success)));
         }
         4 => {
             // 9+1+9+1+10 grid: VOL | PAN | MTR
-            spans.push(Span::styled("VOL", Style::default().fg(app.theme.label)));
-            spans.push(Span::styled(format!("{:>6}", vol_to_db(app.sampler_state.playback.volume as i32)), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled("VOL", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled(format!("{:>6}", vol_to_db(app.sampler_state.playback.volume as i32)), Style::default().fg(app.theme.success)));
             spans.push(Span::raw(" "));
 
             let pan_normalized = (app.sampler_state.playback.pan as f32 / 8192.0).clamp(-1.0, 1.0);
@@ -191,8 +193,8 @@ fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static
             } else {
                 format!("R{}", pan_value)
             };
-            spans.push(Span::styled("PAN", Style::default().fg(app.theme.label)));
-            spans.push(Span::styled(format!("{:>6}", pan_display), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled("PAN", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled(format!("{:>6}", pan_display), Style::default().fg(app.theme.success)));
             spans.push(Span::raw(" "));
 
             let meter_l = app.voice_meter_data.smp_l;
@@ -201,7 +203,7 @@ fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static
             let r_char = level_to_meter_char(meter_r, app.ascii_meters);
             let meter_color = if meter_l > 0.0 || meter_r > 0.0 { app.theme.success } else { app.theme.secondary };
             let meter_str = format!("{}{}", l_char, r_char);
-            spans.push(Span::styled("MTR", Style::default().fg(app.theme.label)));
+            spans.push(Span::styled("MTR", Style::default().fg(app.theme.foreground)));
             spans.push(Span::styled(format!("{:>7}", meter_str), Style::default().fg(meter_color)));
         }
         5 => {
@@ -212,8 +214,8 @@ fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static
                 2 => "PST",
                 _ => "???",
             };
-            spans.push(Span::styled("FX", Style::default().fg(app.theme.label)));
-            spans.push(Span::styled(format!("{:>7}", fx_display), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled("FX", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled(format!("{:>7}", fx_display), Style::default().fg(app.theme.success)));
             spans.push(Span::raw(" "));
 
             let cut_normalized = app.sampler_state.fx.filter_cut as f32 / 16383.0;
@@ -223,14 +225,14 @@ fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static
             } else {
                 format!("{:.0}", cut_freq)
             };
-            spans.push(Span::styled("CUT", Style::default().fg(app.theme.label)));
-            spans.push(Span::styled(format!("{:>6}", cut_display), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled("CUT", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled(format!("{:>6}", cut_display), Style::default().fg(app.theme.success)));
             spans.push(Span::raw(" "));
 
             let res_normalized = (app.sampler_state.fx.filter_res as f32 / 16383.0 * 100.0) as u32;
             let res_str = format!("{}%", res_normalized);
-            spans.push(Span::styled("RES", Style::default().fg(app.theme.label)));
-            spans.push(Span::styled(format!("{:>7}", res_str), Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled("RES", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled(format!("{:>7}", res_str), Style::default().fg(app.theme.success)));
         }
         _ => {}
     }

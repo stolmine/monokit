@@ -326,6 +326,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 ### P2 - Bug Fixes & Stability
 - ~~**Confirmation Dialog Styling Bug**~~ ✅ FIXED - Added Clear widget before dialog render
 - ~~**Scene Loading Audio Crashes**~~ ✅ FIXED - Configurable RST delays prevent OSC flooding
+- ~~**Compressor Auto Makeup Hunting**~~ ✅ FIXED - Replaced feedback-loop algorithm with static formula; metering now uses compressor attack/release times
 - **Stateful Highlighting Issues** [Medium] - Address unintended consequences in current stateful highlighting system
 - **PRE Command Same-Line Usage** [Low-Medium] - Clarify and validate same-line PRE usage and execution order
 

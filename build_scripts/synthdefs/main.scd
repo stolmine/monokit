@@ -341,17 +341,20 @@ SynthDef(\monokit_main, {
         relaxTime: cl / 1000
     );
 
-    compInputLevel = Amplitude.kr(drySig, 0.01, 0.1);
-    compOutputLevel = Amplitude.kr((wetSig[0] + wetSig[1]) * 0.5, 0.01, 0.1);
+    // Metering: match compressor time constants for accurate, responsive display
+    compInputLevel = Amplitude.kr(drySig, ca / 1000, cl / 1000);
+    compOutputLevel = Amplitude.kr((wetSig[0] + wetSig[1]) * 0.5, ca / 1000, cl / 1000);
     gainReductionDb = (compOutputLevel / compInputLevel.max(0.0001)).max(0.0001).ampdb.max(-40).min(0);
 
+    // Auto makeup: static formula based on threshold/ratio (no feedback loop)
+    // Formula: makeup = (1/thresh)^(1-ratio) approximates ideal makeup for 0dB input
     autoMakeup = Select.kr(cr_auto, [
         1 + (cmSmooth / 16383 * 2),
-        Lag.kr(gainReductionDb.max(-40), 0.3).neg.dbamp.clip(1, 4)
+        (1 / compThresh.max(0.001)).pow(1 - compRatio).clip(1, 4)
     ]);
     wetSig = wetSig * autoMakeup;
 
-    compFinalLevel = Amplitude.kr((wetSig[0] + wetSig[1]) * 0.5, 0.01, 0.1);
+    compFinalLevel = Amplitude.kr((wetSig[0] + wetSig[1]) * 0.5, ca / 1000, cl / 1000);
 
     compMixAmt = Lag.kr(cr_mix / 16383, 0.01);
     sigL = XFade2.ar(sigL, wetSig[0], compMixAmt * 2 - 1);

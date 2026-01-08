@@ -43,6 +43,7 @@ pub const NAV_EDITING: HelpCategory = HelpCategory {
         "  CTRL+Q        QUIT APP",
         "  CTRL+UP/DN    SCROLL REPL",
         "  TAB           LIVE / GRID VIEW",
+        "  CTRL+G        CYCLE GRID MODE 0-5",
         "",
         "# SEARCH",
         "  CTRL+F        SEARCH MODE",

@@ -105,6 +105,7 @@ pub struct App {
     pub audio_device_current: String,
     pub header_scramble: Option<crate::scramble::ScrambleAnimation>,
     pub scramble_enabled: bool,
+    pub scramble_grid_enabled: bool,
     pub scramble_mode: u8,
     pub scramble_speed: u8,
     pub scramble_curve: u8,
@@ -243,6 +244,7 @@ impl App {
                 None
             },
             scramble_enabled: config.display.scramble_enabled,
+            scramble_grid_enabled: config.display.scramble_grid_enabled,
             scramble_mode: config.display.scramble_mode,
             scramble_speed: config.display.scramble_speed,
             scramble_curve: config.display.scramble_curve,
@@ -280,7 +282,7 @@ impl App {
 
     pub fn trigger_grid_scramble(&mut self) {
         use crate::types::{GRID_LABELS, GRID_ICONS};
-        if !self.scramble_enabled {
+        if !self.scramble_grid_enabled {
             return;
         }
         let mode = crate::scramble::ScrambleMode::from_u8(self.scramble_mode);
@@ -452,6 +454,7 @@ impl App {
             audio_devices: &self.audio_devices,
             header_scramble: &mut self.header_scramble,
             scramble_enabled: &mut self.scramble_enabled,
+            scramble_grid_enabled: &mut self.scramble_grid_enabled,
             scramble_mode: &mut self.scramble_mode,
             scramble_speed: &mut self.scramble_speed,
             scramble_curve: &mut self.scramble_curve,

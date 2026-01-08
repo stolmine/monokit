@@ -326,6 +326,8 @@ pub fn handle_title<F>(
 
 define_bool_toggle!(handle_scrmbl, "SCRMBL", config::save_scramble_enabled);
 
+define_bool_toggle!(handle_scrmbl_grid, "SCRMBL.GRID", config::save_scramble_grid_enabled);
+
 define_enum_select!(
     handle_scrmbl_mode,
     "SCRMBL.MODE",

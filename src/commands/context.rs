@@ -68,6 +68,7 @@ pub struct ExecutionContext<'a> {
     pub audio_devices: &'a [String],
     pub header_scramble: &'a mut Option<crate::scramble::ScrambleAnimation>,
     pub scramble_enabled: &'a mut bool,
+    pub scramble_grid_enabled: &'a mut bool,
     pub scramble_mode: &'a mut u8,
     pub scramble_speed: &'a mut u8,
     pub scramble_curve: &'a mut u8,

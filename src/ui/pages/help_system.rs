@@ -82,6 +82,7 @@ pub const UI_DISPLAY: HelpCategory = HelpCategory {
         "  TITLE <0|1>       HDR TITLE MODE",
         "  SCRMBL            QUERY SCRAMBLE ON/OFF",
         "  SCRMBL <0|1>      HEADER SCRAMBLE FX",
+        "  SCRMBL.GRID <0|1> GRID SCRAMBLE FX",
         "  SCRMBL.MODE       QUERY SCRAMBLE STYLE",
         "  SCRMBL.MODE <0-3> 0=REG 1=SMASH 2=ROLL 3=OVER",
         "  SCRMBL.SPD        QUERY SCRAMBLE SPEED",

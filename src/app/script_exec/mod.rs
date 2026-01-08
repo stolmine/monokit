@@ -94,6 +94,7 @@ impl App {
             audio_devices: &self.audio_devices,
             header_scramble: &mut self.header_scramble,
             scramble_enabled: &mut self.scramble_enabled,
+            scramble_grid_enabled: &mut self.scramble_grid_enabled,
             scramble_mode: &mut self.scramble_mode,
             scramble_speed: &mut self.scramble_speed,
             scramble_curve: &mut self.scramble_curve,

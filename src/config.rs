@@ -82,6 +82,8 @@ pub struct DisplayConfig {
     pub audio_out_device: Option<String>,
     #[serde(default = "default_true")]
     pub scramble_enabled: bool,
+    #[serde(default = "default_true")]
+    pub scramble_grid_enabled: bool,
     #[serde(default = "default_scramble_mode")]
     pub scramble_mode: u8,
     #[serde(default = "default_scramble_speed")]
@@ -244,6 +246,7 @@ impl Default for DisplayConfig {
             out_cfm: false,
             audio_out_device: None,
             scramble_enabled: default_true(),
+            scramble_grid_enabled: default_true(),
             scramble_mode: default_scramble_mode(),
             scramble_speed: default_scramble_speed(),
             scramble_curve: 0,
@@ -620,6 +623,13 @@ pub fn save_audio_out_device(device: Option<String>) -> Result<()> {
 pub fn save_scramble_enabled(enabled: bool) -> Result<()> {
     let mut config = load_config()?;
     config.display.scramble_enabled = enabled;
+    save_config(&config)?;
+    Ok(())
+}
+
+pub fn save_scramble_grid_enabled(enabled: bool) -> Result<()> {
+    let mut config = load_config()?;
+    config.display.scramble_grid_enabled = enabled;
     save_config(&config)?;
     Ok(())
 }

@@ -56,6 +56,8 @@ pub fn register_ui(m: &mut std::collections::HashMap<&'static str, CommandDef>) 
 
     // Scramble
     m.insert("SCRMBL", CommandDef::new("SCRMBL", None, ArgCount::Range(0, 1), "Scramble text"));
+    m.insert("SCRMBL.GRID", CommandDef::new("SCRMBL.GRID", Some("SG"), ArgCount::Range(0, 1), "Scramble grid"));
+    m.insert("SG", CommandDef::new("SG", None, ArgCount::Range(0, 1), "Scramble grid"));
     m.insert("SCRMBL.MODE", CommandDef::new("SCRMBL.MODE", None, ArgCount::Range(0, 1), "Scramble mode"));
     m.insert("SCRMBL.SPD", CommandDef::new("SCRMBL.SPD", None, ArgCount::Range(0, 1), "Scramble speed"));
     m.insert("SCRMBL.CRV", CommandDef::new("SCRMBL.CRV", None, ArgCount::Range(0, 1), "Scramble curve"));

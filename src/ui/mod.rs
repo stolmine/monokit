@@ -644,6 +644,12 @@ pub fn run_app<B: ratatui::backend::Backend>(
                     KeyCode::Char('i') | KeyCode::Char('I') if key.modifiers.contains(KeyModifiers::CONTROL | KeyModifiers::SHIFT) => {
                         app.toggle_script_mute(9);
                     }
+                    KeyCode::Char('g') | KeyCode::Char('G') if key.modifiers.contains(KeyModifiers::CONTROL) && app.current_page == Page::Live => {
+                        app.grid_mode = (app.grid_mode + 1) % 6;
+                        if app.grid_mode == 1 || app.grid_mode == 0 {
+                            app.trigger_grid_scramble();
+                        }
+                    }
                     KeyCode::Up if is_help => {
                         app.help_scroll = app.help_scroll.saturating_sub(1);
                     }

@@ -280,6 +280,11 @@ where
             utility::handle_scrmbl(parts, scramble_enabled, *debug_level, output);
             Some(Ok(vec![]))
         }
+        "SCRMBL.GRID" | "SG" => {
+            let scramble_grid_enabled = &mut *ctx.scramble_grid_enabled;
+            utility::handle_scrmbl_grid(parts, scramble_grid_enabled, *debug_level, output);
+            Some(Ok(vec![]))
+        }
         "SCRMBL.MODE" => {
             utility::handle_scrmbl_mode(parts, scramble_mode, *debug_level, output);
             Some(Ok(vec![]))

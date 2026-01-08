@@ -225,6 +225,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 **Completed this session:**
 - GRID.MODE 5 sampler visualization (kit info, slot, pitch, envelope, FX)
 - GRID.MODE 5 slot display: visual (●○○○) for small kits, "X out of Y" for large
+- GRID.MODE 5 styling: 10-10-10 column grid, proper label/value colors, MTR label
 - Sampler state tracking macros (define_sampler_playback_param!, define_sampler_fx_param!)
 - Scene persistence for sampler state (backward compatible)
 - Multi-node param routing for modbus (mb, mba, mbd)
@@ -232,6 +233,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - S.ONSET.MIN minimum spacing parameter
 - Pure-Rust energy-based onset detector (no external deps)
 - KIT listing now shows file extensions
+- Shared UI helpers: level_to_meter_char, vol_to_db, vol_bar_parts, pan_numeric
 - Bug fix: SC optimizer zeroing decay params (ad, dd, fed, mbd) - NamedControl solution
 - Bug fix: Sampler end_frame=0 causing no audio output
 - Bug fix: Audio device restart (-l 4 for scsynth)
@@ -300,6 +302,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **Manual Update + Voice Architecture Diagram** [Low] - Fill documentation gaps, add ASCII voice architecture diagram
 - **Gain Staging Audit** [Medium] - Review clipping behavior with modbus/noise routing
 - **Slew Coverage Expansion** [Low] - Extend SLEW to all continuous voice parameters (currently 30/88)
+- **Envelope Parameter Consistency** [Low] - Sampler uses 0-16383 mapped to ms, HD2 uses raw ms directly; standardize approach across all voices for consistent UX
 
 ### P2 - Bug Fixes & Stability
 - ~~**Confirmation Dialog Styling Bug**~~ ✅ FIXED - Added Clear widget before dialog render

@@ -243,39 +243,87 @@ define_sampler_fx_param!(
 );
 
 define_sampler_fx_param!(
-    handle_sf_prob,
-    "sf_prob",
+    handle_srings_pit,
+    "srings_pit",
     0,
-    16383,
-    prob,
-    i16,
-    "SF.PROB",
-    "SAMPLER GLIT PROB",
-    "Failed to parse glitch probability"
+    127,
+    rings_pit,
+    u8,
+    "SRINGS.PIT",
+    "SAMPLER RINGS PITCH",
+    "Failed to parse rings pitch"
 );
 
 define_sampler_fx_param!(
-    handle_sf_mult,
-    "sf_mult",
+    handle_srings_strc,
+    "srings_strc",
     0,
     16383,
-    mult,
+    rings_strc,
     i16,
-    "SF.MULT",
-    "SAMPLER GLIT MULT",
-    "Failed to parse glitch multiplier"
+    "SRINGS.STRC",
+    "SAMPLER RINGS STRUCTURE",
+    "Failed to parse rings structure"
 );
 
 define_sampler_fx_param!(
-    handle_sf_glit,
-    "sf_glit",
+    handle_srings_brit,
+    "srings_brit",
     0,
     16383,
-    glit_mix,
+    rings_brit,
     i16,
-    "SF.GLIT",
-    "SAMPLER GLIT MIX",
-    "Failed to parse disintegrator mix"
+    "SRINGS.BRIT",
+    "SAMPLER RINGS BRIGHTNESS",
+    "Failed to parse rings brightness"
+);
+
+define_sampler_fx_param!(
+    handle_srings_damp,
+    "srings_damp",
+    0,
+    16383,
+    rings_damp,
+    i16,
+    "SRINGS.DAMP",
+    "SAMPLER RINGS DAMPING",
+    "Failed to parse rings damping"
+);
+
+define_sampler_fx_param!(
+    handle_srings_pos,
+    "srings_pos",
+    0,
+    16383,
+    rings_pos,
+    i16,
+    "SRINGS.POS",
+    "SAMPLER RINGS POSITION",
+    "Failed to parse rings position"
+);
+
+define_sampler_fx_param!(
+    handle_srings_mode,
+    "srings_mode",
+    0,
+    5,
+    rings_mode,
+    u8,
+    "SRINGS.MODE",
+    "SAMPLER RINGS MODE",
+    "Failed to parse rings mode"
+);
+
+define_sampler_fx_param!(
+    handle_srings_wet,
+    "srings_wet",
+    0,
+    16383,
+    rings_wet,
+    i16,
+    "SRINGS.WET",
+    "SAMPLER RINGS WET",
+    "Failed to parse rings wet mix"
 );
 
 define_sampler_fx_param!(

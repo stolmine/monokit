@@ -9,7 +9,8 @@ pub use params::{
     handle_s_start, handle_s_len, handle_s_atk, handle_s_dec, handle_s_rel,
     handle_s_sust, handle_s_fx, handle_s_ratemod, handle_s_pitchmod,
     handle_sf_cut, handle_sf_res, handle_sf_type, handle_sf_bits,
-    handle_sf_rate, handle_sf_deci, handle_sf_prob, handle_sf_mult,
-    handle_sf_glit, handle_sf_cutmod, handle_sf_resmod,
+    handle_sf_rate, handle_sf_deci, handle_sf_cutmod, handle_sf_resmod,
+    handle_srings_pit, handle_srings_strc, handle_srings_brit, handle_srings_damp,
+    handle_srings_pos, handle_srings_mode, handle_srings_wet,
     handle_s_slice, handle_s_onset, handle_s_onset_min,
 };

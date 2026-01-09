@@ -21,9 +21,13 @@ SynthDef(\monokit_sampler, {
         sf_bits = 0,
         sf_rate = 16383,
         sf_deci = 0,
-        sf_prob = 0,
-        sf_mult = 8192,
-        sf_glit = 0,
+        srings_pit = 60,
+        srings_strc = 4096,
+        srings_brit = 8192,
+        srings_damp = 11468,
+        srings_pos = 4096,
+        srings_mode = 0,
+        srings_wet = 0,
         s_ratemod = 0,
         s_pitchmod = 0,
         sf_cutmod = 0,
@@ -41,7 +45,6 @@ SynthDef(\monokit_sampler, {
     var normPos;
     var filterCutoff, filterRes;
     var decimated, deciBits, deciRate, deciMix;
-    var glitchTrig, glitchRate, glitched, glitchMix;
     var modIn;
 
     trig = Trig1.kr(t_gate_sampler, 0.001);
@@ -132,14 +135,22 @@ SynthDef(\monokit_sampler, {
         }.value
     ]);
 
-    sig = Select.ar(sf_glit > 0, [
+    sig = Select.ar(srings_wet > 0, [
         sig,
         {
-            glitchRate = (sf_mult / 8192).clip(0.1, 2.0);
-            glitchTrig = Dust.ar((sf_prob / 16383) * 100);
-            glitched = Latch.ar(sig, glitchTrig + Impulse.ar(glitchRate * 10));
-            glitchMix = sf_glit / 16383;
-            (sig * (1 - glitchMix)) + (glitched * glitchMix)
+            var ringsWet = (srings_wet / 16383).clip(0, 1);
+            var resonated = MiRings.ar(
+                in: sig,
+                trig: 0,
+                pit: srings_pit.clip(0, 127),
+                struct: (srings_strc / 16383).clip(0, 1),
+                bright: (srings_brit / 16383).clip(0, 1),
+                damp: (srings_damp / 16383).clip(0, 1),
+                pos: (srings_pos / 16383).clip(0, 1),
+                model: srings_mode.clip(0, 5).round,
+                poly: 1
+            );
+            (sig * (1 - ringsWet)) + ((resonated[0] + resonated[1]) * 0.5 * ringsWet)
         }.value
     ]);
 

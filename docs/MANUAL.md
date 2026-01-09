@@ -506,18 +506,30 @@ The sampler provides two loading modes: **KIT mode** (directory of one-shot samp
 | `SF.RATE` | `SFR` | 0-16383 | Sample rate reduction amount |
 | `SF.DECI` | `SFD` | 0-16383 | Decimator mix |
 
-**Sampler Effects - Glitch:**
+**Sampler Effects - MiRings Resonator:**
 
 | Command | Alias | Range | Description |
 |---------|-------|-------|-------------|
-| `SF.PROB` | `SFP` | 0-16383 | Glitch probability |
-| `SF.MULT` | `SFM` | 0-16383 | Glitch multiplier |
-| `SF.GLIT` | `SFG` | 0-16383 | Glitch mix |
+| `SRINGS.PIT` | `SRRP` | 0-127 | Resonator pitch (MIDI note) |
+| `SRINGS.STRC` | `SRRS` | 0-16383 | Structure/material |
+| `SRINGS.BRIT` | `SRRB` | 0-16383 | Brightness |
+| `SRINGS.DAMP` | `SRRD` | 0-16383 | Damping (decay time) |
+| `SRINGS.POS` | `SRRO` | 0-16383 | Excitation position |
+| `SRINGS.MODE` | `SRRM` | 0-5 | Resonator model |
+| `SRINGS.WET` | `SRRW` | 0-16383 | Wet/dry mix |
+
+**MiRings Models:**
+- 0: Modal (bells, metal, wood)
+- 1: Sympathetic strings
+- 2: Inharmonic/modulated string
+- 3: 2-OP FM voice
+- 4: Sympathetic quantized (chords)
+- 5: String + reverb
 
 **Signal Flow:**
 ```
-Sample Playback → Decimator → Glitch → Filter →
-S.VOL/PAN → Main Mix (with HD2/Plaits)
+Sample Playback → Decimator → Filter → MiRings →
+VOL.SMP/PAN.SMP → Main Mix (with HD2/Plaits)
 ```
 
 For spatial effects, use the global delay, reverb, and MiClouds.

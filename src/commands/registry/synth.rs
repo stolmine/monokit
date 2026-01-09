@@ -250,13 +250,21 @@ pub fn register_synth(m: &mut std::collections::HashMap<&'static str, CommandDef
     m.insert("SF.DECI", CommandDef::new("SF.DECI", None, ArgCount::AtLeast(1), "Sampler decimator mix"));
     m.insert("SFD", CommandDef::new("SFD", Some("SF.DECI"), ArgCount::AtLeast(1), "Sampler decimator mix"));
 
-    // Sampler FX - Disintegrator
-    m.insert("SF.PROB", CommandDef::new("SF.PROB", None, ArgCount::AtLeast(1), "Sampler glitch probability"));
-    m.insert("SFP", CommandDef::new("SFP", Some("SF.PROB"), ArgCount::AtLeast(1), "Sampler glitch probability"));
-    m.insert("SF.MULT", CommandDef::new("SF.MULT", None, ArgCount::AtLeast(1), "Sampler glitch multiplier"));
-    m.insert("SFM", CommandDef::new("SFM", Some("SF.MULT"), ArgCount::AtLeast(1), "Sampler glitch multiplier"));
-    m.insert("SF.GLIT", CommandDef::new("SF.GLIT", None, ArgCount::AtLeast(1), "Sampler disintegrator mix"));
-    m.insert("SFG", CommandDef::new("SFG", Some("SF.GLIT"), ArgCount::AtLeast(1), "Sampler disintegrator mix"));
+    // Sampler FX - MiRings
+    m.insert("SRINGS.PIT", CommandDef::new("SRINGS.PIT", None, ArgCount::AtLeast(1), "Sampler Rings pitch"));
+    m.insert("SRRP", CommandDef::new("SRRP", Some("SRINGS.PIT"), ArgCount::AtLeast(1), "Sampler Rings pitch"));
+    m.insert("SRINGS.STRC", CommandDef::new("SRINGS.STRC", None, ArgCount::AtLeast(1), "Sampler Rings structure"));
+    m.insert("SRRS", CommandDef::new("SRRS", Some("SRINGS.STRC"), ArgCount::AtLeast(1), "Sampler Rings structure"));
+    m.insert("SRINGS.BRIT", CommandDef::new("SRINGS.BRIT", None, ArgCount::AtLeast(1), "Sampler Rings brightness"));
+    m.insert("SRRB", CommandDef::new("SRRB", Some("SRINGS.BRIT"), ArgCount::AtLeast(1), "Sampler Rings brightness"));
+    m.insert("SRINGS.DAMP", CommandDef::new("SRINGS.DAMP", None, ArgCount::AtLeast(1), "Sampler Rings damping"));
+    m.insert("SRRD", CommandDef::new("SRRD", Some("SRINGS.DAMP"), ArgCount::AtLeast(1), "Sampler Rings damping"));
+    m.insert("SRINGS.POS", CommandDef::new("SRINGS.POS", None, ArgCount::AtLeast(1), "Sampler Rings position"));
+    m.insert("SRRO", CommandDef::new("SRRO", Some("SRINGS.POS"), ArgCount::AtLeast(1), "Sampler Rings position"));
+    m.insert("SRINGS.MODE", CommandDef::new("SRINGS.MODE", None, ArgCount::AtLeast(1), "Sampler Rings mode"));
+    m.insert("SRRM", CommandDef::new("SRRM", Some("SRINGS.MODE"), ArgCount::AtLeast(1), "Sampler Rings mode"));
+    m.insert("SRINGS.WET", CommandDef::new("SRINGS.WET", None, ArgCount::AtLeast(1), "Sampler Rings wet mix"));
+    m.insert("SRRW", CommandDef::new("SRRW", Some("SRINGS.WET"), ArgCount::AtLeast(1), "Sampler Rings wet mix"));
 
     // Sampler FX - Modulation
     m.insert("SF.CUTMOD", CommandDef::new("SF.CUTMOD", None, ArgCount::AtLeast(1), "Sampler cutoff modulation"));

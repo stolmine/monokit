@@ -222,7 +222,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | | 2 | Sampler modbus routing | Medium | **DONE** - S.RATEMOD, S.PITCHMOD, SF.CUTMOD, SF.RESMOD |
 | **2: Viz** | 3 | GRID.MODE 4 FX viz | Medium | **DONE** - 11 FX dry/wet levels, 3×6 grid |
 | **3: Nice to Have** | 4 | Filter options (more types) | Medium | **DONE** - 14 types ported from HD2 |
-| | 5 | Replace glitch effect | Medium | Polish, can defer |
+| | 5 | Replace glitch with MiRings | Medium | **DONE** - 7 params, 6 resonator models |
 | **4: Cleanup** | 6 | Stale vol/pan param cleanup | Low | Tech debt from consolidation |
 | | 7 | Help system final pass | Low | Documentation accuracy |
 | | 8 | Complete DRY pass | Low | Code quality |
@@ -232,6 +232,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - S.PITCH 14-bit range & note LUT (semitone approach works well as-is)
 - Gate length control for sampler
 - Spectral flux upgrade (rustfft) for improved onset detection
+- Rings pitch parameter consistency pass (MIDI note vs 14-bit)
 
 #### Session Notes
 - GRID.MODE 5: kit info, slot display (●○○○ or X/Y), pitch, envelope, FX

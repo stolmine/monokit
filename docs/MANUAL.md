@@ -474,7 +474,14 @@ The sampler provides two loading modes: **KIT mode** (directory of one-shot samp
 |---------|-------|-------|-------------|
 | `SF.CUT` | `SFC` | 0-16383 | Filter cutoff |
 | `SF.RES` | `SFQ` | 0-16383 | Filter resonance |
-| `SF.TYPE` | `SFT` | 0\|1 | Filter type (0=LP, 1=HP) |
+| `SF.TYPE` | `SFT` | 0-13 | Filter type (see below) |
+
+**Sampler Filter Types:**
+- 0: SVF LP, 1: SVF HP, 2: SVF BP, 3: SVF Notch
+- 4: MoogFF, 5: Butter LP, 6: Butter HP
+- 7: DFM1 LP, 8: DFM1 HP
+- 9: BMoog LP, 10: BMoog HP, 11: BMoog BP
+- 12: SVF Latched LP, 13: SVF Latched BP
 
 **Sampler Effects - Decimator:**
 

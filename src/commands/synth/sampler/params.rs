@@ -198,7 +198,7 @@ define_sampler_fx_param!(
     handle_sf_type,
     "sf_type",
     0,
-    1,
+    13,
     filter_type,
     u8,
     "SF.TYPE",

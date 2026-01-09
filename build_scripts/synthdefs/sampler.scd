@@ -100,12 +100,22 @@ SynthDef(\monokit_sampler, {
         sig,
         {
             filterCutoff = ((sf_cut / 16383) + (modIn * (sf_cutmod / 16383))).clip(0, 1).linexp(0, 1, 20, 20000);
-            // Res mod: larger range (0-0.9) for audible effect, rq goes 1.0 down to ~0.15
             filterRes = ((sf_res / 16383) + (modIn * (sf_resmod / 16383))).clip(0, 0.9);
-            Select.ar(sf_type.clip(0, 2).round, [
+            Select.ar(sf_type.clip(0, 13).round, [
+                SVF.ar(sig, filterCutoff, (filterRes + 0.1).clip(0.1, 1.0), 1, 0, 0, 0, 0),
+                SVF.ar(sig, filterCutoff, (filterRes + 0.1).clip(0.1, 1.0), 0, 1, 0, 0, 0),
+                SVF.ar(sig, filterCutoff, (filterRes + 0.1).clip(0.1, 1.0), 0, 0, 1, 0, 0),
+                SVF.ar(sig, filterCutoff, (filterRes + 0.1).clip(0.1, 1.0), 0, 0, 0, 1, 0),
+                MoogFF.ar(sig, filterCutoff, (filterRes * 4.4).clip(0, 4)),
                 RLPF.ar(sig, filterCutoff, (1.0 - (filterRes * 0.95)).clip(0.05, 1.0)),
                 RHPF.ar(sig, filterCutoff, (1.0 - (filterRes * 0.95)).clip(0.05, 1.0)),
-                BPF.ar(sig, filterCutoff, (1.0 - (filterRes * 0.95)).clip(0.05, 1.0))
+                DFM1.ar(sig, filterCutoff, (filterRes * 1.22).clip(0, 1.1), 1.0, 0.0),
+                DFM1.ar(sig, filterCutoff, (filterRes * 1.22).clip(0, 1.1), 0.0, 1.0),
+                BMoog.ar(sig, filterCutoff, (filterRes * 1.06).clip(0, 0.95), 1, 0),
+                BMoog.ar(sig, filterCutoff, (filterRes * 1.06).clip(0, 0.95), 0, 1),
+                BMoog.ar(sig, filterCutoff, (filterRes * 1.06).clip(0, 0.95), 2, 0),
+                SVF.ar(Latch.ar(sig, Impulse.ar((filterCutoff / 8).clip(100, 20000))), filterCutoff, (filterRes + 0.1).clip(0.1, 1.0), 1, 0, 0, 0, 0),
+                SVF.ar(Latch.ar(sig, Impulse.ar((filterCutoff / 8).clip(100, 20000))), filterCutoff, (filterRes + 0.1).clip(0.1, 1.0), 0, 0, 1, 0, 0)
             ])
         }.value
     ]);

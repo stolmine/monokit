@@ -221,7 +221,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | **1: Core** | 1 | S.FX SynthDef + command | Low | **DONE** - 0=bypass, 1=full chain |
 | | 2 | Sampler modbus routing | Medium | **DONE** - S.RATEMOD, S.PITCHMOD, SF.CUTMOD, SF.RESMOD |
 | **2: Viz** | 3 | GRID.MODE 4 FX viz | Medium | **DONE** - 11 FX dry/wet levels, 3×6 grid |
-| **3: Nice to Have** | 4 | Filter options (more types) | Medium | Already have 14, lower priority |
+| **3: Nice to Have** | 4 | Filter options (more types) | Medium | **DONE** - 14 types ported from HD2 |
 | | 5 | Replace glitch effect | Medium | Polish, can defer |
 | **4: Cleanup** | 6 | Stale vol/pan param cleanup | Low | Tech debt from consolidation |
 | | 7 | Help system final pass | Low | Documentation accuracy |

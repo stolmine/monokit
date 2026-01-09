@@ -57,18 +57,6 @@ fn render_repl_view(app: &crate::App, height: usize) -> Paragraph<'static> {
         )
 }
 
-const METER_CHARS: [char; 9] = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
-const METER_CHARS_ASCII: [char; 9] = [' ', '.', 'o', 'O', '0', '@', '#', '#', '#'];
-
-fn level_to_meter_char(level: f32, ascii_mode: bool) -> char {
-    let idx = (level.clamp(0.0, 1.0) * 8.0).round() as usize;
-    if ascii_mode {
-        METER_CHARS_ASCII[idx.min(8)]
-    } else {
-        METER_CHARS[idx.min(8)]
-    }
-}
-
 fn vol_to_db(vol: i32) -> String {
     let db = if vol > 0 {
         20.0 * (vol as f32 / 16383.0).log10()
@@ -199,8 +187,8 @@ fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static
 
             let meter_l = app.voice_meter_data.smp_l;
             let meter_r = app.voice_meter_data.smp_r;
-            let l_char = level_to_meter_char(meter_l, app.ascii_meters);
-            let r_char = level_to_meter_char(meter_r, app.ascii_meters);
+            let l_char = crate::utils::level_to_meter_char(meter_l, app.ascii_meters);
+            let r_char = crate::utils::level_to_meter_char(meter_r, app.ascii_meters);
             let meter_color = if meter_l > 0.0 || meter_r > 0.0 { app.theme.success } else { app.theme.secondary };
             let meter_str = format!("{}{}", l_char, r_char);
             spans.push(Span::styled("MTR", Style::default().fg(app.theme.foreground)));
@@ -226,7 +214,7 @@ fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static
             spans.push(Span::styled(format!("{:>6}", cut_display), Style::default().fg(app.theme.success)));
             spans.push(Span::raw(" "));
 
-            let res_normalized = (app.sampler_state.fx.filter_res as f32 / 16383.0 * 100.0) as u32;
+            let res_normalized = crate::utils::to_percentage_i16(app.sampler_state.fx.filter_res) as u32;
             let res_str = format!("{}%", res_normalized);
             spans.push(Span::styled("RES", Style::default().fg(app.theme.foreground)));
             spans.push(Span::styled(format!("{:>7}", res_str), Style::default().fg(app.theme.success)));
@@ -238,9 +226,9 @@ fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static
 fn render_fx_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>) {
     match row {
         0 => {
-            let lfi_pct = (app.fx_mix_state.lofi_mix as f32 / 16383.0 * 100.0).round() as i32;
-            let rng_pct = (app.fx_mix_state.ring_mix as f32 / 16383.0 * 100.0).round() as i32;
-            let srg_pct = (app.sampler_state.fx.rings_wet as f32 / 16383.0 * 100.0).round() as i32;
+            let lfi_pct = crate::utils::to_percentage(app.fx_mix_state.lofi_mix);
+            let rng_pct = crate::utils::to_percentage(app.fx_mix_state.ring_mix);
+            let srg_pct = crate::utils::to_percentage_i16(app.sampler_state.fx.rings_wet);
 
             spans.push(Span::styled("LFI", Style::default().fg(app.theme.foreground)));
             spans.push(Span::raw(" "));
@@ -258,9 +246,9 @@ fn render_fx_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>) {
             spans.push(Span::raw("     "));
         }
         1 => {
-            let cmp_pct = (app.fx_mix_state.comp_mix as f32 / 16383.0 * 100.0).round() as i32;
-            let dly_pct = (app.fx_mix_state.delay_wet as f32 / 16383.0 * 100.0).round() as i32;
-            let rev_pct = (app.fx_mix_state.reverb_wet as f32 / 16383.0 * 100.0).round() as i32;
+            let cmp_pct = crate::utils::to_percentage(app.fx_mix_state.comp_mix);
+            let dly_pct = crate::utils::to_percentage(app.fx_mix_state.delay_wet);
+            let rev_pct = crate::utils::to_percentage(app.fx_mix_state.reverb_wet);
 
             spans.push(Span::styled("CMP", Style::default().fg(app.theme.foreground)));
             spans.push(Span::raw(" "));
@@ -278,9 +266,9 @@ fn render_fx_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>) {
             spans.push(Span::raw("     "));
         }
         2 => {
-            let br_pct = (app.fx_mix_state.beat_rep_mix as f32 / 16383.0 * 100.0).round() as i32;
-            let ps_pct = (app.fx_mix_state.pitch_shift_mix as f32 / 16383.0 * 100.0).round() as i32;
-            let cld_pct = (app.fx_mix_state.clouds_wet as f32 / 16383.0 * 100.0).round() as i32;
+            let br_pct = crate::utils::to_percentage(app.fx_mix_state.beat_rep_mix);
+            let ps_pct = crate::utils::to_percentage(app.fx_mix_state.pitch_shift_mix);
+            let cld_pct = crate::utils::to_percentage(app.fx_mix_state.clouds_wet);
 
             spans.push(Span::styled("BR ", Style::default().fg(app.theme.foreground)));
             spans.push(Span::raw(" "));
@@ -298,8 +286,8 @@ fn render_fx_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>) {
             spans.push(Span::raw("     "));
         }
         3 => {
-            let dec_pct = (app.sampler_state.fx.deci_mix as f32 / 16383.0 * 100.0).round() as i32;
-            let sfc_pct = (app.sampler_state.fx.filter_cut as f32 / 16383.0 * 100.0).round() as i32;
+            let dec_pct = crate::utils::to_percentage_i16(app.sampler_state.fx.deci_mix);
+            let sfc_pct = crate::utils::to_percentage_i16(app.sampler_state.fx.filter_cut);
 
             spans.push(Span::styled("DEC", Style::default().fg(app.theme.foreground)));
             spans.push(Span::raw(" "));
@@ -360,8 +348,8 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
 
             let meter_l = app.voice_meter_data.osc_l;
             let meter_r = app.voice_meter_data.osc_r;
-            let l_char = level_to_meter_char(meter_l, app.ascii_meters);
-            let r_char = level_to_meter_char(meter_r, app.ascii_meters);
+            let l_char = crate::utils::level_to_meter_char(meter_l, app.ascii_meters);
+            let r_char = crate::utils::level_to_meter_char(meter_r, app.ascii_meters);
             let meter_color = if meter_l > 0.0 || meter_r > 0.0 { app.theme.success } else { app.theme.secondary };
             spans.push(Span::styled(format!("{}{}", l_char, r_char), Style::default().fg(meter_color)));
             spans.push(Span::raw(" "));
@@ -391,8 +379,8 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
 
             let meter_l = app.voice_meter_data.pla_l;
             let meter_r = app.voice_meter_data.pla_r;
-            let l_char = level_to_meter_char(meter_l, app.ascii_meters);
-            let r_char = level_to_meter_char(meter_r, app.ascii_meters);
+            let l_char = crate::utils::level_to_meter_char(meter_l, app.ascii_meters);
+            let r_char = crate::utils::level_to_meter_char(meter_r, app.ascii_meters);
             let meter_color = if meter_l > 0.0 || meter_r > 0.0 { app.theme.success } else { app.theme.secondary };
             spans.push(Span::styled(format!("{}{}", l_char, r_char), Style::default().fg(meter_color)));
             spans.push(Span::raw(" "));
@@ -421,8 +409,8 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
 
             let meter_l = app.voice_meter_data.nos_l;
             let meter_r = app.voice_meter_data.nos_r;
-            let l_char = level_to_meter_char(meter_l, app.ascii_meters);
-            let r_char = level_to_meter_char(meter_r, app.ascii_meters);
+            let l_char = crate::utils::level_to_meter_char(meter_l, app.ascii_meters);
+            let r_char = crate::utils::level_to_meter_char(meter_r, app.ascii_meters);
             let meter_color = if meter_l > 0.0 || meter_r > 0.0 { app.theme.success } else { app.theme.secondary };
             spans.push(Span::styled(format!("{}{}", l_char, r_char), Style::default().fg(meter_color)));
             spans.push(Span::raw(" "));
@@ -452,8 +440,8 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
 
             let meter_l = app.voice_meter_data.smp_l;
             let meter_r = app.voice_meter_data.smp_r;
-            let l_char = level_to_meter_char(meter_l, app.ascii_meters);
-            let r_char = level_to_meter_char(meter_r, app.ascii_meters);
+            let l_char = crate::utils::level_to_meter_char(meter_l, app.ascii_meters);
+            let r_char = crate::utils::level_to_meter_char(meter_r, app.ascii_meters);
             let meter_color = if meter_l > 0.0 || meter_r > 0.0 { app.theme.success } else { app.theme.secondary };
             spans.push(Span::styled(format!("{}{}", l_char, r_char), Style::default().fg(meter_color)));
             spans.push(Span::raw(" "));
@@ -474,7 +462,7 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
             spans.push(Span::styled(empty, Style::default().fg(app.theme.secondary)));
             spans.push(Span::raw("  "));
 
-            let cld_pct = (app.fx_mix_state.clouds_wet as f32 / 16383.0 * 100.0).round() as i32;
+            let cld_pct = crate::utils::to_percentage(app.fx_mix_state.clouds_wet);
             spans.push(Span::styled(format!("{:>3}%", cld_pct), Style::default().fg(app.theme.foreground)));
             spans.push(Span::raw("       "));
         }
@@ -487,7 +475,7 @@ fn render_mixer_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>
             spans.push(Span::styled(empty, Style::default().fg(app.theme.secondary)));
             spans.push(Span::raw("  "));
 
-            let rev_pct = (app.fx_mix_state.reverb_wet as f32 / 16383.0 * 100.0).round() as i32;
+            let rev_pct = crate::utils::to_percentage(app.fx_mix_state.reverb_wet);
             spans.push(Span::styled(format!("{:>3}%", rev_pct), Style::default().fg(app.theme.foreground)));
             spans.push(Span::raw("       "));
         }
@@ -906,9 +894,8 @@ fn get_meter_char_and_color_scaled(
     theme: &crate::theme::Theme,
     ascii_mode: bool
 ) -> (char, ratatui::style::Color) {
-    const METER_CHARS: [char; 9] = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
     const METER_CHARS_ASCII: [char; 9] = [' ', '.', ':', '-', '=', '+', '#', '#', '#'];
-    let active_chars = if ascii_mode { &METER_CHARS_ASCII } else { &METER_CHARS };
+    let active_chars = if ascii_mode { &METER_CHARS_ASCII } else { &crate::utils::METER_CHARS };
 
     // Each row covers 1/total_rows of the range
     let row_height = 1.0 / total_rows as f32;

@@ -2,32 +2,20 @@ use ratatui::{prelude::*, widgets::*};
 
 use crate::types::{MeterData, Page, NAVIGABLE_PAGES};
 
-// 8-level vertical bar characters for meter display
-const METER_CHARS: [char; 9] = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
-// Header ASCII uses rounder, more readable chars than grid meters
-const METER_CHARS_ASCII: [char; 9] = [' ', '.', 'o', 'O', '0', '@', '#', '#', '#'];
-
-fn level_to_char(level: f32, ascii_mode: bool) -> char {
-    let clamped = level.clamp(0.0, 1.0);
-    let idx = (clamped * 8.0).round() as usize;
-    let active_chars = if ascii_mode { &METER_CHARS_ASCII } else { &METER_CHARS };
-    active_chars[idx.min(8)]
-}
-
 fn render_meters(meter_data: &MeterData, theme: &crate::theme::Theme, ascii_mode: bool) -> Vec<Span<'static>> {
     let mut spans = Vec::new();
 
     // Left channel meter character
     let l_color = if meter_data.clip_l { theme.error } else { theme.success };
     spans.push(Span::styled(
-        level_to_char(meter_data.peak_l, ascii_mode).to_string(),
+        crate::utils::level_to_meter_char(meter_data.peak_l, ascii_mode).to_string(),
         Style::default().fg(l_color),
     ));
 
     // Right channel meter character (immediately adjacent)
     let r_color = if meter_data.clip_r { theme.error } else { theme.success };
     spans.push(Span::styled(
-        level_to_char(meter_data.peak_r, ascii_mode).to_string(),
+        crate::utils::level_to_meter_char(meter_data.peak_r, ascii_mode).to_string(),
         Style::default().fg(r_color),
     ));
 

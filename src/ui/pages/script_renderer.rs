@@ -1,0 +1,136 @@
+use ratatui::prelude::*;
+use crate::ui::state_highlight::{highlight_stateful_operators, apply_conditional_activity};
+use crate::ui::search_highlight::highlight_matches_in_line;
+use crate::types::{Script, Page, SearchScope};
+use std::collections::HashMap;
+
+pub fn render_script_lines(
+    script: &Script,
+    script_index: usize,
+    selected_line: Option<usize>,
+    is_selected_page: bool,
+    search_page: Option<Page>,
+    app: &crate::App,
+    toggle_state_snapshot: &HashMap<String, usize>,
+    toggle_last_value_snapshot: &HashMap<String, i16>,
+    direct_validation_snapshot: &HashMap<String, bool>,
+) -> Vec<Line<'static>> {
+    let should_highlight_search = app.search_mode && !app.search_query.is_empty();
+    let current_match_line_col = if should_highlight_search && !app.search_matches.is_empty() {
+        let current_match = &app.search_matches[app.search_current_match];
+        if matches!(current_match.scope, SearchScope::Script)
+            && search_page.map(|p| current_match.page == p).unwrap_or(false)
+            && current_match.page_index == script_index
+        {
+            Some((current_match.line_index, current_match.column_start))
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    let mut lines = Vec::new();
+
+    for i in 0..8 {
+        let line_content = &script.lines[i];
+        let is_selected = is_selected_page && selected_line == Some(i);
+
+        if line_content.is_empty() {
+            if is_selected {
+                lines.push(Line::from(vec![
+                    Span::styled("  ", Style::default().bg(app.theme.highlight_bg)),
+                ]));
+            } else {
+                lines.push(Line::from(vec![
+                    Span::styled("  ", Style::default().fg(app.theme.secondary)),
+                ]));
+            }
+        } else {
+            let (normal_color, highlight_color) = if is_selected {
+                (app.theme.highlight_fg, app.theme.success)
+            } else {
+                (app.theme.secondary, app.theme.foreground)
+            };
+
+            let mut spans = vec![Span::styled("  ", Style::default().fg(normal_color))];
+
+            if should_highlight_search {
+                let current_col = if current_match_line_col.map(|(l, _)| l) == Some(i) {
+                    current_match_line_col.map(|(_, c)| c)
+                } else {
+                    None
+                };
+
+                let search_segments = highlight_matches_in_line(line_content, &app.search_query, current_col);
+
+                for (segment_text, is_match, is_current) in search_segments {
+                    if app.show_seq_highlight {
+                        let segment_highlighted = highlight_stateful_operators(
+                            &segment_text,
+                            script_index,
+                            toggle_state_snapshot,
+                            toggle_last_value_snapshot,
+                            direct_validation_snapshot,
+                        );
+
+                        for segment_span in segment_highlighted.to_spans(normal_color, highlight_color) {
+                            let mut style = segment_span.style;
+                            if is_current {
+                                style = style.bg(app.theme.highlight_bg).fg(app.theme.highlight_fg);
+                            } else if is_match {
+                                style = style.fg(app.theme.accent);
+                            }
+                            spans.push(Span::styled(segment_span.content, style));
+                        }
+                    } else {
+                        let mut style = Style::default().fg(normal_color);
+                        if is_current {
+                            style = style.bg(app.theme.highlight_bg).fg(app.theme.highlight_fg);
+                        } else if is_match {
+                            style = style.fg(app.theme.accent);
+                        }
+                        spans.push(Span::styled(segment_text, style));
+                    }
+                }
+            } else if app.show_seq_highlight {
+                let highlighted = highlight_stateful_operators(
+                    line_content,
+                    script_index,
+                    toggle_state_snapshot,
+                    toggle_last_value_snapshot,
+                    direct_validation_snapshot,
+                );
+
+                if app.show_conditional_highlight {
+                    let conditional_spans = apply_conditional_activity(
+                        highlighted,
+                        &app.conditional_segments[script_index][i],
+                        &app.theme,
+                        app.activity_hold_ms,
+                        is_selected,
+                    );
+                    spans.extend(conditional_spans);
+                } else {
+                    spans.extend(highlighted.to_spans(normal_color, highlight_color));
+                }
+            } else {
+                spans.push(Span::styled(line_content.to_string(), Style::default().fg(normal_color)));
+            }
+
+            if is_selected {
+                lines.push(Line::from(
+                    spans.into_iter()
+                        .map(|span| {
+                            Span::styled(span.content, span.style.bg(app.theme.highlight_bg))
+                        })
+                        .collect::<Vec<_>>()
+                ));
+            } else {
+                lines.push(Line::from(spans));
+            }
+        }
+    }
+
+    lines
+}

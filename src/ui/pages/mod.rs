@@ -11,6 +11,7 @@ pub mod notes;
 pub mod pattern;
 pub mod scope;
 pub mod script;
+pub mod script_renderer;
 pub mod variables;
 
 pub use help::{render_help_page, HELP_CATEGORIES, HELP_LINES};

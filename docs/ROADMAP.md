@@ -11,6 +11,20 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ## Version History (Latest First)
 
+### v0.5.0 (January 2026) - IN PROGRESS
+
+| Feature | Effort | Status |
+|---------|--------|--------|
+| Sampler MiRings Resonator | Medium | **DONE** |
+| Sampler Filter Types (14) | Low | **DONE** |
+| MiRings OSC Routing Fix | Low | **DONE** |
+
+**Sampler MiRings Resonator** - Replaced glitch effect with MiRings physical modeling resonator. Samples act as exciters for modal/string/FM resonance. 7 parameters (SRINGS.*/SRR*): pitch, structure, brightness, damping, position, model (0-5), wet mix. Signal flow: Sample → Decimator → Filter → MiRings → Mix.
+
+**MiRings OSC Routing Fix** - Fixed srings_* params not reaching sampler node (were falling through to main synth). Set intern_exciter=0 so samples properly excite resonator.
+
+---
+
 ### v0.4.22 (December 2025) - COMPLETE
 
 | Feature | Effort | Status |

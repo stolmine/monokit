@@ -53,8 +53,9 @@ pub fn route_param_to_node(param: &str) -> i32 {
 
         "sf_cut" | "sf_res" | "sf_type" |
         "sf_bits" | "sf_rate" | "sf_deci" |
-        "sf_prob" | "sf_mult" | "sf_glit" |
-        "sf_cutmod" | "sf_resmod" => super::sampler_types::SAMPLER_NODE_ID,
+        "sf_cutmod" | "sf_resmod" |
+        "srings_pit" | "srings_strc" | "srings_brit" | "srings_damp" |
+        "srings_pos" | "srings_mode" | "srings_wet" => super::sampler_types::SAMPLER_NODE_ID,
 
         _ => MAIN_NODE_ID,
     }

@@ -141,15 +141,18 @@ SynthDef(\monokit_sampler, {
             var ringsWet = (srings_wet / 16383).clip(0, 1);
             var resonated = MiRings.ar(
                 in: sig,
-                trig: 0,
+                trig: trigAr,  // Use sampler trigger for note articulation
                 pit: srings_pit.clip(0, 127),
                 struct: (srings_strc / 16383).clip(0, 1),
                 bright: (srings_brit / 16383).clip(0, 1),
                 damp: (srings_damp / 16383).clip(0, 1),
                 pos: (srings_pos / 16383).clip(0, 1),
                 model: srings_mode.clip(0, 5).round,
-                poly: 1
+                poly: 1,
+                intern_exciter: 0,  // Audio input excites resonator
+                mul: 2.0
             );
+            // Sum stereo outputs (EVEN + ODD)
             (sig * (1 - ringsWet)) + ((resonated[0] + resonated[1]) * 0.5 * ringsWet)
         }.value
     ]);

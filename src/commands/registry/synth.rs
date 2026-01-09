@@ -137,12 +137,6 @@ pub fn register_synth(m: &mut std::collections::HashMap<&'static str, CommandDef
     m.insert("MFF", CommandDef::new("MFF", Some("MODF.CUT"), ArgCount::AtLeast(1), "Mod filter cutoff"));
     m.insert("MFQ", CommandDef::new("MFQ", Some("MODF.RES"), ArgCount::AtLeast(1), "Mod filter resonance"));
 
-    // Resonator
-    m.insert("RF", CommandDef::new("RF", Some("RESO.FRQ"), ArgCount::AtLeast(1), "Resonator frequency"));
-    m.insert("RD", CommandDef::new("RD", Some("RESO.DEC"), ArgCount::AtLeast(1), "Resonator decay"));
-    m.insert("RM", CommandDef::new("RM", Some("RESO.MIX"), ArgCount::AtLeast(1), "Resonator mix"));
-    m.insert("RK", CommandDef::new("RK", Some("RESO.KEY"), ArgCount::AtLeast(1), "Resonator key track"));
-
     // Output
     m.insert("VOL", CommandDef::new("VOL", Some("OUT.VOL"), ArgCount::Exactly(1), "Output volume"));
     m.insert("PAN", CommandDef::new("PAN", Some("OUT.PAN"), ArgCount::AtLeast(1), "Pan position"));

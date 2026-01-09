@@ -25,10 +25,10 @@ Hopefully it shows!
 - **Extensive modulation routing** - mod osc → primary freq/mod freq/filter cutoff/filter Q/discontinuity/VCA; noise → primary FM/mod FM
 - **Plaits macro oscillator** - 16 synthesis engines (VA, FM, wavetable, granular, percussion, physical modeling)
 - **Sampler** - Kit/slice modes with dynamic and instant file handling, 14-type filter, decimator, MiRings resonator (samples excite MiRings as a resonator)
-- **Full effects chain** - 14-type multimode filter, comb resonator, ring mod, lo-fi (bit/sample rate), compressor, beat repeat, pitch shift, stereo delay, 3-band EQ, plate reverb (Plaits is inserted after main voice VCA and is not affected by filter, resonator, ring mod, or lof) + an implementation of Clouds
+- **Full effects chain** - 14-type multimode filter, ring mod, lo-fi (bit/sample rate), compressor, beat repeat, pitch shift, stereo delay, 3-band EQ, plate reverb (Plaits is inserted after main voice VCA and is not affected by filter, ring mod, or lofi) + an implementation of Clouds
 - **97 real-time parameters** - All instantly controllable via terse commands
 - **Per-stage envelopes** - Amp, pitch, FM, discontinuity, feedback, filter, noise, modbus - most with independent attack, decay, and curve
-- **Slew control** - 30 voice/fx parameters with 0-10000ms range, each independently settable
+- **Slew control** - 26 voice/fx parameters with 0-10000ms range, each independently settable
 - **VCA modes** - Gate mode for percussion, drone mode for sustained tones; noise has independent gating
 
 ### Scripting Language

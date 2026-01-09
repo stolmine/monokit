@@ -19,12 +19,18 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | Sampler Filter Types (14) | Low | **DONE** |
 | MiRings OSC Routing Fix | Low | **DONE** |
 | FX Chain Reorder | Medium | **DONE** |
+| Comb Resonator Removal | Low | **DONE** |
+| Delay CombC Fix | Medium | **DONE** |
 
 **FX Chain Reorder** - Major refactor of signal chain order. New order: Mix → EQ → Pan → Pitch Shift → Beat Repeat → Clouds → Delay → Comp → Reverb. Comp now comes after delay (tames dynamics after creative FX). Removed S.FX command - sampler now always goes through full chain like all other sources.
 
 **Sampler MiRings Resonator** - Replaced glitch effect with MiRings physical modeling resonator. Samples act as exciters for modal/string/FM resonance. 7 parameters (SRINGS.*/SRR*): pitch, structure, brightness, damping, position, model (0-5), wet mix. Signal flow: Sample → Decimator → Filter → MiRings → Mix.
 
 **MiRings OSC Routing Fix** - Fixed srings_* params not reaching sampler node (were falling through to main synth). Set intern_exciter=0 so samples properly excite resonator.
+
+**Comb Resonator Removal** - Removed non-functional comb resonator (RM/RF/RD/RK commands) from main synth. Root cause: CombC with pre-declared smoothed variables fails in complex synthdefs. Sampler still has MiRings resonator which works correctly.
+
+**Delay CombC Fix** - Fixed delay (DT/DW/DF) not producing audio output. Same root cause as resonator: pre-declared Lag.kr smoothed variables don't work in CombC. Fix: inline Lag.kr directly at CombC call site. Delay now fully functional.
 
 ---
 

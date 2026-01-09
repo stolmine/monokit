@@ -168,7 +168,7 @@ Monokit uses a multi-synth architecture with separate SynthDefs for each voice, 
 │  │                                                 │       │
 │  │ Signal Chain:                                  │       │
 │  │  Mix Sources → Discontinuity → Lo-Fi →        │       │
-│  │  Filter (14 types) → Ring Mod → Resonator →   │       │
+│  │  Filter (14 types) → Ring Mod →               │       │
 │  │  VCA/Envelope → Compressor → Pan →            │       │
 │  │  Beat Repeat → Pitch Shift → Stereo Delay →  │       │
 │  │  3-Band EQ → Plate Reverb                     │       │

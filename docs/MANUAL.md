@@ -240,8 +240,8 @@ All envelopes are simple percussive (attack + decay) and trigger on each `TR`.
 Signal flow (left to right):
 ```
 Oscillators → FM → Mix → Discontinuity → Lo-Fi → SVF Filter →
-Ring Mod → Comb Resonator → Amp → Compressor → Pan →
-MiClouds Granular → Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ → Plate Reverb
+Ring Mod → Amp → EQ → Pan → Pitch Shift → Beat Repeat →
+MiClouds Granular → Stereo Delay → Compressor → Plate Reverb
 ```
 
 ### Multi-Mode Filter (14 Types)
@@ -280,13 +280,6 @@ MiClouds Granular → Beat Repeat → Pitch Shift → Stereo Delay → 3-Band EQ
 - `RING.FRQ` / `RGF <20-2000>` - Ring mod frequency (Hz)
 - `RING.WAV` / `RGW <0-3>` - Waveform (0=Sin, 1=Tri, 2=Saw)
 - `RING.MIX` / `RGM <0-16383>` - Ring mod mix
-
-### Comb Resonator
-
-- `RESO.FRQ` / `RF <Hz>` - Resonator frequency
-- `RESO.DEC` / `RD <ms>` - Decay time
-- `RESO.MIX` / `RM <0-16383>` - Resonator mix
-- `RESO.KEY` / `RK <0-16383>` - Key tracking
 
 ### Compressor
 
@@ -1597,10 +1590,6 @@ Notes are saved with scenes. 8 lines maximum.
 | `RING.FRQ <hz>` | `RGF` | Ring mod freq |
 | `RING.WAV <0-3>` | `RGW` | Ring mod wave |
 | `RING.MIX <amt>` | `RGM` | Ring mod mix |
-| `RESO.FRQ <hz>` | `RF` | Resonator freq |
-| `RESO.DEC <ms>` | `RD` | Resonator decay |
-| `RESO.MIX <amt>` | `RM` | Resonator mix |
-| `RESO.KEY <amt>` | `RK` | Resonator key track |
 | `COMP.THR <amt>` | `CT` | Compressor threshold |
 | `COMP.RAT <1-20>` | `CR` | Compressor ratio |
 | `COMP.ATK <ms>` | `CA` | Compressor attack |

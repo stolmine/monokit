@@ -18,10 +18,6 @@ SynthDef(\monokit_main, {
         fk = 0,
         mf_f = 0,
         mf_q = 0,
-        rf = 440,
-        rd = 500,
-        rm = 0,
-        rk = 0,
         dt = 250,
         df = 0,
         dlp = 5000,
@@ -84,8 +80,8 @@ SynthDef(\monokit_main, {
         t_gate = 0,
         slew_time = 0,
         slew_fc = -1, slew_dc = -1, slew_fq = -1,
-        slew_fk = -1, slew_fe = -1, slew_rf = -1, slew_rm = -1,
-        slew_dt = -1, slew_df = -1, slew_dw = -1, slew_rv = -1,
+        slew_fk = -1, slew_fe = -1,
+        slew_dw = -1, slew_rv = -1,
         slew_rw = -1, slew_volume = -1, slew_pn = -1, slew_lb = -1,
         slew_ls = -1, slew_lm = -1, slew_rgf = -1, slew_rgm = -1,
         slew_ct = -1, slew_cm = -1, slew_el = -1, slew_em = -1,
@@ -122,7 +118,6 @@ SynthDef(\monokit_main, {
     var primaryL, primaryR, noiseL, noiseR, plaitsMainL, plaitsMainR, plaitsAuxL, plaitsAuxR;
     var samplerL, samplerR;
     var filterCutoff, filterQ;
-    var resonatorFreq, resonatorDelay, resonatorDecay, resonatorMix, resonated;
     var delayTime, delayFeedback, delayWet, sigL, sigR, delayedL, delayedR;
     var reverbDecay, reverbDamping, reverbWet, reverbedL, reverbedR;
     var dmodeSmooth, delayWetSmooth, dfeedbackMult, delayInput, delayBypass;
@@ -140,7 +135,7 @@ SynthDef(\monokit_main, {
     var cloudsProcessedL, cloudsProcessedR, cloudsActive, cloudsWet;
     var compInputLevel, compOutputLevel, compFinalLevel, gainReductionDb;
     var fcSmooth, dcSmooth, fqSmooth, fkSmooth, feSmooth;
-    var rfSmooth, rmSmooth, dtSmooth, dfSmooth, dwSmooth, rvSmooth, rwSmooth, volumeSmooth, panSmooth;
+    var dwSmooth, rvSmooth, rwSmooth, volumeSmooth, panSmooth;
     var lbSmooth, lsSmooth, lmSmooth, rgfSmooth, rgmSmooth, ctSmooth, cmSmooth;
     var elSmooth, emSmooth, ehSmooth, efSmooth;
     var daCtl;
@@ -154,10 +149,6 @@ SynthDef(\monokit_main, {
     fqSmooth = Lag.kr(fq, Select.kr(slew_fq >= 0, [slew_time, slew_fq]));
     fkSmooth = Lag.kr(fk, Select.kr(slew_fk >= 0, [slew_time, slew_fk]));
     feSmooth = Lag.kr(fe, Select.kr(slew_fe >= 0, [slew_time, slew_fe]));
-    rfSmooth = Lag.kr(rf, Select.kr(slew_rf >= 0, [slew_time, slew_rf]));
-    rmSmooth = Lag.kr(rm, Select.kr(slew_rm >= 0, [slew_time, slew_rm]));
-    dtSmooth = Lag.kr(dt, Select.kr(slew_dt >= 0, [slew_time, slew_dt]));
-    dfSmooth = Lag.kr(df, Select.kr(slew_df >= 0, [slew_time, slew_df]));
     dwSmooth = Lag.kr(dw, Select.kr(slew_dw >= 0, [slew_time, slew_dw]));
     rvSmooth = Lag.kr(rv, Select.kr(slew_rv >= 0, [slew_time, slew_rv]));
     rwSmooth = Lag.kr(rw, Select.kr(slew_rw >= 0, [slew_time, slew_rw]));
@@ -292,14 +283,6 @@ SynthDef(\monokit_main, {
     ]);
     ringModMix = rgmSmooth / 16383;
     sig = (sig * (1 - ringModMix)) + ((sig * ringModOsc) * ringModMix);
-
-    resonatorFreq = rfSmooth + ((rk / 16383) * (primaryFreq - rfSmooth));
-    resonatorFreq = resonatorFreq.clip(20, 5000);
-    resonatorDelay = (1 / resonatorFreq).clip(0.0002, 0.05);
-    resonatorDecay = (rd / 1000).clip(0.01, 5.0);
-    resonated = CombC.ar(sig, 0.05, resonatorDelay, resonatorDecay);
-    resonatorMix = rmSmooth / 16383;
-    sig = (sig * (1 - resonatorMix)) + (resonated * resonatorMix);
 
     amp = Select.kr(vca_mode.clip(0, 1), [1.0, ampEnv]) * volumeSmooth * (1 + (modOsc * modBusValue * ma * 0.5));
     sig = sig * amp;
@@ -444,8 +427,6 @@ SynthDef(\monokit_main, {
 
     dmodeSmooth = Lag.kr(dmode, 0.02);
     delayWetSmooth = Lag.kr(dwSmooth / 16383, 0.01);
-    delayTime = (dtSmooth / 1000).clip(0.001, 2.0);
-    delayFeedback = dfSmooth / 16383;
 
     dfeedbackMult = Select.kr(dtail.clip(0, 2).round, [
         (dwSmooth > 100),
@@ -459,6 +440,9 @@ SynthDef(\monokit_main, {
         sigL * delayWetSmooth
     ]);
 
+    // FIX: Inline Lag.kr for CombC params (pre-declared smoothed vars don't work in CombC)
+    delayTime = Lag.kr(dt / 1000, 0.01).clip(0.001, 2.0);
+    delayFeedback = Lag.kr(df / 16383, 0.01);
     delayedL = CombC.ar(LPF.ar(delayInput, dlp), 2.0, delayTime, delayFeedback * 3 * dfeedbackMult);
     delayedR = CombC.ar(LPF.ar(Select.ar(dmodeSmooth.clip(0, 2).round, [sigR, sigR, sigR * delayWetSmooth]), dlp), 2.0, delayTime * 1.02, delayFeedback * 3 * dfeedbackMult);
 

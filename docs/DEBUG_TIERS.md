@@ -182,9 +182,6 @@ Output is shown when:
 *Filter* (10):
 - FC, FQ, FT, FE, FED, FK, MFF, MFQ, MC, MQ
 
-*Resonator* (4):
-- RF, RD, RM, RK
-
 *Discontinuity* (2):
 - DM, DD
 

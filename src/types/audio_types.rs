@@ -232,7 +232,6 @@ impl Default for MixerData {
 pub struct FxMixState {
     pub lofi_mix: i32,
     pub ring_mix: i32,
-    pub reso_mix: i32,
     pub comp_mix: i32,
     pub delay_wet: i32,
     pub reverb_wet: i32,
@@ -246,7 +245,6 @@ impl Default for FxMixState {
         Self {
             lofi_mix: 0,
             ring_mix: 0,
-            reso_mix: 0,
             comp_mix: 16383,  // Compressor default 100% wet (matches SynthDef)
             delay_wet: 0,
             reverb_wet: 0,

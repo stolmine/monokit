@@ -368,14 +368,6 @@ where
     let rgm = rng.gen_range(0..=8000);
     metro_tx.send(MetroCommand::SendParam("rgm".to_string(), OscType::Int(rgm)))?;
 
-    // Resonator
-    let rf = rng.gen_range(50.0..=2000.0);
-    metro_tx.send(MetroCommand::SendParam("rf".to_string(), OscType::Float(rf)))?;
-    let rd = rng.gen_range(50..=2000);
-    metro_tx.send(MetroCommand::SendParam("rd".to_string(), OscType::Int(rd)))?;
-    let rm = rng.gen_range(0..=8000);
-    metro_tx.send(MetroCommand::SendParam("rm".to_string(), OscType::Int(rm)))?;
-
     // Delay
     let dt = rng.gen_range(50..=500);
     metro_tx.send(MetroCommand::SendParam("dt".to_string(), OscType::Int(dt)))?;

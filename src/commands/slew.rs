@@ -4,8 +4,8 @@ use crate::types::{Counters, MetroCommand, PatternStorage, ScaleState, ScriptSto
 use anyhow::{Context, Result};
 use std::sync::mpsc::Sender;
 
-const SMOOTHABLE_PARAMS: [&str; 30] = [
-    "pf", "mf", "fc", "fm", "mx", "dc", "fb", "fq", "fk", "fe", "rf", "rm", "dt", "df", "dw",
+const SMOOTHABLE_PARAMS: [&str; 26] = [
+    "pf", "mf", "fc", "fm", "mx", "dc", "fb", "fq", "fk", "fe", "dw",
     "rv", "rw", "volume", "pn", "lb", "ls", "lm", "rgf", "rgm", "ct", "cm", "el", "em", "eh", "ef",
 ];
 

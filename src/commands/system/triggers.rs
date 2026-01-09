@@ -229,23 +229,6 @@ where
         std::thread::sleep(Duration::from_millis(delay_ms));
     }
 
-    ctx.metro_tx.send(MetroCommand::SendParam("rf".to_string(), OscType::Float(131.0)))?;
-    if delay_ms > 0 {
-        std::thread::sleep(Duration::from_millis(delay_ms));
-    }
-    ctx.metro_tx.send(MetroCommand::SendParam("rd".to_string(), OscType::Int(100)))?;
-    if delay_ms > 0 {
-        std::thread::sleep(Duration::from_millis(delay_ms));
-    }
-    ctx.metro_tx.send(MetroCommand::SendParam("rm".to_string(), OscType::Int(0)))?;
-    if delay_ms > 0 {
-        std::thread::sleep(Duration::from_millis(delay_ms));
-    }
-    ctx.metro_tx.send(MetroCommand::SendParam("rk".to_string(), OscType::Int(0)))?;
-    if delay_ms > 0 {
-        std::thread::sleep(Duration::from_millis(delay_ms));
-    }
-
     ctx.metro_tx.send(MetroCommand::SendParam("dt".to_string(), OscType::Int(250)))?;
     if delay_ms > 0 {
         std::thread::sleep(Duration::from_millis(delay_ms));
@@ -596,22 +579,6 @@ where
         std::thread::sleep(Duration::from_millis(delay_ms));
     }
     ctx.metro_tx.send(MetroCommand::SendParam("slew_fe".to_string(), OscType::Int(-1)))?;
-    if delay_ms > 0 {
-        std::thread::sleep(Duration::from_millis(delay_ms));
-    }
-    ctx.metro_tx.send(MetroCommand::SendParam("slew_rf".to_string(), OscType::Int(-1)))?;
-    if delay_ms > 0 {
-        std::thread::sleep(Duration::from_millis(delay_ms));
-    }
-    ctx.metro_tx.send(MetroCommand::SendParam("slew_rm".to_string(), OscType::Int(-1)))?;
-    if delay_ms > 0 {
-        std::thread::sleep(Duration::from_millis(delay_ms));
-    }
-    ctx.metro_tx.send(MetroCommand::SendParam("slew_dt".to_string(), OscType::Int(-1)))?;
-    if delay_ms > 0 {
-        std::thread::sleep(Duration::from_millis(delay_ms));
-    }
-    ctx.metro_tx.send(MetroCommand::SendParam("slew_df".to_string(), OscType::Int(-1)))?;
     if delay_ms > 0 {
         std::thread::sleep(Duration::from_millis(delay_ms));
     }

@@ -441,10 +441,10 @@ SynthDef(\monokit_main, {
     ]);
 
     // FIX: Inline Lag.kr for CombC params (pre-declared smoothed vars don't work in CombC)
-    delayTime = Lag.kr(dt / 1000, 0.01).clip(0.001, 2.0);
+    delayTime = Lag.kr(dt / 1000, 0.01).clip(0.001, 4.0);
     delayFeedback = Lag.kr(df / 16383, 0.01);
-    delayedL = CombC.ar(LPF.ar(delayInput, dlp), 2.0, delayTime, delayFeedback * 3 * dfeedbackMult);
-    delayedR = CombC.ar(LPF.ar(Select.ar(dmodeSmooth.clip(0, 2).round, [sigR, sigR, sigR * delayWetSmooth]), dlp), 2.0, delayTime * 1.02, delayFeedback * 3 * dfeedbackMult);
+    delayedL = CombC.ar(LPF.ar(delayInput, dlp), 4.0, delayTime, delayFeedback * 3 * dfeedbackMult);
+    delayedR = CombC.ar(LPF.ar(Select.ar(dmodeSmooth.clip(0, 2).round, [sigR, sigR, sigR * delayWetSmooth]), dlp), 4.0, delayTime * 1.02, delayFeedback * 3 * dfeedbackMult);
 
     sigL = Select.ar(dmodeSmooth.clip(0, 2).round, [
         sigL,

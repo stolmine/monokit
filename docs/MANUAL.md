@@ -373,11 +373,15 @@ Beat repeat activates automatically when `BR.MIX` is greater than 0.
 
 ### Stereo Delay
 
-- `DLY.TIME` / `DT <1-2000>` - Delay time (ms)
+- `DLY.TIME` / `DT <0-16383>` - Delay time (14-bit, exponential curve)
+- `DLY.SYN` / `DS <0|1>` - Sync mode (0=Free running, 1=BPM sync)
 - `DLY.FB` / `DF <0-16383>` - Feedback
 - `DLY.LP` / `DLP <Hz>` - Lowpass filter
 - `DLY.WET` / `DW <0-16383>` - Wet mix
-- `DLY.SYN` / `DS <0-16383>` - Stereo width
+
+**Sync Modes:**
+- Free (DS=0): DT maps to ~1ms-2s via exponential curve
+- BPM Sync (DS=1): DT quantizes to musical divisions (1/64 to 8 bars)
 
 **Delay Routing:**
 - `DLY.MODE` / `D.MODE <0-2>` - 0=Bypass, 1=Insert, 2=Send
@@ -1636,11 +1640,11 @@ Notes are saved with scenes. 8 lines maximum.
 
 | Command | Alias | Description |
 |---------|-------|-------------|
-| `DLY.TIME <ms>` | `DT` | Delay time |
+| `DLY.TIME <0-16383>` | `DT` | Delay time (14-bit exp) |
+| `DLY.SYN <0\|1>` | `DS` | Sync (0=Free 1=BPM) |
 | `DLY.FB <amt>` | `DF` | Delay feedback |
 | `DLY.LP <hz>` | `DLP` | Delay lowpass |
 | `DLY.WET <amt>` | `DW` | Delay wet mix |
-| `DLY.SYN <amt>` | `DS` | Delay stereo width |
 | `DLY.MODE <0-2>` | `D.MODE` | Delay routing |
 | `DLY.TAIL <0-2>` | `D.TAIL` | Delay tail mode |
 | `REV.DEC <amt>` | `RV` | Reverb decay |

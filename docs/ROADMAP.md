@@ -15,6 +15,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 | Feature | Effort | Status |
 |---------|--------|--------|
+| Delay Clock Sync (DS/DT 14-bit) | Medium | **DONE** |
 | Sampler MiRings Resonator | Medium | **DONE** |
 | Sampler Filter Types (14) | Low | **DONE** |
 | MiRings OSC Routing Fix | Low | **DONE** |

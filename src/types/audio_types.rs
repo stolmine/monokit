@@ -238,6 +238,8 @@ pub struct FxMixState {
     pub beat_rep_mix: i32,
     pub pitch_shift_mix: i32,
     pub clouds_wet: i32,
+    pub delay_sync: bool,
+    pub delay_time_raw: i32,
 }
 
 impl Default for FxMixState {
@@ -251,6 +253,8 @@ impl Default for FxMixState {
             beat_rep_mix: 0,
             pitch_shift_mix: 0,
             clouds_wet: 0,
+            delay_sync: false,
+            delay_time_raw: 2048,
         }
     }
 }

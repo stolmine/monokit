@@ -98,11 +98,11 @@ pub const DELAY_REVERB: HelpCategory = HelpCategory {
     lines: &[
         "",
         "# STEREO DELAY",
-        "  DLY.TIME / DT <MS>      TIME (1-2000)",
+        "  DLY.TIME / DT <0-16383> TIME (EXP CURVE)",
+        "  DLY.SYN / DS <0-1>      0=FREE 1=BPM SYNC",
         "  DLY.FB / DF <0-16383>   FEEDBACK",
         "  DLY.LP / DLP <HZ>       LP FILT",
         "  DLY.WET / DW <0-16383>  WET MIX",
-        "  DLY.SYN / DS <0-16383>  STEREO WID",
         "",
         "# DELAY ROUTING",
         "  DLY.MODE / D.MODE <0-2> BYP/INS/SND",

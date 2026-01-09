@@ -1,8 +1,8 @@
 # Monokit Manual
 
-Updated 2025-12-06
+Updated 2026-01-08
 
-**Version 0.2.0** - Teletype-style scripting for a complex oscillator voice
+**Version 0.5.0** - Teletype-style scripting for a complex oscillator voice
 
 ---
 
@@ -444,6 +444,14 @@ The sampler provides two loading modes: **KIT mode** (directory of one-shot samp
 | `S.START` | `SST` | 0-16383 | Start offset position |
 | `S.LEN` | `SLE` | 0-16383 | Loop length |
 
+**Slicing:**
+
+| Command | Alias | Range | Description |
+|---------|-------|-------|-------------|
+| `S.SLICE` | `SSL` | 2-128 | Equal-divide sample into N slices |
+| `S.ONSET` | `SON` | 1-100 | Detect transients (sensitivity 1-100) |
+| `S.ONSET.MIN` | `SONM` | 10-1000 | Minimum slice spacing (ms) |
+
 **Envelope:**
 
 | Command | Alias | Range | Description |
@@ -459,14 +467,21 @@ The sampler provides two loading modes: **KIT mode** (directory of one-shot samp
 |---------|-------|-------|-------------|
 | `S.VOL` | `SV` | 0-16383 | Sample volume |
 | `S.PAN` | `SP` | -8192 to 8192 | Stereo pan (0=center) |
-| `S.FX` | `SFX` | 0-2 | FX routing (0=dry, 1=post-filter, 2=post-all) |
+| `S.FX` | `SFX` | 0\|1 | FX routing (0=bypass spatial FX, 1=full chain) |
 
 **Modulation:**
 
 | Command | Alias | Range | Description |
 |---------|-------|-------|-------------|
-| `S.RATEMOD` | `SRM` | 0-16383 | Rate modulation amount |
-| `S.PITCHMOD` | `SPM` | 0-16383 | Pitch modulation amount |
+| `S.RATEMOD` | `SRM` | 0-16383 | Rate modulation amount (via modbus) |
+| `S.PITCHMOD` | `SPM` | 0-16383 | Pitch modulation amount (via modbus) |
+
+**Sampler Effects - Filter Modulation:**
+
+| Command | Alias | Range | Description |
+|---------|-------|-------|-------------|
+| `SF.CUTMOD` | `SFCM` | 0-16383 | Filter cutoff modulation (via modbus) |
+| `SF.RESMOD` | `SFQM` | 0-16383 | Filter resonance modulation (via modbus) |
 
 **Sampler Effects - Filter:**
 
@@ -1220,7 +1235,7 @@ SPECTRUM <0|1>    # Spectrum analyzer
 ACTIVITY <0|1>    # Script activity indicators
 GRID <0|1>        # Parameter activity grid
 GRID.DEF <0|1>    # Default view (0=REPL, 1=Grid)
-GRID.MODE <0-3>   # Grid display (0=Text, 1=Icons, 2=FX Viz, 3=Mixer)
+GRID.MODE <0-5>   # Grid display (0=Text, 1=Icons, 2=EQ/Comp, 3=Mixer, 4=FX, 5=Sampler)
 CPU <0|1>         # CPU meter in header
 BPM <0|1>         # BPM display in header
 ```
@@ -1245,6 +1260,7 @@ SCRMBL <0|1>      # Enable scramble animation
 SCRMBL.MODE <0-3> # 0=Regular, 1=Smash, 2=Roll, 3=Over
 SCRMBL.SPD <1-10> # Speed (1=slow, 10=fast)
 SCRMBL.CRV <0|1>  # Curve (0=linear, 1=settle)
+SCRMBL.GRID <0|1> # Grid scramble (independent of title)
 ```
 
 ### Header Verbosity
@@ -1384,6 +1400,7 @@ Notes are saved with scenes. 8 lines maximum.
 | `Alt+V` | Variables page |
 | `Alt+H` | Toggle help |
 | `Tab` | Live page: REPL/Grid toggle |
+| `Ctrl+G` | Cycle GRID.MODE 0-5 (Live page) |
 | `Ctrl+F` | Search mode |
 | `Ctrl+Up/Down` | Scroll REPL |
 | `Ctrl+D` | Duplicate line |
@@ -1718,7 +1735,7 @@ Notes are saved with scenes. 8 lines maximum.
 | `ACTIVITY <0\|1>` | Activity indicators |
 | `GRID <0\|1>` | Param grid |
 | `GRID.DEF <0\|1>` | Default view |
-| `GRID.MODE <0-3>` | Labels/Icons/FX Viz/Mixer |
+| `GRID.MODE <0-5>` | Text/Icons/EQ-Comp/Mixer/FX/Sampler |
 | `HL.SEQ <0\|1>` | SEQ highlighting |
 | `HL.COND <0\|1>` | Conditional highlighting |
 | `CPU <0\|1>` | CPU meter |
@@ -1729,6 +1746,7 @@ Notes are saved with scenes. 8 lines maximum.
 | `SCRMBL.MODE <0-3>` | Scramble style |
 | `SCRMBL.SPD <1-10>` | Scramble speed |
 | `SCRMBL.CRV <0\|1>` | Scramble curve |
+| `SCRMBL.GRID <0\|1>` / `SG` | Grid scramble toggle |
 | `HEADER [<0-4>]` | Header verbosity |
 | `DEBUG <0-5>` | Debug verbosity |
 | `OUT.ERR <0\|1>` | Override: errors |

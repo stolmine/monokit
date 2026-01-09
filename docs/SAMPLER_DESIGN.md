@@ -267,14 +267,6 @@ Uses ADSR envelope with variable sustain level for gate mode support.
 - S.SUST=0: envelope decays immediately after attack (percussive)
 - S.SUST=1: envelope holds at sustain level until gate released
 
-#### Output Parameters
-
-| Command | Alias | Range | Description | Status |
-|---------|-------|-------|-------------|--------|
-| S.VOL | SV | 0-16383 | Sample volume | **WORKING** |
-| S.PAN | SP | -8192 to 8191 | Pan position (0=center) | **WORKING** |
-| S.FX | SFX | 0/1 | FX routing (0=bypass spatial FX, 1=full chain) | **WORKING** |
-
 #### Modulation Parameters
 
 | Command | Alias | Range | Description | Status |
@@ -291,7 +283,6 @@ Uses ADSR envelope with variable sustain level for gate mode support.
 | Pitch | S.RATE, S.PITCH, S.FINE |
 | Playback | S.DIR, S.LOOP, S.START, S.LEN |
 | Envelope | S.ATK, S.DEC, S.REL, S.SUST |
-| Output | S.VOL, S.PAN, S.FX |
 | Modulation | S.RATEMOD, S.PITCHMOD |
 | Selection | STR (slot), S.SLICE/S.ONSET |
 
@@ -310,9 +301,7 @@ Sample Playback
     ↓
 [Sampler Filter] ──── independent LP/HP/BP (post-crush filtering)
     ↓
-S.VOL / S.PAN
-    ↓
-→ Main Mix (uses global DLY/REV/CL for spatial FX)
+VOL.SMP/PAN.SMP → Main Mix (with HD2/Plaits)
 ```
 
 **Rationale:** Filter after bit crush allows smoothing crushed artifacts or emphasizing harmonics created by decimation. Spatial effects (delay, reverb, clouds) use existing global FX chain.

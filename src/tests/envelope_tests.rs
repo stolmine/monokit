@@ -65,7 +65,6 @@ fn test_alias_resolution_sampler() {
     assert_eq!(resolve_alias("SFN"), "S.FINE");
     assert_eq!(resolve_alias("SD"), "S.DIR");
     assert_eq!(resolve_alias("SL"), "S.LOOP");
-    assert_eq!(resolve_alias("SV"), "S.VOL");
 }
 
 #[test]

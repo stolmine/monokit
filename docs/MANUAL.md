@@ -458,13 +458,6 @@ The sampler provides two loading modes: **KIT mode** (directory of one-shot samp
 | `S.REL` | `SRE` | 0-16383 | Release time (ms) |
 | `S.SUST` | `SSU` | 0\|1 | Sustain mode (0=one-shot, 1=gate) |
 
-**Output:**
-
-| Command | Alias | Range | Description |
-|---------|-------|-------|-------------|
-| `S.VOL` | `SV` | 0-16383 | Sample volume |
-| `S.PAN` | `SP` | -8192 to 8192 | Stereo pan (0=center) |
-
 **Modulation:**
 
 | Command | Alias | Range | Description |

@@ -513,7 +513,6 @@ pub fn handle_sample_index(
 | S.RATE <n> | 0.1-4.0 | Playback rate |
 | S.DIR <n> | -1/1 | Direction (fwd/rev) |
 | S.LOOP <n> | 0/1 | Loop mode |
-| S.VOL <n> | 0-16383 | Sample volume |
 
 ---
 

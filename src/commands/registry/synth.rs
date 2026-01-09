@@ -41,7 +41,6 @@ pub fn register_synth(m: &mut std::collections::HashMap<&'static str, CommandDef
     m.insert("ENV.ATK", CommandDef::new("ENV.ATK", None, ArgCount::Exactly(1), "Global envelope attack"));
     m.insert("ENV.DEC", CommandDef::new("ENV.DEC", None, ArgCount::Exactly(1), "Global envelope decay"));
     m.insert("ENV.CRV", CommandDef::new("ENV.CRV", None, ArgCount::Exactly(1), "Global envelope curve"));
-    m.insert("ENV.MODE", CommandDef::new("ENV.MODE", None, ArgCount::Exactly(1), "Global envelope mode"));
 
     // Envelopes - Decay
     m.insert("AD", CommandDef::new("AD", Some("AENV.DEC"), ArgCount::AtLeast(1), "Amplitude env decay"));

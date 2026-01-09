@@ -61,8 +61,4 @@ pub fn register_ui(m: &mut std::collections::HashMap<&'static str, CommandDef>) 
     m.insert("SCRMBL.MODE", CommandDef::new("SCRMBL.MODE", None, ArgCount::Range(0, 1), "Scramble mode"));
     m.insert("SCRMBL.SPD", CommandDef::new("SCRMBL.SPD", None, ArgCount::Range(0, 1), "Scramble speed"));
     m.insert("SCRMBL.CRV", CommandDef::new("SCRMBL.CRV", None, ArgCount::Range(0, 1), "Scramble curve"));
-
-    // Confirmation
-    m.insert("CFM.QUIT", CommandDef::new("CFM.QUIT", None, ArgCount::Range(0, 1), "Confirm quit if unsaved"));
-    m.insert("CFM.SAVE", CommandDef::new("CFM.SAVE", None, ArgCount::Range(0, 1), "Confirm overwrite scene"));
 }

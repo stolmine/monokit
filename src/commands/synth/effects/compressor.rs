@@ -4,50 +4,14 @@ use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
 
-use super::super::common::{define_float_param, define_int_param, define_int_param_ms};
+use super::super::common::{define_float_param, define_fx_mix_param, define_int_param, define_int_param_ms};
 
 define_int_param!(handle_ct, "ct", 0, 16383, "CT", "COMPRESSOR THRESHOLD", "Failed to parse compressor threshold");
 define_float_param!(handle_cr, "cr", 1.0, 20.0, "CR", "COMPRESSOR RATIO", "Failed to parse compressor ratio", "");
 define_int_param_ms!(handle_ca, "ca", 1, 500, "CA", "COMPRESSOR ATTACK", "Failed to parse compressor attack");
 define_int_param_ms!(handle_cl, "cl", 10, 2000, "CL", "COMPRESSOR RELEASE", "Failed to parse compressor release");
 define_int_param!(handle_cm, "cm", 0, 16383, "CM", "COMPRESSOR MAKEUP GAIN", "Failed to parse compressor makeup gain");
-
-pub fn handle_cr_mix<F>(
-    parts: &[&str],
-    variables: &Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &ScriptStorage,
-    script_index: usize,
-    metro_tx: &Sender<MetroCommand>,
-    debug_level: u8,
-    scale: &ScaleState,
-    out_cfm: bool,
-    fx_mix_state: &mut FxMixState,
-    mut output: F,
-) -> Result<()>
-where
-    F: FnMut(String),
-{
-    if parts.len() < 2 {
-        anyhow::bail!("CR.MIX requires a value");
-    }
-
-    let value: i32 = if let Some((v, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-        v as i32
-    } else {
-        parts[1].parse().context("Failed to parse compressor dry/wet mix")?
-    };
-
-    let clamped = value.clamp(0, 16383);
-    fx_mix_state.comp_mix = clamped;
-    metro_tx.send(MetroCommand::SendParam("cr_mix".to_string(), OscType::Int(clamped)))?;
-
-    if debug_level >= TIER_CONFIRMS || out_cfm {
-        output(format!("SET COMPRESSOR DRY/WET MIX TO {}", clamped));
-    }
-    Ok(())
-}
+define_fx_mix_param!(handle_cr_mix, "cr_mix", comp_mix, "SET COMPRESSOR DRY/WET MIX TO {}");
 
 pub fn handle_comp_auto<F>(
     parts: &[&str],

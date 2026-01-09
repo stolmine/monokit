@@ -461,8 +461,50 @@ macro_rules! define_plaits_param {
     };
 }
 
+macro_rules! define_fx_mix_param {
+    ($fn_name:ident, $osc_param:expr, $state_field:ident, $display_msg:expr) => {
+        pub fn $fn_name<F>(
+            parts: &[&str],
+            variables: &Variables,
+            patterns: &mut PatternStorage,
+            counters: &mut Counters,
+            scripts: &ScriptStorage,
+            script_index: usize,
+            metro_tx: &Sender<MetroCommand>,
+            debug_level: u8,
+            scale: &ScaleState,
+            out_cfm: bool,
+            fx_mix_state: &mut crate::types::FxMixState,
+            mut output: F,
+        ) -> Result<()>
+        where
+            F: FnMut(String),
+        {
+            if parts.len() < 2 {
+                anyhow::bail!(concat!(stringify!($osc_param), " requires a value"));
+            }
+
+            let value: i32 = if let Some((v, _)) = eval_expression(parts, 1, variables, patterns, counters, scripts, script_index, scale) {
+                v as i32
+            } else {
+                parts[1].parse().context(concat!("Failed to parse ", stringify!($osc_param)))?
+            };
+
+            let clamped = value.clamp(0, 16383);
+            fx_mix_state.$state_field = clamped;
+            metro_tx.send(MetroCommand::SendParam($osc_param.to_string(), OscType::Int(clamped)))?;
+
+            if debug_level >= TIER_CONFIRMS || out_cfm {
+                output(format!($display_msg, clamped));
+            }
+            Ok(())
+        }
+    };
+}
+
 pub(crate) use define_bool_param;
 pub(crate) use define_float_param;
+pub(crate) use define_fx_mix_param;
 pub(crate) use define_int_param;
 pub(crate) use define_int_param_ms;
 pub(crate) use define_mode_param;

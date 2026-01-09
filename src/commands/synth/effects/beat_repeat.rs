@@ -4,6 +4,10 @@ use anyhow::{Context, Result};
 use rosc::OscType;
 use std::sync::mpsc::Sender;
 
+use super::super::common::define_fx_mix_param;
+
+define_fx_mix_param!(handle_br_mix, "br_mix", beat_rep_mix, "SET BEAT REPEAT MIX TO {}");
+
 pub fn handle_br_len<F>(
     parts: &[&str],
     metro_interval: u64,
@@ -137,44 +141,4 @@ where
     Ok(())
 }
 
-pub fn handle_br_mix<F>(
-    parts: &[&str],
-    variables: &Variables,
-    patterns: &mut PatternStorage,
-    counters: &mut Counters,
-    scripts: &ScriptStorage,
-    script_index: usize,
-    metro_tx: &Sender<MetroCommand>,
-    debug_level: u8,
-    scale: &ScaleState,
-    out_cfm: bool,
-    fx_mix_state: &mut FxMixState,
-    mut output: F,
-) -> Result<()>
-where
-    F: FnMut(String),
-{
-    if parts.len() < 2 {
-        output("BR.MIX: REQUIRES VALUE".to_string());
-        return Ok(());
-    }
-    let value: i32 = if let Some((expr_val, _)) = eval_expression(&parts, 1, variables, patterns, counters, scripts, script_index, scale) {
-        expr_val as i32
-    } else {
-        parts[1]
-            .parse()
-            .context("Failed to parse beat repeat mix")?
-    };
-    let clipped = value.clamp(0, 16383);
-
-    fx_mix_state.beat_rep_mix = clipped;
-
-    metro_tx
-        .send(MetroCommand::SendParam("br_mix".to_string(), OscType::Int(clipped)))
-        .context("Failed to send param to metro thread")?;
-    if debug_level >= TIER_CONFIRMS || out_cfm {
-        output(format!("SET BEAT REPEAT MIX TO {}", clipped));
-    }
-    Ok(())
-}
 

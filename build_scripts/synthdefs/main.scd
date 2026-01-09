@@ -110,8 +110,7 @@ SynthDef(\monokit_main, {
         mute_osc = 0,
         mute_pla = 0,
         mute_nos = 0,
-        mute_smp = 0,
-        s_fx = 0;    // 0=bypass spatial FX, 1=full chain
+        mute_smp = 0;
 
     var trig, ampEnv, dcEnv, filterEnv, modBusEnv;
     var modBusValue, dcAmount, mvSmooth;
@@ -122,7 +121,6 @@ SynthDef(\monokit_main, {
     var oscMuted, plaMuted, nosMuted, smpMuted;
     var primaryL, primaryR, noiseL, noiseR, plaitsMainL, plaitsMainR, plaitsAuxL, plaitsAuxR;
     var samplerL, samplerR;
-    var samplerFxMode;
     var filterCutoff, filterQ;
     var resonatorFreq, resonatorDelay, resonatorDecay, resonatorMix, resonated;
     var delayTime, delayFeedback, delayWet, sigL, sigR, delayedL, delayedR;
@@ -219,8 +217,6 @@ SynthDef(\monokit_main, {
     plaPan = (pan_pla / 8192).clip(-1, 1);
     nosPan = (pan_nos / 8192).clip(-1, 1);
     smpPan = (pan_smp / 8192).clip(-1, 1);
-
-    samplerFxMode = s_fx.clip(0, 1).round;
 
     sig = (primaryIn * oscVol) + (modIn * mvSmooth * oscVol);
 
@@ -326,68 +322,18 @@ SynthDef(\monokit_main, {
     SendPeakRMS.kr(samplerL, 20, 3, '/monokit/voice_smp', 1);
     SendPeakRMS.kr(samplerR, 20, 3, '/monokit/voice_smp', 2);
 
-    sigL = (primaryL + noiseL + plaitsMainL + plaitsAuxL + Select.ar(samplerFxMode, [DC.ar(0), samplerL])) * 0.5;
-    sigR = (primaryR + noiseR + plaitsMainR + plaitsAuxR + Select.ar(samplerFxMode, [DC.ar(0), samplerR])) * 0.5;
+    sigL = (primaryL + noiseL + plaitsMainL + plaitsAuxL + samplerL) * 0.5;
+    sigR = (primaryR + noiseR + plaitsMainR + plaitsAuxR + samplerR) * 0.5;
 
-    compThresh = (ctSmooth / 16383).clip(0.001, 1);
-    compRatio = 1 / cr.clip(1, 20);
-
-    drySig = (sigL + sigR) * 0.5;
-    wetSig = Compander.ar([sigL, sigR], drySig,
-        thresh: compThresh,
-        slopeBelow: 1,
-        slopeAbove: compRatio,
-        clampTime: ca / 1000,
-        relaxTime: cl / 1000
-    );
-
-    // Metering: match compressor time constants for accurate, responsive display
-    compInputLevel = Amplitude.kr(drySig, ca / 1000, cl / 1000);
-    compOutputLevel = Amplitude.kr((wetSig[0] + wetSig[1]) * 0.5, ca / 1000, cl / 1000);
-    gainReductionDb = (compOutputLevel / compInputLevel.max(0.0001)).max(0.0001).ampdb.max(-40).min(0);
-
-    // Auto makeup: static formula based on threshold/ratio (no feedback loop)
-    // Formula: makeup = (1/thresh)^(1-ratio) approximates ideal makeup for 0dB input
-    autoMakeup = Select.kr(cr_auto, [
-        1 + (cmSmooth / 16383 * 2),
-        (1 / compThresh.max(0.001)).pow(1 - compRatio).clip(1, 4)
-    ]);
-    wetSig = wetSig * autoMakeup;
-
-    compFinalLevel = Amplitude.kr((wetSig[0] + wetSig[1]) * 0.5, ca / 1000, cl / 1000);
-
-    compMixAmt = Lag.kr(cr_mix / 16383, 0.01);
-    sigL = XFade2.ar(sigL, wetSig[0], compMixAmt * 2 - 1);
-    sigR = XFade2.ar(sigR, wetSig[1], compMixAmt * 2 - 1);
-
-    SendReply.kr(Impulse.kr(20), '/monokit/comp', [compInputLevel, compFinalLevel, gainReductionDb]);
+    sigL = BLowShelf.ar(sigL, 200, 1, elSmooth.clip(-24, 24));
+    sigL = BPeakEQ.ar(sigL, efSmooth.clip(200, 8000), (1/eq.clip(0.1, 10)), emSmooth.clip(-24, 24));
+    sigL = BHiShelf.ar(sigL, 4000, 1, ehSmooth.clip(-24, 24));
+    sigR = BLowShelf.ar(sigR, 200, 1, elSmooth.clip(-24, 24));
+    sigR = BPeakEQ.ar(sigR, efSmooth.clip(200, 8000), (1/eq.clip(0.1, 10)), emSmooth.clip(-24, 24));
+    sigR = BHiShelf.ar(sigR, 4000, 1, ehSmooth.clip(-24, 24));
 
     panPos = (panSmooth / 16383).clip(-1, 1);
     #sigL, sigR = Balance2.ar(sigL, sigR, panPos);
-
-    cloudsWet = Lag.kr(cl_wet / 16383, 0.01);
-    cloudsActive = cloudsWet > 0;
-
-    #cloudsProcessedL, cloudsProcessedR = MiClouds.ar(
-        [sigL, sigR],
-        pit: (cl_pitch / 16383).clip(0, 1),
-        pos: (cl_pos / 16383).clip(0, 1),
-        size: (cl_size / 16383).clip(0, 1),
-        dens: (cl_dens / 16383).clip(0, 1),
-        tex: (cl_tex / 16383).clip(0, 1),
-        drywet: cloudsWet,
-        in_gain: (cl_gain / 16383).clip(0, 2),
-        spread: (cl_spread / 16383).clip(0, 1),
-        rvb: (cl_rvb / 16383).clip(0, 1),
-        fb: (cl_fb / 16383).clip(0, 1),
-        freeze: cl_freeze.clip(0, 1),
-        mode: cl_mode.clip(0, 3).round,
-        lofi: (cl_lofi / 16383).clip(0, 1),
-        trig: t_cl_trig
-    );
-
-    sigL = Select.ar(cloudsActive, [sigL, cloudsProcessedL * 3]);
-    sigR = Select.ar(cloudsActive, [sigR, cloudsProcessedR * 3]);
 
     brActive = Lag.kr(br_mix > 0, 0.01);
     brLoopLen = br_len_ms / 1000;
@@ -472,6 +418,30 @@ SynthDef(\monokit_main, {
         sigR + (psShifted[1] * psMix)
     ]);
 
+    cloudsWet = Lag.kr(cl_wet / 16383, 0.01);
+    cloudsActive = cloudsWet > 0;
+
+    #cloudsProcessedL, cloudsProcessedR = MiClouds.ar(
+        [sigL, sigR],
+        pit: (cl_pitch / 16383).clip(0, 1),
+        pos: (cl_pos / 16383).clip(0, 1),
+        size: (cl_size / 16383).clip(0, 1),
+        dens: (cl_dens / 16383).clip(0, 1),
+        tex: (cl_tex / 16383).clip(0, 1),
+        drywet: cloudsWet,
+        in_gain: (cl_gain / 16383).clip(0, 2),
+        spread: (cl_spread / 16383).clip(0, 1),
+        rvb: (cl_rvb / 16383).clip(0, 1),
+        fb: (cl_fb / 16383).clip(0, 1),
+        freeze: cl_freeze.clip(0, 1),
+        mode: cl_mode.clip(0, 3).round,
+        lofi: (cl_lofi / 16383).clip(0, 1),
+        trig: t_cl_trig
+    );
+
+    sigL = Select.ar(cloudsActive, [sigL, cloudsProcessedL * 3]);
+    sigR = Select.ar(cloudsActive, [sigR, cloudsProcessedR * 3]);
+
     dmodeSmooth = Lag.kr(dmode, 0.02);
     delayWetSmooth = Lag.kr(dwSmooth / 16383, 0.01);
     delayTime = (dtSmooth / 1000).clip(0.001, 2.0);
@@ -504,12 +474,38 @@ SynthDef(\monokit_main, {
         sigR + (delayedR * Select.kr(dtail.clip(0, 2).round, [delayWetSmooth, 1, 1]))
     ]);
 
-    sigL = BLowShelf.ar(sigL, 200, 1, elSmooth.clip(-24, 24));
-    sigL = BPeakEQ.ar(sigL, efSmooth.clip(200, 8000), (1/eq.clip(0.1, 10)), emSmooth.clip(-24, 24));
-    sigL = BHiShelf.ar(sigL, 4000, 1, ehSmooth.clip(-24, 24));
-    sigR = BLowShelf.ar(sigR, 200, 1, elSmooth.clip(-24, 24));
-    sigR = BPeakEQ.ar(sigR, efSmooth.clip(200, 8000), (1/eq.clip(0.1, 10)), emSmooth.clip(-24, 24));
-    sigR = BHiShelf.ar(sigR, 4000, 1, ehSmooth.clip(-24, 24));
+    compThresh = (ctSmooth / 16383).clip(0.001, 1);
+    compRatio = 1 / cr.clip(1, 20);
+
+    drySig = (sigL + sigR) * 0.5;
+    wetSig = Compander.ar([sigL, sigR], drySig,
+        thresh: compThresh,
+        slopeBelow: 1,
+        slopeAbove: compRatio,
+        clampTime: ca / 1000,
+        relaxTime: cl / 1000
+    );
+
+    // Metering: match compressor time constants for accurate, responsive display
+    compInputLevel = Amplitude.kr(drySig, ca / 1000, cl / 1000);
+    compOutputLevel = Amplitude.kr((wetSig[0] + wetSig[1]) * 0.5, ca / 1000, cl / 1000);
+    gainReductionDb = (compOutputLevel / compInputLevel.max(0.0001)).max(0.0001).ampdb.max(-40).min(0);
+
+    // Auto makeup: static formula based on threshold/ratio (no feedback loop)
+    // Formula: makeup = (1/thresh)^(1-ratio) approximates ideal makeup for 0dB input
+    autoMakeup = Select.kr(cr_auto, [
+        1 + (cmSmooth / 16383 * 2),
+        (1 / compThresh.max(0.001)).pow(1 - compRatio).clip(1, 4)
+    ]);
+    wetSig = wetSig * autoMakeup;
+
+    compFinalLevel = Amplitude.kr((wetSig[0] + wetSig[1]) * 0.5, ca / 1000, cl / 1000);
+
+    compMixAmt = Lag.kr(cr_mix / 16383, 0.01);
+    sigL = XFade2.ar(sigL, wetSig[0], compMixAmt * 2 - 1);
+    sigR = XFade2.ar(sigR, wetSig[1], compMixAmt * 2 - 1);
+
+    SendReply.kr(Impulse.kr(20), '/monokit/comp', [compInputLevel, compFinalLevel, gainReductionDb]);
 
     rmodeSmooth = Lag.kr(rmode, 0.02);
     reverbWetSmooth = Lag.kr(rwSmooth / 16383, 0.01);
@@ -545,10 +541,6 @@ SynthDef(\monokit_main, {
         (sigR * (1 - reverbWetSmooth)) + (reverbedR * reverbWetSmooth),
         sigR + (reverbedR * Select.kr(rtail.clip(0, 2).round, [reverbWetSmooth, 1, 1]))
     ]);
-
-    // S.FX bypass: add sampler when s_fx=0
-    sigL = sigL + Select.ar(samplerFxMode, [samplerL, DC.ar(0)]);
-    sigR = sigR + Select.ar(samplerFxMode, [samplerR, DC.ar(0)]);
 
     #sigL, sigR = Select.ar(limit.clip(0, 1).round, [
         [sigL, sigR],

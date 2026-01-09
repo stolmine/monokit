@@ -467,7 +467,6 @@ The sampler provides two loading modes: **KIT mode** (directory of one-shot samp
 |---------|-------|-------|-------------|
 | `S.VOL` | `SV` | 0-16383 | Sample volume |
 | `S.PAN` | `SP` | -8192 to 8192 | Stereo pan (0=center) |
-| `S.FX` | `SFX` | 0\|1 | FX routing (0=bypass spatial FX, 1=full chain) |
 
 **Modulation:**
 

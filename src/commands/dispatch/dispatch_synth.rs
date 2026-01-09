@@ -159,7 +159,6 @@ where
         "S.DEC" | "SDC" => Some(synth_params::handle_s_dec(parts, variables, patterns, counters, scripts, script_index, metro_tx, debug_level, scale, &mut *ctx.sampler_state, out_cfm, output).map(|_| vec![])),
         "S.REL" | "SRE" => Some(synth_params::handle_s_rel(parts, variables, patterns, counters, scripts, script_index, metro_tx, debug_level, scale, &mut *ctx.sampler_state, out_cfm, output).map(|_| vec![])),
         "S.SUST" | "SSU" => Some(synth_params::handle_s_sust(parts, variables, patterns, counters, scripts, script_index, metro_tx, debug_level, scale, &mut *ctx.sampler_state, out_cfm, output).map(|_| vec![])),
-        "S.FX" | "SFX" => Some(synth_params::handle_s_fx(parts, variables, patterns, counters, scripts, script_index, metro_tx, debug_level, scale, &mut *ctx.sampler_state, out_cfm, output).map(|_| vec![])),
         "S.RATEMOD" | "SRM" => Some(synth_params::handle_s_ratemod(parts, variables, patterns, counters, scripts, script_index, metro_tx, debug_level, scale, &mut *ctx.sampler_state, out_cfm, output).map(|_| vec![])),
         "S.PITCHMOD" | "SPM" => Some(synth_params::handle_s_pitchmod(parts, variables, patterns, counters, scripts, script_index, metro_tx, debug_level, scale, &mut *ctx.sampler_state, out_cfm, output).map(|_| vec![])),
         "SF.CUT" | "SFC" => Some(synth_params::handle_sf_cut(parts, variables, patterns, counters, scripts, script_index, metro_tx, debug_level, scale, &mut *ctx.sampler_state, out_cfm, output).map(|_| vec![])),

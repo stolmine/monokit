@@ -198,8 +198,6 @@ pub const SAMPLER: HelpCategory = HelpCategory {
         "# SAMPLER OUTPUT",
         "  VOL.SMP / VS <0-16383> VOLUME (MIXER)",
         "  PAN.SMP / PS <-8K-8K>  PAN (MIXER)",
-        "  S.FX / SFX <0-1>       FX ROUTE",
-        "    0=BYPASS SPATIAL  1=FULL CHAIN",
         "",
         "# SAMPLER MODULATION (MODBUS)",
         "  S.RATEMOD / SRM <0-16383> RATE MOD",

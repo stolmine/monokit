@@ -135,18 +135,6 @@ define_sampler_playback_param!(
 );
 
 define_sampler_playback_param!(
-    handle_s_fx,
-    "s_fx",
-    0,
-    1,
-    fx_routing,
-    u8,
-    "S.FX",
-    "SAMPLER FX ROUTING",
-    "Failed to parse sample fx routing"
-);
-
-define_sampler_playback_param!(
     handle_s_ratemod,
     "s_ratemod",
     0,

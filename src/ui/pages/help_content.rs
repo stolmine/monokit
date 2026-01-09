@@ -498,8 +498,6 @@ pub const HELP_LINES: &[&str] = &[
     "# SAMPLER OUTPUT",
     "  VOL.SMP / VS <0-16383> VOLUME (MIXER)",
     "  PAN.SMP / PS <-8K-8K>  PAN (MIXER)",
-    "  S.FX / SFX <0-2>       FX ROUTE",
-    "    0=DRY 1=POST-FILT 2=POST-ALL",
     "",
     "# SAMPLER MODULATION",
     "  S.RATEMOD / SRM <0-16383> RATE MOD",

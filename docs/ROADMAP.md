@@ -18,6 +18,9 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 | Sampler MiRings Resonator | Medium | **DONE** |
 | Sampler Filter Types (14) | Low | **DONE** |
 | MiRings OSC Routing Fix | Low | **DONE** |
+| FX Chain Reorder | Medium | **DONE** |
+
+**FX Chain Reorder** - Major refactor of signal chain order. New order: Mix → EQ → Pan → Pitch Shift → Beat Repeat → Clouds → Delay → Comp → Reverb. Comp now comes after delay (tames dynamics after creative FX). Removed S.FX command - sampler now always goes through full chain like all other sources.
 
 **Sampler MiRings Resonator** - Replaced glitch effect with MiRings physical modeling resonator. Samples act as exciters for modal/string/FM resonance. 7 parameters (SRINGS.*/SRR*): pitch, structure, brightness, damping, position, model (0-5), wet mix. Signal flow: Sample → Decimator → Filter → MiRings → Mix.
 

@@ -24,6 +24,7 @@ Hopefully it shows!
 - **Complex oscillator voice** - dual oscillators with selectable waveforms + white/pink/brown noise, independent volume per source
 - **Extensive modulation routing** - mod osc → primary freq/mod freq/filter cutoff/filter Q/discontinuity/VCA; noise → primary FM/mod FM
 - **Plaits macro oscillator** - 16 synthesis engines (VA, FM, wavetable, granular, percussion, physical modeling)
+- **Sampler** - Kit/slice modes with dynamic and instant file handling, 14-type filter, decimator, MiRings resonator (samples excite MiRings as a resonator)
 - **Full effects chain** - 14-type multimode filter, comb resonator, ring mod, lo-fi (bit/sample rate), compressor, beat repeat, pitch shift, stereo delay, 3-band EQ, plate reverb (Plaits is inserted after main voice VCA and is not affected by filter, resonator, ring mod, or lof) + an implementation of Clouds
 - **97 real-time parameters** - All instantly controllable via terse commands
 - **Per-stage envelopes** - Amp, pitch, FM, discontinuity, feedback, filter, noise, modbus - most with independent attack, decay, and curve
@@ -126,7 +127,7 @@ Heavily inspired by the wonderful [monome Teletype](https://monome.org/docs/tele
 
 And the Industrial Music Electronics [Hertz Donut mk2](https://modulargrid.net/e/industrial-music-electronics-hertz-donut-mk-ii)
 
-Includes [Plaits](https://pichenettes.github.io/mutable-instruments-documentation/modules/plaits/)  and [Clouds](https://pichenettes.github.io/mutable-instruments-documentation/modules/clouds/) by Émilie Gillet, praise be!
+Includes [Plaits](https://pichenettes.github.io/mutable-instruments-documentation/modules/plaits/), [Clouds](https://pichenettes.github.io/mutable-instruments-documentation/modules/clouds/), and [Rings](https://pichenettes.github.io/mutable-instruments-documentation/modules/rings/) by Émilie Gillet, praise be! SuperCollider ports via [mi-UGens](https://github.com/v7b1/mi-UGens) by Volker Böhm.
 
 Made possible with binaries and sound engine from [SuperCollider](https://supercollider.github.io/)
 

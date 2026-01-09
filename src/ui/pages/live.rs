@@ -240,6 +240,7 @@ fn render_fx_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>) {
         0 => {
             let lfi_pct = (app.fx_mix_state.lofi_mix as f32 / 16383.0 * 100.0).round() as i32;
             let rng_pct = (app.fx_mix_state.ring_mix as f32 / 16383.0 * 100.0).round() as i32;
+            let srg_pct = (app.sampler_state.fx.rings_wet as f32 / 16383.0 * 100.0).round() as i32;
 
             spans.push(Span::styled("LFI", Style::default().fg(app.theme.foreground)));
             spans.push(Span::raw(" "));
@@ -249,7 +250,12 @@ fn render_fx_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>) {
             spans.push(Span::styled("RNG", Style::default().fg(app.theme.foreground)));
             spans.push(Span::raw(" "));
             spans.push(Span::styled(format!("{:>3}", rng_pct), Style::default().fg(app.theme.success)));
-            spans.push(Span::raw("          "));
+            spans.push(Span::raw("  "));
+
+            spans.push(Span::styled("SRG", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::raw(" "));
+            spans.push(Span::styled(format!("{:>3}", srg_pct), Style::default().fg(app.theme.success)));
+            spans.push(Span::raw("     "));
         }
         1 => {
             let cmp_pct = (app.fx_mix_state.comp_mix as f32 / 16383.0 * 100.0).round() as i32;
@@ -293,16 +299,16 @@ fn render_fx_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static>>) {
         }
         3 => {
             let dec_pct = (app.sampler_state.fx.deci_mix as f32 / 16383.0 * 100.0).round() as i32;
-            let rng_wet = (app.sampler_state.fx.rings_wet as f32 / 16383.0 * 100.0).round() as i32;
+            let sfc_pct = (app.sampler_state.fx.filter_cut as f32 / 16383.0 * 100.0).round() as i32;
 
             spans.push(Span::styled("DEC", Style::default().fg(app.theme.foreground)));
             spans.push(Span::raw(" "));
             spans.push(Span::styled(format!("{:>3}", dec_pct), Style::default().fg(app.theme.success)));
             spans.push(Span::raw("  "));
 
-            spans.push(Span::styled("RNG", Style::default().fg(app.theme.foreground)));
+            spans.push(Span::styled("SFC", Style::default().fg(app.theme.foreground)));
             spans.push(Span::raw(" "));
-            spans.push(Span::styled(format!("{:>3}", rng_wet), Style::default().fg(app.theme.success)));
+            spans.push(Span::styled(format!("{:>3}", sfc_pct), Style::default().fg(app.theme.success)));
             spans.push(Span::raw("              "));
         }
         4 => {

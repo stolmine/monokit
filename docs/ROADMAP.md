@@ -41,6 +41,8 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **Slew Coverage Expansion** [Low] - Extend SLEW to all continuous voice parameters (currently 30/88)
 - **Envelope Parameter Consistency** [Low] - Sampler uses 0-16383 mapped to ms, HD2 uses raw ms directly; standardize approach across all voices for consistent UX
 - **P.CLR Pattern Clear Command** [Low] - Clear all values in working pattern to 0; reset pattern to empty state
+- **Sampler Grid Filter Type Display** [Low] - Change TYP field in GRID.MODE 5 to show numerical designation (0-13) instead of verbose name; current text protrudes left of grid
+- **Unicode Spinner Animation** [Low] - Decorative spinner using U+2259–U+229D chars; unclear where fits given instant operations; purely cosmetic
 
 ### P2 - Bug Fixes & Stability
 - ~~**Confirmation Dialog Styling Bug**~~ ✅ FIXED - Added Clear widget before dialog render

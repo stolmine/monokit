@@ -672,22 +672,37 @@ impl ScsynthDirect {
         socket.set_read_timeout(Some(Duration::from_secs(5)))
             .map_err(|e| format!("Failed to set socket timeout: {}", e))?;
 
-        // 1. Allocate buffer (bufnum=99, numFrames=65536, numChannels=2)
+        // 1. Allocate buffer (bufnum=99, numFrames=16384, numChannels=2)
         Self::send_osc_message_static(
             &socket,
             "/b_alloc",
             vec![
                 OscType::Int(99),
-                OscType::Int(65536),
+                OscType::Int(16384),
                 OscType::Int(2),
             ],
         )?;
 
-        // Wait for buffer allocation to complete (increased from 100ms)
-        thread::sleep(Duration::from_millis(200));
+        thread::sleep(Duration::from_millis(50));
 
-        // 2. Open file for streaming recording via DiskOut
-        // /b_write with leaveOpen=1 opens file for continuous writes by DiskOut UGen
+        // 2. Create recorder synth FIRST - starts filling buffer with real audio
+        Self::send_osc_message_static(
+            &socket,
+            "/s_new",
+            vec![
+                OscType::String("monokit_recorder".to_string()),
+                OscType::Int(2000),
+                OscType::Int(1),  // addAction=1 (addToTail)
+                OscType::Int(0),  // targetID=0 (default group)
+                OscType::String("bufnum".to_string()),
+                OscType::Int(99),
+            ],
+        )?;
+
+        // 3. Wait for buffer to fill with real audio (~370ms for 16384 frames @ 44.1kHz)
+        thread::sleep(Duration::from_millis(400));
+
+        // 4. NOW open file - buffer already contains real audio, no silence
         Self::send_osc_message_static(
             &socket,
             "/b_write",
@@ -699,23 +714,6 @@ impl ScsynthDirect {
                 OscType::Int(-1),                           // numFrames (-1 = all)
                 OscType::Int(0),                            // startFrame
                 OscType::Int(1),                            // leaveOpen = 1 for DiskOut
-            ],
-        )?;
-
-        // Wait for file to be opened (increased from 100ms)
-        thread::sleep(Duration::from_millis(200));
-
-        // 3. Create recorder synth (/s_new "monokit_recorder", nodeID=2000, addAction=1, targetID=0)
-        Self::send_osc_message_static(
-            &socket,
-            "/s_new",
-            vec![
-                OscType::String("monokit_recorder".to_string()),
-                OscType::Int(2000),
-                OscType::Int(1),  // addAction=1 (addToTail)
-                OscType::Int(0),  // targetID=0 (default group)
-                OscType::String("bufnum".to_string()),
-                OscType::Int(99),
             ],
         )?;
 

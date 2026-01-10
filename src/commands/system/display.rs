@@ -436,3 +436,34 @@ define_enum_select!(
     (4, "FX VIZ 2"),
     (5, "SAMPLER"),
 );
+
+pub fn handle_rec_spinner<F>(
+    parts: &[&str],
+    rec_spinner_type: &mut usize,
+    debug_level: u8,
+    mut output: F,
+) where
+    F: FnMut(String),
+{
+    use crate::ui::header::{SPINNER_NAMES, SPINNER_OPTIONS};
+
+    if parts.len() == 1 {
+        // Query current spinner
+        let name = SPINNER_NAMES.get(*rec_spinner_type).unwrap_or(&"UNKNOWN");
+        if debug_level >= crate::types::TIER_QUERIES {
+            output(format!("REC.SPINNER: {} ({})", *rec_spinner_type, name));
+        }
+    } else if let Ok(val) = parts[1].parse::<usize>() {
+        if val < SPINNER_OPTIONS.len() {
+            *rec_spinner_type = val;
+            let name = SPINNER_NAMES.get(val).unwrap_or(&"UNKNOWN");
+            if debug_level >= crate::types::TIER_CONFIRMS {
+                output(format!("REC.SPINNER: {} ({})", val, name));
+            }
+        } else {
+            output(format!("ERROR: REC.SPINNER TAKES 0-{}", SPINNER_OPTIONS.len() - 1));
+        }
+    } else {
+        output(format!("ERROR: REC.SPINNER TAKES 0-{}", SPINNER_OPTIONS.len() - 1));
+    }
+}

@@ -2,6 +2,35 @@ use ratatui::{prelude::*, widgets::*};
 
 use crate::types::{MeterData, Page, NAVIGABLE_PAGES};
 
+/// Recording spinner options - cycles with metro beat
+pub const SPINNER_CIRCLED: &[char] = &['⊕', '⊖', '⊗', '⊘', '⊙', '⊚', '⊛', '⊜', '⊝'];
+pub const SPINNER_FILL: &[char] = &['○', '◔', '◑', '◕', '●', '◕', '◑', '◔'];
+pub const SPINNER_BREATHE: &[char] = &['▉', '▊', '▋', '▌', '▍', '▎', '▏', '▎', '▍', '▌', '▋', '▊', '▉'];
+pub const SPINNER_BRAILLE: &[char] = &['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+pub const SPINNER_DOT: &[char] = &['⠁', '⠂', '⠄', '⡀', '⢀', '⠠', '⠐', '⠈'];
+pub const SPINNER_STAR: &[char] = &['✶', '✸', '✹', '✺', '✹', '✸'];
+pub const SPINNER_HALF: &[char] = &['◐', '◓', '◑', '◒'];
+
+pub const SPINNER_OPTIONS: &[&[char]] = &[
+    SPINNER_CIRCLED,  // 0
+    SPINNER_FILL,     // 1
+    SPINNER_BREATHE,  // 2
+    SPINNER_BRAILLE,  // 3
+    SPINNER_DOT,      // 4
+    SPINNER_STAR,     // 5
+    SPINNER_HALF,     // 6
+];
+
+pub const SPINNER_NAMES: &[&str] = &[
+    "CIRCLED",   // 0
+    "FILL",      // 1
+    "BREATHE",   // 2
+    "BRAILLE",   // 3
+    "DOT",       // 4
+    "STAR",      // 5
+    "HALF",      // 6
+];
+
 fn render_meters(meter_data: &MeterData, theme: &crate::theme::Theme, ascii_mode: bool) -> Vec<Span<'static>> {
     let mut spans = Vec::new();
 
@@ -190,13 +219,26 @@ pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
 
     // Add REC indicator if recording
     if app.recording {
-        let duration = app.recording_start
-            .map(|start| start.elapsed().as_secs())
+        let elapsed_ms = app.recording_start
+            .map(|start| start.elapsed().as_millis() as u64)
             .unwrap_or(0);
-        let mins = duration / 60;
-        let secs = duration % 60;
+        let duration_secs = (elapsed_ms / 1000) as u64;
+        let mins = duration_secs / 60;
+        let secs = duration_secs % 60;
+
+        // Get metro interval for spinner sync
+        let interval_ms = app.metro_state
+            .try_lock()
+            .map(|m| m.interval_ms)
+            .unwrap_or(500);
+
+        // Calculate spinner frame synced to metro beat
+        let beat = elapsed_ms / interval_ms;
+        let spinner = SPINNER_OPTIONS.get(app.rec_spinner_type).unwrap_or(&SPINNER_CIRCLED);
+        let spinner_char = spinner[(beat % spinner.len() as u64) as usize];
+
         title_parts.push(Span::styled(
-            format!("● REC {:02}:{:02}", mins, secs),
+            format!("{} REC {:02}:{:02}", spinner_char, mins, secs),
             Style::default().fg(app.theme.error).add_modifier(Modifier::BOLD),
         ));
     }

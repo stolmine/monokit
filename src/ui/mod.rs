@@ -1,7 +1,7 @@
 pub mod braille;
 pub mod eq_curve;
 mod footer;
-mod header;
+pub mod header;
 pub mod pages;
 pub mod search;
 pub mod search_highlight;

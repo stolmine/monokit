@@ -72,6 +72,7 @@ impl App {
             show_grid_view: &mut self.show_grid_view,
             show_seq_highlight: &mut self.show_seq_highlight,
             grid_mode: &mut self.grid_mode,
+            rec_spinner_type: &mut self.rec_spinner_type,
             eq_state: &mut self.eq_state,
             mixer_data: &mut self.mixer_data,
             fx_mix_state: &mut self.fx_mix_state,

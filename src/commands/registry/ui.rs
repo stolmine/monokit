@@ -27,6 +27,9 @@ pub fn register_ui(m: &mut std::collections::HashMap<&'static str, CommandDef>) 
     m.insert("GRID.DEF", CommandDef::new("GRID.DEF", None, ArgCount::Range(0, 1), "Grid default view"));
     m.insert("GRID.MODE", CommandDef::new("GRID.MODE", None, ArgCount::Range(0, 1), "Grid mode"));
 
+    // Recording spinner
+    m.insert("REC.SPINNER", CommandDef::new("REC.SPINNER", None, ArgCount::Range(0, 1), "Recording spinner style"));
+
     // Highlighting
     m.insert("HL.COND", CommandDef::new("HL.COND", None, ArgCount::Range(0, 1), "Highlight conditionals"));
     m.insert("HL.SEQ", CommandDef::new("HL.SEQ", None, ArgCount::Range(0, 1), "Highlight sequences"));

@@ -45,6 +45,7 @@ where
     let show_grid_view = &mut *ctx.show_grid_view;
     let show_seq_highlight = &mut *ctx.show_seq_highlight;
     let grid_mode = &mut *ctx.grid_mode;
+    let rec_spinner_type = &mut *ctx.rec_spinner_type;
     let current_scene_name = &mut *ctx.current_scene_name;
     let title_mode = &mut *ctx.title_mode;
     let title_timer_enabled = &mut *ctx.title_timer_enabled;
@@ -265,6 +266,10 @@ where
         }
         "GRID.MODE" => {
             display::handle_grid_mode(parts, grid_mode, *debug_level, output);
+            Some(Ok(vec![]))
+        }
+        "REC.SPINNER" => {
+            display::handle_rec_spinner(parts, rec_spinner_type, *debug_level, output);
             Some(Ok(vec![]))
         }
         "TITLE" => {

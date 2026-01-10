@@ -44,6 +44,7 @@ pub struct ExecutionContext<'a> {
     pub show_grid_view: &'a mut bool,
     pub show_seq_highlight: &'a mut bool,
     pub grid_mode: &'a mut u8,
+    pub rec_spinner_type: &'a mut usize,
     pub eq_state: &'a mut EqState,
     pub mixer_data: &'a mut MixerData,
     pub fx_mix_state: &'a mut FxMixState,

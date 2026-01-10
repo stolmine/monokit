@@ -9,107 +9,9 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ---
 
-## Current Development (v0.5.0)
+## Current Development
 
-**See `docs/SAMPLER_DESIGN.md` for detailed design**
-
-### Progress Overview
-
-| Feature | Effort | Status |
-|---------|--------|--------|
-| Delay Clock Sync (DS/DT 14-bit) | Medium | **DONE** |
-| Sampler MiRings Resonator | Medium | **DONE** |
-| Sampler Filter Types (14) | Low | **DONE** |
-| MiRings OSC Routing Fix | Low | **DONE** |
-| FX Chain Reorder | Medium | **DONE** |
-| Comb Resonator Removal | Low | **DONE** |
-| Delay CombC Fix | Medium | **DONE** |
-
-### Feature Details
-
-**FX Chain Reorder** - Major refactor of signal chain order. New order: Mix → EQ → Pan → Pitch Shift → Beat Repeat → Clouds → Delay → Comp → Reverb. Comp now comes after delay (tames dynamics after creative FX). Removed S.FX command - sampler now always goes through full chain like all other sources.
-
-**Sampler MiRings Resonator** - Replaced glitch effect with MiRings physical modeling resonator. Samples act as exciters for modal/string/FM resonance. 7 parameters (SRINGS.*/SRR*): pitch, structure, brightness, damping, position, model (0-5), wet mix. Signal flow: Sample → Decimator → Filter → MiRings → Mix.
-
-**MiRings OSC Routing Fix** - Fixed srings_* params not reaching sampler node (were falling through to main synth). Set intern_exciter=0 so samples properly excite resonator.
-
-**Comb Resonator Removal** - Removed non-functional comb resonator (RM/RF/RD/RK commands) from main synth. Root cause: CombC with pre-declared smoothed variables fails in complex synthdefs. Sampler still has MiRings resonator which works correctly.
-
-**Delay CombC Fix** - Fixed delay (DT/DW/DF) not producing audio output. Same root cause as resonator: pre-declared Lag.kr smoothed variables don't work in CombC. Fix: inline Lag.kr directly at CombC call site. Delay now fully functional.
-
-### Completed Phases
-
-| Phase | Feature | Status |
-|-------|---------|--------|
-| **1: Mixer Mode** | VOL.*/PAN.*/MUTE.* commands | **DONE** |
-| | GRID.MODE 3 mixer display | **DONE** |
-| | monokit_main per-voice mixing | **DONE** |
-| **2: Basic Sampler** | KIT/STR command parsing | **DONE** |
-| | Folder loading / kit mode | **DONE** |
-| | S.* playback params (16 cmds) | **DONE** |
-| | SF.* FX params (9 cmds) | **DONE** |
-| | OSC param routing | **DONE** |
-| | Buffer loading (/b_allocRead) | **DONE** |
-| | monokit_main bus 21 routing | **DONE** |
-| | monokit_sampler SynthDef | **DONE** |
-| **3: Slicing** | S.SLICE equal division | **DONE** |
-| | STR sends frame boundaries | **DONE** |
-| | hound WAV metadata | **DONE** |
-| | S.ONSET energy-based detection | **DONE** |
-| | S.ONSET.MIN spacing param | **DONE** |
-| | GRID.MODE 5 sampler visualization | **DONE** |
-| **4: Polish (partial)** | Sample params coverage for RST | **DONE** |
-| | Sample viz styling | **DONE** |
-| | Sampler vol/pan consolidation | **DONE** |
-| | STR indicator 'S' in header | **DONE** |
-| | KIT.LEN / KL getter | **DONE** |
-| | KIT.INFO command | **DONE** |
-| | KIT getter (no arg lists kits) | **DONE** |
-| | Help system updates | **DONE** |
-| | Scene persistence | **DONE** |
-
-### Pending Work (Prioritized)
-
-| Tier | # | Item | Effort | Rationale |
-|------|---|------|--------|-----------|
-| **1: Core** | 1 | S.FX SynthDef + command | Low | **DONE** - 0=bypass, 1=full chain |
-| | 2 | Sampler modbus routing | Medium | **DONE** - S.RATEMOD, S.PITCHMOD, SF.CUTMOD, SF.RESMOD |
-| **2: Viz** | 3 | GRID.MODE 4 FX viz | Medium | **DONE** - 11 FX dry/wet levels, 3×6 grid |
-| **3: Nice to Have** | 4 | Filter options (more types) | Medium | **DONE** - 14 types ported from HD2 |
-| | 5 | Replace glitch with MiRings | Medium | **DONE** - 7 params, 6 resonator models |
-| **4: Cleanup** | 6 | Stale vol/pan param cleanup | Low | **DONE** - S.VOL/S.PAN refs removed |
-| | 7 | Help system final pass | Low | **DONE** - Registry fixes + cleanup |
-| | 8 | Complete DRY pass | Low | **DONE** - FX mix, EQ, utils consolidation |
-| | 9 | File size audit (750 line max) | Low | **DONE** |
-
-### Future (post v0.5.0)
-- S.PITCH 14-bit range & note LUT (semitone approach works well as-is)
-- Gate length control for sampler
-- Spectral flux upgrade (rustfft) for improved onset detection
-- Rings pitch parameter consistency pass (MIDI note vs 14-bit)
-
-### Session Notes
-- GRID.MODE 5: kit info, slot display (●○○○ or X/Y), pitch, envelope, FX
-- Sampler state tracking macros (define_sampler_playback_param!, define_sampler_fx_param!)
-- Scene persistence for sampler state (backward compatible)
-- Multi-node param routing for modbus (mb, mba, mbd)
-- S.ONSET: exponential sensitivity curve, pure-Rust energy-based detector
-- Shared UI helpers: level_to_meter_char, vol_to_db, vol_bar_parts, pan_numeric
-- Bug fixes: SC optimizer decay params, end_frame=0, audio device restart
-- File size audit: 9 files >1000 lines split into modular structure (750 line target)
-- S.FX routing: 0=bypass spatial FX, 1=full chain (simplified from 0/1/2)
-- SynthDef compilation fix: removed errant `.value` from all synthdef files
-- Sampler modbus: S.RATEMOD (0-2x), S.PITCHMOD (±12 semi), SF.CUTMOD, SF.RESMOD/SFQM
-- Pitch mod fix: was dividing by 12, now proper ±octave range
-- Filter mod: activates when mod amounts set, res range 0-0.9 for audible effect
-- GRID.MODE 4: FX dry/wet viz (11 FX: LFI/RNG/RSO/CMP/DLY/REV/BR/PS/CLD/DEC/GLI)
-- FxMixState: new state tracking for 9 global FX mix params
-- FX handler cleanup: standardized to simple clamp pattern, removed debug code
-- Grid UI convention: labels=fg, values=success, section labels=label color
-- GRID.MODE 0/1: added PARAM ACTIVITY label
-- GRID.MODE 2: restructured EQ/COMP with section labels, fixed colors
-- GRID.MODE 3: added CLD/REV rows, moved MIXER label, fixed mute (M dim/lit)
-- Horizontal ASCII meters: level_to_bar() now supports ascii_mode
+*No active development cycle. See Future Priorities for upcoming work.*
 
 ---
 
@@ -164,6 +66,29 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 ---
 
 ## Version History (Latest First)
+
+### v0.5.0 (January 2026) - COMPLETE
+
+| Feature | Effort | Status |
+|---------|--------|--------|
+| Sampler + MiRings Resonator | High | **DONE** |
+| FX Chain Reorder | Medium | **DONE** |
+| Delay Clock Sync | Medium | **DONE** |
+| GRID.MODE 4/5 Visualizations | Medium | **DONE** |
+| 14 Sampler Filter Types | Low | **DONE** |
+| DRY Refactoring Pass | Low | **DONE** |
+
+**Sampler System** - Complete sample playback with kit loading (KIT), slice triggering (STR), onset detection (S.ONSET), and MiRings physical modeling resonator. 25+ new commands for playback, FX, and modbus routing.
+
+**FX Chain Reorder** - Signal chain restructured: Mix → EQ → Pan → Pitch Shift → Beat Repeat → Clouds → Delay → Comp → Reverb. Removed broken comb resonator.
+
+**Delay Clock Sync** - DS/DT now 14-bit with BPM sync mode. Fixed CombC delay bug.
+
+**Grid Visualizations** - GRID.MODE 4 (FX dry/wet levels), GRID.MODE 5 (sampler state). Ctrl+G hotkey for cycling.
+
+**Code Quality** - DRY pass consolidating EQ handlers (82% reduction), FX mix handlers, shared utilities. File size audit complete.
+
+---
 
 ### v0.4.4 (January 2026) - COMPLETE
 

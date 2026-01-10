@@ -287,7 +287,7 @@ pub fn render_header(app: &crate::App, width: u16) -> Paragraph<'static> {
         };
 
         title_parts.push(Span::styled(
-            format!("{} {}%", cpu_label, cpu_percent),
+            format!("{} {:>3}%", cpu_label, cpu_percent),
             Style::default().fg(cpu_color),
         ));
     }

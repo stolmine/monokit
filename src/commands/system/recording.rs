@@ -1,18 +1,10 @@
-use crate::commands::context::ExecutionContext;
-use crate::config;
-use crate::types::{MetroCommand, OutputCategory, TIER_CONFIRMS, TIER_ESSENTIAL};
+use crate::types::{MetroCommand, TIER_CONFIRMS};
 use anyhow::{Context, Result};
 use std::sync::mpsc::Sender;
 
-pub fn handle_rec<F>(
+pub fn handle_rec(
     metro_tx: &Sender<MetroCommand>,
-    debug_level: u8,
-    out_ess: bool,
-    mut output: F,
-) -> Result<()>
-where
-    F: FnMut(String),
-{
+) -> Result<()> {
     // Get current working directory
     let cwd = std::env::current_dir()
         .map(|p| p.to_string_lossy().to_string())
@@ -21,27 +13,17 @@ where
     metro_tx
         .send(MetroCommand::StartRecording(cwd))
         .context("Failed to send recording command")?;
-    if debug_level >= TIER_ESSENTIAL || out_ess {
-        output("RECORDING STARTED".to_string());
-    }
+    // Output handled by UI event handler when recording actually starts
     Ok(())
 }
 
-pub fn handle_rec_stop<F>(
+pub fn handle_rec_stop(
     metro_tx: &Sender<MetroCommand>,
-    debug_level: u8,
-    out_ess: bool,
-    mut output: F,
-) -> Result<()>
-where
-    F: FnMut(String),
-{
+) -> Result<()> {
     metro_tx
         .send(MetroCommand::StopRecording)
         .context("Failed to send stop recording command")?;
-    if debug_level >= TIER_ESSENTIAL || out_ess {
-        output("RECORDING STOPPED".to_string());
-    }
+    // Output handled by UI event handler when recording actually stops
     Ok(())
 }
 

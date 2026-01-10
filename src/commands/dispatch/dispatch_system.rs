@@ -151,8 +151,8 @@ where
             utility::handle_help(output);
             Some(Ok(vec![]))
         }
-        "REC" => Some(recording::handle_rec(metro_tx, *debug_level, *out_ess, output).map(|_| vec![])),
-        "REC.STOP" => Some(recording::handle_rec_stop(metro_tx, *debug_level, *out_ess, output).map(|_| vec![])),
+        "REC" => Some(recording::handle_rec(metro_tx).map(|_| vec![])),
+        "REC.STOP" => Some(recording::handle_rec_stop(metro_tx).map(|_| vec![])),
         "REC.PATH" => Some(recording::handle_rec_path(parts, metro_tx, *debug_level, *out_cfm, output).map(|_| vec![])),
         "PRINT" => {
             utility::handle_print(parts, variables, patterns, counters, scripts, script_index, scale, *debug_level, *out_ess, output);

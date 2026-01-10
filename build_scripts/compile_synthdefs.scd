@@ -6,7 +6,7 @@
 // Output to sibling sc/synthdefs directory (relative to this script's parent)
 var thisDir = thisProcess.nowExecutingPath.dirname;
 var synthdefs_dir = thisDir +/+ "../sc/synthdefs/";
-var hasMiPlaits;
+var hasMiPlaits, hasMiRings;
 
 // Ensure output directory exists
 File.mkdir(synthdefs_dir);
@@ -59,8 +59,12 @@ File.readAllString(thisDir +/+ "synthdefs/main.scd").interpret.value(synthdefs_d
 // Visualization synthdefs
 File.readAllString(thisDir +/+ "synthdefs/visualization.scd").interpret.value(synthdefs_dir);
 
-// Sampler synthdef
-File.readAllString(thisDir +/+ "synthdefs/sampler.scd").interpret.value(synthdefs_dir);
+// Sampler synthdef (with MiRings check)
+hasMiRings = try { MiRings.notNil } { false };
+if(hasMiRings.not, {
+    "WARNING: MiRings UGen not found! Sampler resonator will not work.".postln;
+});
+File.readAllString(thisDir +/+ "synthdefs/sampler.scd").interpret.value(synthdefs_dir, hasMiRings);
 
 "".postln;
 "Compiled SynthDefs:".postln;

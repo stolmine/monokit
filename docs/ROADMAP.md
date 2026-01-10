@@ -2,7 +2,7 @@
 
 ## Overview
 
-Monokit is a text-based scripting language for a monophonic drum synthesizer built on a complex oscillator. It bridges the gap between sequencer-first tools (TidalCycles, Strudel) and synth-first engines (Plaits), offering tight integration between a Teletype-inspired scripting interface and a dedicated complex oscillator voice.
+Monokit is a text-based scripting language for a monophonic drum synthesizer built on a complex oscillator. It bridges the gap between sequencer-first tools (TidalCycles, Strudel) and synth-first engines (Plaits), offering tight integration between a Teletype-inspired scripting interface and a dedicated complex oscillator voice. In addition to its complex voice, it hosts a sample playback engine capable of loading loops for slicing and folders for one shot switching, and an implementation of plaits. 
 
 **Architecture:** Rust CLI + SuperCollider sound engine
 **Philosophy:** CLI-native, headless-capable, Teletype-inspired terse command syntax

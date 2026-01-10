@@ -1,4 +1,4 @@
-{ |synthdefs_dir|
+{ |synthdefs_dir, hasMiRings|
 SynthDef(\monokit_sampler, {
     arg out = 21,
         s_bufnum = 0,
@@ -135,27 +135,32 @@ SynthDef(\monokit_sampler, {
         }.value
     ]);
 
-    sig = Select.ar(srings_wet > 0, [
-        sig,
-        {
-            var ringsWet = (srings_wet / 16383).clip(0, 1);
-            var resonated = MiRings.ar(
-                in: sig,
-                trig: trigAr,  // Use sampler trigger for note articulation
-                pit: srings_pit.clip(0, 127),
-                struct: (srings_strc / 16383).clip(0, 1),
-                bright: (srings_brit / 16383).clip(0, 1),
-                damp: (srings_damp / 16383).clip(0, 1),
-                pos: (srings_pos / 16383).clip(0, 1),
-                model: srings_mode.clip(0, 5).round,
-                poly: 1,
-                intern_exciter: 0,  // Audio input excites resonator
-                mul: 2.0
-            );
-            // Sum stereo outputs (EVEN + ODD)
-            (sig * (1 - ringsWet)) + ((resonated[0] + resonated[1]) * 0.5 * ringsWet)
-        }.value
-    ]);
+    // MiRings resonator (only if available)
+    sig = if(hasMiRings, {
+        Select.ar(srings_wet > 0, [
+            sig,
+            {
+                var ringsWet = (srings_wet / 16383).clip(0, 1);
+                var resonated = MiRings.ar(
+                    in: sig,
+                    trig: trigAr,  // Use sampler trigger for note articulation
+                    pit: srings_pit.clip(0, 127),
+                    struct: (srings_strc / 16383).clip(0, 1),
+                    bright: (srings_brit / 16383).clip(0, 1),
+                    damp: (srings_damp / 16383).clip(0, 1),
+                    pos: (srings_pos / 16383).clip(0, 1),
+                    model: srings_mode.clip(0, 5).round,
+                    poly: 1,
+                    intern_exciter: 0,  // Audio input excites resonator
+                    mul: 2.0
+                );
+                // Sum stereo outputs (EVEN + ODD)
+                (sig * (1 - ringsWet)) + ((resonated[0] + resonated[1]) * 0.5 * ringsWet)
+            }.value
+        ])
+    }, {
+        sig  // Pass through if MiRings not available
+    });
 
     Out.ar(out, sig);
 

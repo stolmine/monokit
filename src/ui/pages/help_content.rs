@@ -254,6 +254,7 @@ pub const HELP_LINES: &[&str] = &[
     "  REC           START RECORDING (WAV)",
     "  REC.STOP      STOP RECORDING",
     "  REC.PATH <P>  SET PATH PREFIX",
+    "  REC.SPINNER <0-6> SET SPINNER STYLE",
     "",
     "# PAGE NAVIGATION",
     "  PAGE <PAGE>   SWITCH TO PAGE",

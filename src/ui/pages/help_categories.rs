@@ -264,6 +264,7 @@ pub const CONTROL_FLOW: HelpCategory = HelpCategory {
         "  REC           START REC (WAV)",
         "  REC.STOP      STOP RECORDING",
         "  REC.PATH <P>  SET PATH PREFIX",
+        "  REC.SPINNER <0-6> SPINNER STYLE",
         "",
     ],
 };

@@ -1120,6 +1120,7 @@ DEL.R 4 250: A ADD A 10   # Increment A 4 times
 REC               # Start recording (24-bit stereo WAV)
 REC.STOP          # Stop recording
 REC.PATH <path>   # Set output path prefix
+REC.SPINNER <0-6> # Set spinner animation style
 ```
 
 **Output:**
@@ -1127,11 +1128,23 @@ REC.PATH <path>   # Set output path prefix
 - Location: Current directory
 - Filename: `monokit_audio_N.wav` (sequential numbering)
 
+**Spinner Styles:**
+- 0: CIRCLED - ⊕⊖⊗⊘⊙⊚⊛⊜⊝ (9 frames, default)
+- 1: FILL - ○◔◑◕●◕◑◔ (8 frames)
+- 2: BREATHE - ▉▊▋▌▍▎▏... (13 frames)
+- 3: BRAILLE - ⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏ (10 frames)
+- 4: DOT - ⠁⠂⠄⡀⢀⠠⠐⠈ (8 frames)
+- 5: STAR - ✶✸✹✺✹✸ (6 frames)
+- 6: HALF - ◐◓◑◒ (4 frames)
+
+Spinner animation syncs to metro beat. Use REC.SPINNER with no argument to query current style.
+
 **Examples:**
 ```
 REC               # Start recording to monokit_audio_1.wav
 TR                # Record some sound
 REC.STOP          # Stop and save file
+REC.SPINNER 3     # Set to Braille spinner style
 ```
 
 ---
@@ -1703,6 +1716,7 @@ Notes are saved with scenes. 8 lines maximum.
 | `REC` | Start recording |
 | `REC.STOP` | Stop recording |
 | `REC.PATH <path>` | Set output path |
+| `REC.SPINNER <0-6>` | Set spinner style (0-6) |
 
 ### Randomization
 

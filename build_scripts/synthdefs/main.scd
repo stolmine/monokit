@@ -115,7 +115,7 @@ SynthDef(\monokit_main, {
     var primaryIn, modIn, noiseIn, plaitsMainIn, plaitsAuxIn, samplerIn;
     var oscVol, plaVol, nosVol, smpVol, oscPan, plaPan, nosPan, smpPan;
     var oscMuted, plaMuted, nosMuted, smpMuted;
-    var primaryL, primaryR, noiseL, noiseR, plaitsMainL, plaitsMainR, plaitsAuxL, plaitsAuxR;
+    var primaryL, primaryR, noiseL, noiseR, noiseAmp, plaitsMainL, plaitsMainR, plaitsAuxL, plaitsAuxR;
     var samplerL, samplerR;
     var filterCutoff, filterQ;
     var delayTime, delayFeedback, delayWet, sigL, sigR, delayedL, delayedR;
@@ -289,7 +289,9 @@ SynthDef(\monokit_main, {
 
     #primaryL, primaryR = Pan2.ar(sig, oscPan);
 
-    #noiseL, noiseR = Pan2.ar(noiseIn * nosVol, nosPan);
+    // Route noise through shared VCA/EG (respects vca_mode)
+    noiseAmp = Select.kr(vca_mode.clip(0, 1), [1.0, ampEnv]);
+    #noiseL, noiseR = Pan2.ar(noiseIn * nosVol * noiseAmp, nosPan);
 
     #plaitsMainL, plaitsMainR = Pan2.ar(plaitsMainIn * plaVol, plaPan);
     #plaitsAuxL, plaitsAuxR = Pan2.ar(plaitsAuxIn * plaVol, plaPan);

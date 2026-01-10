@@ -53,7 +53,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **PRE Command Same-Line Usage** [Low-Medium] - Clarify and validate same-line PRE usage and execution order
 
 ### P2 - Deferred Features
-- **Noise Envelope & Gating** [Medium] - Re-implement envelope and gate control in noise synth after multi-synth architecture split; add NA, ND, NC, NE parameters back to monokit_noise SynthDef; separate noise audio output from FM routing
+- ~~**Noise Envelope & Gating**~~ ✅ FIXED - Noise now routes through HD2's shared VCA/EG; respects VCA.MODE (0=drone, 1=enveloped)
 - **Noise FM Routing Fix** [Low] - Ensure noise FM (NP/NM) works independently of NV volume; users should be able to use noise as FM source without hearing it
 - **Oscillator Sync** [Medium] - Hard/soft sync between oscillators for classic analog tones
 

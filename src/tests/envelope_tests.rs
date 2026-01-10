@@ -120,22 +120,7 @@ fn test_env_crv_too_many_args() {
     assert!(validate_script_command("ENV.CRV 2 4").is_err());
 }
 
-#[test]
-fn test_env_mode_valid() {
-    assert!(validate_script_command("ENV.MODE 0").is_ok());
-    assert!(validate_script_command("ENV.MODE 1").is_ok());
-    assert!(validate_script_command("ENV.MODE 2").is_ok());
-}
-
-#[test]
-fn test_env_mode_missing_arg() {
-    assert!(validate_script_command("ENV.MODE").is_err());
-}
-
-#[test]
-fn test_env_mode_too_many_args() {
-    assert!(validate_script_command("ENV.MODE 1 2").is_err());
-}
+// ENV.MODE was removed - tests deleted
 
 #[test]
 fn test_aenv_atk_valid() {

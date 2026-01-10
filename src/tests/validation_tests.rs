@@ -126,7 +126,7 @@ fn test_validate_canonical_names() {
     assert!(validate_script_command("COMP.THR 8000").is_ok());
     assert!(validate_script_command("EQ.LOW 3").is_ok());
     assert!(validate_script_command("EQ 2").is_ok()); // EQ (mid Q bandwidth) as command, not comparison
-    assert!(validate_script_command("RESO.FRQ 200").is_ok());
+    // RESO.FRQ removed (resonator deleted)
     assert!(validate_script_command("OUT.VOL 1").is_ok());
     assert!(validate_script_command("OUT.PAN 0").is_ok());
     assert!(validate_script_command("AENV.DEC 500").is_ok());

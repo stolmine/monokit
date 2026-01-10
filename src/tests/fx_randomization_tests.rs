@@ -59,7 +59,7 @@ fn test_rnd_fx_sends_all_params() {
     while let Ok(_) = rx.try_recv() {
         param_count += 1;
     }
-    assert_eq!(param_count, 38);  // filter(4) + lofi(3) + ringmod(3) + reso(3) + delay(4) + eq(3) + reverb(4) + comp(1) + clouds(13)
+    assert_eq!(param_count, 35);  // filter(4) + lofi(3) + ringmod(3) + delay(4) + eq(3) + reverb(4) + comp(1) + clouds(13)
 }
 
 #[test]

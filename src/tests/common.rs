@@ -126,6 +126,7 @@ pub struct TestContext {
     pub scene_modified: bool,
     pub pending_confirmation: Option<ConfirmAction>,
     pub sampler_state: crate::types::SamplerState,
+    pub scramble_grid_enabled: bool,
 }
 
 impl Default for TestContext {
@@ -207,6 +208,7 @@ impl Default for TestContext {
             scene_modified: false,
             pending_confirmation: None,
             sampler_state: crate::types::SamplerState::default(),
+            scramble_grid_enabled: true,
         }
     }
 }
@@ -284,6 +286,7 @@ impl TestContext {
             scene_modified: &mut self.scene_modified,
             pending_confirmation: &mut self.pending_confirmation,
             sampler_state: &mut self.sampler_state,
+            scramble_grid_enabled: &mut self.scramble_grid_enabled,
         };
 
         process_command(

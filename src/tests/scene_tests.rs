@@ -28,6 +28,7 @@ fn test_scene_serialization_roundtrip() {
         pattern_working: 0,
         notes: vec![],
         script_mutes: vec![],
+        sampler: None,
     };
 
     let json = serde_json::to_string(&scene).unwrap();
@@ -63,7 +64,7 @@ fn test_scene_from_app_state() {
 
     let notes = NotesStorage::default();
     let script_mutes = ScriptMutes::default();
-    let scene = Scene::from_app_state(&scripts, &patterns, &notes, &script_mutes);
+    let scene = Scene::from_app_state(&scripts, &patterns, &notes, &script_mutes, &crate::types::SamplerState::default());
 
     assert_eq!(scene.version, 1);
     assert_eq!(scene.scripts.len(), 10);
@@ -106,6 +107,7 @@ fn test_scene_apply_to_app_state() {
         pattern_working: 1,
         notes: vec![],
         script_mutes: vec![],
+        sampler: None,
     };
 
     let mut scripts = create_test_scripts();
@@ -113,7 +115,7 @@ fn test_scene_apply_to_app_state() {
     let mut notes = NotesStorage::default();
     let mut script_mutes = ScriptMutes::default();
 
-    scene.apply_to_app_state(&mut scripts, &mut patterns, &mut notes, &mut script_mutes);
+    scene.apply_to_app_state(&mut scripts, &mut patterns, &mut notes, &mut script_mutes, &mut crate::types::SamplerState::default());
 
     assert_eq!(scripts.scripts[0].lines[0], "A 10");
     assert_eq!(scripts.scripts[0].lines[1], "B 20");

@@ -58,7 +58,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **Oscillator Sync** [Medium] - Hard/soft sync between oscillators for classic analog tones
 
 ### P3 - Future / Large Effort
-- **Cross-Platform Compatibility** [High] - Linux/Windows/Intel Mac - ubuntu xfce has been figured out, windows next
+- **Cross-Platform Compatibility** [High] - Linux/Windows/Intel Mac - see `docs/CROSS_PLATFORM_PORT.md` for implementation guide
 - **Sample Playback System** [Very High] - Major feature (see SAMPLE_PLAYBACK_DESIGN.md) - done v0.5.0
 - **Song Mode/Arranger** [Very High] - Pattern chaining, arrangement sequencing, section management for complete song construction beyond loop-based performance
 - **Command Naming & Param Organization Overhaul** [Medium] - Comprehensive consistency pass for all command names, aliases, and parameter organization; establish and document naming conventions; improve intuitiveness across voice types (osc, noise, plaits, sampler); unify modbus/modulation patterns

@@ -71,6 +71,22 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 ## Version History (Latest First)
 
+### v0.5.32 (January 2026) - COMPLETE
+
+| Feature | Effort | Status |
+|---------|--------|--------|
+| AppImage PipeWire Compatibility | Low | **DONE** |
+| CI AppImage FUSE Workaround | Low | **DONE** |
+| Release Artifact Glob Fix | Low | **DONE** |
+
+**AppImage PipeWire Compatibility** - Excluded libjack from Linux bundle so AppImage uses system's pipewire-jack library. Bundled libjack from Ubuntu build environment was incompatible with PipeWire systems.
+
+**CI AppImage FUSE Workaround** - Extract appimagetool before running to bypass FUSE requirement on GitHub Actions runners.
+
+**Release Artifact Glob Fix** - Use recursive globs (`dist/**/*.tar.gz`) in release workflow to find Linux artifacts in subdirectories.
+
+---
+
 ### v0.5.2 (January 2026) - COMPLETE
 
 | Feature | Effort | Status |

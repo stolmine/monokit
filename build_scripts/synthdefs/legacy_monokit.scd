@@ -542,7 +542,7 @@ SynthDef(\monokit, {
         sigR + (reverbedR * Select.kr(rtail.clip(0, 2).round, [reverbWetSmooth, 1, 1]))
     ]);
 
-    #sigL, sigR = Select.ar(limit.clip(0, 1).round, [
+    #sigL, sigR = Select.ar(K2A.ar(limit.clip(0, 1).round), [
         [sigL, sigR],
         Limiter.ar([sigL, sigR], 1.0, 0.01)
     ]);

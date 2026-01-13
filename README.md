@@ -74,12 +74,31 @@ Hopefully it shows!
 
 ### macOS (Homebrew)
 
-```
+```bash
 brew tap stolmine/monokit
 brew install monokit
 ```
 
 No dependencies required - scsynth audio engine is bundled.
+
+### Linux (AppImage)
+
+Download the AppImage from the [latest release](https://github.com/stolmine/monokit/releases/latest):
+
+```bash
+chmod +x Monokit-*-x86_64.AppImage
+./Monokit-*-x86_64.AppImage
+```
+
+Single portable file, no installation needed. Requires PipeWire or JACK for audio.
+
+### Linux (Tarball)
+
+```bash
+tar -xzf monokit-*-x86_64-unknown-linux-gnu.tar.gz
+cd monokit-*-x86_64-unknown-linux-gnu
+./monokit
+```
 
 ### Building from Source
 

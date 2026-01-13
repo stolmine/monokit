@@ -174,7 +174,13 @@ if [ -f "${BUNDLE_DIR}/lib/libscsynth.so.1" ]; then
     for lib in $(ldd "${BUNDLE_DIR}/lib/libscsynth.so.1" | grep "=> /" | awk '{print $3}'); do
         libname=$(basename "$lib")
         case "$libname" in
+            # Skip system libraries
             libc.so*|libm.so*|libpthread.so*|libdl.so*|librt.so*|ld-linux*.so*|libgcc_s.so*|libstdc++.so*)
+                continue
+                ;;
+            # Skip libjack - must use system's pipewire-jack for PipeWire compatibility
+            libjack*)
+                echo "    - $libname (SKIPPED - use system pipewire-jack)"
                 continue
                 ;;
             *)

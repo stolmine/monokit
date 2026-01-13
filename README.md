@@ -2,11 +2,11 @@
 
 ![Discord](https://img.shields.io/discord/1446968284225212450?style=flat-square&label=Discord&labelColor=%239D00FF&color=%23FFFFFF)
 
-Teletype-style scripting front end for a single complex oscillator voice built in SuperCollider.
+Teletype-style scripting front end for a suite of several voices: a custom monosynth based on classic complex oscillator arrangements, an implementation of Plaits, and a simple yet effective sample playback engine.
 
-Designed for percussion, glitch, microsound purposes, but has broad range.
+Designed for percussion, glitch, and microsound purposes, but has broad range.
 
-Only for M series Macs at the moment.
+Only for M series Macs and Linux machines at the moment.
 
 See command_reference.md for quick overview of basic options.
 
@@ -14,7 +14,7 @@ See command_reference.md for quick overview of basic options.
 
 Vibe-coded (whether the vibes are good or bad who can say) with Claude Code.
 
-That being the case, I have tried as much as possible to approach things with care.
+That being the case, I have tried as much as possible to approach things with care and I have put a great deal of thought, intention, and design into this software.
 
 Hopefully it shows!
 
@@ -24,7 +24,7 @@ Hopefully it shows!
 - **Complex oscillator voice** - dual oscillators with selectable waveforms + white/pink/brown noise, independent volume per source
 - **Extensive modulation routing** - mod osc → primary freq/mod freq/filter cutoff/filter Q/discontinuity/VCA; noise → primary FM/mod FM
 - **Plaits macro oscillator** - 16 synthesis engines (VA, FM, wavetable, granular, percussion, physical modeling)
-- **Sampler** - Kit/slice modes with dynamic and instant file handling, 14-type filter, decimator, MiRings resonator (samples excite MiRings as a resonator)
+- **Sample Playback** - Kit/slice modes with dynamic and instant file handling, 14-type filter, decimator, MiRings resonator (samples excite MiRings as a resonator)
 - **Full effects chain** - 14-type multimode filter, ring mod, lo-fi (bit/sample rate), compressor, beat repeat, pitch shift, stereo delay, 3-band EQ, plate reverb (Plaits is inserted after main voice VCA and is not affected by filter, ring mod, or lofi) + an implementation of Clouds
 - **97 real-time parameters** - All instantly controllable via terse commands
 - **Per-stage envelopes** - Amp, pitch, FM, discontinuity, feedback, filter, noise, modbus - most with independent attack, decay, and curve

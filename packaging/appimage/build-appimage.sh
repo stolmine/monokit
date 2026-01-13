@@ -19,9 +19,15 @@ echo "=== Building ${APP_NAME} AppImage v${VERSION} ==="
 # Check for appimagetool
 if ! command -v appimagetool &> /dev/null; then
     echo "Downloading appimagetool..."
-    curl -L -o /tmp/appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
-    chmod +x /tmp/appimagetool
-    APPIMAGETOOL="/tmp/appimagetool"
+    curl -L -o /tmp/appimagetool.AppImage https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+    chmod +x /tmp/appimagetool.AppImage
+
+    # Extract appimagetool to avoid FUSE requirement (needed for CI environments)
+    echo "Extracting appimagetool (FUSE workaround for CI)..."
+    cd /tmp
+    ./appimagetool.AppImage --appimage-extract > /dev/null 2>&1
+    APPIMAGETOOL="/tmp/squashfs-root/AppRun"
+    cd "${REPO_ROOT}"
 else
     APPIMAGETOOL="appimagetool"
 fi

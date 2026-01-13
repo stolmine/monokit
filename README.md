@@ -156,4 +156,4 @@ As well as UGens from [sc3-plugins](https://github.com/supercollider/sc3-plugins
 
 Keyboard smash title text animation based on this repo from [DvorakDwarf](https://github.com/DvorakDwarf/scrambling-title-animations?tab=readme-ov-file)
 
-No official association with any authors of the aforementioned is implied or actual. DO NOT direct support requests to these people, direc them to this repository or to the discord.
+No official association with any authors of the aforementioned is implied or actual. DO NOT direct support requests to these people, direct them to this repository or to the discord.

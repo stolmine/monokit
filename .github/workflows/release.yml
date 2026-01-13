@@ -92,7 +92,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libasound2-dev libjack-jackd2-dev libdbus-1-dev pkg-config
+          sudo apt-get install -y libasound2-dev libjack-jackd2-dev libdbus-1-dev pkg-config libqt5gui5
 
       - name: Install SuperCollider
         run: |
@@ -105,19 +105,19 @@ jobs:
           unzip mi-UGens.zip -d ~/.local/share/SuperCollider/Extensions/
 
       - name: Compile SynthDefs
+        env:
+          QT_QPA_PLATFORM: offscreen
         run: |
-          # Start a virtual display for sclang (it needs X even in headless mode)
-          export DISPLAY=:99
-          sudo Xvfb :99 -screen 0 1024x768x24 &
-          sleep 2
-          # Compile synthdefs
-          timeout 60 sclang -D build_scripts/compile_synthdefs.scd || true
+          # Compile synthdefs (QT_QPA_PLATFORM=offscreen avoids X11 requirement)
+          timeout 120 sclang -D build_scripts/compile_synthdefs.scd || true
           ls -la sc/synthdefs/
 
       - name: Run tests
         run: cargo test --verbose
 
       - name: Build release bundle
+        env:
+          QT_QPA_PLATFORM: offscreen
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           ./scripts/bundle-linux.sh "${VERSION}"

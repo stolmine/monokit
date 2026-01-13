@@ -13,6 +13,8 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 *No active development cycle. See Future Priorities for upcoming work.*
 
+**v0.5.2 Linux Support** - Completed January 2026
+
 ---
 
 ## Future Priorities
@@ -58,7 +60,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **Oscillator Sync** [Medium] - Hard/soft sync between oscillators for classic analog tones
 
 ### P3 - Future / Large Effort
-- **Cross-Platform Compatibility** [High] - Linux/Windows/Intel Mac - see `docs/CROSS_PLATFORM_PORT.md` for implementation guide
+- ~~**Cross-Platform Compatibility**~~ ✅ LINUX DONE (v0.5.2) - Windows/Intel Mac remaining - see `docs/CROSS_PLATFORM_PORT.md` for implementation guide
 - **Sample Playback System** [Very High] - Major feature (see SAMPLE_PLAYBACK_DESIGN.md) - done v0.5.0
 - **Song Mode/Arranger** [Very High] - Pattern chaining, arrangement sequencing, section management for complete song construction beyond loop-based performance
 - **Command Naming & Param Organization Overhaul** [Medium] - Comprehensive consistency pass for all command names, aliases, and parameter organization; establish and document naming conventions; improve intuitiveness across voice types (osc, noise, plaits, sampler); unify modbus/modulation patterns
@@ -68,6 +70,28 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 ---
 
 ## Version History (Latest First)
+
+### v0.5.2 (January 2026) - COMPLETE
+
+| Feature | Effort | Status |
+|---------|--------|--------|
+| Linux Audio Support (PipeWire/JACK) | Medium | **DONE** |
+| GitHub Actions Linux Build | Medium | **DONE** |
+| AppImage Distribution | Low | **DONE** |
+| AUR PKGBUILD | Low | **DONE** |
+| SC 3.14+ Rate Matching Fix | Low | **DONE** |
+
+**Linux Audio Support** - Added platform-aware audio routing with automatic PipeWire/JACK connection via pw-link. SuperCollider JACK ports auto-connect to system playback on startup. Platform-conditional plugin paths for Linux system and user extensions.
+
+**GitHub Actions Linux Build** - Complete CI/CD pipeline for Linux x86_64. Builds tarball and AppImage on Ubuntu runner with headless sclang (QT_QPA_PLATFORM=offscreen). Publishes to GitHub Releases alongside macOS builds.
+
+**AppImage Distribution** - Portable single-file distribution for Linux. Self-contained bundle with scsynth, plugins, synthdefs, and shared libraries. No installation required.
+
+**AUR PKGBUILD** - Arch User Repository package definition prepared (packaging/aur/PKGBUILD). Downloads tarball from GitHub releases, installs to /usr/lib/monokit/ with wrapper script for LD_LIBRARY_PATH.
+
+**SC 3.14+ Rate Matching Fix** - Fixed Limiter Select.ar requiring audio-rate selector in SuperCollider 3.14+. Wrapped selector with K2A.ar() for control-to-audio rate conversion.
+
+---
 
 ### v0.5.0 (January 2026) - COMPLETE
 
@@ -345,7 +369,8 @@ For detailed completion records, see `CHANGELOG.md` and `docs/history/`
 
 ### Infrastructure
 - Direct scsynth integration (bundled binary)
-- Automated release pipeline with Homebrew
+- Cross-platform: macOS (Homebrew), Linux (AppImage/tarball)
+- Automated release pipeline (GitHub Actions)
 - Theme system with 30+ themes
 - Scene and preset management
 - Audio recording via DiskOut

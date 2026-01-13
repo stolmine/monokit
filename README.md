@@ -130,8 +130,6 @@ Monokit is optimized for true color terminals like iTerm2, but will run with a l
 
 I'd suggest exploring `/themes/themes.toml` if you do not like the look of your instance. Themes are easily customizable and take simple hex values for all fields.
 
-Themes and saved scenes can be modified directly under ~/library/application support/monokit. 
-
 ## Configuration
 
 User configuration is stored in `~/.config/monokit/config.toml`.
@@ -157,3 +155,5 @@ As well as UGens from [sc3-plugins](https://github.com/supercollider/sc3-plugins
 - **TJUGens** (DFM1 diode filter) by Tony Hardie-Bick & Jonny Stutters
 
 Keyboard smash title text animation based on this repo from [DvorakDwarf](https://github.com/DvorakDwarf/scrambling-title-animations?tab=readme-ov-file)
+
+No official association with any authors of the aforementioned is implied or actual. DO NOT direct support requests to these people, direc them to this repository or to the discord.

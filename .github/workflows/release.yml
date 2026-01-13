@@ -170,8 +170,8 @@ jobs:
       - name: Get bundle sizes
         id: bundle_size
         run: |
-          MACOS_SIZE=$(du -h dist/*darwin*.tar.gz 2>/dev/null | cut -f1 || echo "N/A")
-          LINUX_SIZE=$(du -h dist/*linux*.tar.gz 2>/dev/null | cut -f1 || echo "N/A")
+          MACOS_SIZE=$(find dist -name '*darwin*.tar.gz' -exec du -h {} \; 2>/dev/null | cut -f1 || echo "N/A")
+          LINUX_SIZE=$(find dist -name '*linux*.tar.gz' -exec du -h {} \; 2>/dev/null | cut -f1 || echo "N/A")
           echo "macos_size=$MACOS_SIZE" >> $GITHUB_OUTPUT
           echo "linux_size=$LINUX_SIZE" >> $GITHUB_OUTPUT
 
@@ -179,9 +179,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            dist/*.tar.gz
-            dist/*.sha256
-            dist/*.AppImage
+            dist/**/*.tar.gz
+            dist/**/*.sha256
+            dist/**/*.AppImage
           generate_release_notes: true
           body: |
             ## Installation

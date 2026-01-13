@@ -62,13 +62,40 @@ impl ScsynthDirect {
         // Build plugin path with both app plugins and user extensions
         let mut plugin_paths: Vec<String> = Vec::new();
 
+        // Add bundled plugins if they exist
         if plugins_dir.exists() {
             plugin_paths.push(plugins_dir.to_string_lossy().to_string());
         }
 
+        // Add system plugin paths for Linux (sc3-plugins from package manager)
+        #[cfg(target_os = "linux")]
+        {
+            let system_plugins = PathBuf::from("/usr/lib/SuperCollider/plugins");
+            if system_plugins.exists() {
+                plugin_paths.push(system_plugins.to_string_lossy().to_string());
+            }
+            // Some distros use /usr/share
+            let system_plugins_share = PathBuf::from("/usr/share/SuperCollider/Extensions");
+            if system_plugins_share.exists() {
+                plugin_paths.push(system_plugins_share.to_string_lossy().to_string());
+            }
+        }
+
         // Add user SC extensions (contains mi-UGens, SC3plugins, etc.)
+        // Platform-specific paths:
+        //   macOS:  ~/Library/Application Support/SuperCollider/Extensions
+        //   Linux:  ~/.local/share/SuperCollider/Extensions
+        //   Windows: %LOCALAPPDATA%/SuperCollider/Extensions
         if let Some(home) = dirs::home_dir() {
+            #[cfg(target_os = "macos")]
             let user_extensions = home.join("Library/Application Support/SuperCollider/Extensions");
+            #[cfg(target_os = "linux")]
+            let user_extensions = home.join(".local/share/SuperCollider/Extensions");
+            #[cfg(target_os = "windows")]
+            let user_extensions = dirs::data_local_dir()
+                .unwrap_or_else(|| home.clone())
+                .join("SuperCollider/Extensions");
+
             if user_extensions.exists() {
                 // Add mi-UGens directly
                 let mi_ugens = user_extensions.join("mi-UGens");
@@ -90,7 +117,11 @@ impl ScsynthDirect {
         }
 
         if !plugin_paths.is_empty() {
-            let combined = plugin_paths.join(":");
+            #[cfg(windows)]
+            let separator = ";";
+            #[cfg(not(windows))]
+            let separator = ":";
+            let combined = plugin_paths.join(separator);
             if !silent {
                 eprintln!("[monokit] plugin paths: {} locations", plugin_paths.len());
             }
@@ -121,11 +152,21 @@ impl ScsynthDirect {
         }
 
         #[cfg(not(target_os = "macos"))]
-        if let Some(device) = audio_out_device {
+        {
+            // Linux: Use JACK driver (pipewire-jack provides compatibility)
+            // Don't pass -H flag to let scsynth use its default JACK driver
+            // PipeWire's JACK compatibility layer will route audio to the system output
+            #[cfg(target_os = "linux")]
             if !silent {
-                eprintln!("[monokit] WARNING: Audio device selection not supported on this platform");
-                eprintln!("[monokit] Requested device: {}", device);
-                eprintln!("[monokit] Using default audio device");
+                eprintln!("[monokit] Using JACK audio (PipeWire compatible)");
+            }
+
+            if let Some(device) = audio_out_device {
+                if !silent {
+                    eprintln!("[monokit] WARNING: Audio device selection not supported on this platform");
+                    eprintln!("[monokit] Requested device: {}", device);
+                    eprintln!("[monokit] Using default audio device");
+                }
             }
         }
 
@@ -408,6 +449,12 @@ impl ScsynthDirect {
         }
         Self::start_cpu_monitor(socket)?;
 
+        // Linux: Auto-connect JACK ports to system output via PipeWire
+        #[cfg(target_os = "linux")]
+        {
+            Self::connect_pipewire_audio(silent);
+        }
+
         if !silent {
             eprintln!("[monokit] SCSYNTH-DIRECT boot complete!");
         }
@@ -418,6 +465,79 @@ impl ScsynthDirect {
         // CPU monitoring is now handled by meter_thread via /status polling
         // This function is kept for API compatibility but does nothing
         Ok(())
+    }
+
+    /// Linux: Connect SuperCollider JACK outputs to system audio via PipeWire
+    /// Uses pw-link to connect the JACK client ports to the default audio sink
+    #[cfg(target_os = "linux")]
+    fn connect_pipewire_audio(silent: bool) {
+        use std::process::Command;
+
+        // Give PipeWire a moment to register the JACK client
+        thread::sleep(Duration::from_millis(200));
+
+        // Get available output ports from pw-link
+        let output = match Command::new("pw-link").arg("-o").output() {
+            Ok(o) => o,
+            Err(_) => {
+                if !silent {
+                    eprintln!("[monokit] pw-link not found, skipping audio auto-connect");
+                }
+                return;
+            }
+        };
+
+        let outputs = String::from_utf8_lossy(&output.stdout);
+
+        // Find SuperCollider output ports
+        let sc_out_1 = outputs.lines().find(|l| l.contains("SuperCollider:out_1"));
+        let sc_out_2 = outputs.lines().find(|l| l.contains("SuperCollider:out_2"));
+
+        if sc_out_1.is_none() || sc_out_2.is_none() {
+            if !silent {
+                eprintln!("[monokit] SuperCollider JACK ports not found, skipping auto-connect");
+            }
+            return;
+        }
+
+        // Get available input ports (sinks)
+        let input = match Command::new("pw-link").arg("-i").output() {
+            Ok(o) => o,
+            Err(_) => return,
+        };
+
+        let inputs = String::from_utf8_lossy(&input.stdout);
+
+        // Find the default ALSA playback ports (typically the first stereo pair)
+        // Look for common patterns: alsa_output.*.playback_FL/FR or similar
+        let playback_fl = inputs.lines().find(|l| {
+            l.contains("playback_FL") && (l.contains("alsa_output") || l.contains("analog-stereo"))
+        });
+        let playback_fr = inputs.lines().find(|l| {
+            l.contains("playback_FR") && (l.contains("alsa_output") || l.contains("analog-stereo"))
+        });
+
+        if let (Some(fl), Some(fr)) = (playback_fl, playback_fr) {
+            // Connect left channel
+            let _ = Command::new("pw-link")
+                .arg("SuperCollider:out_1")
+                .arg(fl.trim())
+                .output();
+
+            // Connect right channel
+            let _ = Command::new("pw-link")
+                .arg("SuperCollider:out_2")
+                .arg(fr.trim())
+                .output();
+
+            if !silent {
+                eprintln!("[monokit] Connected audio to system output");
+            }
+        } else {
+            if !silent {
+                eprintln!("[monokit] Could not find system audio output ports");
+            }
+        }
     }
 
     fn spawn_voice_synths(socket: &UdpSocket, silent: bool) -> Result<(), String> {

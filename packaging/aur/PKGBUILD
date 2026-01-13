@@ -1,0 +1,45 @@
+# Maintainer: Your Name <your@email.com>
+pkgname=monokit
+pkgver=0.5.2
+pkgrel=1
+pkgdesc="Teletype-style scripting frontend for a monophonic drum synthesizer"
+arch=('x86_64')
+url="https://github.com/stolmine/monokit"
+license=('MIT')
+depends=('pipewire-jack' 'pipewire-pulse')
+optdepends=('pw-link: automatic audio routing')
+source=("${pkgname}-${pkgver}.tar.gz::${url}/releases/download/v${pkgver}/${pkgname}-${pkgver}-x86_64-unknown-linux-gnu.tar.gz")
+sha256sums=('SKIP')  # Update with actual sha256 from release
+
+package() {
+    cd "${srcdir}/${pkgname}-${pkgver}-x86_64-unknown-linux-gnu"
+
+    # Install binary
+    install -Dm755 monokit "${pkgdir}/usr/bin/monokit"
+
+    # Install scsynth and resources
+    install -Dm755 scsynth "${pkgdir}/usr/lib/${pkgname}/scsynth"
+
+    # Install plugins
+    install -dm755 "${pkgdir}/usr/lib/${pkgname}/plugins"
+    install -Dm644 plugins/*.so "${pkgdir}/usr/lib/${pkgname}/plugins/"
+
+    # Install synthdefs
+    install -dm755 "${pkgdir}/usr/lib/${pkgname}/synthdefs"
+    install -Dm644 synthdefs/*.scsyndef "${pkgdir}/usr/lib/${pkgname}/synthdefs/"
+
+    # Install shared libraries
+    install -dm755 "${pkgdir}/usr/lib/${pkgname}/lib"
+    install -Dm644 lib/*.so* "${pkgdir}/usr/lib/${pkgname}/lib/"
+
+    # Create wrapper script that sets library path
+    cat > "${pkgdir}/usr/bin/monokit" << 'EOF'
+#!/bin/bash
+export LD_LIBRARY_PATH="/usr/lib/monokit/lib:${LD_LIBRARY_PATH}"
+exec /usr/lib/monokit/monokit.bin "$@"
+EOF
+    chmod 755 "${pkgdir}/usr/bin/monokit"
+
+    # Move actual binary
+    install -Dm755 monokit "${pkgdir}/usr/lib/${pkgname}/monokit.bin"
+}

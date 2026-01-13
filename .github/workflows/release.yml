@@ -132,6 +132,13 @@ jobs:
           tar -czvf "${NAME}.tar.gz" "${NAME}"
           sha256sum "${NAME}.tar.gz" > "${NAME}.tar.gz.sha256"
 
+      - name: Build AppImage
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          ./packaging/appimage/build-appimage.sh "${VERSION}"
+          cd dist/appimage
+          sha256sum Monokit-${VERSION}-x86_64.AppImage > Monokit-${VERSION}-x86_64.AppImage.sha256
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -139,6 +146,8 @@ jobs:
           path: |
             dist/bundle/*.tar.gz
             dist/bundle/*.sha256
+            dist/appimage/*.AppImage
+            dist/appimage/*.sha256
 
   release:
     needs: [build-macos, build-linux]
@@ -172,11 +181,10 @@ jobs:
           files: |
             dist/*.tar.gz
             dist/*.sha256
+            dist/*.AppImage
           generate_release_notes: true
           body: |
             ## Installation
-
-            Download the tarball for your platform, extract, and run:
 
             ### macOS (Apple Silicon)
             ```bash
@@ -186,13 +194,20 @@ jobs:
             ```
             **Note:** On first run, macOS may require you to allow the app in Security & Privacy settings.
 
-            ### Linux (x86_64)
+            ### Linux (x86_64) - Tarball
             ```bash
             tar -xzf monokit-*-x86_64-unknown-linux-gnu.tar.gz
             cd monokit-*-x86_64-unknown-linux-gnu
             ./monokit
             ```
-            **Note:** Requires PipeWire or JACK for audio. The bundle auto-connects to PipeWire if available.
+
+            ### Linux (x86_64) - AppImage
+            ```bash
+            chmod +x Monokit-*-x86_64.AppImage
+            ./Monokit-*-x86_64.AppImage
+            ```
+
+            **Note:** Linux builds require PipeWire or JACK for audio. Audio auto-connects to PipeWire if available.
 
             ## What's Included
 

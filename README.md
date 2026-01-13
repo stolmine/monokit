@@ -6,6 +6,8 @@ Teletype-style scripting front end for a suite of several voices: a custom monos
 
 Designed for percussion, glitch, and microsound purposes, but has broad range.
 
+The UX and core logic is written in Rust, the audio components are handled by SuperCollider.
+
 Only for M series Macs and Linux machines at the moment.
 
 See command_reference.md for quick overview of basic options.

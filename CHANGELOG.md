@@ -4,6 +4,37 @@ All notable changes to monokit. Versions ordered newest to oldest.
 
 ---
 
+## v0.6.0 (January 2026)
+
+### Major Features
+
+**Windows Platform Support**
+- Full Windows x86_64 support with self-contained bundle
+- Two distribution formats:
+  - Portable EXE (SFX) - single file, extracts to temp, auto-launches
+  - ZIP archive - manual extraction for permanent install
+- Config stored in `%APPDATA%\monokit\` (persists across SFX runs)
+
+**Windows CI/CD Pipeline**
+- Automated Windows builds in GitHub Actions release workflow
+- SuperCollider 3.14.1, sc3-plugins, and mi-UGens bundled
+- 7-Zip SFX creation for portable single-file distribution
+
+### Bug Fixes
+
+- **SC 3.14+ Select.ar rate matching** - Fixed "bad input" errors by wrapping control-rate selectors with K2A.ar()
+- **Windows keyboard double-input** - Filtered for KeyEventKind::Press only (Crossterm 0.28+ reports both Press and Release)
+- **Windows SC3plugins discovery** - Platform-specific path handling (.scx files at root on Windows, in subdirs on macOS/Linux)
+- **Limiter multichannel pattern** - Changed to separate L/R channels for SC 3.14+ compatibility
+
+### Documentation
+
+- Updated README with Windows installation instructions
+- Updated MANUAL with Windows config paths and terminal recommendations
+- Platform-specific config paths documented for all three platforms
+
+---
+
 ## v0.5.1 (January 2026)
 
 ### New Features

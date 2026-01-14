@@ -2,7 +2,7 @@
 
 Updated 2026-01-13
 
-**Version 0.5.0** - Teletype-style scripting for a complex oscillator voice
+**Version 0.6.0** - Teletype-style scripting for a complex oscillator voice
 
 Runs on macOS (Apple Silicon), Linux (x86_64), and Windows (x86_64).
 

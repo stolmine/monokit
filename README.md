@@ -102,25 +102,15 @@ cd monokit-*-x86_64-unknown-linux-gnu
 ./monokit
 ```
 
-### Windows (Portable EXE)
+### Windows
 
-Download the `.exe` from the [latest release](https://github.com/stolmine/monokit/releases/latest):
+Download the ZIP from the [latest release](https://github.com/stolmine/monokit/releases/latest):
 
-1. Download `monokit-*-x86_64-pc-windows-msvc.exe`
-2. Double-click to run (extracts to temp and launches automatically)
+1. Extract `monokit-*-x86_64-pc-windows-msvc.zip`
+2. Open the extracted folder
+3. Run `monokit.exe`
 
-Single portable file, similar to Linux AppImage. Config is stored in `%APPDATA%\monokit\`.
-
-### Windows (ZIP Archive)
-
-For a permanent installation:
-
-```powershell
-# Extract the ZIP
-Expand-Archive monokit-*-x86_64-pc-windows-msvc.zip -DestinationPath C:\monokit
-cd C:\monokit\monokit-*
-.\monokit.exe
-```
+Config is stored in `%APPDATA%\monokit\` (persists across runs).
 
 **Note:** For low-latency audio on Windows, ASIO drivers are recommended (e.g., ASIO4ALL or your audio interface's native ASIO driver).
 

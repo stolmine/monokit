@@ -28,10 +28,10 @@ where
             return Ok(());
         }
 
-        let samples_dir = match dirs::home_dir() {
-            Some(home) => home.join(".config/monokit/samples"),
-            None => {
-                ctx.output(OutputCategory::Error, "KIT: HOME DIR NOT FOUND".to_string(), &mut output);
+        let samples_dir = match crate::config::monokit_config_dir() {
+            Ok(config_dir) => config_dir.join("samples"),
+            Err(_) => {
+                ctx.output(OutputCategory::Error, "KIT: CONFIG DIR NOT FOUND".to_string(), &mut output);
                 return Ok(());
             }
         };

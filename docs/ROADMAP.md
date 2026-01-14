@@ -13,7 +13,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 *No active development cycle. See Future Priorities for upcoming work.*
 
-**v0.5.2 Linux Support** - Completed January 2026
+**v0.6.0 Windows Support** - Completed January 2026
 
 ---
 
@@ -28,6 +28,12 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **Trackpad/Mousewheel Scrolling** [Low-Medium] - Implement scrolling support for help pages, REPL history, and other scrollable views; improve navigation UX
 
 ### P2 - Polish & Features
+- **Windows Theme Defaults** [Low] - Ensure default themes get pulled into Windows config file on first run
+- **Update command_reference.md** [Low] - Sync with current command set (MiClouds, sampler commands, delay sync, etc.)
+- **Verify Windows SC Bundle Pathing** [Low] - Test scsynth binary discovery in bundle folder on fresh Windows VM; user reported needing to move monokit.exe or scsynth.exe to accommodate system
+- **cpal Audio Device Enumeration** [Medium] - Replace platform-specific audio device code (coreaudio-rs) with cpal for cross-platform device enumeration and runtime selection
+- **Keyboard Internationalization** [Medium] - Force/detect international keyboard layouts; Spanish keyboard user reported [ ] page nav broken, had to switch to international layout for normal usage
+- **F11 Windows Terminal Conflict** [Low] - F11 (Pattern page) conflicts with Windows Terminal fullscreen shortcut; need alternative binding or documentation
 - **Per-Voice FX Routing** [Medium] - Individual routing options per voice (primary, noise, plaits, sampler) to mix/bypass global FX chain flexibly; enable dry/wet/blend modes for each voice against delay/reverb
 - **Error Message Refactor** [Low-Medium] - Standardize error output system-wide: restore "ERROR:" prefix for all error messages; implement red color for error messages; ensure 46-char compliance with prefix
 - **Multiple Reverb Types** [Medium] - Add alternative reverb algorithms (JVerb, FDN, etc.); allow switching between reverb types; maintain current FreeVerb as default
@@ -60,9 +66,10 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **Oscillator Sync** [Medium] - Hard/soft sync between oscillators for classic analog tones
 
 ### P3 - Future / Large Effort
-- ~~**Cross-Platform Compatibility**~~ ✅ LINUX DONE (v0.5.2) - Windows/Intel Mac remaining - see `docs/CROSS_PLATFORM_PORT.md` for implementation guide
+- ~~**Cross-Platform Compatibility**~~ ✅ DONE - Linux (v0.5.2), Windows (v0.6.0); Intel Mac remaining - see `docs/CROSS_PLATFORM_PORT.md` for implementation guide
 - **Sample Playback System** [Very High] - Major feature (see SAMPLE_PLAYBACK_DESIGN.md) - done v0.5.0
 - **Song Mode/Arranger** [Very High] - Pattern chaining, arrangement sequencing, section management for complete song construction beyond loop-based performance
+- **Custom Keybinds** [High] - User-configurable keyboard shortcuts via config file; addresses terminal conflicts (F11, Ctrl+Shift) and international keyboard layouts
 - **Command Naming & Param Organization Overhaul** [Medium] - Comprehensive consistency pass for all command names, aliases, and parameter organization; establish and document naming conventions; improve intuitiveness across voice types (osc, noise, plaits, sampler); unify modbus/modulation patterns
 - **Additional Voice Types** [Very High] - Architecture change
 - **Optional Polyphony** [Very High] - Architecture change
@@ -70,6 +77,28 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 ---
 
 ## Version History (Latest First)
+
+### v0.6.0 (January 2026) - COMPLETE
+
+| Feature | Effort | Status |
+|---------|--------|--------|
+| Windows Platform Support | High | **DONE** |
+| Windows CI/CD Pipeline | Medium | **DONE** |
+| SC 3.14+ Compatibility Fixes | Low | **DONE** |
+| Platform-Aware Sample Paths | Low | **DONE** |
+| Documentation Updates | Low | **DONE** |
+
+**Windows Platform Support** - Full Windows x86_64 support with self-contained ZIP bundle. Config stored in `%APPDATA%\monokit\`. SuperCollider 3.14.1, sc3-plugins, and mi-UGens bundled.
+
+**Windows CI/CD Pipeline** - Automated Windows builds in GitHub Actions release workflow. Builds alongside macOS and Linux. SHA256 checksums for all release artifacts.
+
+**SC 3.14+ Compatibility Fixes** - Select.ar rate matching (K2A.ar wrapper for control-rate selectors). Limiter multichannel pattern fix. Windows SC3plugins path discovery (.scx at root vs subdirs).
+
+**Platform-Aware Sample Paths** - Fixed hardcoded `~/.config/monokit/samples` to use `monokit_config_dir()` for cross-platform support.
+
+**Documentation Updates** - README, MANUAL, CHANGELOG updated with Windows installation instructions, config paths, and terminal recommendations.
+
+---
 
 ### v0.5.32 (January 2026) - COMPLETE
 
@@ -385,9 +414,9 @@ For detailed completion records, see `CHANGELOG.md` and `docs/history/`
 
 ### Infrastructure
 - Direct scsynth integration (bundled binary)
-- Cross-platform: macOS (Homebrew), Linux (AppImage/tarball)
+- Cross-platform: macOS (Homebrew), Linux (AppImage/tarball), Windows (ZIP)
 - Automated release pipeline (GitHub Actions)
-- Theme system with 30+ themes
+- Theme system with 48 themes
 - Scene and preset management
 - Audio recording via DiskOut
 

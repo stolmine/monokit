@@ -10,15 +10,12 @@ All notable changes to monokit. Versions ordered newest to oldest.
 
 **Windows Platform Support**
 - Full Windows x86_64 support with self-contained bundle
-- Two distribution formats:
-  - Portable EXE (SFX) - single file, extracts to temp, auto-launches
-  - ZIP archive - manual extraction for permanent install
-- Config stored in `%APPDATA%\monokit\` (persists across SFX runs)
+- ZIP archive distribution with scsynth and all required plugins
+- Config stored in `%APPDATA%\monokit\` (persists across runs)
 
 **Windows CI/CD Pipeline**
 - Automated Windows builds in GitHub Actions release workflow
 - SuperCollider 3.14.1, sc3-plugins, and mi-UGens bundled
-- 7-Zip SFX creation for portable single-file distribution
 
 ### Bug Fixes
 

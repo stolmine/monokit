@@ -1905,16 +1905,19 @@ Configuration files are stored in platform-specific locations:
 **macOS:**
 - Config: `~/Library/Application Support/monokit/config.toml`
 - Scenes: `~/Library/Application Support/monokit/scenes/`
+- Samples: `~/Library/Application Support/monokit/samples/`
 - User presets: `~/Library/Application Support/monokit/presets/`
 
 **Linux:**
 - Config: `~/.config/monokit/config.toml`
 - Scenes: `~/.config/monokit/scenes/`
+- Samples: `~/.config/monokit/samples/`
 - User presets: `~/.config/monokit/presets/`
 
 **Windows:**
 - Config: `%APPDATA%\monokit\config.toml`
 - Scenes: `%APPDATA%\monokit\scenes\`
+- Samples: `%APPDATA%\monokit\samples\`
 - User presets: `%APPDATA%\monokit\presets\`
 
 Note: `%APPDATA%` typically expands to `C:\Users\<username>\AppData\Roaming`

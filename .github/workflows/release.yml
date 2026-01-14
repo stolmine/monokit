@@ -280,62 +280,6 @@ jobs:
           $hash = (Get-FileHash "$name.zip" -Algorithm SHA256).Hash.ToLower()
           "$hash  $name.zip" | Out-File -Encoding ASCII "$name.zip.sha256"
 
-      - name: Create self-extracting exe (SFX)
-        shell: pwsh
-        run: |
-          $version = "${{ github.ref_name }}".TrimStart('v')
-          $arch = "x86_64-pc-windows-msvc"
-          $name = "monokit-$version-$arch"
-          $repoRoot = $PWD.Path
-
-          # Install 7-Zip for creating the archive
-          choco install 7zip -y
-
-          # Download LZMA SDK which contains the installer SFX module (7zSD.sfx)
-          Write-Host "Downloading LZMA SDK for SFX module..."
-          Invoke-WebRequest -Uri "https://www.7-zip.org/a/lzma2408.7z" -OutFile "lzma-sdk.7z"
-          & "C:\Program Files\7-Zip\7z.exe" x "lzma-sdk.7z" -o"lzma-sdk" -y
-
-          # Find 7zSD.sfx in the SDK (it's in bin folder)
-          $sfxStub = Get-ChildItem -Path "$repoRoot\lzma-sdk" -Filter "7zSD.sfx" -Recurse | Select-Object -First 1 -ExpandProperty FullName
-          if (-not $sfxStub) {
-            Write-Host "LZMA SDK contents:"
-            Get-ChildItem -Path "$repoRoot\lzma-sdk" -Recurse | ForEach-Object { Write-Host "  $($_.FullName)" }
-            Write-Error "7zSD.sfx not found in LZMA SDK"
-            exit 1
-          }
-          Write-Host "Using SFX stub: $sfxStub"
-
-          # Create SFX config
-          $configFile = "$repoRoot\sfx_config.txt"
-          $sfxConfig = ";!@Install@!UTF-8!`nTitle=`"Monokit $version`"`nRunProgram=`"monokit.exe`"`nDirectory=`"%%T\monokit-$version`"`n;!@InstallEnd@!"
-          [System.IO.File]::WriteAllText($configFile, $sfxConfig)
-
-          # Create 7z archive of the bundle
-          $bundleDir = "$repoRoot\dist\bundle"
-          $archiveFile = "$bundleDir\$name.7z"
-          & "C:\Program Files\7-Zip\7z.exe" a -t7z -mx=9 $archiveFile "$bundleDir\$name\*"
-
-          # Combine SFX stub + config + archive
-          Write-Host "Creating SFX executable..."
-          $sfxBytes = [System.IO.File]::ReadAllBytes($sfxStub)
-          $configBytes = [System.IO.File]::ReadAllBytes($configFile)
-          $archiveBytes = [System.IO.File]::ReadAllBytes($archiveFile)
-          $combined = $sfxBytes + $configBytes + $archiveBytes
-          $exeFile = "$bundleDir\$name.exe"
-          [System.IO.File]::WriteAllBytes($exeFile, $combined)
-
-          # Verify and create SHA256 checksum
-          if (Test-Path $exeFile) {
-            $hash = (Get-FileHash $exeFile -Algorithm SHA256).Hash.ToLower()
-            "$hash  $name.exe" | Out-File -Encoding ASCII "$bundleDir\$name.exe.sha256"
-            $sizeMB = (Get-Item $exeFile).Length / 1MB
-            Write-Host "Created SFX: $name.exe ($([math]::Round($sizeMB, 2)) MB)"
-          } else {
-            Write-Error "Failed to create SFX executable"
-            exit 1
-          }
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -343,7 +287,6 @@ jobs:
           path: |
             dist/bundle/*.zip
             dist/bundle/*.sha256
-            dist/bundle/*.exe
 
   release:
     needs: [build-macos, build-linux, build-windows]
@@ -387,7 +330,6 @@ jobs:
             dist/**/*.sha256
             dist/**/*.AppImage
             dist/**/*.zip
-            dist/**/*.exe
           generate_release_notes: true
           body: |
             ## Installation
@@ -415,18 +357,10 @@ jobs:
 
             **Note:** Linux builds require PipeWire or JACK for audio. Audio auto-connects to PipeWire if available.
 
-            ### Windows (x86_64) - Portable EXE (Recommended)
-            1. Download `monokit-*-x86_64-pc-windows-msvc.exe`
-            2. Double-click to run (extracts to temp and launches automatically)
-
-            Single portable file, similar to Linux AppImage.
-
-            ### Windows (x86_64) - ZIP Archive
+            ### Windows (x86_64)
             1. Extract `monokit-*-x86_64-pc-windows-msvc.zip`
             2. Open the extracted folder
             3. Run `monokit.exe`
-
-            Use this if you prefer to keep the files in a permanent location.
 
             **Note:** For low-latency audio on Windows, ASIO drivers are recommended (e.g., ASIO4ALL or your audio interface's ASIO driver).
 

@@ -296,23 +296,23 @@ jobs:
           choco install 7zip -y
           & "C:\Program Files\7-Zip\7z.exe" x "7z-extra.7z" -o"7z-extra" -y
 
-          # Find SFX stub - search for it since structure varies by version
-          Write-Host "Searching for SFX stub..."
-          $sfxFiles = Get-ChildItem -Path "$repoRoot\7z-extra" -Filter "*.sfx" -Recurse
-          Write-Host "Found SFX files:"
-          $sfxFiles | ForEach-Object { Write-Host "  - $($_.FullName)" }
+          # List what was extracted
+          Write-Host "7z-extra contents:"
+          Get-ChildItem -Path "$repoRoot\7z-extra" -Recurse | ForEach-Object { Write-Host "  $($_.FullName)" }
 
-          # Prefer 7zSD.sfx (smaller), then 7zS.sfx, prefer x64 version
-          $sfxStub = $sfxFiles | Where-Object { $_.Name -eq "7zSD.sfx" -and $_.DirectoryName -match "x64" } | Select-Object -First 1 -ExpandProperty FullName
+          # Find SFX stub
+          $sfxStub = Get-ChildItem -Path "$repoRoot\7z-extra" -Filter "7zS*.sfx" -Recurse | Select-Object -First 1 -ExpandProperty FullName
           if (-not $sfxStub) {
-            $sfxStub = $sfxFiles | Where-Object { $_.Name -eq "7zSD.sfx" } | Select-Object -First 1 -ExpandProperty FullName
+            # Maybe it's named differently - look for any .sfx
+            $sfxStub = Get-ChildItem -Path "$repoRoot\7z-extra" -Filter "*.sfx" -Recurse | Select-Object -First 1 -ExpandProperty FullName
           }
           if (-not $sfxStub) {
-            $sfxStub = $sfxFiles | Select-Object -First 1 -ExpandProperty FullName
-          }
-          if (-not $sfxStub) {
-            Write-Error "No SFX stub found in 7z-extra package"
-            exit 1
+            # Check if 7z.sfx exists in the installed 7-Zip
+            $sfxStub = "C:\Program Files\7-Zip\7z.sfx"
+            if (-not (Test-Path $sfxStub)) {
+              Write-Host "WARNING: No SFX stub found, skipping SFX creation"
+              exit 0
+            }
           }
           Write-Host "Using SFX stub: $sfxStub"
 

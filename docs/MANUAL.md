@@ -1,8 +1,10 @@
 # Monokit Manual
 
-Updated 2026-01-08
+Updated 2026-01-13
 
 **Version 0.5.0** - Teletype-style scripting for a complex oscillator voice
+
+Runs on macOS (Apple Silicon), Linux (x86_64), and Windows (x86_64).
 
 ---
 
@@ -1898,13 +1900,24 @@ PRINT SEQ "C3 E3 G3"  # Print sequence step
 
 ## Configuration File
 
-User config: `~/.config/monokit/config.toml`
+Configuration files are stored in platform-specific locations:
 
-Scenes: `~/.config/monokit/scenes/`
+**macOS:**
+- Config: `~/Library/Application Support/monokit/config.toml`
+- Scenes: `~/Library/Application Support/monokit/scenes/`
+- User presets: `~/Library/Application Support/monokit/presets/`
 
-User presets: `~/.config/monokit/presets/`
+**Linux:**
+- Config: `~/.config/monokit/config.toml`
+- Scenes: `~/.config/monokit/scenes/`
+- User presets: `~/.config/monokit/presets/`
 
-Themes: `~/.config/monokit/themes/themes.toml`
+**Windows:**
+- Config: `%APPDATA%\monokit\config.toml`
+- Scenes: `%APPDATA%\monokit\scenes\`
+- User presets: `%APPDATA%\monokit\presets\`
+
+Note: `%APPDATA%` typically expands to `C:\Users\<username>\AppData\Roaming`
 
 ---
 
@@ -1913,13 +1926,18 @@ Themes: `~/.config/monokit/themes/themes.toml`
 **Minimum:** 50 columns × 18 rows
 
 **Recommended:**
-- True color support (iTerm2, Kitty, Alacritty)
+- True color support (iTerm2, Kitty, Alacritty, Windows Terminal)
 - 256-color fallback supported (automatic)
 - Monospace font (Monaco recommended for block chars)
 
-**Terminal.app limitations:**
+**macOS Terminal.app limitations:**
 - Limited color support (256-color mode auto-enabled)
 - Use `METER.ASCII 1` for better meter rendering
+
+**Windows:**
+- Windows Terminal (recommended) - full true color support
+- PowerShell or Command Prompt work but may have limited color support
+- For low-latency audio, install ASIO drivers (ASIO4ALL or your interface's native driver)
 
 ---
 

@@ -273,6 +273,48 @@ jobs:
           $hash = (Get-FileHash "$name.zip" -Algorithm SHA256).Hash.ToLower()
           "$hash  $name.zip" | Out-File -Encoding ASCII "$name.zip.sha256"
 
+      - name: Create self-extracting exe (SFX)
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          $arch = "x86_64-pc-windows-msvc"
+          $name = "monokit-$version-$arch"
+
+          # Download 7-Zip extra (contains SFX module)
+          $7zUrl = "https://www.7-zip.org/a/7z2408-extra.7z"
+          Invoke-WebRequest -Uri $7zUrl -OutFile "7z-extra.7z"
+
+          # Install 7-Zip to extract the extra package
+          choco install 7zip -y
+          & "C:\Program Files\7-Zip\7z.exe" x "7z-extra.7z" -o"7z-extra" -y
+
+          # Create SFX config for auto-extract and run
+          $sfxConfig = @"
+          ;!@Install@!UTF-8!
+          Title="Monokit $version"
+          RunProgram="monokit.exe"
+          Directory="%%T\\monokit-$version"
+          ;!@InstallEnd@!
+          "@
+          $sfxConfig | Out-File -Encoding UTF8 "sfx_config.txt"
+
+          # Create 7z archive of the bundle
+          cd dist\bundle
+          & "C:\Program Files\7-Zip\7z.exe" a -t7z -mx=9 "$name.7z" "$name\*"
+
+          # Combine SFX stub + config + archive
+          $sfxStub = "..\..\7z-extra\7zSD.sfx"
+          $configFile = "..\..\sfx_config.txt"
+
+          # Use cmd to concatenate binary files
+          cmd /c "copy /b $sfxStub + $configFile + $name.7z $name.exe"
+
+          # Create SHA256 checksum for SFX
+          $hash = (Get-FileHash "$name.exe" -Algorithm SHA256).Hash.ToLower()
+          "$hash  $name.exe" | Out-File -Encoding ASCII "$name.exe.sha256"
+
+          Write-Host "Created SFX: $name.exe"
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -280,6 +322,7 @@ jobs:
           path: |
             dist/bundle/*.zip
             dist/bundle/*.sha256
+            dist/bundle/*.exe
 
   release:
     needs: [build-macos, build-linux, build-windows]
@@ -323,6 +366,7 @@ jobs:
             dist/**/*.sha256
             dist/**/*.AppImage
             dist/**/*.zip
+            dist/**/*.exe
           generate_release_notes: true
           body: |
             ## Installation
@@ -350,12 +394,22 @@ jobs:
 
             **Note:** Linux builds require PipeWire or JACK for audio. Audio auto-connects to PipeWire if available.
 
-            ### Windows (x86_64)
+            ### Windows (x86_64) - Portable EXE (Recommended)
+            1. Download `monokit-*-x86_64-pc-windows-msvc.exe`
+            2. Double-click to run (extracts to temp and launches automatically)
+
+            Single portable file, similar to Linux AppImage.
+
+            ### Windows (x86_64) - ZIP Archive
             1. Extract `monokit-*-x86_64-pc-windows-msvc.zip`
             2. Open the extracted folder
             3. Run `monokit.exe`
 
-            **Note:** For low-latency audio, ASIO drivers are recommended (e.g., ASIO4ALL or your audio interface's ASIO driver).
+            Use this if you prefer to keep the files in a permanent location.
+
+            **Note:** For low-latency audio on Windows, ASIO drivers are recommended (e.g., ASIO4ALL or your audio interface's ASIO driver).
+
+            **Config location:** `%APPDATA%\monokit\` (persists across runs)
 
             ## What's Included
 

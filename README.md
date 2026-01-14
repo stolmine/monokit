@@ -8,7 +8,7 @@ Designed for percussion, glitch, and microsound purposes, but has broad range.
 
 The UX and core logic is written in Rust, the audio components are handled by SuperCollider.
 
-Only for M series Macs and Linux machines at the moment.
+Runs on macOS (Apple Silicon), Linux (x86_64), and Windows (x86_64).
 
 See command_reference.md for quick overview of basic options.
 
@@ -102,6 +102,28 @@ cd monokit-*-x86_64-unknown-linux-gnu
 ./monokit
 ```
 
+### Windows (Portable EXE)
+
+Download the `.exe` from the [latest release](https://github.com/stolmine/monokit/releases/latest):
+
+1. Download `monokit-*-x86_64-pc-windows-msvc.exe`
+2. Double-click to run (extracts to temp and launches automatically)
+
+Single portable file, similar to Linux AppImage. Config is stored in `%APPDATA%\monokit\`.
+
+### Windows (ZIP Archive)
+
+For a permanent installation:
+
+```powershell
+# Extract the ZIP
+Expand-Archive monokit-*-x86_64-pc-windows-msvc.zip -DestinationPath C:\monokit
+cd C:\monokit\monokit-*
+.\monokit.exe
+```
+
+**Note:** For low-latency audio on Windows, ASIO drivers are recommended (e.g., ASIO4ALL or your audio interface's native ASIO driver).
+
 ### Building from Source
 
 ```bash
@@ -132,7 +154,10 @@ I'd suggest exploring `/themes/themes.toml` if you do not like the look of your 
 
 ## Configuration
 
-User configuration is stored in `~/.config/monokit/config.toml`.
+User configuration is stored in platform-specific locations:
+- **macOS:** `~/Library/Application Support/monokit/config.toml`
+- **Linux:** `~/.config/monokit/config.toml`
+- **Windows:** `%APPDATA%\monokit\config.toml`
 
 48 themes are included out of the box. Run `THEMES` to list available themes, or `THEME <name>` to switch.
 

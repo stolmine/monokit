@@ -296,12 +296,25 @@ jobs:
           choco install 7zip -y
           & "C:\Program Files\7-Zip\7z.exe" x "7z-extra.7z" -o"7z-extra" -y
 
-          # Find SFX stub (prefer x64 version)
-          $sfxStub = "$repoRoot\7z-extra\x64\7zSD.sfx"
-          if (-not (Test-Path $sfxStub)) {
-            $sfxStub = "$repoRoot\7z-extra\7zSD.sfx"
+          # Find SFX stub - search for it since structure varies by version
+          Write-Host "Searching for SFX stub..."
+          $sfxFiles = Get-ChildItem -Path "$repoRoot\7z-extra" -Filter "*.sfx" -Recurse
+          Write-Host "Found SFX files:"
+          $sfxFiles | ForEach-Object { Write-Host "  - $($_.FullName)" }
+
+          # Prefer 7zSD.sfx (smaller), then 7zS.sfx, prefer x64 version
+          $sfxStub = $sfxFiles | Where-Object { $_.Name -eq "7zSD.sfx" -and $_.DirectoryName -match "x64" } | Select-Object -First 1 -ExpandProperty FullName
+          if (-not $sfxStub) {
+            $sfxStub = $sfxFiles | Where-Object { $_.Name -eq "7zSD.sfx" } | Select-Object -First 1 -ExpandProperty FullName
           }
-          Write-Host "SFX stub: $sfxStub"
+          if (-not $sfxStub) {
+            $sfxStub = $sfxFiles | Select-Object -First 1 -ExpandProperty FullName
+          }
+          if (-not $sfxStub) {
+            Write-Error "No SFX stub found in 7z-extra package"
+            exit 1
+          }
+          Write-Host "Using SFX stub: $sfxStub"
 
           # Create SFX config
           $configFile = "$repoRoot\sfx_config.txt"

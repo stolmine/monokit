@@ -214,7 +214,7 @@ SynthDef(\monokit_main, {
     discontinuity = dcAmount + (dcEnv * daCtl / 16383);
     SendReply.kr(Changed.kr(dc), '/dc_changed', [dc, dm, daCtl, discontinuity]);
     sig = sig + (modOsc * discontinuity);
-    sig = Select.ar(dm.clip(0, 6).round, [
+    sig = Select.ar(K2A.ar(dm.clip(0, 6).round), [
         sig.fold2(1),
         sig.tanh,
         sig.softclip,
@@ -233,7 +233,7 @@ SynthDef(\monokit_main, {
 
     filterCutoff = fcSmooth + ((fkSmooth / 16383) * primaryFreq) + (filterEnv * (feSmooth / 16383) * 5000) + (modOsc * modBusValue * mf_f * 5000);
     filterCutoff = filterCutoff.clip(20, 20000);
-    sig = Select.ar(ft.clip(0, 13).round, [
+    sig = Select.ar(K2A.ar(ft.clip(0, 13).round), [
         SVF.ar(sig, filterCutoff,
             (((fqSmooth / 16383) * 0.9 + 0.1) + (modOsc * modBusValue * mf_q * 0.5)).clip(0.1, 1.0),
             1, 0, 0, 0, 0),
@@ -275,7 +275,7 @@ SynthDef(\monokit_main, {
             0, 1, 0, 0, 0)
     ]);
 
-    ringModOsc = Select.ar(rgw.clip(0, 3).round, [
+    ringModOsc = Select.ar(K2A.ar(rgw.clip(0, 3).round), [
         SinOsc.ar(rgfSmooth),
         LFTri.ar(rgfSmooth),
         LFSaw.ar(rgfSmooth),
@@ -349,20 +349,20 @@ SynthDef(\monokit_main, {
     brRepeatedR = BufRd.ar(1, beatRepeatBufR, brReadPos, 0, 4);
 
     brMix = (br_mix / 16383).clip(0, 1);
-    sigL = Select.ar(brActive, [
+    sigL = Select.ar(K2A.ar(brActive), [
         sigL,
         (sigL * (1 - brMix)) + (brRepeatedL * brMix)
     ]);
-    sigR = Select.ar(brActive, [
+    sigR = Select.ar(K2A.ar(brActive), [
         sigR,
         (sigR * (1 - brMix)) + (brRepeatedR * brMix)
     ]);
 
-    psInputL = Select.ar(ps_targ.clip(0, 1), [
+    psInputL = Select.ar(K2A.ar(ps_targ.clip(0, 1)), [
         sigL,
         brRepeatedL * brMix
     ]);
-    psInputR = Select.ar(ps_targ.clip(0, 1), [
+    psInputR = Select.ar(K2A.ar(ps_targ.clip(0, 1)), [
         sigR,
         brRepeatedR * brMix
     ]);
@@ -370,7 +370,7 @@ SynthDef(\monokit_main, {
     psRatio = (ps_semi / 12).midiratio;
     psGrainSize = (ps_grain / 1000).clip(0.005, 0.1);
 
-    psShifted = Select.ar(ps_mode.clip(0, 1), [
+    psShifted = Select.ar(K2A.ar(ps_mode.clip(0, 1)), [
         [
             PitchShift.ar(
                 psInputL,
@@ -394,11 +394,11 @@ SynthDef(\monokit_main, {
     ]);
 
     psMix = (ps_mix / 16383).clip(0, 1);
-    sigL = Select.ar(ps_targ.clip(0, 1), [
+    sigL = Select.ar(K2A.ar(ps_targ.clip(0, 1)), [
         (sigL * (1 - psMix)) + (psShifted[0] * psMix),
         sigL + (psShifted[0] * psMix)
     ]);
-    sigR = Select.ar(ps_targ.clip(0, 1), [
+    sigR = Select.ar(K2A.ar(ps_targ.clip(0, 1)), [
         (sigR * (1 - psMix)) + (psShifted[1] * psMix),
         sigR + (psShifted[1] * psMix)
     ]);
@@ -424,8 +424,8 @@ SynthDef(\monokit_main, {
         trig: t_cl_trig
     );
 
-    sigL = Select.ar(cloudsActive, [sigL, cloudsProcessedL * 3]);
-    sigR = Select.ar(cloudsActive, [sigR, cloudsProcessedR * 3]);
+    sigL = Select.ar(K2A.ar(cloudsActive), [sigL, cloudsProcessedL * 3]);
+    sigR = Select.ar(K2A.ar(cloudsActive), [sigR, cloudsProcessedR * 3]);
 
     dmodeSmooth = Lag.kr(dmode, 0.02);
     delayWetSmooth = Lag.kr(dwSmooth / 16383, 0.01);
@@ -436,7 +436,7 @@ SynthDef(\monokit_main, {
         0.999
     ]);
 
-    delayInput = Select.ar(dmodeSmooth.clip(0, 2).round, [
+    delayInput = Select.ar(K2A.ar(dmodeSmooth.clip(0, 2).round), [
         sigL,
         sigL,
         sigL * delayWetSmooth
@@ -446,15 +446,15 @@ SynthDef(\monokit_main, {
     delayTime = Lag.kr(dt / 1000, 0.01).clip(0.001, 4.0);
     delayFeedback = Lag.kr(df / 16383, 0.01);
     delayedL = CombC.ar(LPF.ar(delayInput, dlp), 4.0, delayTime, delayFeedback * 3 * dfeedbackMult);
-    delayedR = CombC.ar(LPF.ar(Select.ar(dmodeSmooth.clip(0, 2).round, [sigR, sigR, sigR * delayWetSmooth]), dlp), 4.0, delayTime * 1.02, delayFeedback * 3 * dfeedbackMult);
+    delayedR = CombC.ar(LPF.ar(Select.ar(K2A.ar(dmodeSmooth.clip(0, 2).round), [sigR, sigR, sigR * delayWetSmooth]), dlp), 4.0, delayTime * 1.02, delayFeedback * 3 * dfeedbackMult);
 
-    sigL = Select.ar(dmodeSmooth.clip(0, 2).round, [
+    sigL = Select.ar(K2A.ar(dmodeSmooth.clip(0, 2).round), [
         sigL,
         (sigL * (1 - delayWetSmooth)) + (delayedL * delayWetSmooth),
         sigL + (delayedL * Select.kr(dtail.clip(0, 2).round, [delayWetSmooth, 1, 1]))
     ]);
 
-    sigR = Select.ar(dmodeSmooth.clip(0, 2).round, [
+    sigR = Select.ar(K2A.ar(dmodeSmooth.clip(0, 2).round), [
         sigR,
         (sigR * (1 - delayWetSmooth)) + (delayedR * delayWetSmooth),
         sigR + (delayedR * Select.kr(dtail.clip(0, 2).round, [delayWetSmooth, 1, 1]))
@@ -502,7 +502,7 @@ SynthDef(\monokit_main, {
         1.0
     ]);
 
-    reverbInput = Select.ar(rmodeSmooth.clip(0, 2).round, [
+    reverbInput = Select.ar(K2A.ar(rmodeSmooth.clip(0, 2).round), [
         DC.ar(0),
         sigL,
         sigL * reverbWetSmooth
@@ -510,28 +510,27 @@ SynthDef(\monokit_main, {
 
     #reverbedL, reverbedR = FreeVerb2.ar(
         DelayC.ar(reverbInput, 0.1, rp / 1000),
-        DelayC.ar(Select.ar(rmodeSmooth.clip(0, 2).round, [DC.ar(0), sigR, sigR * reverbWetSmooth]), 0.1, rp / 1000),
+        DelayC.ar(Select.ar(K2A.ar(rmodeSmooth.clip(0, 2).round), [DC.ar(0), sigR, sigR * reverbWetSmooth]), 0.1, rp / 1000),
         mix: 1,
         room: rroomSize,
         damp: (rh / 16383).clip(0, 1)
     );
 
-    sigL = Select.ar(rmodeSmooth.clip(0, 2).round, [
+    sigL = Select.ar(K2A.ar(rmodeSmooth.clip(0, 2).round), [
         sigL,
         (sigL * (1 - reverbWetSmooth)) + (reverbedL * reverbWetSmooth),
         sigL + (reverbedL * Select.kr(rtail.clip(0, 2).round, [reverbWetSmooth, 1, 1]))
     ]);
 
-    sigR = Select.ar(rmodeSmooth.clip(0, 2).round, [
+    sigR = Select.ar(K2A.ar(rmodeSmooth.clip(0, 2).round), [
         sigR,
         (sigR * (1 - reverbWetSmooth)) + (reverbedR * reverbWetSmooth),
         sigR + (reverbedR * Select.kr(rtail.clip(0, 2).round, [reverbWetSmooth, 1, 1]))
     ]);
 
-    #sigL, sigR = Select.ar(K2A.ar(limit.clip(0, 1).round), [
-        [sigL, sigR],
-        Limiter.ar([sigL, sigR], 1.0, 0.01)
-    ]);
+    // Apply limiter separately to each channel to avoid multichannel Select.ar issues
+    sigL = Select.ar(K2A.ar(limit.clip(0, 1).round), [sigL, Limiter.ar(sigL, 1.0, 0.01)]);
+    sigR = Select.ar(K2A.ar(limit.clip(0, 1).round), [sigR, Limiter.ar(sigR, 1.0, 0.01)]);
 
     sigL = LeakDC.ar(sigL);
     sigR = LeakDC.ar(sigR);

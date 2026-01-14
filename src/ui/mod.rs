@@ -8,7 +8,7 @@ pub mod search_highlight;
 pub mod state_highlight;
 
 use anyhow::Result;
-use crossterm::event::{self, Event, KeyCode, KeyModifiers};
+use crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers};
 use ratatui::{prelude::*, widgets::Block};
 use std::sync::mpsc;
 use std::time::Duration;
@@ -372,6 +372,10 @@ pub fn run_app<B: ratatui::backend::Backend>(
 
         if event::poll(Duration::from_millis(16))? {
             if let Event::Key(key) = event::read()? {
+                // Windows reports both Press and Release events - only handle Press
+                if key.kind != KeyEventKind::Press {
+                    continue;
+                }
                 let is_help = app.current_page == Page::Help;
                 let has_alt = key.modifiers.contains(KeyModifiers::ALT);
 

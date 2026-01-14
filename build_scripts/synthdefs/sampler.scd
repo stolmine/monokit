@@ -75,7 +75,7 @@ SynthDef(\monokit_sampler, {
     );
 
     phasorAtEnd = (phase >= (playEnd - 1));
-    oneShotMute = Select.ar(s_loop, [
+    oneShotMute = Select.ar(K2A.ar(s_loop), [
         SetResetFF.ar(phasorAtEnd, trigAr),
         DC.ar(0)
     ]);
@@ -99,12 +99,12 @@ SynthDef(\monokit_sampler, {
     sig = sig * env * volScale;
 
     // Filter activates when base params OR mod amounts are set (.sign clamps to 0/1)
-    sig = Select.ar(((sf_cut < 16383) + (sf_res > 0) + (sf_cutmod > 0) + (sf_resmod > 0)).sign, [
+    sig = Select.ar(K2A.ar(((sf_cut < 16383) + (sf_res > 0) + (sf_cutmod > 0) + (sf_resmod > 0)).sign), [
         sig,
         {
             filterCutoff = ((sf_cut / 16383) + (modIn * (sf_cutmod / 16383))).clip(0, 1).linexp(0, 1, 20, 20000);
             filterRes = ((sf_res / 16383) + (modIn * (sf_resmod / 16383))).clip(0, 0.9);
-            Select.ar(sf_type.clip(0, 13).round, [
+            Select.ar(K2A.ar(sf_type.clip(0, 13).round), [
                 SVF.ar(sig, filterCutoff, (filterRes + 0.1).clip(0.1, 1.0), 1, 0, 0, 0, 0),
                 SVF.ar(sig, filterCutoff, (filterRes + 0.1).clip(0.1, 1.0), 0, 1, 0, 0, 0),
                 SVF.ar(sig, filterCutoff, (filterRes + 0.1).clip(0.1, 1.0), 0, 0, 1, 0, 0),
@@ -123,7 +123,7 @@ SynthDef(\monokit_sampler, {
         }.value
     ]);
 
-    sig = Select.ar(sf_deci > 0, [
+    sig = Select.ar(K2A.ar(sf_deci > 0), [
         sig,
         {
             deciBits = sf_bits.clip(1, 16);
@@ -137,7 +137,7 @@ SynthDef(\monokit_sampler, {
 
     // MiRings resonator (only if available)
     sig = if(hasMiRings, {
-        Select.ar(srings_wet > 0, [
+        Select.ar(K2A.ar(srings_wet > 0), [
             sig,
             {
                 var ringsWet = (srings_wet / 16383).clip(0, 1);

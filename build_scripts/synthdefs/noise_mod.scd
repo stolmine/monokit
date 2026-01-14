@@ -11,7 +11,7 @@ SynthDef(\monokit_noise, {
     nvDynamic = Lag.kr(nv, 0.0001);
     nvSmooth = Lag.kr(nvDynamic / 16383, 0.01);
 
-    noiseRaw = Select.ar(nwVal, [
+    noiseRaw = Select.ar(K2A.ar(nwVal), [
         WhiteNoise.ar(1),
         PinkNoise.ar(1),
         BrownNoise.ar(1)
@@ -75,7 +75,7 @@ SynthDef(\monokit_mod, {
 
     modulatorFreq = mfSmooth + noiseToMod;
 
-    modOsc = Select.ar(mw.clip(0, 3).round, [
+    modOsc = Select.ar(K2A.ar(mw.clip(0, 3).round), [
         SinOsc.ar(modulatorFreq),
         LFTri.ar(modulatorFreq),
         LFSaw.ar(modulatorFreq),
@@ -84,7 +84,7 @@ SynthDef(\monokit_mod, {
 
     modulatorFreq = modulatorFreq * (1 + (modOsc * modBusValue * md));
 
-    modOsc = Select.ar(mw.clip(0, 3).round, [
+    modOsc = Select.ar(K2A.ar(mw.clip(0, 3).round), [
         SinOsc.ar(modulatorFreq),
         LFTri.ar(modulatorFreq),
         LFSaw.ar(modulatorFreq),

@@ -71,7 +71,7 @@ SynthDef(\monokit_primary, {
     primaryFreq = primaryFreq * (1 + (modIn * modBusValue * mp * 4));
 
     fmAmount = (fmIndex + (fmEnv * faCtl / 16383)) * 1000;
-    primaryOsc = Select.ar(pw.clip(0, 2).round, [
+    primaryOsc = Select.ar(K2A.ar(pw.clip(0, 2).round), [
         SinOsc.ar(primaryFreq + (modIn * fmAmount)),
         LFTri.ar(primaryFreq + (modIn * fmAmount)),
         LFSaw.ar(primaryFreq + (modIn * fmAmount))

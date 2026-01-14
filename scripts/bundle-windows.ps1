@@ -123,6 +123,7 @@ Copy-Item "$SynthDefOutput\*.scsyndef" "$BundleDir\Resources\synthdefs\"
 Write-Host "Copying required plugins..."
 
 # Core UGen plugins required by monokit
+# Note: BufIOUGens is built into scsynth/IOUGens on Windows (not a separate .scx)
 $CorePlugins = @(
     "BinaryOpUGens.scx",
     "UnaryOpUGens.scx",
@@ -134,7 +135,6 @@ $CorePlugins = @(
     "PanUGens.scx",
     "TriggerUGens.scx",
     "OscUGens.scx",
-    "BufIOUGens.scx",
     "GrainUGens.scx",
     "FFT_UGens.scx",
     "PV_ThirdParty.scx",

@@ -172,19 +172,18 @@ jobs:
           New-Item -ItemType Directory -Force -Path "C:\SuperCollider" | Out-Null
           Expand-Archive -Path $scZip -DestinationPath "C:\SuperCollider" -Force
 
-          # The ZIP extracts to SuperCollider-3.14.1 subfolder
-          $extractedDir = "C:\SuperCollider\SuperCollider-$scVersion"
-          if (Test-Path $extractedDir) {
-            Rename-Item $extractedDir "C:\SuperCollider\SuperCollider"
-          }
-
+          # The ZIP extracts to "SuperCollider" subfolder (not versioned)
           # Verify installation
           if (Test-Path "C:\SuperCollider\SuperCollider\scsynth.exe") {
             Write-Host "SuperCollider installed successfully"
-            Get-ChildItem "C:\SuperCollider\SuperCollider" | Select-Object Name
+            Write-Host "Plugins available:"
+            Get-ChildItem "C:\SuperCollider\SuperCollider\plugins\*.scx" |
+              Where-Object { $_.Name -notmatch 'supernova' } |
+              ForEach-Object { Write-Host "  - $($_.Name)" }
           } else {
             Write-Error "SuperCollider installation failed"
-            Get-ChildItem "C:\SuperCollider" -Recurse | Select-Object FullName
+            Write-Host "Directory contents:"
+            Get-ChildItem "C:\SuperCollider" -Recurse -Depth 2 | Select-Object FullName
             exit 1
           }
 
@@ -261,21 +260,6 @@ jobs:
       - name: Run tests
         run: cargo test --verbose
 
-      - name: Debug SuperCollider structure
-        shell: pwsh
-        run: |
-          Write-Host "=== SuperCollider directory structure ==="
-          Get-ChildItem "C:\SuperCollider\SuperCollider" | Select-Object Name
-          Write-Host ""
-          Write-Host "=== Plugins directory ==="
-          if (Test-Path "C:\SuperCollider\SuperCollider\plugins") {
-            Get-ChildItem "C:\SuperCollider\SuperCollider\plugins\*.scx" | Select-Object Name
-          } else {
-            Write-Host "plugins directory not found!"
-            Write-Host "Looking for .scx files anywhere in SC dir:"
-            Get-ChildItem "C:\SuperCollider\SuperCollider" -Recurse -Filter "*.scx" | Select-Object FullName
-          }
-
       - name: Build release bundle
         shell: pwsh
         run: |
@@ -315,14 +299,8 @@ jobs:
           Write-Host "7z-extra contents:"
           Get-ChildItem -Recurse "7z-extra" | Select-Object FullName
 
-          # Create SFX config for auto-extract and run (no leading whitespace!)
-          $sfxConfig = @"
-;!@Install@!UTF-8!
-Title="Monokit $version"
-RunProgram="monokit.exe"
-Directory="%%T\monokit-$version"
-;!@InstallEnd@!
-"@
+          # Create SFX config for auto-extract and run
+          $sfxConfig = ";!@Install@!UTF-8!`nTitle=`"Monokit $version`"`nRunProgram=`"monokit.exe`"`nDirectory=`"%%T\monokit-$version`"`n;!@InstallEnd@!"
           [System.IO.File]::WriteAllText("sfx_config.txt", $sfxConfig)
 
           # Create 7z archive of the bundle

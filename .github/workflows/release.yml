@@ -261,6 +261,21 @@ jobs:
       - name: Run tests
         run: cargo test --verbose
 
+      - name: Debug SuperCollider structure
+        shell: pwsh
+        run: |
+          Write-Host "=== SuperCollider directory structure ==="
+          Get-ChildItem "C:\SuperCollider\SuperCollider" | Select-Object Name
+          Write-Host ""
+          Write-Host "=== Plugins directory ==="
+          if (Test-Path "C:\SuperCollider\SuperCollider\plugins") {
+            Get-ChildItem "C:\SuperCollider\SuperCollider\plugins\*.scx" | Select-Object Name
+          } else {
+            Write-Host "plugins directory not found!"
+            Write-Host "Looking for .scx files anywhere in SC dir:"
+            Get-ChildItem "C:\SuperCollider\SuperCollider" -Recurse -Filter "*.scx" | Select-Object FullName
+          }
+
       - name: Build release bundle
         shell: pwsh
         run: |
@@ -296,32 +311,51 @@ jobs:
           choco install 7zip -y
           & "C:\Program Files\7-Zip\7z.exe" x "7z-extra.7z" -o"7z-extra" -y
 
-          # Create SFX config for auto-extract and run
+          # List extracted files for debugging
+          Write-Host "7z-extra contents:"
+          Get-ChildItem -Recurse "7z-extra" | Select-Object FullName
+
+          # Create SFX config for auto-extract and run (no leading whitespace!)
           $sfxConfig = @"
-          ;!@Install@!UTF-8!
-          Title="Monokit $version"
-          RunProgram="monokit.exe"
-          Directory="%%T\\monokit-$version"
-          ;!@InstallEnd@!
-          "@
-          $sfxConfig | Out-File -Encoding UTF8 "sfx_config.txt"
+;!@Install@!UTF-8!
+Title="Monokit $version"
+RunProgram="monokit.exe"
+Directory="%%T\monokit-$version"
+;!@InstallEnd@!
+"@
+          [System.IO.File]::WriteAllText("sfx_config.txt", $sfxConfig)
 
           # Create 7z archive of the bundle
           cd dist\bundle
           & "C:\Program Files\7-Zip\7z.exe" a -t7z -mx=9 "$name.7z" "$name\*"
 
-          # Combine SFX stub + config + archive
-          $sfxStub = "..\..\7z-extra\7zSD.sfx"
+          # Combine SFX stub + config + archive (use x64 version for 64-bit)
+          $sfxStub = "..\..\7z-extra\x64\7zSD.sfx"
+          if (-not (Test-Path $sfxStub)) {
+            # Fallback to root level if x64 doesn't exist
+            $sfxStub = "..\..\7z-extra\7zSD.sfx"
+          }
           $configFile = "..\..\sfx_config.txt"
 
-          # Use cmd to concatenate binary files
-          cmd /c "copy /b $sfxStub + $configFile + $name.7z $name.exe"
+          Write-Host "Using SFX stub: $sfxStub"
+          Write-Host "Config file: $configFile"
 
-          # Create SHA256 checksum for SFX
-          $hash = (Get-FileHash "$name.exe" -Algorithm SHA256).Hash.ToLower()
-          "$hash  $name.exe" | Out-File -Encoding ASCII "$name.exe.sha256"
+          # Use PowerShell to concatenate binary files
+          $sfxBytes = [System.IO.File]::ReadAllBytes($sfxStub)
+          $configBytes = [System.IO.File]::ReadAllBytes($configFile)
+          $archiveBytes = [System.IO.File]::ReadAllBytes("$name.7z")
+          $combined = $sfxBytes + $configBytes + $archiveBytes
+          [System.IO.File]::WriteAllBytes("$name.exe", $combined)
 
-          Write-Host "Created SFX: $name.exe"
+          # Verify and create SHA256 checksum for SFX
+          if (Test-Path "$name.exe") {
+            $hash = (Get-FileHash "$name.exe" -Algorithm SHA256).Hash.ToLower()
+            "$hash  $name.exe" | Out-File -Encoding ASCII "$name.exe.sha256"
+            Write-Host "Created SFX: $name.exe ($('{0:N2}' -f ((Get-Item "$name.exe").Length / 1MB)) MB)"
+          } else {
+            Write-Error "Failed to create SFX executable"
+            exit 1
+          }
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

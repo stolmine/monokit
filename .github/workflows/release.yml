@@ -149,8 +149,140 @@ jobs:
             dist/appimage/*.AppImage
             dist/appimage/*.sha256
 
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install SuperCollider
+        shell: pwsh
+        run: |
+          # Download and install SuperCollider
+          $scVersion = "3.14.1"
+          $scInstaller = "SuperCollider-$scVersion-Windows-x64.exe"
+          $scUrl = "https://github.com/supercollider/supercollider/releases/download/Version-$scVersion/$scInstaller"
+
+          Write-Host "Downloading SuperCollider $scVersion..."
+          Invoke-WebRequest -Uri $scUrl -OutFile $scInstaller
+
+          Write-Host "Installing SuperCollider..."
+          # Silent install to C:\SuperCollider\SuperCollider
+          Start-Process -Wait -FilePath $scInstaller -ArgumentList "/VERYSILENT", "/DIR=C:\SuperCollider\SuperCollider", "/SUPPRESSMSGBOXES", "/NORESTART"
+
+          # Verify installation
+          if (Test-Path "C:\SuperCollider\SuperCollider\scsynth.exe") {
+            Write-Host "SuperCollider installed successfully"
+          } else {
+            Write-Error "SuperCollider installation failed"
+            exit 1
+          }
+
+      - name: Install sc3-plugins
+        shell: pwsh
+        run: |
+          $sc3Version = "3.13.0"
+          $sc3Zip = "sc3-plugins-$sc3Version-Windows-x64.zip"
+          $sc3Url = "https://github.com/supercollider/sc3-plugins/releases/download/Version-$sc3Version/$sc3Zip"
+
+          Write-Host "Downloading sc3-plugins..."
+          Invoke-WebRequest -Uri $sc3Url -OutFile $sc3Zip
+
+          $extDir = "$env:LOCALAPPDATA\SuperCollider\Extensions"
+          New-Item -ItemType Directory -Force -Path $extDir | Out-Null
+
+          Write-Host "Extracting sc3-plugins..."
+          Expand-Archive -Path $sc3Zip -DestinationPath $extDir -Force
+
+          # Verify
+          if (Test-Path "$extDir\SC3plugins") {
+            Write-Host "sc3-plugins installed successfully"
+          } else {
+            Write-Error "sc3-plugins installation failed"
+            exit 1
+          }
+
+      - name: Install mi-UGens
+        shell: pwsh
+        run: |
+          $miVersion = "0.0.8"
+          $miZip = "mi-UGens-Windows.zip"
+          $miUrl = "https://github.com/v7b1/mi-UGens/releases/download/v$miVersion/$miZip"
+
+          Write-Host "Downloading mi-UGens..."
+          Invoke-WebRequest -Uri $miUrl -OutFile $miZip
+
+          $extDir = "$env:LOCALAPPDATA\SuperCollider\Extensions"
+          New-Item -ItemType Directory -Force -Path $extDir | Out-Null
+
+          Write-Host "Extracting mi-UGens..."
+          Expand-Archive -Path $miZip -DestinationPath $extDir -Force
+
+          # Verify
+          if (Test-Path "$extDir\mi-UGens") {
+            Write-Host "mi-UGens installed successfully"
+          } else {
+            Write-Error "mi-UGens installation failed"
+            exit 1
+          }
+
+      - name: Compile SynthDefs
+        shell: pwsh
+        run: |
+          $sclang = "C:\SuperCollider\SuperCollider\sclang.exe"
+
+          Write-Host "Compiling SynthDefs..."
+          & $sclang "build_scripts\compile_synthdefs.scd"
+
+          # Wait for sclang to finish and clean up
+          Start-Sleep -Seconds 5
+          Get-Process sclang -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+
+          # Verify synthdefs
+          $synthdefs = Get-ChildItem "sc\synthdefs\*.scsyndef" -ErrorAction SilentlyContinue
+          if ($synthdefs.Count -gt 0) {
+            Write-Host "Compiled $($synthdefs.Count) SynthDefs"
+            $synthdefs | ForEach-Object { Write-Host "  - $($_.Name)" }
+          } else {
+            Write-Error "SynthDef compilation failed"
+            exit 1
+          }
+
+      - name: Run tests
+        run: cargo test --verbose
+
+      - name: Build release bundle
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          .\scripts\bundle-windows.ps1 -Version $version
+
+      - name: Create zip archive
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          $arch = "x86_64-pc-windows-msvc"
+          $name = "monokit-$version-$arch"
+
+          cd dist\bundle
+          Compress-Archive -Path $name -DestinationPath "$name.zip"
+
+          # Create SHA256 checksum
+          $hash = (Get-FileHash "$name.zip" -Algorithm SHA256).Hash.ToLower()
+          "$hash  $name.zip" | Out-File -Encoding ASCII "$name.zip.sha256"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64-bundle
+          path: |
+            dist/bundle/*.zip
+            dist/bundle/*.sha256
+
   release:
-    needs: [build-macos, build-linux]
+    needs: [build-macos, build-linux, build-windows]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -167,13 +299,21 @@ jobs:
           name: linux-x64-bundle
           path: dist/
 
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-x64-bundle
+          path: dist/
+
       - name: Get bundle sizes
         id: bundle_size
         run: |
           MACOS_SIZE=$(find dist -name '*darwin*.tar.gz' -exec du -h {} \; 2>/dev/null | cut -f1 || echo "N/A")
           LINUX_SIZE=$(find dist -name '*linux*.tar.gz' -exec du -h {} \; 2>/dev/null | cut -f1 || echo "N/A")
+          WINDOWS_SIZE=$(find dist -name '*windows*.zip' -exec du -h {} \; 2>/dev/null | cut -f1 || echo "N/A")
           echo "macos_size=$MACOS_SIZE" >> $GITHUB_OUTPUT
           echo "linux_size=$LINUX_SIZE" >> $GITHUB_OUTPUT
+          echo "windows_size=$WINDOWS_SIZE" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -182,6 +322,7 @@ jobs:
             dist/**/*.tar.gz
             dist/**/*.sha256
             dist/**/*.AppImage
+            dist/**/*.zip
           generate_release_notes: true
           body: |
             ## Installation
@@ -209,9 +350,16 @@ jobs:
 
             **Note:** Linux builds require PipeWire or JACK for audio. Audio auto-connects to PipeWire if available.
 
+            ### Windows (x86_64)
+            1. Extract `monokit-*-x86_64-pc-windows-msvc.zip`
+            2. Open the extracted folder
+            3. Run `monokit.exe`
+
+            **Note:** For low-latency audio, ASIO drivers are recommended (e.g., ASIO4ALL or your audio interface's ASIO driver).
+
             ## What's Included
 
-            Self-contained bundles (macOS: ${{ steps.bundle_size.outputs.macos_size }}, Linux: ${{ steps.bundle_size.outputs.linux_size }}) including:
+            Self-contained bundles (macOS: ${{ steps.bundle_size.outputs.macos_size }}, Linux: ${{ steps.bundle_size.outputs.linux_size }}, Windows: ${{ steps.bundle_size.outputs.windows_size }}) including:
             - monokit binary
             - scsynth audio engine
             - All required plugins and SynthDefs

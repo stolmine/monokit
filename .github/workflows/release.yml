@@ -288,31 +288,21 @@ jobs:
           $name = "monokit-$version-$arch"
           $repoRoot = $PWD.Path
 
-          # Download 7-Zip extra (contains SFX module)
-          $7zUrl = "https://www.7-zip.org/a/7z2408-extra.7z"
-          Invoke-WebRequest -Uri $7zUrl -OutFile "7z-extra.7z"
-
-          # Install 7-Zip to extract the extra package
+          # Install 7-Zip for creating the archive
           choco install 7zip -y
-          & "C:\Program Files\7-Zip\7z.exe" x "7z-extra.7z" -o"7z-extra" -y
 
-          # List what was extracted
-          Write-Host "7z-extra contents:"
-          Get-ChildItem -Path "$repoRoot\7z-extra" -Recurse | ForEach-Object { Write-Host "  $($_.FullName)" }
+          # Download LZMA SDK which contains the installer SFX module (7zSD.sfx)
+          Write-Host "Downloading LZMA SDK for SFX module..."
+          Invoke-WebRequest -Uri "https://www.7-zip.org/a/lzma2408.7z" -OutFile "lzma-sdk.7z"
+          & "C:\Program Files\7-Zip\7z.exe" x "lzma-sdk.7z" -o"lzma-sdk" -y
 
-          # Find SFX stub
-          $sfxStub = Get-ChildItem -Path "$repoRoot\7z-extra" -Filter "7zS*.sfx" -Recurse | Select-Object -First 1 -ExpandProperty FullName
+          # Find 7zSD.sfx in the SDK (it's in bin folder)
+          $sfxStub = Get-ChildItem -Path "$repoRoot\lzma-sdk" -Filter "7zSD.sfx" -Recurse | Select-Object -First 1 -ExpandProperty FullName
           if (-not $sfxStub) {
-            # Maybe it's named differently - look for any .sfx
-            $sfxStub = Get-ChildItem -Path "$repoRoot\7z-extra" -Filter "*.sfx" -Recurse | Select-Object -First 1 -ExpandProperty FullName
-          }
-          if (-not $sfxStub) {
-            # Check if 7z.sfx exists in the installed 7-Zip
-            $sfxStub = "C:\Program Files\7-Zip\7z.sfx"
-            if (-not (Test-Path $sfxStub)) {
-              Write-Host "WARNING: No SFX stub found, skipping SFX creation"
-              exit 0
-            }
+            Write-Host "LZMA SDK contents:"
+            Get-ChildItem -Path "$repoRoot\lzma-sdk" -Recurse | ForEach-Object { Write-Host "  $($_.FullName)" }
+            Write-Error "7zSD.sfx not found in LZMA SDK"
+            exit 1
           }
           Write-Host "Using SFX stub: $sfxStub"
 

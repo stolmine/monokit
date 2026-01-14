@@ -35,10 +35,7 @@ if(hasMiPlaits.not, {
 
 "Compiling SynthDefs to binary format...".postln;
 
-// Load legacy monokit synthdef (for backward compatibility)
-File.readAllString(thisDir +/+ "synthdefs/legacy_monokit.scd").interpret.value(synthdefs_dir);
-
-// MULTI-SYNTH ARCHITECTURE - 4 separate SynthDefs for bug fix
+// MULTI-SYNTH ARCHITECTURE - 5 separate SynthDefs
 File.readAllString(thisDir +/+ "synthdefs/noise_mod.scd").interpret.value(synthdefs_dir);
 
 // Primary oscillator
@@ -46,12 +43,6 @@ File.readAllString(thisDir +/+ "synthdefs/primary.scd").interpret.value(synthdef
 
 // Conditional Plaits SynthDef - only use MiPlaits if available
 File.readAllString(thisDir +/+ "synthdefs/plaits.scd").interpret.value(synthdefs_dir, hasMiPlaits);
-
-// =============================================================================
-// IMPORTANT: SC OPTIMIZER BUG - DO NOT ADD ad, dd, fed, mbd TO ARG LIST
-// They MUST use NamedControl syntax (\ad.kr(100)) to prevent optimizer from
-// zeroing the values at compile time. See monokit_main.scd line 1080-1083.
-// =============================================================================
 
 // Main signal path
 File.readAllString(thisDir +/+ "synthdefs/main.scd").interpret.value(synthdefs_dir);
@@ -68,7 +59,6 @@ File.readAllString(thisDir +/+ "synthdefs/sampler.scd").interpret.value(synthdef
 
 "".postln;
 "Compiled SynthDefs:".postln;
-"  - monokit.scsyndef (legacy monolithic synth)".postln;
 "  - monokit_noise.scsyndef (noise generator)".postln;
 "  - monokit_mod.scsyndef (modulator oscillator)".postln;
 "  - monokit_primary.scsyndef (primary oscillator)".postln;
@@ -78,6 +68,5 @@ File.readAllString(thisDir +/+ "synthdefs/sampler.scd").interpret.value(synthdef
 "  - monokit_scope.scsyndef (oscilloscope)".postln;
 "  - monokit_recorder.scsyndef (audio recorder)".postln;
 "  - monokit_sampler.scsyndef (sample playback)".postln;
-"NOTE: Runtime uses 5-synth architecture (noise, mod, primary, plaits, main)".postln;
 { 0.exit }.defer(0.1);  // Deferred exit to allow postln to complete
 )

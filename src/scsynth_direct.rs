@@ -102,13 +102,22 @@ impl ScsynthDirect {
                 if mi_ugens.exists() {
                     plugin_paths.push(mi_ugens.to_string_lossy().to_string());
                 }
-                // Add SC3plugins subdirectories
+                // Add SC3plugins - structure differs by platform:
+                //   Windows: .scx files at root level
+                //   macOS/Linux: .scx files inside subdirectories
                 let sc3plugins = user_extensions.join("SC3plugins");
                 if sc3plugins.exists() {
-                    if let Ok(entries) = std::fs::read_dir(&sc3plugins) {
-                        for entry in entries.flatten() {
-                            if entry.path().is_dir() {
-                                plugin_paths.push(entry.path().to_string_lossy().to_string());
+                    #[cfg(target_os = "windows")]
+                    {
+                        plugin_paths.push(sc3plugins.to_string_lossy().to_string());
+                    }
+                    #[cfg(not(target_os = "windows"))]
+                    {
+                        if let Ok(entries) = std::fs::read_dir(&sc3plugins) {
+                            for entry in entries.flatten() {
+                                if entry.path().is_dir() {
+                                    plugin_paths.push(entry.path().to_string_lossy().to_string());
+                                }
                             }
                         }
                     }

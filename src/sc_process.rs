@@ -109,7 +109,10 @@ impl ScProcess {
             thread::sleep(Duration::from_millis(300));
         }
 
-        let _ = Command::new("pkill").arg("-f").arg("scsynth").output();
+        #[cfg(target_os = "windows")]
+        let _ = Command::new("taskkill").args(["/F", "/IM", "scsynth.exe"]).output();
+        #[cfg(not(target_os = "windows"))]
+        let _ = Command::new("pkill").args(["-f", "scsynth"]).output();
         thread::sleep(Duration::from_millis(200));
     }
 
@@ -191,12 +194,15 @@ impl Drop for ScProcess {
 
 #[cfg(not(feature = "scsynth-direct"))]
 fn find_sclang() -> Result<PathBuf, String> {
+    // macOS/Linux candidates
+    #[cfg(not(target_os = "windows"))]
     let candidates = [
         "/Applications/SuperCollider.app/Contents/MacOS/sclang",
         "/opt/homebrew/bin/sclang",
         "/usr/local/bin/sclang",
     ];
 
+    #[cfg(not(target_os = "windows"))]
     for path in candidates {
         let p = PathBuf::from(path);
         if p.exists() {
@@ -204,7 +210,29 @@ fn find_sclang() -> Result<PathBuf, String> {
         }
     }
 
-    if let Ok(output) = Command::new("which").arg("sclang").output() {
+    // Windows system paths
+    #[cfg(target_os = "windows")]
+    {
+        let win_candidates = [
+            r"C:\SuperCollider\SuperCollider\sclang.exe",
+            r"C:\Program Files\SuperCollider\sclang.exe",
+            r"C:\Program Files (x86)\SuperCollider\sclang.exe",
+        ];
+        for candidate in win_candidates {
+            let path = PathBuf::from(candidate);
+            if path.exists() {
+                return Ok(path);
+            }
+        }
+    }
+
+    // PATH lookup: use 'where' on Windows, 'which' on Unix
+    #[cfg(target_os = "windows")]
+    let output = Command::new("where").arg("sclang").output();
+    #[cfg(not(target_os = "windows"))]
+    let output = Command::new("which").arg("sclang").output();
+
+    if let Ok(output) = output {
         if output.status.success() {
             let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
             if !path.is_empty() {

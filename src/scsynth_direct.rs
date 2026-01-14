@@ -151,22 +151,39 @@ impl ScsynthDirect {
             }
         }
 
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(target_os = "linux")]
         {
             // Linux: Use JACK driver (pipewire-jack provides compatibility)
             // Don't pass -H flag to let scsynth use its default JACK driver
             // PipeWire's JACK compatibility layer will route audio to the system output
-            #[cfg(target_os = "linux")]
             if !silent {
                 eprintln!("[monokit] Using JACK audio (PipeWire compatible)");
             }
 
             if let Some(device) = audio_out_device {
                 if !silent {
-                    eprintln!("[monokit] WARNING: Audio device selection not supported on this platform");
+                    eprintln!("[monokit] WARNING: Audio device selection not supported on Linux");
                     eprintln!("[monokit] Requested device: {}", device);
-                    eprintln!("[monokit] Using default audio device");
+                    eprintln!("[monokit] Using default JACK routing");
                 }
+            }
+        }
+
+        #[cfg(target_os = "windows")]
+        {
+            // Windows: scsynth uses PortAudio which supports ASIO and WASAPI
+            // ASIO4ALL provides low-latency ASIO for any audio device
+            // If ASIO is available, scsynth will prefer it automatically
+            if !silent {
+                eprintln!("[monokit] Using Windows audio (ASIO/WASAPI)");
+            }
+
+            if let Some(device) = audio_out_device {
+                // Pass device name directly - user can specify ASIO or WASAPI device
+                if !silent {
+                    eprintln!("[monokit] Using audio device: {}", device);
+                }
+                cmd.arg("-H").arg(device);
             }
         }
 
@@ -181,7 +198,7 @@ impl ScsynthDirect {
         let stderr = child.stderr.take();
 
         // Create a log file for scsynth output (so we can debug after TUI takes over)
-        let log_path = PathBuf::from("/tmp/scsynth.log");
+        let log_path = env::temp_dir().join("scsynth.log");
 
         // Ensure directory exists
         if let Some(parent) = log_path.parent() {
@@ -746,7 +763,10 @@ impl ScsynthDirect {
             thread::sleep(Duration::from_millis(300));
         }
 
-        let _ = Command::new("pkill").arg("-f").arg("scsynth").output();
+        #[cfg(target_os = "windows")]
+        let _ = Command::new("taskkill").args(["/F", "/IM", "scsynth.exe"]).output();
+        #[cfg(not(target_os = "windows"))]
+        let _ = Command::new("pkill").args(["-f", "scsynth"]).output();
         thread::sleep(Duration::from_millis(200));
 
         self.osc_socket = None;
@@ -919,12 +939,15 @@ fn find_scsynth() -> Result<PathBuf, String> {
         }
     }
 
+    // macOS/Linux candidates
+    #[cfg(not(target_os = "windows"))]
     let candidates = [
         "/Applications/SuperCollider.app/Contents/Resources/scsynth",
         "/opt/homebrew/bin/scsynth",
         "/usr/local/bin/scsynth",
     ];
 
+    #[cfg(not(target_os = "windows"))]
     for path in candidates {
         let p = PathBuf::from(path);
         if p.exists() {
@@ -932,7 +955,29 @@ fn find_scsynth() -> Result<PathBuf, String> {
         }
     }
 
-    if let Ok(output) = Command::new("which").arg("scsynth").output() {
+    // Windows system paths
+    #[cfg(target_os = "windows")]
+    {
+        let win_candidates = [
+            r"C:\SuperCollider\SuperCollider\scsynth.exe",
+            r"C:\Program Files\SuperCollider\scsynth.exe",
+            r"C:\Program Files (x86)\SuperCollider\scsynth.exe",
+        ];
+        for candidate in win_candidates {
+            let path = PathBuf::from(candidate);
+            if path.exists() {
+                return Ok(path);
+            }
+        }
+    }
+
+    // PATH lookup: use 'where' on Windows, 'which' on Unix
+    #[cfg(target_os = "windows")]
+    let output = Command::new("where").arg("scsynth").output();
+    #[cfg(not(target_os = "windows"))]
+    let output = Command::new("which").arg("scsynth").output();
+
+    if let Ok(output) = output {
         if output.status.success() {
             let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
             if !path.is_empty() {
@@ -1009,16 +1054,34 @@ fn find_plugins_dir() -> Result<PathBuf, String> {
         }
     }
 
+    // macOS/Linux candidates
+    #[cfg(not(target_os = "windows"))]
     let candidates = [
         "/Applications/SuperCollider.app/Contents/Resources/plugins",
         "/opt/homebrew/share/SuperCollider/plugins",
         "/usr/local/share/SuperCollider/plugins",
     ];
 
+    #[cfg(not(target_os = "windows"))]
     for path in candidates {
         let p = PathBuf::from(path);
         if p.exists() {
             return Ok(p);
+        }
+    }
+
+    // Windows plugin paths
+    #[cfg(target_os = "windows")]
+    {
+        let win_candidates = [
+            r"C:\SuperCollider\SuperCollider\plugins",
+            r"C:\Program Files\SuperCollider\plugins",
+        ];
+        for candidate in win_candidates {
+            let path = PathBuf::from(candidate);
+            if path.exists() {
+                return Ok(path);
+            }
         }
     }
 

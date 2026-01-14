@@ -35,7 +35,7 @@ where
         };
     }
 
-    let library_path = home_dir?.join(".config/monokit/samples");
+    let library_path = crate::config::monokit_config_dir().ok()?.join("samples");
 
     let library_relative = library_path.join(path_str);
     if library_relative.exists() {

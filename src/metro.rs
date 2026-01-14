@@ -12,7 +12,10 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 const OSC_BUFFER_SIZE: usize = 4 * 1024 * 1024; // 4MB buffer to prevent packet loss
-const OSC_LOG_PATH: &str = "/tmp/monokit_osc.log";
+
+fn get_osc_log_path() -> std::path::PathBuf {
+    std::env::temp_dir().join("monokit_osc.log")
+}
 
 fn format_osc_args(args: &[OscType]) -> String {
     args.iter()
@@ -38,7 +41,7 @@ fn log_osc_message(msg: &OscMessage, label: &str) {
     if let Ok(mut file) = OpenOptions::new()
         .create(true)
         .append(true)
-        .open(OSC_LOG_PATH)
+        .open(get_osc_log_path())
     {
         let _ = file.write_all(log_line.as_bytes());
     }

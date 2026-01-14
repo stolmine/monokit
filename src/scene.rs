@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use std::env;
 use std::fs;
 use std::path::PathBuf;
 
@@ -42,12 +41,9 @@ pub enum SceneError {
 }
 
 pub fn get_scenes_dir() -> PathBuf {
-    // Use consistent cross-platform path: ~/.config/monokit/scenes
+    // Use platform-native config directory
     crate::config::monokit_config_dir()
-        .unwrap_or_else(|_| {
-            let home = env::var("HOME").unwrap_or_else(|_| ".".to_string());
-            PathBuf::from(home).join(".config").join("monokit")
-        })
+        .unwrap_or_else(|_| PathBuf::from("."))
         .join("scenes")
 }
 

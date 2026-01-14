@@ -269,11 +269,14 @@ impl Default for Config {
     }
 }
 
-/// Returns the monokit config directory: ~/.config/monokit
-/// Uses consistent cross-platform path instead of platform-native dirs
+/// Returns the monokit config directory using platform-native paths:
+/// - macOS: ~/Library/Application Support/monokit/
+/// - Windows: %APPDATA%\monokit\
+/// - Linux: ~/.config/monokit/
 pub fn monokit_config_dir() -> Result<PathBuf> {
-    let home = std::env::var("HOME").context("HOME environment variable not set")?;
-    Ok(PathBuf::from(home).join(".config").join("monokit"))
+    dirs::config_dir()
+        .map(|p| p.join("monokit"))
+        .context("Could not determine config directory")
 }
 
 fn config_path() -> Result<PathBuf> {

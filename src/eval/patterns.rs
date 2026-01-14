@@ -110,7 +110,8 @@ pub fn eval_pattern_expression(
             pattern.index = (pattern.index + 1) % pattern.length;
             let value = pattern.data[pattern.index];
             use std::io::Write;
-            if let Ok(mut f) = std::fs::OpenOptions::new().append(true).create(true).open("/tmp/monokit_debug.txt") {
+            let debug_path = std::env::temp_dir().join("monokit_debug.txt");
+            if let Ok(mut f) = std::fs::OpenOptions::new().append(true).create(true).open(&debug_path) {
                 writeln!(f, "P.NEXT: working={} old_idx={} new_idx={} len={} value={}",
                     working, old_index, pattern.index, pattern.length, value).ok();
             }

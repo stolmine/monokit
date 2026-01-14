@@ -11,9 +11,10 @@ use std::io::Write;
 
 impl App {
     fn debug_log(&self, msg: String) {
+        let debug_path = std::env::temp_dir().join("monokit_debug.txt");
         if let Ok(mut f) = std::fs::OpenOptions::new()
             .append(true)
-            .open("/tmp/monokit_debug.txt")
+            .open(&debug_path)
         {
             writeln!(f, "{}", msg).ok();
         }

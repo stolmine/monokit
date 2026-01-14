@@ -3,10 +3,11 @@ use std::fs::OpenOptions;
 use std::io::Write;
 
 pub fn log_command(msg: &str) {
+    let log_path = std::env::temp_dir().join("monokit_commands.log");
     if let Ok(mut file) = OpenOptions::new()
         .create(true)
         .append(true)
-        .open("/tmp/monokit_commands.log")
+        .open(&log_path)
     {
         let timestamp = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)

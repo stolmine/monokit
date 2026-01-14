@@ -145,9 +145,19 @@ pub fn list_audio_devices() -> Result<Vec<AudioDevice>, String> {
     }
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "linux")]
 pub fn list_audio_devices() -> Result<Vec<AudioDevice>, String> {
-    Err("Audio device enumeration is only supported on macOS".to_string())
+    Err("Linux uses JACK/PipeWire routing. Use system audio tools to configure.".to_string())
+}
+
+#[cfg(target_os = "windows")]
+pub fn list_audio_devices() -> Result<Vec<AudioDevice>, String> {
+    Err("Windows audio device enumeration not yet implemented. Using default device.".to_string())
+}
+
+#[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
+pub fn list_audio_devices() -> Result<Vec<AudioDevice>, String> {
+    Err("Audio device enumeration not supported on this platform".to_string())
 }
 
 pub fn find_device_by_name(name: &str) -> Result<Option<AudioDevice>, String> {

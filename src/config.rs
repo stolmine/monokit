@@ -293,7 +293,18 @@ pub fn load_config() -> Result<Config> {
     let path = config_path()?;
 
     if !path.exists() {
-        return Ok(Config::default());
+        // First run: create config with bundled themes populated
+        let bundled_themes = load_bundled_themes().unwrap_or_default();
+        let config = Config {
+            display: DisplayConfig::default(),
+            themes: bundled_themes,
+        };
+        // Save to create the config file with themes for user customization
+        if let Err(e) = save_config(&config) {
+            // Log but don't fail - themes still work from bundled source
+            eprintln!("Note: Could not create config file: {}", e);
+        }
+        return Ok(config);
     }
 
     let contents = fs::read_to_string(&path).context("Failed to read config file")?;

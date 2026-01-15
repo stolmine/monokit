@@ -28,7 +28,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - **Trackpad/Mousewheel Scrolling** [Low-Medium] - Implement scrolling support for help pages, REPL history, and other scrollable views; improve navigation UX
 
 ### P2 - Polish & Features
-- **Windows Theme Defaults** [Low] - Ensure default themes get pulled into Windows config file on first run
+- ~~**Windows Theme Defaults**~~ ✅ DONE - Bundled themes now populate config.toml on first run (all platforms)
 - **Update command_reference.md** [Low] - Sync with current command set (MiClouds, sampler commands, delay sync, etc.)
 - **Verify Windows SC Bundle Pathing** [Low] - Test scsynth binary discovery in bundle folder on fresh Windows VM; user reported needing to move monokit.exe or scsynth.exe to accommodate system
 - **cpal Audio Device Enumeration** [Medium] - Replace platform-specific audio device code (coreaudio-rs) with cpal for cross-platform device enumeration and runtime selection

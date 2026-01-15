@@ -1,5 +1,16 @@
 # Monokit
 
+```
+       _________
+      /        /  _  _ ______________________
+     /  ______ \________                    /          /
+    /        /         /                   /     .    /
+   /        /         / ____  ____  ____  /____  ' __//__
+  //       //       // /   / /   / /   / //     /   //
+          //        / //__/ //  / //__/ / \  __//_  \__
+                  //  _  _ ____________//  \
+```
+
 ![Discord](https://img.shields.io/discord/1446968284225212450?style=flat-square&label=Discord&labelColor=%239D00FF&color=%23FFFFFF)
 
 Teletype-style scripting front end for a suite of several voices: a custom monosynth based on classic complex oscillator arrangements, an implementation of Plaits, and a simple yet effective sample playback engine.
@@ -170,5 +181,7 @@ As well as UGens from [sc3-plugins](https://github.com/supercollider/sc3-plugins
 - **TJUGens** (DFM1 diode filter) by Tony Hardie-Bick & Jonny Stutters
 
 Keyboard smash title text animation based on this repo from [DvorakDwarf](https://github.com/DvorakDwarf/scrambling-title-animations?tab=readme-ov-file)
+
+ASCII logo by CiDE
 
 No official association with any authors of the aforementioned is implied or actual. DO NOT direct support requests to these people, direct them to this repository or to the discord.

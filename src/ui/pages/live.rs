@@ -196,11 +196,8 @@ fn render_sampler_row(row: usize, app: &crate::App, spans: &mut Vec<Span<'static
         }
         5 => {
             // 9+1+9+1+10 grid: TYP | CUT | RES
-            let type_names = ["SVF LP", "SVF HP", "SVF BP", "NOTCH", "MOOG", "BW LP", "BW HP",
-                             "DFM LP", "DFM HP", "BM LP", "BM HP", "BM BP", "LATCH LP", "LATCH BP"];
-            let type_display = type_names.get(app.sampler_state.fx.filter_type as usize).unwrap_or(&"???");
             spans.push(Span::styled("TYP", Style::default().fg(app.theme.foreground)));
-            spans.push(Span::styled(format!("{:>7}", type_display), Style::default().fg(app.theme.success)));
+            spans.push(Span::styled(format!("{:>6}", app.sampler_state.fx.filter_type), Style::default().fg(app.theme.success)));
             spans.push(Span::raw(" "));
 
             let cut_normalized = app.sampler_state.fx.filter_cut as f32 / 16383.0;

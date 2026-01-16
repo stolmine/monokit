@@ -8,6 +8,8 @@ description = "Teletype-style scripting for a complex oscillator drum voice"
 [features]
 default = ["scsynth-direct"]
 scsynth-direct = []
+# ASIO support for Windows low-latency pro audio (requires LLVM for bindgen)
+asio = ["cpal/asio"]
 
 [dependencies]
 # OSC protocol
@@ -55,9 +57,5 @@ audio_thread_priority = "0.32"
 socket2 = "0.5"
 
 # Audio device enumeration (cross-platform)
-# ASIO feature enabled on Windows for low-latency pro audio support
-[target.'cfg(windows)'.dependencies]
-cpal = { version = "0.17", features = ["asio"] }
-
-[target.'cfg(not(windows))'.dependencies]
+# Use "asio" feature for Windows low-latency pro audio (requires LLVM installed)
 cpal = "0.17"

@@ -3,7 +3,8 @@
 # Usage: .\scripts\bundle-windows.ps1 [version]
 
 param(
-    [string]$Version = "dev"
+    [string]$Version = "dev",
+    [switch]$Asio  # Enable ASIO support (requires LLVM installed)
 )
 
 $ErrorActionPreference = "Stop"
@@ -48,8 +49,14 @@ $DistDir = "dist\bundle"
 $BundleDir = "$DistDir\$Name"
 
 # Build monokit
-Write-Host "Building monokit with scsynth-direct feature..."
-cargo build --release --features scsynth-direct
+$Features = "scsynth-direct"
+if ($Asio) {
+    $Features = "scsynth-direct,asio"
+    Write-Host "Building monokit with scsynth-direct and ASIO features..."
+} else {
+    Write-Host "Building monokit with scsynth-direct feature..."
+}
+cargo build --release --features $Features
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Build failed"
     exit 1

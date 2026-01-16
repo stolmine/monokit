@@ -273,7 +273,7 @@ jobs:
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}".TrimStart('v')
-          .\scripts\bundle-windows.ps1 -Version $version
+          .\scripts\bundle-windows.ps1 -Version $version -Asio
 
       - name: Create zip archive
         shell: pwsh

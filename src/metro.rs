@@ -738,7 +738,11 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                     {
                         match crate::audio_devices::list_audio_devices() {
                             Ok(devices) => {
-                                let device_names: Vec<String> = devices.iter().map(|d| d.name.clone()).collect();
+                                // Include host/backend info: "Device Name (WASAPI)"
+                                let device_names: Vec<String> = devices
+                                    .iter()
+                                    .map(|d| format!("{} ({})", d.name, d.host))
+                                    .collect();
 
                                 let current = if let Ok(config) = crate::config::load_config() {
                                     config.display.audio_out_device.unwrap_or_else(|| "default".to_string())

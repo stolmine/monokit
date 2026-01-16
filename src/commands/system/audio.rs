@@ -17,7 +17,7 @@ where
     } else {
         // Check if argument is a number (device selection by index)
         let arg = parts[1..].join(" ");
-        let device_name = if let Ok(index) = arg.parse::<usize>() {
+        let device_entry = if let Ok(index) = arg.parse::<usize>() {
             // Numbered selection (1-based)
             if index == 0 || index > audio_devices.len() {
                 output(format!("ERROR: INVALID DEVICE #{}", index));
@@ -30,8 +30,16 @@ where
             arg
         };
 
+        // Extract device name without host suffix for scsynth
+        // Format is "Device Name (HOST)" - strip the " (HOST)" part
+        let device_name = if let Some(idx) = device_entry.rfind(" (") {
+            device_entry[..idx].to_string()
+        } else {
+            device_entry.clone()
+        };
+
         metro_tx.send(MetroCommand::SetAudioOutDevice(device_name.clone()))?;
-        output(format!("SETTING: {}", device_name));
+        output(format!("SETTING: {}", device_entry));
         output("RESTARTING AUDIO ENGINE...".to_string());
     }
     Ok(())

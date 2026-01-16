@@ -54,6 +54,5 @@ audio_thread_priority = "0.32"
 # Socket buffer configuration
 socket2 = "0.5"
 
-# Audio device enumeration (macOS)
-[target.'cfg(target_os = "macos")'.dependencies]
-coreaudio-rs = "0.11"
+# Audio device enumeration (cross-platform)
+cpal = "0.17"

@@ -195,9 +195,15 @@ pub fn meter_thread(event_tx: mpsc::Sender<MetroEvent>) {
             Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock || e.kind() == std::io::ErrorKind::TimedOut => {
                 decay_peak_holds(&mut meter_data);
             }
+            Err(ref e) if e.kind() == std::io::ErrorKind::ConnectionReset => {
+                // Windows error 10054 (WSAECONNRESET) - happens when scsynth restarts
+                // and the old connection is closed. This is expected and transient.
+                decay_peak_holds(&mut meter_data);
+            }
             Err(e) => {
-                let _ = event_tx.send(MetroEvent::Error(format!("ERROR: METER SOCKET RECV: {}", e)));
-                return;
+                // Log unexpected errors but don't terminate - allow recovery after restart
+                let _ = event_tx.send(MetroEvent::Error(format!("METER SOCKET: {}", e)));
+                decay_peak_holds(&mut meter_data);
             }
         }
     }

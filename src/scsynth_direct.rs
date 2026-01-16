@@ -935,14 +935,20 @@ fn get_exe_dir() -> Option<PathBuf> {
 
 fn find_scsynth() -> Result<PathBuf, String> {
     // Check for bundled scsynth (in Resources/ subdirectory for framework path resolution)
+    // Windows executables require .exe extension
+    #[cfg(target_os = "windows")]
+    const SCSYNTH_BIN: &str = "scsynth.exe";
+    #[cfg(not(target_os = "windows"))]
+    const SCSYNTH_BIN: &str = "scsynth";
+
     if let Some(dir) = get_exe_dir() {
         // New bundle structure: monokit is at root, scsynth in Resources/
-        let bundled = dir.join("Resources/scsynth");
+        let bundled = dir.join("Resources").join(SCSYNTH_BIN);
         if bundled.exists() {
             return Ok(bundled);
         }
         // Legacy: scsynth at same level as monokit
-        let bundled = dir.join("scsynth");
+        let bundled = dir.join(SCSYNTH_BIN);
         if bundled.exists() {
             return Ok(bundled);
         }

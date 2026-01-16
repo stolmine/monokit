@@ -4,6 +4,15 @@ All notable changes to monokit. Versions ordered newest to oldest.
 
 ---
 
+## v0.6.1 (January 2026)
+
+### Bug Fixes
+
+- **Windows scsynth.exe path discovery** - Bundled scsynth path check now correctly uses `.exe` extension on Windows
+- **Keyboard internationalization** - Added Ctrl+[/] as alternative page navigation keybindings for keyboards where [ ] are difficult to access
+
+---
+
 ## v0.6.0 (January 2026)
 
 ### Major Features

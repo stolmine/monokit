@@ -736,35 +736,26 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                     }
                     #[cfg(feature = "scsynth-direct")]
                     {
-                        #[cfg(target_os = "macos")]
-                        {
-                            match crate::audio_devices::list_audio_devices() {
-                                Ok(devices) => {
-                                    let device_names: Vec<String> = devices.iter().map(|d| d.name.clone()).collect();
+                        match crate::audio_devices::list_audio_devices() {
+                            Ok(devices) => {
+                                let device_names: Vec<String> = devices.iter().map(|d| d.name.clone()).collect();
 
-                                    let current = if let Ok(config) = crate::config::load_config() {
-                                        config.display.audio_out_device.unwrap_or_else(|| "default".to_string())
-                                    } else {
-                                        "default".to_string()
-                                    };
+                                let current = if let Ok(config) = crate::config::load_config() {
+                                    config.display.audio_out_device.unwrap_or_else(|| "default".to_string())
+                                } else {
+                                    "default".to_string()
+                                };
 
-                                    let _ = event_tx.send(MetroEvent::AudioDeviceList {
-                                        current,
-                                        devices: device_names,
-                                    });
-                                }
-                                Err(e) => {
-                                    let _ = event_tx.send(MetroEvent::Error(
-                                        format!("FAILED TO QUERY DEVICES: {}", e)
-                                    ));
-                                }
+                                let _ = event_tx.send(MetroEvent::AudioDeviceList {
+                                    current,
+                                    devices: device_names,
+                                });
                             }
-                        }
-                        #[cfg(not(target_os = "macos"))]
-                        {
-                            let _ = event_tx.send(MetroEvent::Error(
-                                "AUDIO DEVICE QUERY NOT SUPPORTED ON THIS PLATFORM".to_string()
-                            ));
+                            Err(e) => {
+                                let _ = event_tx.send(MetroEvent::Error(
+                                    format!("FAILED TO QUERY DEVICES: {}", e)
+                                ));
+                            }
                         }
                     }
                 }

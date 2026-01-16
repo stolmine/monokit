@@ -235,6 +235,15 @@ jobs:
             exit 1
           }
 
+      - name: Install LLVM (for ASIO bindgen)
+        shell: pwsh
+        run: |
+          Write-Host "Installing LLVM for ASIO support..."
+          choco install llvm -y
+          # Set LIBCLANG_PATH for subsequent steps
+          echo "LIBCLANG_PATH=C:\Program Files\LLVM\bin" >> $env:GITHUB_ENV
+          Write-Host "LLVM installed"
+
       - name: Compile SynthDefs
         shell: pwsh
         run: |

@@ -351,17 +351,24 @@ impl ScsynthDirect {
         }
 
         // For restart: send ready signal to meter_thread since it's already listening
+        // Use retry logic like send_ready() to ensure the message gets through
         if silent {
-            thread::sleep(Duration::from_millis(100));
-            if let Ok(ready_socket) = UdpSocket::bind("127.0.0.1:0") {
-                let msg = OscMessage {
-                    addr: "/monokit/ready".to_string(),
-                    args: vec![],
-                };
-                if let Ok(packet) = encoder::encode(&OscPacket::Message(msg)) {
-                    let _ = ready_socket.send_to(&packet, "127.0.0.1:57121");
+            thread::spawn(|| {
+                for _ in 0..10 {
+                    thread::sleep(Duration::from_millis(100));
+                    if let Ok(ready_socket) = UdpSocket::bind("127.0.0.1:0") {
+                        let msg = OscMessage {
+                            addr: "/monokit/ready".to_string(),
+                            args: vec![],
+                        };
+                        if let Ok(packet) = encoder::encode(&OscPacket::Message(msg)) {
+                            if ready_socket.send_to(&packet, "127.0.0.1:57121").is_ok() {
+                                break;
+                            }
+                        }
+                    }
                 }
-            }
+            });
         }
 
         Ok(())

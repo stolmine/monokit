@@ -31,7 +31,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 - ~~**Windows Theme Defaults**~~ ✅ DONE - Bundled themes now populate config.toml on first run (all platforms)
 - **Update command_reference.md** [Low] - Sync with current command set (MiClouds, sampler commands, delay sync, etc.)
 - ~~**Verify Windows SC Bundle Pathing**~~ ✅ DONE - Fixed scsynth.exe path discovery (v0.6.1); bundled path check now uses correct .exe extension on Windows
-- **cpal Audio Device Enumeration** [Medium] - Replace platform-specific audio device code (coreaudio-rs) with cpal for cross-platform device enumeration and runtime selection
+- ~~**cpal Audio Device Enumeration**~~ ✅ DONE - Replaced coreaudio-rs with cpal for unified cross-platform audio device enumeration (v0.6.2)
 - **Keyboard Internationalization** [Medium] - Force/detect international keyboard layouts; Spanish keyboard user reported [ ] page nav broken; **Workaround (v0.6.1):** Ctrl+[/] now works as alternative page navigation
 - **F11 Windows Terminal Conflict** [Low] - F11 (Pattern page) conflicts with Windows Terminal fullscreen shortcut; need alternative binding or documentation
 - **Per-Voice FX Routing** [Medium] - Individual routing options per voice (primary, noise, plaits, sampler) to mix/bypass global FX chain flexibly; enable dry/wet/blend modes for each voice against delay/reverb

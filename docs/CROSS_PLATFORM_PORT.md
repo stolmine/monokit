@@ -356,10 +356,10 @@ echo "Bundle created: dist/bundle/${NAME}.tar.gz"
 - [ ] Replace `pkill` with process handle termination
 - [ ] Add `#[cfg(windows)]` and `#[cfg(unix)]` guards
 
-### Phase 2: Audio Device Enumeration
-- [ ] Add cpal dependency
-- [ ] Rewrite `audio_devices.rs` using cpal
-- [ ] Remove CoreAudio dependency (macOS-only)
+### Phase 2: Audio Device Enumeration ✅ DONE (v0.6.2)
+- [x] Add cpal dependency
+- [x] Rewrite `audio_devices.rs` using cpal
+- [x] Remove CoreAudio dependency (macOS-only)
 - [ ] Test enumeration on all platforms
 
 ### Phase 3: Build System

@@ -519,6 +519,18 @@ pub fn run_app<B: ratatui::backend::Backend>(
                             app.go_to_page(Page::Live);
                         }
                     }
+                    KeyCode::Char('[') if key.modifiers.contains(KeyModifiers::CONTROL) && is_help => {
+                        app.prev_help_page();
+                    }
+                    KeyCode::Char(']') if key.modifiers.contains(KeyModifiers::CONTROL) && is_help => {
+                        app.next_help_page();
+                    }
+                    KeyCode::Char('[') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        app.prev_page();
+                    }
+                    KeyCode::Char(']') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        app.next_page();
+                    }
                     KeyCode::Char('[') if is_help => {
                         app.prev_help_page();
                     }

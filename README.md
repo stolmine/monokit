@@ -141,7 +141,7 @@ Run `monokit` on your terminal after installation.
 
 Official docs are in progress. For now, there is an extensive (if terse) help system available inside the program.
 
-Press `esc` or `alt + h` to access it. `Ctrl f` will search the help system, use `[ ]` to change sections and up/down arrows to read.
+Press `esc` or `alt + h` to access it. `Ctrl f` will search the help system, use `[ ]` (or `Ctrl+[` / `Ctrl+]`) to change sections and up/down arrows to read.
 
 ## Caveat
 

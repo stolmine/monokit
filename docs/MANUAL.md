@@ -60,7 +60,7 @@ The voice starts silent (VCA=1, gated mode). Each `TR` command triggers all enve
 ### Navigation
 
 **Page Navigation:**
-- `[ ]` - Cycle through pages
+- `[ ]` or `Ctrl+[` / `Ctrl+]` - Cycle through pages
 - `ESC` - Toggle help on/off
 - `Alt+<key>` - Direct page access (requires iTerm2 config)
 - `Tab` - On Live page: toggle REPL/Grid view
@@ -1400,7 +1400,7 @@ Notes are saved with scenes. 8 lines maximum.
 
 | Command | Description |
 |---------|-------------|
-| `[ ]` | Cycle pages |
+| `[ ]` or `Ctrl+[/]` | Cycle pages |
 | `ESC` | Toggle help |
 | `F1-F8` | Script 1-8 |
 | `F9` | Live page |

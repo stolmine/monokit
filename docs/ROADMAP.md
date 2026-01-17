@@ -13,7 +13,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 *No active development cycle. See Future Priorities for upcoming work.*
 
-**v0.6.0 Windows Support** - Completed January 2026
+**v0.6.2 Cross-Platform Audio** - Completed January 2026
 
 ---
 
@@ -77,6 +77,41 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 ---
 
 ## Version History (Latest First)
+
+### v0.6.2 (January 2026) - COMPLETE
+
+| Feature | Effort | Status |
+|---------|--------|--------|
+| Cross-Platform Audio Device Enumeration | Medium | **DONE** |
+| ASIO Audio Backend (Windows) | Low | **DONE** |
+| Audio Device Stability Fixes | Low | **DONE** |
+
+**Cross-Platform Audio Device Enumeration** - Replaced coreaudio-rs with cpal for unified audio device enumeration across macOS, Linux, and Windows. Device list now shows audio backend/host (CoreAudio, WASAPI, JACK, etc.).
+
+**ASIO Audio Backend** - Optional ASIO support for Windows low-latency pro audio. Requires `--features asio` build flag and LLVM for bindgen.
+
+**Audio Device Stability Fixes** - Meter thread no longer terminates on Windows socket reset. Added retry logic for /monokit/ready on audio device restart. Removed macOS-only guard from audio device query.
+
+---
+
+### v0.6.1 (January 2026) - COMPLETE
+
+| Feature | Effort | Status |
+|---------|--------|--------|
+| Windows scsynth.exe Path Fix | Low | **DONE** |
+| Ctrl+[/] Page Navigation | Low | **DONE** |
+| Bundled Themes Auto-Populate | Low | **DONE** |
+| GRID.MODE 5 TYP Field Fix | Low | **DONE** |
+
+**Windows scsynth.exe Path Fix** - Fixed scsynth.exe path discovery in bundled mode on Windows.
+
+**Ctrl+[/] Page Navigation** - Added Ctrl+[ and Ctrl+] as alternative page navigation keybindings for international keyboard layouts.
+
+**Bundled Themes Auto-Populate** - Config now populated with bundled themes on first run across all platforms.
+
+**GRID.MODE 5 TYP Field Fix** - TYP field now shows numerical filter designation (0-13) instead of verbose name.
+
+---
 
 ### v0.6.0 (January 2026) - COMPLETE
 

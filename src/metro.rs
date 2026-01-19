@@ -790,25 +790,29 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
 
         match sync_mode {
             SyncMode::Internal => {
+                // Teletype-style: fixed tick rate for consistent timing
+                // Check metro and delays each tick, sleep for fixed interval
+                const TICK_MS: u64 = 1;
+
                 if active {
-                    let script_index = {
-                        let st = state.lock().unwrap();
-                        st.script_index
-                    };
-
-                    let _ = event_tx.send(MetroEvent::ExecuteScript(script_index));
-
-                    next_tick += Duration::from_millis(interval_ms);
-
                     let now = Instant::now();
-                    if next_tick > now {
-                        let sleep_duration = next_tick - now;
-                        spinner.sleep(sleep_duration);
-                    } else {
-                        next_tick = now;
+
+                    // Check if it's time for a metro tick
+                    if now >= next_tick {
+                        let script_index = {
+                            let st = state.lock().unwrap();
+                            st.script_index
+                        };
+
+                        let _ = event_tx.send(MetroEvent::ExecuteScript(script_index));
+                        next_tick += Duration::from_millis(interval_ms);
                     }
+
+                    // Fixed tick sleep - delays are checked at top of loop
+                    spinner.sleep(Duration::from_millis(TICK_MS));
                 } else {
-                    thread::sleep(Duration::from_millis(10));
+                    // When inactive, still tick regularly for delay processing
+                    thread::sleep(Duration::from_millis(TICK_MS));
                 }
             }
             SyncMode::MidiClock => {

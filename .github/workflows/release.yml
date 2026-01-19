@@ -384,6 +384,56 @@ jobs:
 
             No separate SuperCollider installation required!
 
+  notify-discord:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract changelog for version
+        id: changelog
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          # Extract changelog section for this version (between ## vX.X.X and next ## or ---)
+          CHANGELOG=$(awk "/^## v${VERSION}/,/^(## v|---)/" docs/CHANGELOG.md | head -n -1 | tail -n +2)
+          # Escape for JSON
+          CHANGELOG="${CHANGELOG//'%'/'%25'}"
+          CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
+          CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
+          echo "content<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Send Discord notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          RELEASE_URL="https://github.com/stolmine/monokit/releases/tag/v${VERSION}"
+
+          # Build changelog content (unescape)
+          CHANGELOG=$(echo "${{ steps.changelog.outputs.content }}" | sed 's/%0A/\n/g' | sed 's/%0D//g' | sed 's/%25/%/g')
+
+          # Truncate if too long for Discord embed (max ~4096 chars)
+          if [ ${#CHANGELOG} -gt 2000 ]; then
+            CHANGELOG="${CHANGELOG:0:1997}..."
+          fi
+
+          # Send webhook
+          curl -H "Content-Type: application/json" \
+            -d "{
+              \"embeds\": [{
+                \"title\": \"🎹 Monokit v${VERSION} Released\",
+                \"url\": \"${RELEASE_URL}\",
+                \"color\": 5814783,
+                \"description\": \"${CHANGELOG}\",
+                \"footer\": {
+                  \"text\": \"Available for macOS, Linux, and Windows\"
+                }
+              }]
+            }" \
+            "$DISCORD_WEBHOOK"
+
   update-homebrew:
     needs: release
     runs-on: ubuntu-latest

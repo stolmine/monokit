@@ -13,7 +13,7 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 
 *No active development cycle. See Future Priorities for upcoming work.*
 
-**v0.6.2 Cross-Platform Audio** - Completed January 2026
+**v0.6.3 Delay Thread Architecture** - Completed January 2026
 
 ---
 
@@ -77,6 +77,19 @@ Monokit is a text-based scripting language for a monophonic drum synthesizer bui
 ---
 
 ## Version History (Latest First)
+
+### v0.6.3 (January 2026) - COMPLETE
+
+| Feature | Effort | Status |
+|---------|--------|--------|
+| Separate Delay Thread | Medium | **DONE** |
+| Metro Thread Wake-on-Command | Low | **DONE** |
+
+**Separate Delay Thread** - DEL, DEL.X, and DEL.R commands now execute on an independent thread, eliminating timing interference with the main metro clock. Delays can run faster than metro interval without affecting clock precision.
+
+**Metro Thread Wake-on-Command** - Metro thread now uses recv_timeout to wake immediately on incoming commands, enabling responsive trigger execution from the delay thread while maintaining precise tick timing.
+
+---
 
 ### v0.6.2 (January 2026) - COMPLETE
 

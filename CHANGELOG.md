@@ -4,6 +4,42 @@ All notable changes to monokit. Versions ordered newest to oldest.
 
 ---
 
+## v0.6.3 (January 2026)
+
+### Architecture
+
+**Separate Delay Thread**
+- DEL, DEL.X, and DEL.R commands now execute on independent thread
+- Eliminates timing interference between delays and metro clock
+- Delays can run faster than metro interval (e.g., DEL.X 4 100: TR at 100ms intervals while metro runs at 500ms)
+
+**Metro Thread Improvements**
+- Metro thread now uses recv_timeout to wake immediately on commands
+- Enables responsive trigger execution from delay thread
+- Maintains precise tick timing without blocking on command processing
+
+---
+
+## v0.6.2 (January 2026)
+
+### Features
+
+**Cross-Platform Audio Device Enumeration**
+- Replaced coreaudio-rs with cpal for unified audio device enumeration
+- Works across macOS, Linux, and Windows
+- Device list now shows audio backend/host (CoreAudio, WASAPI, JACK, etc.)
+
+**ASIO Audio Backend (Windows)**
+- Optional ASIO support for low-latency pro audio
+- Requires `--features asio` build flag
+
+### Bug Fixes
+
+- Meter thread no longer terminates on Windows socket reset
+- Added retry logic for /monokit/ready on audio device restart
+
+---
+
 ## v0.6.1 (January 2026)
 
 ### Bug Fixes

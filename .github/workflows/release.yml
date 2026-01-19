@@ -394,12 +394,9 @@ jobs:
         id: changelog
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
-          # Extract changelog section for this version (between ## vX.X.X and next ## or ---)
-          CHANGELOG=$(awk "/^## v${VERSION}/,/^(## v|---)/" docs/CHANGELOG.md | head -n -1 | tail -n +2)
-          # Escape for JSON
-          CHANGELOG="${CHANGELOG//'%'/'%25'}"
-          CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
-          CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
+          # Extract changelog section for this version (from ## vX.X.X until next ## v)
+          CHANGELOG=$(awk -v ver="$VERSION" 'BEGIN{found=0} /^## v/{if(found)exit; if(index($0,"## v"ver)==1)found=1; next} found{print}' docs/CHANGELOG.md | grep -v '^---$')
+          # Store in output (heredoc handles multiline)
           echo "content<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGELOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -407,26 +404,27 @@ jobs:
       - name: Send Discord notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          CHANGELOG: ${{ steps.changelog.outputs.content }}
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           RELEASE_URL="https://github.com/stolmine/monokit/releases/tag/v${VERSION}"
 
-          # Build changelog content (unescape)
-          CHANGELOG=$(echo "${{ steps.changelog.outputs.content }}" | sed 's/%0A/\n/g' | sed 's/%0D//g' | sed 's/%25/%/g')
+          # Escape for JSON (newlines, quotes, backslashes)
+          CHANGELOG_ESCAPED=$(echo "$CHANGELOG" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read())[1:-1])')
 
           # Truncate if too long for Discord embed (max ~4096 chars)
-          if [ ${#CHANGELOG} -gt 2000 ]; then
-            CHANGELOG="${CHANGELOG:0:1997}..."
+          if [ ${#CHANGELOG_ESCAPED} -gt 2000 ]; then
+            CHANGELOG_ESCAPED="${CHANGELOG_ESCAPED:0:1997}..."
           fi
 
           # Send webhook
           curl -H "Content-Type: application/json" \
             -d "{
               \"embeds\": [{
-                \"title\": \"🎹 Monokit v${VERSION} Released\",
+                \"title\": \"Monokit v${VERSION} Released\",
                 \"url\": \"${RELEASE_URL}\",
                 \"color\": 5814783,
-                \"description\": \"${CHANGELOG}\",
+                \"description\": \"${CHANGELOG_ESCAPED}\",
                 \"footer\": {
                   \"text\": \"Available for macOS, Linux, and Windows\"
                 }

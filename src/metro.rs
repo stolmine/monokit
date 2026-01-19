@@ -1,5 +1,5 @@
 use crate::osc_utils::{create_bundle, OSC_LATENCY_MS};
-use crate::types::{DelayedCommand, MetroCommand, MetroEvent, MetroState, SyncMode, OSC_ADDR, MONOKIT_NODE_ID, route_param_to_node, route_param_to_nodes, NOISE_NODE_ID, MOD_NODE_ID, PRIMARY_NODE_ID, MAIN_NODE_ID, PLAITS_NODE_ID};
+use crate::types::{DelayedCommand, DelayThreadCommand, MetroCommand, MetroEvent, MetroState, SyncMode, OSC_ADDR, MONOKIT_NODE_ID, route_param_to_node, route_param_to_nodes, NOISE_NODE_ID, MOD_NODE_ID, PRIMARY_NODE_ID, MAIN_NODE_ID, PLAITS_NODE_ID};
 use rosc::{encoder, OscMessage, OscPacket, OscType};
 use spin_sleep::SpinSleeper;
 use audio_thread_priority::promote_current_thread_to_real_time;
@@ -412,6 +412,68 @@ fn send_osc(socket: Option<&UdpSocket>, msg: OscMessage, use_timestamp: bool) {
     }
 }
 
+/// Separate thread for delay command execution - runs independently of metro timing
+fn delay_thread(rx: mpsc::Receiver<DelayThreadCommand>, event_tx: mpsc::Sender<MetroEvent>) {
+    let spinner = SpinSleeper::default();
+    let mut delayed_commands: Vec<DelayedCommand> = Vec::new();
+    let start_time = Instant::now();
+
+    loop {
+        // Non-blocking receive of delay commands
+        while let Ok(cmd) = rx.try_recv() {
+            match cmd {
+                DelayThreadCommand::Schedule(command, delay_ms, script_index) => {
+                    let elapsed_ms = start_time.elapsed().as_millis() as u64;
+                    let due_at_ms = elapsed_ms + delay_ms;
+                    delayed_commands.push(DelayedCommand {
+                        due_at_ms,
+                        command,
+                        script_index,
+                    });
+                    delayed_commands.sort_by_key(|dc| dc.due_at_ms);
+                }
+                DelayThreadCommand::ScheduleRepeated(command, count, interval_ms, script_index) => {
+                    let elapsed_ms = start_time.elapsed().as_millis() as u64;
+                    for i in 0..count {
+                        let due_at_ms = elapsed_ms + (i as u64 * interval_ms);
+                        delayed_commands.push(DelayedCommand {
+                            due_at_ms,
+                            command: command.clone(),
+                            script_index,
+                        });
+                    }
+                    delayed_commands.sort_by_key(|dc| dc.due_at_ms);
+                }
+                DelayThreadCommand::Clear => {
+                    delayed_commands.clear();
+                }
+                DelayThreadCommand::Shutdown => {
+                    return;
+                }
+            }
+        }
+
+        // Execute due delayed commands
+        let elapsed_ms = start_time.elapsed().as_millis() as u64;
+        while !delayed_commands.is_empty() && delayed_commands[0].due_at_ms <= elapsed_ms {
+            let delayed_cmd = delayed_commands.remove(0);
+            let _ = event_tx.send(MetroEvent::ExecuteDelayed(
+                delayed_cmd.command,
+                delayed_cmd.script_index,
+            ));
+        }
+
+        // Sleep until next delayed command or fixed tick (1ms max)
+        let sleep_duration = if let Some(next) = delayed_commands.first() {
+            let time_to_next = next.due_at_ms.saturating_sub(elapsed_ms);
+            Duration::from_millis(time_to_next.min(1))
+        } else {
+            Duration::from_millis(10) // Idle sleep when no delays pending
+        };
+        spinner.sleep(sleep_duration);
+    }
+}
+
 pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroState>>, event_tx: mpsc::Sender<MetroEvent>, dry_run: bool) {
     let _rt_handle = promote_current_thread_to_real_time(512, 48000).ok();
 
@@ -425,7 +487,7 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
         eprintln!("[monokit] Metro thread: SCLANG mode (port 57120, /monokit/* format)");
     }
 
-    let spinner = SpinSleeper::default();
+    let _spinner = SpinSleeper::default(); // Kept for potential future use
 
     let socket: Option<UdpSocket> = if dry_run {
         None
@@ -466,35 +528,41 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
     let mut active = false;
     let mut sync_mode = SyncMode::Internal;
     let mut next_tick = Instant::now();
-    let mut delayed_commands: Vec<DelayedCommand> = Vec::new();
-    let start_time = Instant::now();
     let mut metro_timing = MetroTimingStats::new();
+
+    // Spawn separate delay thread for independent timing
+    let (delay_tx, delay_rx) = mpsc::channel::<DelayThreadCommand>();
+    let delay_event_tx = event_tx.clone();
+    thread::spawn(move || {
+        delay_thread(delay_rx, delay_event_tx);
+    });
 
     loop {
         let mut interval_changed = false;
 
-        // In MIDI mode, use blocking recv to minimize latency
-        // In Internal mode, use try_recv so we can maintain our own timing
-        let commands: Vec<MetroCommand> = if sync_mode == SyncMode::MidiClock {
-            // Block waiting for commands - MIDI ticks drive timing
-            match rx.recv_timeout(Duration::from_millis(10)) {
-                Ok(cmd) => {
-                    // Got one command, drain any others that arrived
-                    let mut cmds = vec![cmd];
-                    while let Ok(c) = rx.try_recv() {
-                        cmds.push(c);
-                    }
-                    cmds
-                }
-                Err(_) => vec![], // Timeout - check delayed commands
+        // Calculate time until next metro tick for recv timeout
+        let wait_duration = if sync_mode == SyncMode::Internal && active {
+            let now = Instant::now();
+            if next_tick > now {
+                next_tick - now
+            } else {
+                Duration::ZERO
             }
         } else {
-            // Non-blocking for internal timing mode
-            let mut cmds = vec![];
-            while let Ok(cmd) = rx.try_recv() {
-                cmds.push(cmd);
+            Duration::from_millis(10)
+        };
+
+        // Wait for commands OR timeout at next tick time
+        // This ensures we wake immediately on incoming commands (e.g., from delay thread)
+        let commands: Vec<MetroCommand> = match rx.recv_timeout(wait_duration) {
+            Ok(cmd) => {
+                let mut cmds = vec![cmd];
+                while let Ok(c) = rx.try_recv() {
+                    cmds.push(c);
+                }
+                cmds
             }
-            cmds
+            Err(_) => vec![], // Timeout - time for metro tick
         };
 
         for cmd in commands {
@@ -623,29 +691,16 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
                     send_osc(socket.as_ref(), msg, sync_mode == SyncMode::Internal);
                 }
                 MetroCommand::ScheduleDelayed(cmd, delay_ms, script_idx) => {
-                    let elapsed_ms = start_time.elapsed().as_millis() as u64;
-                    let due_at_ms = elapsed_ms + delay_ms;
-                    delayed_commands.push(DelayedCommand {
-                        due_at_ms,
-                        command: cmd,
-                        script_index: script_idx,
-                    });
-                    delayed_commands.sort_by_key(|dc| dc.due_at_ms);
+                    // Forward to delay thread
+                    let _ = delay_tx.send(DelayThreadCommand::Schedule(cmd, delay_ms, script_idx));
                 }
                 MetroCommand::ScheduleRepeated(cmd, count, interval_ms, script_idx) => {
-                    let elapsed_ms = start_time.elapsed().as_millis() as u64;
-                    for i in 0..count {
-                        let due_at_ms = elapsed_ms + (i as u64 * interval_ms);
-                        delayed_commands.push(DelayedCommand {
-                            due_at_ms,
-                            command: cmd.clone(),
-                            script_index: script_idx,
-                        });
-                    }
-                    delayed_commands.sort_by_key(|dc| dc.due_at_ms);
+                    // Forward to delay thread
+                    let _ = delay_tx.send(DelayThreadCommand::ScheduleRepeated(cmd, count, interval_ms, script_idx));
                 }
                 MetroCommand::ClearDelayed => {
-                    delayed_commands.clear();
+                    // Forward to delay thread
+                    let _ = delay_tx.send(DelayThreadCommand::Clear);
                 }
                 MetroCommand::SetSyncMode(mode) => {
                     sync_mode = mode;
@@ -779,25 +834,11 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
             next_tick = Instant::now();
         }
 
-        let elapsed_ms = start_time.elapsed().as_millis() as u64;
-        while !delayed_commands.is_empty() && delayed_commands[0].due_at_ms <= elapsed_ms {
-            let delayed_cmd = delayed_commands.remove(0);
-            let _ = event_tx.send(MetroEvent::ExecuteDelayed(
-                delayed_cmd.command,
-                delayed_cmd.script_index,
-            ));
-        }
-
+        // Check if it's time for metro tick (recv_timeout handles the waiting)
         match sync_mode {
             SyncMode::Internal => {
-                // Teletype-style: fixed tick rate for consistent timing
-                // Check metro and delays each tick, sleep for fixed interval
-                const TICK_MS: u64 = 1;
-
                 if active {
                     let now = Instant::now();
-
-                    // Check if it's time for a metro tick
                     if now >= next_tick {
                         let script_index = {
                             let st = state.lock().unwrap();
@@ -806,19 +847,16 @@ pub fn metro_thread(rx: mpsc::Receiver<MetroCommand>, state: Arc<Mutex<MetroStat
 
                         let _ = event_tx.send(MetroEvent::ExecuteScript(script_index));
                         next_tick += Duration::from_millis(interval_ms);
-                    }
 
-                    // Fixed tick sleep - delays are checked at top of loop
-                    spinner.sleep(Duration::from_millis(TICK_MS));
-                } else {
-                    // When inactive, still tick regularly for delay processing
-                    thread::sleep(Duration::from_millis(TICK_MS));
+                        // Catch up if we fell behind
+                        if next_tick < now {
+                            next_tick = now;
+                        }
+                    }
                 }
             }
             SyncMode::MidiClock => {
-                // In MIDI mode, timing is handled by recv_timeout() at top of loop.
-                // MidiClockTick commands drive script execution directly.
-                // No additional sleep needed - recv_timeout provides the wait.
+                // In MIDI mode, timing is handled by MidiClockTick commands
             }
         }
     }

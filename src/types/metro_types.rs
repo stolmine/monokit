@@ -65,6 +65,15 @@ pub enum MetroEvent {
     SetRecordingPathDirect(String),
 }
 
+/// Commands for the separate delay thread
+#[derive(Debug, Clone)]
+pub enum DelayThreadCommand {
+    Schedule(String, u64, usize),      // command, due_at_ms, script_index
+    ScheduleRepeated(String, i16, u64, usize), // command, count, interval_ms, script_index
+    Clear,
+    Shutdown,
+}
+
 #[derive(Debug, Clone)]
 pub struct MetroState {
     pub interval_ms: u64,
